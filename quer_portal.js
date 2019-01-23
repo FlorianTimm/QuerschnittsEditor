@@ -171,7 +171,9 @@ select_fl.on('select', function(e) {
 	var nr = auswahl.get('nr')
 	var station = auswahl.get('station')
 	select.getFeatures().clear()
-	select.getFeatures().push(querschnitte[absid][station][streifen][nr]['trenn'])
+	a = querschnitte[absid][station][streifen][nr]['trenn']
+	select.getFeatures().push(a)
+	logAuswahl(a)
 	select_fl.getFeatures().clear()
 });
 
