@@ -42,9 +42,9 @@ function get_pos(line, point) {
     return min(posi)
 }
 
-function v_add3(v, comp=0) {
+function v_add3(v) {
     r = v
-    r.push(comp)
+    r.push(0)
     return r
 }
 

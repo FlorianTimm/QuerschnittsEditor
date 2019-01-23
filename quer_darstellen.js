@@ -1,12 +1,13 @@
 
 function machen() {
-	vnk = "252500109"
-	nnk = "252500110"
+	vnk = document.forms.abschnitt.vnk.value
+	nnk = document.forms.abschnitt.nnk.value
+	console.log(vnk)
 	loadGeometry(vnk, nnk)
-	getQuerschnitte(vnk, nnk)
 }
 
 function loadGeometry(vnk, nnk) {
+	console.log("loadGeometry("+vnk+","+nnk+")")
 	var xmlhttp = new XMLHttpRequest();
 
 	if (vnk.length==9 && nnk.length == 10) {
@@ -18,13 +19,14 @@ function loadGeometry(vnk, nnk) {
 	'<PropertyIsEqualTo><PropertyName>NNK</PropertyName><Literal>'+nnk+'</Literal></PropertyIsEqualTo>' + 
 	'</And></Filter>', true);
 	xmlhttp.onreadystatechange = function () {
-		drawGeometry(xmlhttp, vnk, nnk);
+		drawGeometry(xmlhttp);
     }
     xmlhttp.setRequestHeader('Content-Type', 'text/xml');
     xmlhttp.send();
 }
 
-function drawGeometry(xmlhttp, vnk, nnk) {
+function drawGeometry(xmlhttp) {
+	console.log("drawGeometry()")
 	if (xmlhttp.readyState == 4) {
 		if (xmlhttp.status == 200) {
 			if (xmlhttp.responseXML.getElementsByTagName("gml:coordinates").length > 0) {
@@ -58,6 +60,7 @@ function drawGeometry(xmlhttp, vnk, nnk) {
 }
 
 function getQuerschnitte(abschnittid, len_faktor) {
+	console.log("getQuerschnitte("+abschnittid+","+len_faktor +")")
 	var xmlhttp = new XMLHttpRequest();
 
 	if (vnk.length==9 && nnk.length == 10) {
@@ -85,21 +88,25 @@ function readQuerschnitte(xmlhttp, absId) {
 			for (var i = 0; i < quer.length; i++) {
 				
 				
-				var vst = Number(quer[i].getElementsByTagName("vst")[0].innerHTML)
-				var bst = Number(quer[i].getElementsByTagName("bst")[0].innerHTML)
-				var breite = Number(quer[i].getElementsByTagName("breite")[0].innerHTML)/100.
-				var bisbreite = Number(quer[i].getElementsByTagName("bisBreite")[0].innerHTML)/100.
-				var streifen = quer[i].getElementsByTagName("streifen")[0].innerHTML
-				var streifennr = Number(quer[i].getElementsByTagName("streifennr")[0].innerHTML)
+				var vst = Number(quer[i].getElementsByTagName("vst")[0].firstChild.data)
+				var bst = Number(quer[i].getElementsByTagName("bst")[0].firstChild.data)
+				var breite = Number(quer[i].getElementsByTagName("breite")[0].firstChild.data)/100.
+				var bisbreite = Number(quer[i].getElementsByTagName("bisBreite")[0].firstChild.data)/100.
+				var streifen = quer[i].getElementsByTagName("streifen")[0].firstChild.data
+				var streifennr = Number(quer[i].getElementsByTagName("streifennr")[0].firstChild.data)
+				var art = quer[i].getElementsByTagName("art")[0].getAttribute('luk')
+				var artober = quer[i].getElementsByTagName("artober")[0].getAttribute('luk')
+				var objektid = quer[i].getElementsByTagName("objektId")[0].firstChild.data
 			
 				if (!(vst in querschnitte[absId])) {
-					querschnitte[absId][vst] = {}
-					querschnitte[absId][vst]['L'] = {}
-					querschnitte[absId][vst]['R'] = {}
-					querschnitte[absId][vst]['M'] = {}
-					querschnitte[absId][vst]['vst'] = vst
-					querschnitte[absId][vst]['bst'] = bst
-					querschnitte[absId][vst]['geo'] = []
+					querschnitte[absId][vst] = {
+						'L': {},
+						'R': {},
+						'M': {},
+						'vst': vst,
+						'bst': bst,
+						'geo': []
+					}
 					gml = quer[i].getElementsByTagName("gml:coordinates")[0].firstChild.data;
 					var kp = gml.split(" ");
 
@@ -114,11 +121,11 @@ function readQuerschnitte(xmlhttp, absId) {
 				}
 
 				querschnitte[absId][vst][streifen][streifennr] = {
-					//'station': vst,
-					//'streifen': streifen, 
-					//'nr': streifennr,
 					'breite': breite,
-					'bisbreite':bisbreite,
+					'bisbreite': bisbreite,
+					'art': art,
+					'artober': artober,
+					'objektid': objektid,
 					'trenn': new ol.Feature({
 						geometry: null,
 						abschnittsid: absId,
@@ -132,7 +139,7 @@ function readQuerschnitte(xmlhttp, absId) {
 						station: vst,
 						streifen: streifen,
 						nr: streifennr
-					})
+					}),
 				}
 
 				v_quer.addFeature(querschnitte[absId][vst][streifen][streifennr]['flaeche']);
@@ -153,10 +160,6 @@ function readQuerschnitte(xmlhttp, absId) {
 
 function refreshQuerschnitte(absId) {
 	for (var key in querschnitte[absId]){
-		
-		//querschnitte[absId][key]['L'] = querschnitte[absId][key]['L'].sort(sortquerschnitte[absId])
-		//querschnitte[absId][key]['R'] = querschnitte[absId][key]['R'].sort(sortquerschnitte[absId])
-		
 		var von_m_summe = 0
 		var bis_m_summe = 0
 		for (var i in querschnitte[absId][key]['M']) {
@@ -248,7 +251,5 @@ function refreshQuerschnitte(absId) {
 
 			}
 		}
-		
-		
 	}
 }

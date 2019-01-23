@@ -158,6 +158,23 @@ select.on('select', function(e) {
 	logAuswahl(e.selected[0])
 });
 
+select_fl =  new ol.interaction.Select({layers: [l_quer]});
+map.addInteraction(select_fl)
+
+
+select_fl.on('select', function(e) {
+	if (e.selected.length == 0)
+		return
+	auswahl = e.selected[0]
+	var absid = auswahl.get('abschnittsid')
+	var streifen = auswahl.get('streifen')
+	var nr = auswahl.get('nr')
+	var station = auswahl.get('station')
+	select.getFeatures().clear()
+	select.getFeatures().push(querschnitte[absid][station][streifen][nr]['trenn'])
+	select_fl.getFeatures().clear()
+});
+
 var modify =  new ol.interaction.Modify({/*source: v_trenn, */insertVertexCondition: ol.events.condition.never, features: select.getFeatures()});
 map.addInteraction(modify)
 
@@ -218,6 +235,17 @@ function logAuswahl(auswahl) {
 	console.log(querschnitte[absid][station][streifen][nr])
 	
 	querschnitte[absid][station]['linie']
+	text = "<table>"
+	text += "<tr><td>Streifen:</td><td>"
+	text += streifen + nr + "</td></tr>"
+	text += "<tr><td>Art:</td><td>"
+	text += kt_art[querschnitte[absid][station][streifen][nr]['art']] + "</td></tr>"
+	text += "<tr><td>Art der Oberfl&auml;che:</td><td>"
+	text += kt_ober[querschnitte[absid][station][streifen][nr]['artober']] + "</td></tr>"
+	text += "</table>"
+	document.getElementById("info").innerHTML = text
+	
+	
 }
 
 
