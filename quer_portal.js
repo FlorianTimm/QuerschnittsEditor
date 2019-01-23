@@ -75,8 +75,8 @@ var l_achse = new ol.layer.Vector({
             color: 'rgba(255, 255, 255, 0.2)'
         }),
         stroke: new ol.style.Stroke({
-            color: '#00dd00',
-            width: 3.5
+            color: '#dd0000',
+            width: 3
         }),
         image: new ol.style.Circle({
             radius: 5,
@@ -132,10 +132,10 @@ var layers = [
 	dop,
 	//geobasis,
 	quer,
-	l_achse,
 	l_quer,
 	l_trenn,
-	l_station
+	l_station,
+	//l_achse,
 ];
 
 // Erzeugen der Map
@@ -148,16 +148,81 @@ var map = new ol.Map({
 	view: view
 });
 
-var select =  new ol.interaction.Select({layers: [l_trenn]});
+select =  new ol.interaction.Select({layers: [l_trenn]});
 map.addInteraction(select)
+
+
+select.on('select', function(e) {
+	if (e.selected.length == 0)
+		return
+	logAuswahl(e.selected[0])
+});
 
 var modify =  new ol.interaction.Modify({/*source: v_trenn, */insertVertexCondition: ol.events.condition.never, features: select.getFeatures()});
 map.addInteraction(modify)
 
+geo_vorher = null;
+modify.on('modifystart',function(e){
+	auswahl = e.features.getArray()[0]
+	geo_vorher = auswahl.getGeometry().clone()
+});
+
 modify.on('modifyend',function(e){
-console.log("feature id is",e.features.getArray()[0].getId());
+	console.log(e)
+	auswahl = e.features.getArray()[0]
+	
+	var absid = auswahl.get('abschnittsid')
+	var streifen = auswahl.get('streifen')
+	var nr = auswahl.get('nr')
+	var station = auswahl.get('station')
+	
+	var nachher = auswahl.getGeometry().getCoordinates()
+	var vorher = geo_vorher.getCoordinates()
+	
+	if (nachher[0][0] != vorher[0][0] || nachher[0][1] != vorher[0][1]) {
+		console.log("VST")
+		
+		var punkt = querschnitte[absid][station]['geo'][0]
+		var abst = v_len(v_diff(punkt, nachher[0]))
+		abst -= Math.abs(querschnitte[absid][station][streifen][nr]['abs_von1'])
+		if (abst < 0) {
+			abst = 0
+		}
+		abst = Math.round(abst*10)/10
+		querschnitte[absid][station][streifen][nr]['breite'] = abst
+		console.log(abst)
+	} else if (nachher[nachher.length-1][0] != vorher[vorher.length-1][0] || nachher[nachher.length-1][1] != vorher[vorher.length-1][1]) {
+		console.log("BST")
+		var punkt = querschnitte[absid][station]['geo'][querschnitte[absid][station]['geo'].length-1]
+		var abst = v_len(v_diff(punkt, nachher[nachher.length-1]))
+		abst -= Math.abs(querschnitte[absid][station][streifen][nr]['abs_bis1'])
+		if (abst < 0) {
+			abst = 0
+		}
+		abst = Math.round(abst*10)/10
+		querschnitte[absid][station][streifen][nr]['bisbreite'] = abst
+		console.log(abst)
+	}
+
+	refreshQuerschnitte(absid)
 });
 
 
-var snap =  new ol.interaction.Snap({source: v_trenn});
-map.addInteraction(snap)
+
+function logAuswahl(auswahl) {
+	var absid = auswahl.get('abschnittsid')
+	var streifen = auswahl.get('streifen')
+	var nr = auswahl.get('nr')
+	var station = auswahl.get('station')
+	console.log(station+streifen+nr)
+	console.log(querschnitte[absid][station][streifen][nr])
+	
+	querschnitte[absid][station]['linie']
+}
+
+
+var snap_trenn =  new ol.interaction.Snap({source: v_trenn, edge: false});
+map.addInteraction(snap_trenn)
+
+var snap_station =  new ol.interaction.Snap({source: v_station, pixelTolerance: 50, vertex: false});
+map.addInteraction(snap_station)

@@ -49,6 +49,7 @@ function drawGeometry(xmlhttp, vnk, nnk) {
 				v_achse.addFeature(feat);
 				console.log("ABSCHNITT_ID: " + abschnittid) 
 				getQuerschnitte(abschnittid, len_faktor)
+				map.getView().fit(v_achse.getExtent())
 			}
 		} else {
 			alert("Fehler "+xmlhttp.status+"\n"+xmlhttp.responseXML.getElementsByTagName("faultstring")[0].firstChild.data);
@@ -72,23 +73,14 @@ function getQuerschnitte(abschnittid, len_faktor) {
     xmlhttp.send();	
 }
 
-function sortQuerschnitte(a, b) {
-	if (a['nr'] > b['nr']) {
-		return 1
-	} else if (a['nr'] < b['nr']) {
-		return -1
-	}
-	return 0
-}
+var querschnitte = {}
 
-var quer = []
-
-function readQuerschnitte(xmlhttp, abschnittid) {
+function readQuerschnitte(xmlhttp, absId) {
 	if (xmlhttp.readyState == 4) {
 		if (xmlhttp.status == 200) {
-			var quer = xmlhttp.responseXML.getElementsByTagName("Dotquer")
+			querschnitte[absId] = {}
 			
-			querschnitte = {}
+			var quer = xmlhttp.responseXML.getElementsByTagName("Dotquer")
 			
 			for (var i = 0; i < quer.length; i++) {
 				
@@ -100,13 +92,14 @@ function readQuerschnitte(xmlhttp, abschnittid) {
 				var streifen = quer[i].getElementsByTagName("streifen")[0].innerHTML
 				var streifennr = Number(quer[i].getElementsByTagName("streifennr")[0].innerHTML)
 			
-				if (!(vst in querschnitte)) {
-					querschnitte[vst] = {}
-					querschnitte[vst]['L'] = []
-					querschnitte[vst]['R'] = []
-					querschnitte[vst]['vst'] = vst
-					querschnitte[vst]['bst'] = bst
-					querschnitte[vst]['geo'] = []
+				if (!(vst in querschnitte[absId])) {
+					querschnitte[absId][vst] = {}
+					querschnitte[absId][vst]['L'] = {}
+					querschnitte[absId][vst]['R'] = {}
+					querschnitte[absId][vst]['M'] = {}
+					querschnitte[absId][vst]['vst'] = vst
+					querschnitte[absId][vst]['bst'] = bst
+					querschnitte[absId][vst]['geo'] = []
 					gml = quer[i].getElementsByTagName("gml:coordinates")[0].firstChild.data;
 					var kp = gml.split(" ");
 
@@ -116,125 +109,146 @@ function readQuerschnitte(xmlhttp, abschnittid) {
 						var x = Number(k[0]);
 						var y = Number(k[1]);
 						if (x > 0 && y > 0)
-							querschnitte[vst]['geo'].push([x,y]);
+							querschnitte[absId][vst]['geo'].push([x,y]);
 					}
 				}
-				
-				var d = {'nr': streifennr, 'breite': breite, 'bisbreite':bisbreite}
-				if (streifen == 'L') {
-					querschnitte[vst]['L'].push(d)
-				} else if (streifen == 'R') {
-					querschnitte[vst]['R'].push(d)
-				} else {
-					d['breite'] = d['breite'] / 2
-					d['bisbreite'] = d['bisbreite'] / 2
-					querschnitte[vst]['R'].push(d)
-					querschnitte[vst]['L'].push(d)
+
+				querschnitte[absId][vst][streifen][streifennr] = {
+					//'station': vst,
+					//'streifen': streifen, 
+					//'nr': streifennr,
+					'breite': breite,
+					'bisbreite':bisbreite,
+					'trenn': new ol.Feature({
+						geometry: null,
+						abschnittsid: absId,
+						station: vst,
+						streifen: streifen,
+						nr: streifennr
+					}),
+					'flaeche': new ol.Feature({
+						geometry: null,
+						abschnittsid: absId,
+						station: vst,
+						streifen: streifen,
+						nr: streifennr
+					})
 				}
-			}
-			
-			for (var key in querschnitte){
-				
-				querschnitte[key]['L'] = querschnitte[key]['L'].sort(sortQuerschnitte)
-				querschnitte[key]['R'] = querschnitte[key]['R'].sort(sortQuerschnitte)
-				
-				var von_summe = 0
-				var bis_summe = 0
-				for (var i = 0; i < querschnitte[key]['L'].length; i++) {
-					querschnitte[key]['L'][i]['abs_von1'] = von_summe
-					querschnitte[key]['L'][i]['abs_bis1'] = bis_summe
-					von_summe -= querschnitte[key]['L'][i]['breite']
-					bis_summe -= querschnitte[key]['L'][i]['bisbreite']
-					querschnitte[key]['L'][i]['abs_von2'] = von_summe
-					querschnitte[key]['L'][i]['abs_bis2'] = bis_summe
-				}
-				
-				var von_summe = 0
-				var bis_summe = 0
-				for (var i = 0; i < querschnitte[key]['R'].length; i++) {
-					querschnitte[key]['R'][i]['abs_von1'] = von_summe
-					querschnitte[key]['R'][i]['abs_bis1'] = bis_summe
-					von_summe += querschnitte[key]['R'][i]['breite']
-					bis_summe += querschnitte[key]['R'][i]['bisbreite']
-					querschnitte[key]['R'][i]['abs_von2'] = von_summe
-					querschnitte[key]['R'][i]['abs_bis2'] = bis_summe
-				}
-				
-				var geo = querschnitte[key]['geo']
-				var vec = []
-				var seg = []
-				var anzahl = geo.length
-				if (anzahl >= 2) {
-					//console.log(v_einheit(v_lot(v_diff(geo[0], geo[1]))))
-					var first = v_einheit(v_lot(v_diff(geo[0], geo[1])))
-					vec.push(first)
-					for (var i = 1; i < anzahl - 1; i++) {
-						vec.push(v_einheit(v_sum(v_diff(geo[i-1], geo[i]), v_diff(geo[i+1], geo[i]))))						
-					}
-					vec.push(v_einheit(v_lot(v_diff(geo[anzahl-2], geo[anzahl-1]))))
-					
-					
-					var geom = new ol.geom.LineString([v_sum(geo[0], v_multi(first, 30)), v_sum(geo[0], v_multi(first, -30))]);
-					var feat = new ol.Feature({
-						geometry: geom
-					});
-					v_station.addFeature(feat);
-					
-					querschnitte[key]['vec'] = vec
-				}
-				
-				var len = l_len(geo)
-				seg.push(0)
-				var seg_len_add = 0
-				for (var i = 1; i < anzahl; i++) {
-					seg_len_add += v_len(v_diff(geo[i-1], geo[i]))
-					seg.push(seg_len_add/len)		
-					//console.log(seg_len_add/len)
-				}
-				
-				var links = querschnitte[key]['L']
-				links = links.concat(querschnitte[key]['R'])
+
+				v_quer.addFeature(querschnitte[absId][vst][streifen][streifennr]['flaeche']);
+				v_trenn.addFeature(querschnitte[absId][vst][streifen][streifennr]['trenn']);
 				
 				
-				for(var i = 0; i < links.length; i++) {
-					var streifen = links[i]
-					var g = [];
-					
-					var abst1 = streifen['abs_von1']
-					var diff1 = streifen['abs_bis1'] - streifen['abs_von1']
-					var abst2 = streifen['abs_von2']
-					var diff2 = streifen['abs_bis2'] - streifen['abs_von2']
-					
-					for (var j = 0; j < anzahl; j++) {
-						g.push(v_sum(geo[j], v_multi(vec[j], seg[j] * diff2 + abst2)));
-					}
-					var gt = new ol.geom.LineString(g);
-					var ft = new ol.Feature({
-						geometry: gt
-					});
-					v_trenn.addFeature(ft);
-					
-					for (var j = anzahl - 1; j >= 0 ; j--) {
-						g.push(v_sum(geo[j], v_multi(vec[j], seg[j] * diff1 + abst1)));
-					}
-					//console.log(seg)
-					g.push(g[0])
-					
-					var geom = new ol.geom.Polygon([g]);
-					var feat = new ol.Feature({
-						geometry: geom
-					});
-					v_quer.addFeature(feat);
-				}
-				
-				
-			}
-			
-			console.log(querschnitte);
+			}		
+			//console.log(querschnitte[absId]);
 			
 		} else {
 			alert("Fehler "+xmlhttp.status+"\n"+xmlhttp.responseXML.getElementsByTagName("faultstring")[0].firstChild.data);
 		}
-		map.getView().fit(v_achse.getExtent())
+		refreshQuerschnitte(absId)
+	}
+}
+
+
+
+function refreshQuerschnitte(absId) {
+	for (var key in querschnitte[absId]){
+		
+		//querschnitte[absId][key]['L'] = querschnitte[absId][key]['L'].sort(sortquerschnitte[absId])
+		//querschnitte[absId][key]['R'] = querschnitte[absId][key]['R'].sort(sortquerschnitte[absId])
+		
+		var von_m_summe = 0
+		var bis_m_summe = 0
+		for (var i in querschnitte[absId][key]['M']) {
+			querschnitte[absId][key]['M'][i]['abs_von1'] = querschnitte[absId][key]['M'][i]['breite'] + von_m_summe
+			querschnitte[absId][key]['M'][i]['abs_bis1'] = querschnitte[absId][key]['M'][i]['bisbreite'] + bis_m_summe
+			querschnitte[absId][key]['M'][i]['abs_von2'] = - querschnitte[absId][key]['M'][i]['abs_von1']
+			querschnitte[absId][key]['M'][i]['abs_bis2'] = - querschnitte[absId][key]['M'][i]['abs_bis1']
+			von_m_summe += 0.5 * querschnitte[absId][key]['M'][i]['breite']
+			bis_m_summe += 0.5 * querschnitte[absId][key]['M'][i]['bisbreite']
+		}
+		
+		var von_summe = -von_m_summe
+		var bis_summe = -bis_m_summe
+		for (var i in querschnitte[absId][key]['L']) {
+			querschnitte[absId][key]['L'][i]['abs_von1'] = von_summe
+			querschnitte[absId][key]['L'][i]['abs_bis1'] = bis_summe
+			von_summe -= querschnitte[absId][key]['L'][i]['breite']
+			bis_summe -= querschnitte[absId][key]['L'][i]['bisbreite']
+			querschnitte[absId][key]['L'][i]['abs_von2'] = von_summe
+			querschnitte[absId][key]['L'][i]['abs_bis2'] = bis_summe
+		}
+		
+		var von_summe = von_m_summe
+		var bis_summe = bis_m_summe
+		for (var i in querschnitte[absId][key]['R']) {
+			querschnitte[absId][key]['R'][i]['abs_von1'] = von_summe
+			querschnitte[absId][key]['R'][i]['abs_bis1'] = bis_summe
+			von_summe += querschnitte[absId][key]['R'][i]['breite']
+			bis_summe += querschnitte[absId][key]['R'][i]['bisbreite']
+			querschnitte[absId][key]['R'][i]['abs_von2'] = von_summe
+			querschnitte[absId][key]['R'][i]['abs_bis2'] = bis_summe
+		}
+		
+		var geo = querschnitte[absId][key]['geo']
+		var vec = []
+		var seg = []
+		var anzahl = geo.length
+		if (anzahl >= 2) {
+			//console.log(v_einheit(v_lot(v_diff(geo[0], geo[1]))))
+			var first = v_einheit(v_lot(v_diff(geo[0], geo[1])))
+			vec.push(first)
+			for (var i = 1; i < anzahl - 1; i++) {
+				vec.push(v_einheit(v_sum(v_diff(geo[i-1], geo[i]), v_diff(geo[i+1], geo[i]))))						
+			}
+			vec.push(v_einheit(v_lot(v_diff(geo[anzahl-2], geo[anzahl-1]))))
+			
+			
+			querschnitte[absId][key]['linie'] = new ol.geom.LineString([v_sum(geo[0], v_multi(first, 30)), v_sum(geo[0], v_multi(first, -30))]);
+			var feat = new ol.Feature({
+				geometry: querschnitte[absId][key]['linie'],
+				station: key
+			});
+			v_station.addFeature(feat);
+			
+			querschnitte[absId][key]['vec'] = vec
+		}
+		
+		var len = l_len(geo)
+		seg.push(0)
+		var seg_len_add = 0
+		for (var i = 1; i < anzahl; i++) {
+			seg_len_add += v_len(v_diff(geo[i-1], geo[i]))
+			seg.push(seg_len_add/len)		
+			//console.log(seg_len_add/len)
+		}
+		
+		for (var st in {'L':0,'M':0, 'R':0}) {
+			for(var i in querschnitte[absId][key][st]) {
+				var streifen = querschnitte[absId][key][st][i]
+				var g = [];
+				
+				var abst1 = streifen['abs_von1']
+				var diff1 = streifen['abs_bis1'] - streifen['abs_von1']
+				var abst2 = streifen['abs_von2']
+				var diff2 = streifen['abs_bis2'] - streifen['abs_von2']
+				
+				for (var j = 0; j < anzahl; j++) {
+					g.push(v_sum(geo[j], v_multi(vec[j], seg[j] * diff2 + abst2)));
+				}
+
+				querschnitte[absId][key][st][i]['trenn'].setGeometry(new ol.geom.LineString(g))
+
+				for (var j = anzahl - 1; j >= 0 ; j--) {
+					g.push(v_sum(geo[j], v_multi(vec[j], seg[j] * diff1 + abst1)));
+				}
+				//console.log(seg)
+				g.push(g[0])
+				querschnitte[absId][key][st][i]['flaeche'].setGeometry(new ol.geom.Polygon([g]))//setCoordinates([g])
+
+			}
+		}
+		
+		
 	}
 }
