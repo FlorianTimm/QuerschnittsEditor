@@ -9,57 +9,92 @@
     <link href="openlayers/ol.css" rel="stylesheet">
 	<link rel="icon" href="data:;base64,iVBORw0KGgo=">
 	<style>
-		html, body, #map {
+		html, body, #background {
+			z-index: -20;
 			height: 100%;
 			width: 100%;
 			margin: 0;
 			padding: 0;
 		}
+		#background {
+			position: fixed;
+			top: 0px;
+			right: 0px;
+			background-image: url('background.jpg');
+			filter: blur(5px);
+			background-repeat: no-repeat;
+			background-size: cover;
+			background-attachment: fixed;
+		}
 		form {
-			position: absolute;
-			left: 50px;
-			top: 10px;
+			z-index: 10;
+			margin:auto;
+			width: 400px;
+			background: rgba(255, 255, 255, 0.7);
+			padding: 30px;
+			padding-top: 60px;
+			text-align: center;
+			font-size: 20px;
+			font-family: sans-serif;
+		}
+		form * {
+			z-index: 20;
+			margin: 10px;
+			font-size: 17px;
+			font-family: sans-serif;
 		}
 		
-		#info {
-			position: absolute;
-			right: 20px;
-			top: 10px;
-			background: rgba(255,255,255,0.8);
-			padding: 5px;
-			width: 200px;
-			height: 150px;
+		#er_select {
+			width: 300px;
 		}
-		#info table {
+		
+		form table {
+			text-align: left;
+			vertical-align: top;
 			border-collapse: collapse;
+			width: 95%;
 		}
-		#info table, th, td {
+		
+		form table * {
+			vertical-align: top;
 			border: 1px solid black;
+		}
+		
+		h1 {
+			z-index: 5;
+			display: block;
+			position: absolute;
+			right: 50px;
+			bottom: 20px;
+			font-family: sans-serif;
+			font-size: 80px;
+			color: rgba(255,255,255,0.6);
+			filter: blur(2px);
+		}
+		h1 span {
+			font-size: 35px;
 		}
 	</style>
   </head>
-  <body>
-	<script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
-	<script src="openlayers/ol.js"></script>
-	<script src="openlayers/proj4.js"></script>
-	<script src="openlayers/25832.js"></script>
-	
-	<div id="map" class="map">
-	</div>
-	
-	<form name="abschnitt">
-		<input type="textfield" name="vnk" value="252500109" />
-		<input type="textfield" name="nnk" value="252500110" />
-		<input type="button" onclick="machen()" value="Laden" />
+  <body onload="loadER()">
+  
+	<form name="erg" method="GET" action="edit.htm">
+		Ereignisraum auswählen<br>
+		<select name="er" id="er_select" disabled="disabled" onchange="aenderung()">
+		<option id="platzhalter">Ereignisr&auml;ume werden geladen...</option>
+		</select><br>
+		<table>
+		<tr><td style="width: 50px">Datum</td><td id="datum"></td></tr>
+		<tr><td>Nummer</td><td id="nummer"></td></tr>
+		<tr><td>Kurzbez.</td><td id="kurzbez"></td></tr>
+		<tr><td style="height: 50px">Langbez.</td><td id="langbez"></td></tr>
+		<tr><td>Bearbeiter</td><td id="bearbeiter"></td></tr>
+		</table>
+		<input type="submit" value="Starten" />
 	</form>
-	
-	<div id = "info">
-	Rechts Abschnitt eingeben und auf Laden klicken
-	</div>
-	
-	<script src="quer_portal.js"></script>
-	<script src="quer_vektor.js"></script>
-	<script src="quer_art_ober.js"></script>
-	<script src="quer_darstellen.js"></script>
+	<h1><span>LGV</span>QuerschnittsEditor</h1>
+	<div id="background"></div>
+	<script src="quer_config.js"></script>
+	<script src="quer_er_auswahl.js"></script>
   </body>
 </html>

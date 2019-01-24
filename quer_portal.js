@@ -21,7 +21,7 @@ var view = new ol.View({
 var fhh = 'Freie und Hansestadt Hamburg | &copy 2018 LGV S2 Verkehrsdaten';
 
 // Basis-Layer
-var geobasis = new ol.layer.Tile({
+var wms_geobasis = new ol.layer.Tile({
 	title: "Geobasis",
 	visible: true,
 	source: new ol.source.TileWMS({
@@ -35,8 +35,8 @@ var geobasis = new ol.layer.Tile({
 		}
 	})
 });
-geobasis.setOpacity(0.7);
-var dop = new ol.layer.Tile({
+wms_geobasis.setOpacity(0.7);
+var wms_dop = new ol.layer.Tile({
 		name: 'LGV DOP10',
 		visible: true,
 		source: new ol.source.TileWMS({
@@ -49,22 +49,22 @@ var dop = new ol.layer.Tile({
 			attributions: [fhh]
 		})
 	})
-dop.setOpacity(0.7);
+wms_dop.setOpacity(0.7);
 
-var quer = new ol.layer.Tile({
-		name: "Querschnitte gruppiert",
-		opacity: 0.6,
-		source: new ol.source.TileWMS({
-			url: 'http://gv-srv-w00118:20031/deegree/services/wms?',
-			params: {
-				'LAYERS': 'querschnitte',
-				'STYLE': 'querschnitte_gruppiert',
-				'FORMAT': 'image/png'   
-			},
-			serverType: /** @type {ol.source.wms.ServerType} */ ('geoserver'),
-			attributions: [fhh]
-		})
+var wms_quer = new ol.layer.Tile({
+	name: "Querschnitte gruppiert",
+	opacity: 0.6,
+	source: new ol.source.TileWMS({
+		url: 'http://gv-srv-w00118:20031/deegree/services/wms?',
+		params: {
+			'LAYERS': 'querschnitte',
+			'STYLE': 'querschnitte_gruppiert',
+			'FORMAT': 'image/png'   
+		},
+		serverType: /** @type {ol.source.wms.ServerType} */ ('geoserver'),
+		attributions: [fhh]
 	})
+})
 
 var v_achse = new ol.source.Vector({features: []});
 
@@ -129,9 +129,9 @@ var l_station = new ol.layer.Vector({
 
 // Layerzusammenstellung
 var layers = [
-	dop,
-	//geobasis,
-	quer,
+	wms_dop,
+	//wms_geobasis,
+	wms_quer,
 	l_quer,
 	l_trenn,
 	l_station,
@@ -158,7 +158,13 @@ select.on('select', function(e) {
 	logAuswahl(e.selected[0])
 });
 
-select_fl =  new ol.interaction.Select({layers: [l_quer]});
+var style_select_fl = new ol.style.Style({
+	fill: new ol.style.Fill({
+		color: 'rgba(128, 128, 255, 0.2)'
+	})
+})
+
+select_fl =  new ol.interaction.Select({layers: [l_quer], style: style_select_fl});
 map.addInteraction(select_fl)
 
 
@@ -174,10 +180,10 @@ select_fl.on('select', function(e) {
 	a = querschnitte[absid][station][streifen][nr]['trenn']
 	select.getFeatures().push(a)
 	logAuswahl(a)
-	select_fl.getFeatures().clear()
+	//select_fl.getFeatures().clear()
 });
 
-var modify =  new ol.interaction.Modify({/*source: v_trenn, */insertVertexCondition: ol.events.condition.never, features: select.getFeatures()});
+var modify =  new ol.interaction.Modify({deleteCondition: ol.events.condition.never, insertVertexCondition: ol.events.condition.never, features: select.getFeatures()});
 map.addInteraction(modify)
 
 geo_vorher = null;
