@@ -1,0 +1,65 @@
+html, body, #background {
+	z-index: -20;
+	height: 100%;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+}
+#background {
+	position: fixed;
+	top: 0px;
+	right: 0px;
+	background-image: url('../img/background.jpg');
+	filter: blur(5px);
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-attachment: fixed;
+}
+form {
+	z-index: 10;
+	margin:auto;
+	width: 400px;
+	background: rgba(255, 255, 255, 0.7);
+	padding: 30px;
+	padding-top: 60px;
+	text-align: center;
+	font-size: 20px;
+	font-family: sans-serif;
+}
+form * {
+	z-index: 20;
+	margin: 10px;
+	font-size: 17px;
+	font-family: sans-serif;
+}
+
+#er_select {
+	width: 300px;
+}
+
+form table {
+	text-align: left;
+	vertical-align: top;
+	border-collapse: collapse;
+	width: 95%;
+}
+
+form table * {
+	vertical-align: top;
+	border: 1px solid black;
+}
+
+h1 {
+	z-index: 5;
+	display: block;
+	position: absolute;
+	right: 50px;
+	bottom: 20px;
+	font-family: sans-serif;
+	font-size: 80px;
+	color: rgba(255,255,255,0.6);
+	filter: blur(2px);
+}
+h1 span {
+	font-size: 35px;
+}

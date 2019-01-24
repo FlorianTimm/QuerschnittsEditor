@@ -1,0 +1,27 @@
+html, body, #map {
+	height: 100%;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+}
+form {
+	position: absolute;
+	left: 50px;
+	top: 10px;
+}
+
+#info {
+	position: absolute;
+	right: 20px;
+	top: 10px;
+	background: rgba(255,255,255,0.8);
+	padding: 5px;
+	width: 200px;
+	height: 150px;
+}
+#info table {
+	border-collapse: collapse;
+}
+#info table, th, td {
+	border: 1px solid black;
+} 
