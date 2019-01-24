@@ -1,23 +1,16 @@
 
 function machen() {
-	vnk = document.forms.abschnitt.vnk.value
-	nnk = document.forms.abschnitt.nnk.value
-	console.log(vnk)
-	loadGeometry(vnk, nnk)
+	getQuerschnitte()
 }
 
-function loadGeometry(vnk, nnk) {
-	console.log("loadGeometry("+vnk+","+nnk+")")
+function loadGeometry(abschnittid) {
+	console.log(abschnittid)
 	var xmlhttp = new XMLHttpRequest();
+	
+	xmlhttp.open('GET', 'proxy.jsp?Service=WFS&Request=GetFeature&TypeName=VI_STRASSENNETZ&Filter=<Filter>' + 
+	'<PropertyIsEqualTo><PropertyName>ABSCHNITT_ID</PropertyName><Literal>' + abschnittid + '</Literal></PropertyIsEqualTo>' + 
+	'</Filter>', true);
 
-	if (vnk.length==9 && nnk.length == 10) {
-		vnk = vnk+"O";
-	}
-
-	xmlhttp.open('GET', 'proxy.jsp?Service=WFS&Request=GetFeature&TypeName=VI_STRASSENNETZ&Filter=<Filter><And>' + 
-	'<PropertyIsEqualTo><PropertyName>VNK</PropertyName><Literal>'+vnk+'</Literal></PropertyIsEqualTo>' + 
-	'<PropertyIsEqualTo><PropertyName>NNK</PropertyName><Literal>'+nnk+'</Literal></PropertyIsEqualTo>' + 
-	'</And></Filter>', true);
 	xmlhttp.onreadystatechange = function () {
 		drawGeometry(xmlhttp);
     }
@@ -29,10 +22,15 @@ function drawGeometry(xmlhttp) {
 	console.log("drawGeometry()")
 	if (xmlhttp.readyState == 4) {
 		if (xmlhttp.status == 200) {
-			if (xmlhttp.responseXML.getElementsByTagName("gml:coordinates").length > 0) {
-				var gml = xmlhttp.responseXML.getElementsByTagName("gml:coordinates")[0].firstChild.data;
-				var len = Number(xmlhttp.responseXML.getElementsByTagName("LEN")[0].firstChild.data);
-				var abschnittid = xmlhttp.responseXML.getElementsByTagName("ABSCHNITT_ID")[0].firstChild.data;
+			var netz = xmlhttp.responseXML.getElementsByTagName("VI_STRASSENNETZ")
+			
+			for (var i = 0; i < netz.length; i++) {		
+				var abschnitt = netz[i];
+				var gml = abschnitt.getElementsByTagName("gml:coordinates")[0].firstChild.data;
+				var len = Number(abschnitt.getElementsByTagName("LEN")[0].firstChild.data);
+				var abschnittid = abschnitt.getElementsByTagName("ABSCHNITT_ID")[0].firstChild.data;
+				var vnk = abschnitt.getElementsByTagName("VNK")[0].firstChild.data;
+				var nnk = abschnitt.getElementsByTagName("NNK")[0].firstChild.data;
 				var kp = gml.split(" ");
 				var laenge=0;
 				var ak = [];
@@ -46,31 +44,28 @@ function drawGeometry(xmlhttp) {
 				var len_faktor = l_len(ak) / len;
 				var geom = new ol.geom.LineString(ak);
 				var feat = new ol.Feature({
-					geometry: geom
+					geometry: geom,
+					abschnittid: abschnittid,
+					len: len,
+					vnk: vnk,
+					nnk: nnk
 				});
 				v_achse.addFeature(feat);
 				console.log("ABSCHNITT_ID: " + abschnittid) 
-				getQuerschnitte(abschnittid, len_faktor)
-				map.getView().fit(v_achse.getExtent())
 			}
 		} else {
 			alert("Fehler "+xmlhttp.status+"\n"+xmlhttp.responseXML.getElementsByTagName("faultstring")[0].firstChild.data);
 		}
 	}
 }
+var ereignisraum = (new URLSearchParams(window.location.search)).get('er')
 
-function getQuerschnitte(abschnittid, len_faktor) {
-	console.log("getQuerschnitte("+abschnittid+","+len_faktor +")")
+function getQuerschnitte() {
 	var xmlhttp = new XMLHttpRequest();
-
-	if (vnk.length==9 && nnk.length == 10) {
-		vnk = vnk+"O";
-	}
-
-	xmlhttp.open('GET', 'proxy.jsp?Service=WFS&Request=GetFeature&TypeName=Dotquer&Filter=<Filter>'+
-	'<PropertyIsEqualTo><PropertyName>abschnittId</PropertyName><Literal>'+abschnittid+'</Literal></PropertyIsEqualTo></Filter>', true);
+	xmlhttp.open('GET', 'proxy.jsp?Service=WFS&Request=GetFeature&TypeName=Dotquer&Filter=<Filter>' + 
+	'<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName><Literal>'+ ereignisraum +'</Literal></PropertyIsEqualTo></Filter>', true);
 	xmlhttp.onreadystatechange = function () {
-		readQuerschnitte(xmlhttp, abschnittid);
+		readQuerschnitte(xmlhttp);
     }
     xmlhttp.setRequestHeader('Content-Type', 'text/xml');
     xmlhttp.send();	
@@ -81,13 +76,11 @@ var querschnitte = {}
 function readQuerschnitte(xmlhttp, absId) {
 	if (xmlhttp.readyState == 4) {
 		if (xmlhttp.status == 200) {
-			querschnitte[absId] = {}
-			
 			var quer = xmlhttp.responseXML.getElementsByTagName("Dotquer")
 			
 			for (var i = 0; i < quer.length; i++) {
 				
-				
+				var absId = quer[i].getElementsByTagName("abschnittId")[0].firstChild.data
 				var vst = Number(quer[i].getElementsByTagName("vst")[0].firstChild.data)
 				var bst = Number(quer[i].getElementsByTagName("bst")[0].firstChild.data)
 				var breite = Number(quer[i].getElementsByTagName("breite")[0].firstChild.data)/100.
@@ -97,7 +90,11 @@ function readQuerschnitte(xmlhttp, absId) {
 				var art = quer[i].getElementsByTagName("art")[0].getAttribute('luk')
 				var artober = quer[i].getElementsByTagName("artober")[0].getAttribute('luk')
 				var objektid = quer[i].getElementsByTagName("objektId")[0].firstChild.data
-			
+				
+				if (!(absId in querschnitte)) {
+					querschnitte[absId] = {}
+				}
+				
 				if (!(vst in querschnitte[absId])) {
 					querschnitte[absId][vst] = {
 						'L': {},
@@ -149,10 +146,17 @@ function readQuerschnitte(xmlhttp, absId) {
 			}		
 			//console.log(querschnitte[absId]);
 			
+			for (var absId in querschnitte) {
+				refreshQuerschnitte(absId)
+				loadGeometry(absId)
+			}
+			
+			map.getView().fit(v_quer.getExtent())
+			
 		} else {
 			alert("Fehler "+xmlhttp.status+"\n"+xmlhttp.responseXML.getElementsByTagName("faultstring")[0].firstChild.data);
 		}
-		refreshQuerschnitte(absId)
+		
 	}
 }
 

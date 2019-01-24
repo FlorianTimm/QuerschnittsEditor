@@ -7,12 +7,12 @@ var extent = [510000.0, 5850000.0, 625000.4, 6000000.0];
 
 // Ansicht definieren
 var view = new ol.View({
-    projection: 'EPSG:25832',
-    center: ol.proj.transform([10.0045,53.4975], 'EPSG:4326', 'EPSG:25832'),
+    projection: EPSG_CODE,
+    center: ol.proj.transform([10.0045,53.4975], 'EPSG:4326', EPSG_CODE),
     zoom: 17,
     minZoom: 11,
 	maxZoom: 22,
-    extent: [ 548000,5916500,588500,5955000],
+    extent: ol.proj.transform([ 548000,5916500,588500,5955000], 'EPSG:4326', EPSG_CODE),
 });
 
 ////////////////////////////////////////////////////////////////////////////  Layer
@@ -135,7 +135,7 @@ var layers = [
 	l_quer,
 	l_trenn,
 	l_station,
-	//l_achse,
+	l_achse,
 ];
 
 // Erzeugen der Map
