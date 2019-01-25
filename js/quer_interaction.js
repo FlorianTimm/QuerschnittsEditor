@@ -7,7 +7,13 @@ var select, // TrennLinienSelect
 
 
 select = new ol.interaction.Select({
-  layers: [l_trenn]
+  layers: [l_trenn],
+  style: new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: 'rgba(255, 0, 0, 0.5)',
+      width: 3
+    })
+  })
 });
 map.addInteraction(select)
 
@@ -15,14 +21,14 @@ map.addInteraction(select)
 select.on('select', function(e) {
   if (e.selected.length == 0)
     return
-  logAuswahl(e.selected[0])
+  logAuswahl()
 });
 
 select_fl = new ol.interaction.Select({
   layers: [l_quer],
   style: new ol.style.Style({
     fill: new ol.style.Fill({
-      color: 'rgba(128, 128, 255, 0.2)'
+      color: 'rgba(255, 0, 0, 0.3)'
     })
   })
 });
@@ -40,7 +46,7 @@ select_fl.on('select', function(e) {
   select.getFeatures().clear()
   a = querschnitte[absid][station][streifen][nr]['trenn']
   select.getFeatures().push(a)
-  logAuswahl(a)
+  logAuswahl()
   //select_fl.getFeatures().clear()
 });
 
@@ -90,13 +96,16 @@ modify.on('modifyend', function(e) {
 
   abst = Math.round(abst * 10) / 10
   querschnitte[absid][station][streifen][nr][zuaendern] = abst
-
+  logAuswahl()
   refreshQuerschnitte(absid)
 });
 
 
 
-function logAuswahl(auswahl) {
+function logAuswahl() {
+  var selection = select.getFeatures();
+  if (select.getFeatures().getLength() <= 0) return;
+  var auswahl = selection.item(0);
   var absid = auswahl.get('abschnittsid')
   var streifen = auswahl.get('streifen')
   var nr = auswahl.get('nr')
@@ -106,12 +115,22 @@ function logAuswahl(auswahl) {
 
   querschnitte[absid][station]['linie']
   text = "<table>"
+  text += "<tr><td>VNK:</td><td>"
+  text += abschnitte[absid].get('vnk') + "</td></tr>"
+  text += "<tr><td>VNK:</td><td>"
+  text += abschnitte[absid].get('nnk') + "</td></tr>"
+  text += "<tr><td>Station</td><td>"
+  text += querschnitte[absid][station]['vst'] + " - "
+  text += querschnitte[absid][station]['bst'] + "</td></tr>"
   text += "<tr><td>Streifen:</td><td>"
-  text += streifen + nr + "</td></tr>"
+  text += streifen + " " + nr + "</td></tr>"
   text += "<tr><td>Art:</td><td>"
   text += kt_art[querschnitte[absid][station][streifen][nr]['art']] + "</td></tr>"
   text += "<tr><td>Art der Oberfl&auml;che:</td><td>"
   text += kt_ober[querschnitte[absid][station][streifen][nr]['artober']] + "</td></tr>"
+  text += "<tr><td>Breite:</td><td>"
+  text += querschnitte[absid][station][streifen][nr]['breite'].toFixed(2) + " - "
+  text += querschnitte[absid][station][streifen][nr]['bisbreite'].toFixed(2) + "</td></tr>"
   text += "</table>"
   document.getElementById("info").innerHTML = text
 

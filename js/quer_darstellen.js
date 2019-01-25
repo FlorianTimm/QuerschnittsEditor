@@ -1,6 +1,7 @@
-var ereignisraum = (new URLSearchParams(window.location.search)).get('er')
+var ereignisraum = (new URLSearchParams(window.location.search)).get('er');
 
-var querschnitte = {}
+var querschnitte = {};
+var abschnitte = {};
 
 function loadGeometry(abschnittid) {
   var xmlhttp = new XMLHttpRequest();
@@ -18,8 +19,8 @@ function loadGeometry(abschnittid) {
 
 function drawGeometry(xmlhttp) {
   console.log("drawGeometry()")
-  if (xmlhttp.readyState == 4) return;
-  if (xmlhttp.status == 200) return;
+  if (xmlhttp.readyState != 4) return;
+  if (xmlhttp.status != 200) return;
   
   var netz = xmlhttp.responseXML.getElementsByTagName("VI_STRASSENNETZ")
 
@@ -28,12 +29,12 @@ function drawGeometry(xmlhttp) {
     var gml = abschnitt.getElementsByTagName("gml:coordinates")[0].firstChild.data;
     var len = Number(abschnitt.getElementsByTagName("LEN")[0].firstChild.data);
     var abschnittid = abschnitt.getElementsByTagName("ABSCHNITT_ID")[0].firstChild.data;
-    var vnk = abschnitt.getElementsByTagName("VNK")[0].firstChild.data;
-    var nnk = abschnitt.getElementsByTagName("NNK")[0].firstChild.data;
+    var vnk = abschnitt.getElementsByTagName("VNP")[0].firstChild.data;
+    var nnk = abschnitt.getElementsByTagName("NNP")[0].firstChild.data;
     var kp = gml.split(" ");
     var laenge = 0;
     var ak = [];
-  
+	
     for (var i = 0; i < kp.length; i++) {
       var k = kp[i].split(",")
       var x = Number(k[0]);
@@ -42,14 +43,16 @@ function drawGeometry(xmlhttp) {
     }
     var len_faktor = l_len(ak) / len;
     var geom = new ol.geom.LineString(ak);
-    var feat = new ol.Feature({
+    abschnitte[abschnittid] = new ol.Feature({
       geometry: geom,
       abschnittid: abschnittid,
       len: len,
       vnk: vnk,
       nnk: nnk
-    });
-    v_achse.addFeature(feat);
+    });	
+    v_achse.addFeature(abschnitte[abschnittid]);
+	
+	
     console.log("ABSCHNITT_ID: " + abschnittid)
   }
 }
@@ -67,14 +70,15 @@ function getQuerschnitte() {
 
 
 function readQuerschnitte(xmlhttp, absId) {
-  if (xmlhttp.readyState == 4) return;
-  if (xmlhttp.status == 200) return;
+  if (xmlhttp.readyState != 4) return;
+  if (xmlhttp.status != 200) return;
 
   var quer = xmlhttp.responseXML.getElementsByTagName("Dotquer")
   
   for (var i = 0; i < quer.length; i++) {
   
     var absId = quer[i].getElementsByTagName("abschnittId")[0].firstChild.data
+
     var vst = Number(quer[i].getElementsByTagName("vst")[0].firstChild.data)
     var bst = Number(quer[i].getElementsByTagName("bst")[0].firstChild.data)
     var breite = Number(quer[i].getElementsByTagName("breite")[0].firstChild.data) / 100.
@@ -129,7 +133,8 @@ function readQuerschnitte(xmlhttp, absId) {
         abschnittsid: absId,
         station: vst,
         streifen: streifen,
-        nr: streifennr
+        nr: streifennr,
+		art: art
       }),
     }
   

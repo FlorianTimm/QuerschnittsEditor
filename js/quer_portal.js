@@ -38,7 +38,8 @@ var wms_geobasis = new ol.layer.Tile({
 wms_geobasis.setOpacity(0.7);
 var wms_dop = new ol.layer.Tile({
 		name: 'LGV DOP10',
-		visible: true,
+		//visible: false,
+		opacity: 0.7,
 		source: new ol.source.TileWMS({
 			url: 'http://geodienste.hamburg.de/HH_WMS_DOP10',
 			params: {
@@ -49,10 +50,10 @@ var wms_dop = new ol.layer.Tile({
 			attributions: [fhh]
 		})
 	})
-//wms_dop.setOpacity(0.7);
 
 var wms_quer = new ol.layer.Tile({
 	name: "Querschnitte gruppiert",
+	visible: false,
 	opacity: 0.6,
 	source: new ol.source.TileWMS({
 		url: 'http://gv-srv-w00118:20031/deegree/services/wms?',
