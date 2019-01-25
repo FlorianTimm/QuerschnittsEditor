@@ -53,7 +53,7 @@ var wms_dop = new ol.layer.Tile({
 
 var wms_quer = new ol.layer.Tile({
 	name: "Querschnitte gruppiert",
-	visible: false,
+	//visible: false,
 	opacity: 0.6,
 	source: new ol.source.TileWMS({
 		url: 'http://gv-srv-w00118:20031/deegree/services/wms?',

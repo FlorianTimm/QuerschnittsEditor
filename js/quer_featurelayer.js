@@ -13,7 +13,7 @@ function fill_style (color) {
 
 var l_quer = new ol.layer.Vector({
   source: v_quer,
-  opacity: 0.6,
+  opacity: 0.36,
   style: function(feature, resolution) {
     var art = Number(feature.get('art'));
 	if ((art >= 100 && art <=119) || (art >= 122 && art <=161) || (art >= 163 && art <=179) || art == 312) return fill_style('#444444');	// Fahrstreifen
@@ -41,6 +41,13 @@ var l_quer = new ol.layer.Vector({
 map.addLayer(l_quer);
 
 
+function quer_transp() {
+	var wert = document.forms.abschnitt.quer_trans.value / 100;
+	l_quer.setOpacity(wert*wert)
+	l_trenn.setOpacity(wert)
+	l_achse.setOpacity(wert)
+	l_station.setOpacity(wert)
+}
 
 
 
@@ -50,6 +57,7 @@ var v_trenn = new ol.source.Vector({
 });
 var l_trenn = new ol.layer.Vector({
   source: v_trenn,
+  opacity: 0.6,
   style: new ol.style.Style({
     stroke: new ol.style.Stroke({
       color: '#00dd00',
@@ -67,6 +75,7 @@ var v_station = new ol.source.Vector({
 
 var l_station = new ol.layer.Vector({
   source: v_station,
+  opacity: 0.6,
   style: new ol.style.Style({
     stroke: new ol.style.Stroke({
       color: '#000000',
@@ -84,6 +93,7 @@ var v_achse = new ol.source.Vector({
 
 var l_achse = new ol.layer.Vector({
   source: v_achse,
+  opacity: 0.6,
   style: new ol.style.Style({
     stroke: new ol.style.Stroke({
       color: '#dd0000',

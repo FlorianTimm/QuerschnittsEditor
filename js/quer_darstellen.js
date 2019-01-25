@@ -198,10 +198,25 @@ function refreshQuerschnitte(absId) {
       //console.log(v_einheit(v_lot(v_diff(geo[0], geo[1]))))
       var first = v_einheit(v_lot(v_diff(geo[0], geo[1])))
       vec.push(first)
+	  console.log("first")
+	  console.log(first)
       for (var i = 1; i < anzahl - 1; i++) {
-        vec.push(v_einheit(v_sum(v_diff(geo[i - 1], geo[i]), v_diff(geo[i + 1], geo[i]))))
+		//vec.push(first)
+		console.log(i)
+        console.log(v_einheit(v_lot(geo[i - 1], geo[i])))
+		console.log(v_einheit(v_lot(geo[i], geo[i + 1])))
+		vec.push(v_multi(
+			v_einheit(
+				v_sum(
+					v_einheit(v_lot(geo[i - 1], geo[i])), 
+					v_einheit(v_lot(geo[i], geo[i + 1]))
+				)
+			),-1)
+		);
       }
       vec.push(v_einheit(v_lot(v_diff(geo[anzahl - 2], geo[anzahl - 1]))))
+	  console.log("last")
+	  console.log(v_einheit(v_lot(v_diff(geo[anzahl - 2], geo[anzahl - 1]))))
 
 
       querschnitte[absId][key]['linie'] = new ol.geom.LineString([v_sum(geo[0], v_multi(first, 30)), v_sum(geo[0], v_multi(first, -30))]);

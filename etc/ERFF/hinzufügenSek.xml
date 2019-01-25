@@ -1,0 +1,23 @@
+<soapenv:Envelope 
+	xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+	xmlns:pub="http://ttsib.novasib.de/PublicServices" 
+	xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">
+	<soapenv:Header/>
+	<soapenv:Body>
+		<pub:expandProjektAbsObj>
+			<projekt>
+				<int:ProjektNr>201902000000073</int:ProjektNr>
+			</projekt>
+			<abschnitte>
+				<int:vonKartenblatt>2525</int:vonKartenblatt>
+				<int:vonNkLfd>110</int:vonNkLfd>
+				<int:nachKartenblatt>2425</int:nachKartenblatt>
+				<int:nachNkLfd>10</int:nachNkLfd>
+			</abschnitte>
+			<objektKlassen>
+				<int:objektKlasse>Dotquer</int:objektKlasse>
+				<int:objektKlasse>Otschicht</int:objektKlasse>
+			</objektKlassen>
+		</pub:expandProjektAbsObj>
+	</soapenv:Body>
+</soapenv:Envelope>

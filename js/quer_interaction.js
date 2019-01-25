@@ -96,6 +96,10 @@ modify.on('modifyend', function(e) {
 
   abst = Math.round(abst * 10) / 10
   querschnitte[absid][station][streifen][nr][zuaendern] = abst
+  
+  
+  edit_breite(ereignisraum, querschnitte[absid][station][streifen][nr]['objektid'], querschnitte[absid][station][streifen][nr]['breite'], querschnitte[absid][station][streifen][nr]['bisbreite'])
+  
   logAuswahl()
   refreshQuerschnitte(absid)
 });
@@ -110,31 +114,17 @@ function logAuswahl() {
   var streifen = auswahl.get('streifen')
   var nr = auswahl.get('nr')
   var station = auswahl.get('station')
-  console.log(station + streifen + nr)
-  console.log(querschnitte[absid][station][streifen][nr])
 
-  querschnitte[absid][station]['linie']
-  text = "<table>"
-  text += "<tr><td>VNK:</td><td>"
-  text += abschnitte[absid].get('vnk') + "</td></tr>"
-  text += "<tr><td>VNK:</td><td>"
-  text += abschnitte[absid].get('nnk') + "</td></tr>"
-  text += "<tr><td>Station</td><td>"
-  text += querschnitte[absid][station]['vst'] + " - "
-  text += querschnitte[absid][station]['bst'] + "</td></tr>"
-  text += "<tr><td>Streifen:</td><td>"
-  text += streifen + " " + nr + "</td></tr>"
-  text += "<tr><td>Art:</td><td>"
-  text += kt_art[querschnitte[absid][station][streifen][nr]['art']] + "</td></tr>"
-  text += "<tr><td>Art der Oberfl&auml;che:</td><td>"
-  text += kt_ober[querschnitte[absid][station][streifen][nr]['artober']] + "</td></tr>"
-  text += "<tr><td>Breite:</td><td>"
-  text += querschnitte[absid][station][streifen][nr]['breite'].toFixed(2) + " - "
-  text += querschnitte[absid][station][streifen][nr]['bisbreite'].toFixed(2) + "</td></tr>"
-  text += "</table>"
-  document.getElementById("info").innerHTML = text
-
-
+  document.getElementById("info_vnk").innerHTML = abschnitte[absid].get('vnk');
+  document.getElementById("info_nnk").innerHTML  = abschnitte[absid].get('nnk');
+  document.getElementById("info_station").innerHTML = querschnitte[absid][station]['vst'] + " - " + querschnitte[absid][station]['bst'];
+  document.getElementById("info_streifen").innerHTML = streifen + " " + nr;
+  
+  document.getElementById("info_art").value = querschnitte[absid][station][streifen][nr]['art'];
+  document.getElementById("info_ober").value = querschnitte[absid][station][streifen][nr]['artober'];
+  
+  document.getElementById("info_breite").value = querschnitte[absid][station][streifen][nr]['breite'].toFixed(2);
+  document.getElementById("info_bisbreite").value = querschnitte[absid][station][streifen][nr]['bisbreite'].toFixed(2);
 }
 
 

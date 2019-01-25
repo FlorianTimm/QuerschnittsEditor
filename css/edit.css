@@ -4,13 +4,14 @@ html, body, #map {
 	margin: 0;
 	padding: 0;
 }
-form {
+#abschnitt {
 	position: absolute;
 	left: 50px;
 	top: 10px;
 }
 
 #info {
+	display: block;
 	position: absolute;
 	right: 20px;
 	top: 10px;
@@ -18,9 +19,28 @@ form {
 	padding: 5px;
 	width: 200px;
 }
+
+#info input, #info select {
+	width: 95%;
+}
+
 #info table {
 	border-collapse: collapse;
 }
 #info table, th, td {
 	border: 1px solid black;
 } 
+
+
+#nachricht {
+	position: absolute;
+	top: 50px;
+	left: 40%;
+	background-color: rgba(255,255,255,0.8);
+	padding: 20px;
+	text-align: center;
+	vertical-align: center;
+	display: none;
+	font-size: 18px;
+	font-family: sans-serif;
+}
