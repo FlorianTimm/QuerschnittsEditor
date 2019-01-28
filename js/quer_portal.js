@@ -11,7 +11,7 @@ var view = new ol.View({
     center: ol.proj.transform([10.0045,53.4975], 'EPSG:4326', EPSG_CODE),
     zoom: 17,
     minZoom: 11,
-	maxZoom: 22,
+	maxZoom: 24,
     extent: ol.proj.transform([ 548000,5916500,588500,5955000], 'EPSG:4326', EPSG_CODE),
 });
 

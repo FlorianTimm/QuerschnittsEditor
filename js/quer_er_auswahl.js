@@ -2,7 +2,7 @@
 
 function loadER() {
 	var xmlhttp = new XMLHttpRequest();
-	xmlhttp.open('GET', 'proxy.jsp?Service=WFS&Request=GetFeature&TypeName=Projekt&Filter=<Filter><And><PropertyIsEqualTo><PropertyName>status</PropertyName><Literal>1</Literal></PropertyIsEqualTo><PropertyIsEqualTo><PropertyName>typ</PropertyName><Literal>D</Literal></PropertyIsEqualTo></And></Filter>', true);
+	xmlhttp.open('GET', 'proxy.jsp?Service=WFS&Request=GetFeature&TypeName=Projekt&Filter=' + encodeURIComponent('<Filter><And><PropertyIsEqualTo><PropertyName>status</PropertyName><Literal>1</Literal></PropertyIsEqualTo><PropertyIsEqualTo><PropertyName>typ</PropertyName><Literal>D</Literal></PropertyIsEqualTo></And></Filter>'), true);
 	xmlhttp.onreadystatechange = function () {
 		readER(xmlhttp);
     }
@@ -17,7 +17,7 @@ function readER(xmlhttp) {
 	if (xmlhttp.readyState == 4) {
 		if (xmlhttp.status == 200) {
 			var proj = xmlhttp.responseXML.getElementsByTagName("Projekt")
-			
+			select.innerHTML = ""
 			
 			for (var i = 0; i < proj.length; i++) {
 				
@@ -50,7 +50,7 @@ function readER(xmlhttp) {
 				o.appendChild(t)				
 				select.appendChild(o)
 			}
-			document.getElementById("platzhalter").remove();
+			//document.getElementById("platzhalter").remove();
 			select.disabled = false
 			aenderung()
 		} else {

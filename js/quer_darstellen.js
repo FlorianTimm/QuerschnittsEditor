@@ -6,9 +6,9 @@ var abschnitte = {};
 function loadGeometry(abschnittid) {
   var xmlhttp = new XMLHttpRequest();
 
-  xmlhttp.open('GET', 'proxy.jsp?Service=WFS&Request=GetFeature&TypeName=VI_STRASSENNETZ&Filter=<Filter>' +
+  xmlhttp.open('GET', 'proxy.jsp?Service=WFS&Request=GetFeature&TypeName=VI_STRASSENNETZ&Filter=' + encodeURIComponent('<Filter>' +
     '<PropertyIsEqualTo><PropertyName>ABSCHNITT_ID</PropertyName><Literal>' + abschnittid + '</Literal></PropertyIsEqualTo>' +
-    '</Filter>', true);
+    '</Filter>'), true);
 
   xmlhttp.onreadystatechange = function() {
     drawGeometry(xmlhttp);
@@ -59,8 +59,8 @@ function drawGeometry(xmlhttp) {
 
 function getQuerschnitte() {
   var xmlhttp = new XMLHttpRequest();
-  xmlhttp.open('GET', 'proxy.jsp?Service=WFS&Request=GetFeature&TypeName=Dotquer&Filter=<Filter>' +
-    '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName><Literal>' + ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', true);
+  xmlhttp.open('GET', 'proxy.jsp?Service=WFS&Request=GetFeature&TypeName=Dotquer&Filter=' + encodeURIComponent('<Filter>' +
+    '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName><Literal>' + ereignisraum + '</Literal></PropertyIsEqualTo></Filter>'), true);
   xmlhttp.onreadystatechange = function() {
     readQuerschnitte(xmlhttp);
   }
