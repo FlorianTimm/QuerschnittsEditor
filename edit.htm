@@ -24,46 +24,70 @@
 				<!--<input type="textfield" name="vnk" value="252500109" />
 				<input type="textfield" name="nnk" value="252500110" />
 		<		input type="button" onclick="getQuerschnitte()" value="Laden" />-->
-				<input type="button" onclick="addQuerschnitt()" value="Querschnitt hinzufügen" />
+				<!--<input type="button" onclick="addQuerschnitt()" value="Querschnitt hinzufügen" />-->
 				<input type="range" name="quer_trans" value="60" onchange="quer_transp()">
 				</form>
 
-				<form id = "info" name="info">
-					<table>
-						<tr>
-							<td>VNK:</td>
-							<td id="info_vnk"></td>
-						</tr>
-						<tr>
-							<td>NNK:</td>
-							<td id="info_nnk"></td>
-						</tr>
-						<tr>
-							<td>Station</td>
-							<td id="info_station"></td>
-						</tr>
-						<tr>
-							<td>Streifen:</td>
-							<td id="info_streifen"></td>
-						</tr>
-						<tr>
-							<td>Art:</td>
-							<td><select id="info_art" onchange="updateInfo()"></select></td>
-						</tr>
-						<tr>
-							<td>Art der Oberfl&auml;che:</td>
-							<td><select id="info_ober" onchange="updateInfo()"></select></td>
-						</tr>
-						<tr>
-							<td>Von Breite:</td>
-							<td><input type="number" id="info_breite" onchange="updateInfo()" min="0" max="20" step="0.50" /></td>
-						</tr>
-						<tr>
-							<td>Bis Breite:</td>
-							<td><input type="number" id="info_bisbreite" onchange="updateInfo()" min="0" max="20" step="0.50" /></td>
-						</tr>
-					</table>
-				</form>
+				<sidebar>
+					<form id = "steuerung" name="steuerung">
+						<input type="radio" name="befehl" onchange="befehlChanged(this)" value="info" checked="checked">&nbsp;Info<br />
+						<input type="radio" name="befehl" onchange="befehlChanged(this)" value="modify">&nbsp;&Auml;ndern<br />
+						<input type="radio" name="befehl" onchange="befehlChanged(this)" value="delete">&nbsp;L&ouml;schen<br />
+						<input type="radio" name="befehl" onchange="befehlChanged(this)" value="part">&nbsp;Teilen<br />
+						<input type="radio" name="befehl" onchange="befehlChanged(this)" value="add">&nbsp;Hinzufügen<br />
+					</form>
+					
+					<form id="loeschen" name="loeschen">
+						<input type="button" onclick="delQuerschnittButton()" value="Querschnitt l&ouml;schen" disabled="disabled" />
+					</form>
+					
+					<form id="hinzu" name="hinzu">
+						<input type="button" onclick="addQuerschnittButton()" value="Querschnitt hinzuf&uuml;gen" disabled="disabled" />
+					</form>
+					
+					<form id="teilen" name="teilen">
+						<input type="number" id="teilen_station" disabled="disabled" step="0.50" /><br />
+						<input type="number" id="teilen_abstand" disabled="disabled" step="0.50" /><br />
+						<input type="button" onclick="partQuerschnittButton()" value="Querschnitt teilen" disabled="disabled" />
+					</form>
+					
+					<form id = "info" name="info">
+						<table>
+							<tr>
+								<td>VNK:</td>
+								<td id="info_vnk"></td>
+							</tr>
+							<tr>
+								<td>NNK:</td>
+								<td id="info_nnk"></td>
+							</tr>
+							<tr>
+								<td>Station</td>
+								<td id="info_station"></td>
+							</tr>
+							<tr>
+								<td>Streifen:</td>
+								<td id="info_streifen"></td>
+							</tr>
+							<tr>
+								<td>Art:</td>
+								<td><select id="info_art" onchange="updateInfo()"></select></td>
+							</tr>
+							<tr>
+								<td>Art der Oberfl&auml;che:</td>
+								<td><select id="info_ober" onchange="updateInfo()"></select></td>
+							</tr>
+							<tr>
+								<td>Von Breite:</td>
+								<td><input type="number" id="info_breite" onchange="updateInfo()" min="0" max="20" step="0.50" /></td>
+							</tr>
+							<tr>
+								<td>Bis Breite:</td>
+								<td><input type="number" id="info_bisbreite" onchange="updateInfo()" min="0" max="20" step="0.50" /></td>
+							</tr>
+						</table>
+					</form>					
+				</sidebar>
 				<div id="nachricht">[leer]</div>
 				<script src="js/quer_config.js"></script>
 				<script src="js/quer_portal.js"></script>

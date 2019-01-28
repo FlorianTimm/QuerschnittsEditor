@@ -102,3 +102,28 @@ var l_achse = new ol.layer.Vector({
   })
 });
 map.addLayer(l_achse);
+
+
+// Sonstige Overlays
+var v_overlay = new ol.source.Vector({
+  features: []
+});
+
+var l_overlay = new ol.layer.Vector({
+  source: v_overlay,
+  opacity: 0.6,
+  style: new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: '#dd0000',
+      width: 3
+    }),
+	image: new ol.style.Circle({
+        radius: 7,
+        fill: new ol.style.Fill({color: 'black'}),
+        stroke: new ol.style.Stroke({
+          color: [255,0,0], width: 2
+        })
+    }),
+  })
+});
+map.addLayer(l_overlay);

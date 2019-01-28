@@ -10,12 +10,18 @@ html, body, #map {
 	top: 10px;
 }
 
-#info {
+
+sidebar {
 	display: block;
 	position: absolute;
 	right: 20px;
 	top: 10px;
+}
+
+sidebar>* {
+	display: block;
 	background: rgba(255,255,255,0.8);
+	margin-top: 10px;
 	padding: 5px;
 	width: 200px;
 }
@@ -31,7 +37,6 @@ html, body, #map {
 	border: 1px solid black;
 } 
 
-
 #nachricht {
 	position: absolute;
 	top: 50px;
@@ -43,4 +48,19 @@ html, body, #map {
 	display: none;
 	font-size: 18px;
 	font-family: sans-serif;
+}
+
+form#hinzu {
+	text-align: center;
+	display:none;
+}
+
+form#loeschen{
+	text-align: center;
+	display:none;
+}
+
+form#teilen{
+	text-align: center;
+	display:none;
 }

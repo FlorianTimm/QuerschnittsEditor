@@ -1,12 +1,18 @@
-var select, // TrennLinienSelect
-  select_fl, // FlächenSelect
-  modify, // Bearbeitungsfunktion
-  geo_vorher = null, // Speicher für Geo vor der Bearbeitung
+var mod_select, // TrennLinienSelect
+  mod_select_fl, // FlächenSelect
+  mod_modify, // Bearbeitungsfunktion
+  mod_geo_vorher = null, // Speicher für Geo vor der Bearbeitung
   snap_trenn, // Auf Trennlinie einrasten
   snap_station; // Auf Station einrasten
 
 
-select = new ol.interaction.Select({
+  
+  
+//////////////////////////
+//// MODIFY
+
+
+mod_select = new ol.interaction.Select({
   layers: [l_trenn],
   style: new ol.style.Style({
     stroke: new ol.style.Stroke({
@@ -15,16 +21,16 @@ select = new ol.interaction.Select({
     })
   })
 });
-map.addInteraction(select)
 
 
-select.on('select', function(e) {
+
+mod_select.on('select', function(e) {
   if (e.selected.length == 0)
     return
-  logAuswahl()
+  logAuswahl(mod_select)
 });
 
-select_fl = new ol.interaction.Select({
+mod_select_fl = new ol.interaction.Select({
   layers: [l_quer],
   style: new ol.style.Style({
     fill: new ol.style.Fill({
@@ -32,10 +38,10 @@ select_fl = new ol.interaction.Select({
     })
   })
 });
-map.addInteraction(select_fl)
 
 
-select_fl.on('select', function(e) {
+
+mod_select_fl.on('select', function(e) {
   if (e.selected.length == 0)
     return
   auswahl = e.selected[0]
@@ -43,27 +49,26 @@ select_fl.on('select', function(e) {
   var streifen = auswahl.get('streifen')
   var nr = auswahl.get('nr')
   var station = auswahl.get('station')
-  select.getFeatures().clear()
+  mod_select.getFeatures().clear()
   a = querschnitte[absid][station][streifen][nr]['trenn']
-  select.getFeatures().push(a)
-  logAuswahl()
-  //select_fl.getFeatures().clear()
+  mod_select.getFeatures().push(a)
+  logAuswahl(mod_select)
+  //mod_select_fl.getFeatures().clear()
 });
 
-var modify = new ol.interaction.Modify({
+var mod_modify = new ol.interaction.Modify({
   deleteCondition: ol.events.condition.never,
   insertVertexCondition: ol.events.condition.never,
-  features: select.getFeatures()
+  features: mod_select.getFeatures()
 });
-map.addInteraction(modify)
 
-geo_vorher = null;
-modify.on('modifystart', function(e) {
+mod_geo_vorher = null;
+mod_modify.on('modifystart', function(e) {
   auswahl = e.features.getArray()[0]
-  geo_vorher = auswahl.getGeometry().clone()
+  mod_geo_vorher = auswahl.getGeometry().clone()
 });
 
-modify.on('modifyend', function(e) {
+mod_modify.on('modifyend', function(e) {
   console.log(e)
   auswahl = e.features.getArray()[0]
 
@@ -73,7 +78,7 @@ modify.on('modifyend', function(e) {
   var station = auswahl.get('station')
 
   var nachher = auswahl.getGeometry().getCoordinates()
-  var vorher = geo_vorher.getCoordinates()
+  var vorher = mod_geo_vorher.getCoordinates()
 
   var zuaendern, abst;
 
@@ -100,15 +105,269 @@ modify.on('modifyend', function(e) {
   
   edit_breite(ereignisraum, querschnitte[absid][station][streifen][nr]['objektid'], querschnitte[absid][station][streifen][nr]['breite'], querschnitte[absid][station][streifen][nr]['bisbreite'])
   
-  logAuswahl()
+  logAuswahl(mod_select)
   refreshQuerschnitte(absid)
 });
 
 
 
-function logAuswahl() {
-  var selection = select.getFeatures();
-  if (select.getFeatures().getLength() <= 0) return;
+snap_trenn = new ol.interaction.Snap({
+  source: v_trenn,
+  edge: false
+});
+
+
+snap_station = new ol.interaction.Snap({
+  source: v_station,
+  pixelTolerance: 50,
+  vertex: false
+});
+
+snap_achse = new ol.interaction.Snap({
+  source: v_achse,
+  pixelTolerance: 50,
+  vertex: false
+});
+
+
+function startModify() {
+	map.addInteraction(mod_select);
+	map.addInteraction(mod_select_fl);
+	map.addInteraction(mod_modify);
+	map.addInteraction(snap_trenn);
+	map.addInteraction(snap_station);
+}
+
+function stopModify() {
+	map.removeInteraction(mod_select);
+	map.removeInteraction(mod_select_fl);
+	map.removeInteraction(mod_modify);
+	map.removeInteraction(snap_trenn);
+	map.removeInteraction(snap_station);
+}
+
+
+//////////////////////////
+//// DELETE
+
+
+var del_select = new ol.interaction.Select({
+  layers: [l_quer],
+  style: new ol.style.Style({
+    fill: new ol.style.Fill({
+      color: 'rgba(255, 0, 0, 0.3)'
+    })
+  })
+});
+
+del_select.on('select', function(e) {
+  if (e.selected.length == 0) {
+	document.forms.loeschen.getElementsByTagName("input")[0].style.backgroundColor = "";
+	document.forms.loeschen.getElementsByTagName("input")[0].disabled = true;
+    return
+  }
+  auswahl = e.selected[0]
+  var absid = auswahl.get('abschnittsid')
+  var streifen = auswahl.get('streifen')
+  var nr = auswahl.get('nr')
+  var station = auswahl.get('station')
+
+  logAuswahl(del_select)
+  document.forms.loeschen.getElementsByTagName("input")[0].style.backgroundColor = "#ff0000";
+  document.forms.loeschen.getElementsByTagName("input")[0].disabled = false;
+});
+
+
+function delQuerschnittButton() {
+	if (confirm("Möchten Sie den Querschnitt wirklich löschen?")) {
+		alert("noch ohne Funktion");
+	}
+}
+
+function startDelete() {
+	document.forms.loeschen.style.display = 'block';
+	map.addInteraction(del_select);
+}
+
+function stopDelete() {
+	document.forms.loeschen.style.display = 'none';
+	map.removeInteraction(del_select);
+}
+
+
+//////////////////////////
+//// INFO
+
+info_select = new ol.interaction.Select({
+  layers: [l_trenn],
+  style: new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: 'rgba(255, 0, 0, 0.5)',
+      width: 3
+    })
+  })
+});
+
+info_select.on('select', function(e) {
+  if (e.selected.length == 0)
+    return
+  logAuswahl(info_select)
+});
+
+
+
+info_select_fl = new ol.interaction.Select({
+  layers: [l_quer],
+  style: new ol.style.Style({
+    fill: new ol.style.Fill({
+      color: 'rgba(255, 0, 0, 0.3)'
+    })
+  })
+});
+
+info_select_fl.on('select', function(e) {
+  if (e.selected.length == 0)
+    return
+  auswahl = e.selected[0]
+  var absid = auswahl.get('abschnittsid')
+  var streifen = auswahl.get('streifen')
+  var nr = auswahl.get('nr')
+  var station = auswahl.get('station')
+  info_select.getFeatures().clear()
+  a = querschnitte[absid][station][streifen][nr]['trenn']
+  info_select.getFeatures().push(a)
+  logAuswahl(info_select)
+  //mod_select_fl.getFeatures().clear()
+});
+
+function startInfo() {
+	map.addInteraction(info_select);
+	map.addInteraction(info_select_fl);
+}
+
+function stopInfo() {
+	map.removeInteraction(info_select);
+	map.removeInteraction(info_select_fl);
+}
+
+
+
+//////////////////////////
+//// PART
+
+var part_feat = new ol.Feature({geometry: new ol.geom.Point([0,0])});	
+v_overlay.addFeature(part_feat);
+
+function part_move(event) {
+	//console.log(event);
+	part_feat.getGeometry().setCoordinates(event.coordinate);
+	var achse = v_achse.getClosestFeatureToCoordinate(event.coordinate);
+	if (achse == null) return;
+	var p = get_pos(achse.getGeometry().getCoordinates(), event.coordinate);
+	//console.log(achse.getGeometry().getCoordinates())
+	//console.log(p);
+	document.getElementById("teilen_station").value = Math.round(p[2])
+	document.getElementById("teilen_abstand").value = Math.round(p[1]*10)/10
+}
+
+function partQuerschnittButton() {
+	alert("noch ohne Funktion");
+}
+
+
+function startPart() {
+	document.forms.teilen.style.display = 'block';
+	map.on("pointermove", part_move);
+}
+
+function stopPart() {
+	document.forms.teilen.style.display = 'none';
+	map.un("pointermove", part_move);
+	part_feat.getGeometry().setCoordinates([0,0]);
+}
+
+//////////////////////////
+//// ADD
+
+
+add_select = new ol.interaction.Select({
+  layers: [l_trenn],
+  style: new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: 'rgba(255, 0, 0, 0.5)',
+      width: 5
+    })
+  })
+});
+
+add_select.on('select', function(e) {
+  if (e.selected.length == 0) {
+	document.forms.hinzu.getElementsByTagName("input")[0].style.backgroundColor = "";
+	document.forms.hinzu.getElementsByTagName("input")[0].disabled = true;
+    return
+  }
+  logAuswahl(add_select);
+  document.forms.hinzu.getElementsByTagName("input")[0].style.backgroundColor = "#ffcc00";
+  document.forms.hinzu.getElementsByTagName("input")[0].disabled = false;
+});
+
+function addQuerschnittButton() {
+	alert("noch ohne Funktion");
+}
+
+function startAdd() {
+	document.forms.hinzu.style.display = 'block';
+	map.addInteraction(add_select);
+}
+
+function stopAdd() {
+	document.forms.hinzu.style.display = 'none';
+	map.removeInteraction(add_select);
+}
+
+
+//////////////////////////
+//// Befehlsteuerung
+
+
+function befehlChanged(wert) {
+	var befehl = document.forms.steuerung.befehl.value
+	
+	if (befehl == "info") {
+		startInfo();
+	} else {
+		stopInfo();
+	}
+	
+	if (befehl == "modify") {
+		startModify();
+	} else {
+		stopModify();
+	}
+	
+	if (befehl == "delete")
+		startDelete();
+	else
+		stopDelete();
+	
+	if (befehl == "part")
+		startPart();
+	else
+		stopPart();
+	
+	if (befehl == "add")
+		startAdd();
+	else
+		stopAdd();
+}
+
+befehlChanged(null);
+
+
+
+function logAuswahl(selectBefehl) {
+  var selection = selectBefehl.getFeatures();
+  if (selection.getLength() <= 0) return;
   var auswahl = selection.item(0);
   var absid = auswahl.get('abschnittsid')
   var streifen = auswahl.get('streifen')
@@ -126,17 +385,3 @@ function logAuswahl() {
   document.getElementById("info_breite").value = querschnitte[absid][station][streifen][nr]['breite'].toFixed(2);
   document.getElementById("info_bisbreite").value = querschnitte[absid][station][streifen][nr]['bisbreite'].toFixed(2);
 }
-
-
-snap_trenn = new ol.interaction.Snap({
-  source: v_trenn,
-  edge: false
-});
-map.addInteraction(snap_trenn)
-
-snap_station = new ol.interaction.Snap({
-  source: v_station,
-  pixelTolerance: 50,
-  vertex: false
-});
-map.addInteraction(snap_station)

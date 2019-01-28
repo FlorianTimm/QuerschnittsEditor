@@ -39,7 +39,7 @@ function get_pos(line, point) {
 
         sum += v_len(v)
 	}
-    return min(posi)
+    return posi.sort()[0]
 }
 
 function v_add3(v) {
