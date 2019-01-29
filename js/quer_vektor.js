@@ -28,18 +28,34 @@ function get_pos(line, point) {
             f = 0
             r_dist = v_len(v_diff(l1, point))
             drin = 1
+			y = line[0];
         } else if (f > 1) {
             f = 1
             r_dist = v_len(v_diff(l2, y))
             drin = 1
+			y = line[line.length-1];
 		}
         station = sum + f * (v_len(v))
 
-        posi.push([drin, r_dist, station, seite, dist])
+        posi.push([drin, r_dist, station, seite, dist, y, v_sum(y, [lot[0],lot[1]])])
 
         sum += v_len(v)
 	}
-    return posi.sort()[0]
+	//console.log(posi.sort(sort_posi))
+    return posi.sort(sort_posi)[0]
+}
+
+function sort_posi(a, b) {
+	if (a[0] != b[0]) {
+		return (a[0] < b[0]) ? -1 : 1;
+	}
+	if (a[1] != b[1]) {
+		return (a[1] < b[1]) ? -1 : 1;
+	}
+	if (a[2] != b[2]) {
+		return (a[2] < b[2]) ? -1 : 1;
+	}
+	return 0;
 }
 
 function v_add3(v) {
@@ -136,4 +152,15 @@ function l_len(line) {
 		len += v_len(v_diff(line[i-1],line[i]))
 	}
 	return len
+}
+
+
+function v_azi (von, zu) {
+	var t = Math.atan2(zu[1]-von[1], zu[0]-von[0]);
+	if (t < 0) t += 2 * Math.PI;
+	return t
+}
+	
+function v_azi2vec  (azi) {
+	return [Math.cos(azi), Math.sin(azi)]
 }

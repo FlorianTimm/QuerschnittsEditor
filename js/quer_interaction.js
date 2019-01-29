@@ -25,8 +25,6 @@ mod_select = new ol.interaction.Select({
 
 
 mod_select.on('select', function(e) {
-  if (e.selected.length == 0)
-    return
   logAuswahl(mod_select)
 });
 
@@ -42,18 +40,18 @@ mod_select_fl = new ol.interaction.Select({
 
 
 mod_select_fl.on('select', function(e) {
-  if (e.selected.length == 0)
-    return
-  auswahl = e.selected[0]
-  var absid = auswahl.get('abschnittsid')
-  var streifen = auswahl.get('streifen')
-  var nr = auswahl.get('nr')
-  var station = auswahl.get('station')
-  mod_select.getFeatures().clear()
-  a = querschnitte[absid][station][streifen][nr]['trenn']
-  mod_select.getFeatures().push(a)
-  logAuswahl(mod_select)
-  //mod_select_fl.getFeatures().clear()
+	mod_select.getFeatures().clear()
+	if (e.selected.length > 0) {
+		auswahl = e.selected[0]
+		var absid = auswahl.get('abschnittsid')
+		var streifen = auswahl.get('streifen')
+		var nr = auswahl.get('nr')
+		var station = auswahl.get('station')
+		a = querschnitte[absid][station][streifen][nr]['trenn']
+		mod_select.getFeatures().push(a)
+	}
+	logAuswahl(mod_select)
+	//mod_select_fl.getFeatures().clear()
 });
 
 var mod_modify = new ol.interaction.Modify({
@@ -81,7 +79,7 @@ mod_modify.on('modifyend', function(e) {
   var vorher = mod_geo_vorher.getCoordinates()
 
   var zuaendern, abst;
-
+  
   if (nachher[0][0] != vorher[0][0] ||
     nachher[0][1] != vorher[0][1]) {
     zuaendern = 'breite'
@@ -100,11 +98,19 @@ mod_modify.on('modifyend', function(e) {
   if (abst < 0) abst = 0;
 
   abst = Math.round(abst * 10) / 10
-  querschnitte[absid][station][streifen][nr][zuaendern] = abst
   
-  
-  edit_breite(ereignisraum, querschnitte[absid][station][streifen][nr]['objektid'], querschnitte[absid][station][streifen][nr]['breite'], querschnitte[absid][station][streifen][nr]['bisbreite'])
-  
+  if (document.forms.modify.typ.value == "move") { 
+	querschnitte[absid][station][streifen][nr][zuaendern] = abst
+	edit_breite(ereignisraum, querschnitte[absid][station][streifen][nr]['objektid'], querschnitte[absid][station][streifen][nr]['breite'], querschnitte[absid][station][streifen][nr]['bisbreite'])
+  } else {
+	  diff = querschnitte[absid][station][streifen][nr][zuaendern] - abst;
+	querschnitte[absid][station][streifen][nr][zuaendern] = abst
+	edit_breite(ereignisraum, querschnitte[absid][station][streifen][nr]['objektid'], querschnitte[absid][station][streifen][nr]['breite'], querschnitte[absid][station][streifen][nr]['bisbreite'])
+	if (streifen != "M" && (nr + 1) in querschnitte[absid][station][streifen]) {
+		querschnitte[absid][station][streifen][nr+1][zuaendern] += diff;
+		edit_breite(ereignisraum, querschnitte[absid][station][streifen][nr+1]['objektid'], querschnitte[absid][station][streifen][nr+1]['breite'], querschnitte[absid][station][streifen][nr+1]['bisbreite'])
+	}
+  }
   logAuswahl(mod_select)
   refreshQuerschnitte(absid)
 });
@@ -131,19 +137,33 @@ snap_achse = new ol.interaction.Snap({
 
 
 function startModify() {
+	document.forms.modify.style.display = "block";
 	map.addInteraction(mod_select);
 	map.addInteraction(mod_select_fl);
 	map.addInteraction(mod_modify);
 	map.addInteraction(snap_trenn);
 	map.addInteraction(snap_station);
+	
+	document.getElementById("info_art").disabled = "";
+	document.getElementById("info_ober").disabled = "";
+	document.getElementById("info_breite").disabled = "";
+	document.getElementById("info_bisbreite").disabled = "";
 }
 
 function stopModify() {
+	document.forms.modify.style.display = "none";
 	map.removeInteraction(mod_select);
 	map.removeInteraction(mod_select_fl);
 	map.removeInteraction(mod_modify);
 	map.removeInteraction(snap_trenn);
 	map.removeInteraction(snap_station);
+	
+	document.getElementById("info_art").disabled = "disabled";
+	document.getElementById("info_ober").disabled = "disabled";
+	document.getElementById("info_breite").disabled = "disabled";
+	document.getElementById("info_bisbreite").disabled = "disabled";
+	
+	document.forms.info.style.display = "none";
 }
 
 
@@ -192,6 +212,7 @@ function startDelete() {
 function stopDelete() {
 	document.forms.loeschen.style.display = 'none';
 	map.removeInteraction(del_select);
+	document.forms.info.style.display = "none";
 }
 
 
@@ -209,9 +230,7 @@ info_select = new ol.interaction.Select({
 });
 
 info_select.on('select', function(e) {
-  if (e.selected.length == 0)
-    return
-  logAuswahl(info_select)
+	logAuswahl(info_select)
 });
 
 
@@ -226,18 +245,17 @@ info_select_fl = new ol.interaction.Select({
 });
 
 info_select_fl.on('select', function(e) {
-  if (e.selected.length == 0)
-    return
-  auswahl = e.selected[0]
-  var absid = auswahl.get('abschnittsid')
-  var streifen = auswahl.get('streifen')
-  var nr = auswahl.get('nr')
-  var station = auswahl.get('station')
-  info_select.getFeatures().clear()
-  a = querschnitte[absid][station][streifen][nr]['trenn']
-  info_select.getFeatures().push(a)
-  logAuswahl(info_select)
-  //mod_select_fl.getFeatures().clear()
+	info_select.getFeatures().clear()
+	if (e.selected.length > 0) {
+		auswahl = e.selected[0]
+		var absid = auswahl.get('abschnittsid')
+		var streifen = auswahl.get('streifen')
+		var nr = auswahl.get('nr')
+		var station = auswahl.get('station')
+		a = querschnitte[absid][station][streifen][nr]['trenn']
+		info_select.getFeatures().push(a)
+	}
+	logAuswahl(info_select)
 });
 
 function startInfo() {
@@ -248,6 +266,7 @@ function startInfo() {
 function stopInfo() {
 	map.removeInteraction(info_select);
 	map.removeInteraction(info_select_fl);
+	document.forms.info.style.display = "none";
 }
 
 
@@ -255,35 +274,141 @@ function stopInfo() {
 //////////////////////////
 //// PART
 
-var part_feat = new ol.Feature({geometry: new ol.geom.Point([0,0])});	
+
+part_select = new ol.interaction.Select({
+  layers: [l_achse],
+  style: new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: 'rgba(0, 50, 255, 0.5)',
+      width: 5
+    })
+  })
+});
+
+
+var part_feat = new ol.Feature({geometry: new ol.geom.Point([0,0])});
+part_feat.setStyle(
+	new ol.style.Style({
+		image: new ol.style.Circle({
+			radius: 3,
+			fill: new ol.style.Fill({color: [0,0,200],}),
+			stroke: new ol.style.Stroke({
+			  color: [0,0,200], width: 2
+			})
+		}),
+	})
+)	
 v_overlay.addFeature(part_feat);
+
+var part_neu = new ol.Feature({
+	geometry: new ol.geom.LineString([[0,0][0,0]]),
+	isset: false,
+	abschnittid: null,
+	station: 0,	
+});
+part_neu.setStyle(
+	new ol.style.Style({
+		stroke: new ol.style.Stroke({
+			color: 'rgba(255, 0, 0, 1)',
+			width: 2
+		}),
+	})
+);
+v_overlay.addFeature(part_neu);
+
+var part_line = new ol.Feature({geometry: new ol.geom.LineString([[0,0][0,0]])});	
+part_line.setStyle(
+	new ol.style.Style({
+		stroke: new ol.style.Stroke({
+			color: 'rgba(0, 0, 255, 0.5)',
+			width: 2
+		}),
+	})
+);
+v_overlay.addFeature(part_line);
+
+function part_get_station(event) {
+	var achse = null;
+	if (part_select.getFeatures().getArray().length > 0) {
+		achse = part_select.getFeatures().item(0);
+	} else {
+		achse = v_achse.getClosestFeatureToCoordinate(event.coordinate);
+	}
+	
+	if (achse == null) {
+		part_feat.getGeometry().setCoordinates([0,0]);
+		part_line.getGeometry().setCoordinates([[0,0],[0,0]]);
+		return null;
+	}
+	
+	return {achse: achse, pos: get_pos(achse.getGeometry().getCoordinates(), event.coordinate)};
+}
+
+
+function part_click (event) {
+	if (!part_neu.get('isset')) {
+		part_neu.set('isset', true);
+		var daten = part_get_station(event);
+		if (daten['pos']==null) return;
+		
+		var vektor = v_multi(v_einheit(v_diff(daten['pos'][6],daten['pos'][5])), 50);
+		var coord = [v_diff(daten['pos'][5], vektor), v_sum(daten['pos'][5], vektor)];
+		
+		part_neu.getGeometry().setCoordinates(coord);
+		part_neu.set("abschnittid", daten['achse'].get('abschnittid'));
+		part_neu.set("station", Math.round(daten['pos'][2]));
+		
+		
+		document.getElementById("teilen_vnk").innerHTML = daten['achse'].get('vnk')
+		document.getElementById("teilen_nnk").innerHTML = daten['achse'].get('nnk')
+		document.getElementById("teilen_station").innerHTML = Math.round(daten['pos'][2])
+
+		document.getElementById("teilen_button").disabled = "";
+	} else {
+		part_neu.set('isset', false);
+		part_neu.getGeometry().setCoordinates([[0,0],[0,0]]);
+		document.getElementById("teilen_button").disabled = "disabled";
+	}
+}
 
 function part_move(event) {
 	//console.log(event);
-	part_feat.getGeometry().setCoordinates(event.coordinate);
-	var achse = v_achse.getClosestFeatureToCoordinate(event.coordinate);
-	if (achse == null) return;
-	var p = get_pos(achse.getGeometry().getCoordinates(), event.coordinate);
-	//console.log(achse.getGeometry().getCoordinates())
-	//console.log(p);
-	document.getElementById("teilen_station").value = Math.round(p[2])
-	document.getElementById("teilen_abstand").value = Math.round(p[1]*10)/10
+	
+	
+	var daten = part_get_station(event);
+	//console.log(daten['achse']);
+	if (daten['pos']==null) return;
+	
+	part_feat.getGeometry().setCoordinates(daten['pos'][6]);
+	part_line.getGeometry().setCoordinates([daten['pos'][6], daten['pos'][5]]);
+	
+	if (!part_neu.get('isset')) {
+		document.getElementById("teilen_vnk").innerHTML = daten['achse'].get('vnk')
+		document.getElementById("teilen_nnk").innerHTML = daten['achse'].get('nnk')
+		document.getElementById("teilen_station").innerHTML = Math.round(daten['pos'][2])
+	}
 }
 
 function partQuerschnittButton() {
-	alert("noch ohne Funktion");
+	querTeilen(part_neu.get("abschnittid"), part_neu.get("station"));
 }
 
 
 function startPart() {
+	map.addInteraction(part_select);
 	document.forms.teilen.style.display = 'block';
 	map.on("pointermove", part_move);
+	map.on("singleclick", part_click);
 }
 
 function stopPart() {
+	map.removeInteraction(part_select);
 	document.forms.teilen.style.display = 'none';
 	map.un("pointermove", part_move);
+	map.un("singleclick", part_click);
 	part_feat.getGeometry().setCoordinates([0,0]);
+	part_neu.getGeometry().setCoordinates([[0,0],[0,0]]);
+	document.forms.info.style.display = "none";
 }
 
 //////////////////////////
@@ -323,6 +448,7 @@ function startAdd() {
 function stopAdd() {
 	document.forms.hinzu.style.display = 'none';
 	map.removeInteraction(add_select);
+	document.forms.info.style.display = "none";
 }
 
 
@@ -367,7 +493,11 @@ befehlChanged(null);
 
 function logAuswahl(selectBefehl) {
   var selection = selectBefehl.getFeatures();
-  if (selection.getLength() <= 0) return;
+  if (selection.getLength() <= 0) {
+	  document.forms.info.style.display = "none";
+	  return;
+  }
+  document.forms.info.style.display = "block";
   var auswahl = selection.item(0);
   var absid = auswahl.get('abschnittsid')
   var streifen = auswahl.get('streifen')

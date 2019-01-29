@@ -6,7 +6,7 @@ var abschnitte = {};
 function loadGeometry(abschnittid) {
   var xmlhttp = new XMLHttpRequest();
 
-  xmlhttp.open('GET', 'proxy.jsp?Service=WFS&Request=GetFeature&TypeName=VI_STRASSENNETZ&Filter=' + encodeURIComponent('<Filter>' +
+  xmlhttp.open('GET', PUBLIC_WFS_URL + '?Service=WFS&Request=GetFeature&TypeName=VI_STRASSENNETZ&Filter=' + encodeURIComponent('<Filter>' +
     '<PropertyIsEqualTo><PropertyName>ABSCHNITT_ID</PropertyName><Literal>' + abschnittid + '</Literal></PropertyIsEqualTo>' +
     '</Filter>'), true);
 
@@ -59,7 +59,7 @@ function drawGeometry(xmlhttp) {
 
 function getQuerschnitte() {
   var xmlhttp = new XMLHttpRequest();
-  xmlhttp.open('GET', 'proxy.jsp?Service=WFS&Request=GetFeature&TypeName=Dotquer&Filter=' + encodeURIComponent('<Filter>' +
+  xmlhttp.open('GET', PUBLIC_WFS_URL + '?Service=WFS&Request=GetFeature&TypeName=Dotquer&Filter=' + encodeURIComponent('<Filter>' +
     '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName><Literal>' + ereignisraum + '</Literal></PropertyIsEqualTo></Filter>'), true);
   xmlhttp.onreadystatechange = function() {
     readQuerschnitte(xmlhttp);
@@ -160,8 +160,8 @@ function refreshQuerschnitte(absId) {
     var von_m_summe = 0
     var bis_m_summe = 0
     for (var i in querschnitte[absId][key]['M']) {
-      querschnitte[absId][key]['M'][i]['abs_von1'] = querschnitte[absId][key]['M'][i]['breite'] + von_m_summe
-      querschnitte[absId][key]['M'][i]['abs_bis1'] = querschnitte[absId][key]['M'][i]['bisbreite'] + bis_m_summe
+      querschnitte[absId][key]['M'][i]['abs_von1'] = 0.5 * querschnitte[absId][key]['M'][i]['breite'] + von_m_summe
+      querschnitte[absId][key]['M'][i]['abs_bis1'] = 0.5 * querschnitte[absId][key]['M'][i]['bisbreite'] + bis_m_summe
       querschnitte[absId][key]['M'][i]['abs_von2'] = -querschnitte[absId][key]['M'][i]['abs_von1']
       querschnitte[absId][key]['M'][i]['abs_bis2'] = -querschnitte[absId][key]['M'][i]['abs_bis1']
       von_m_summe += 0.5 * querschnitte[absId][key]['M'][i]['breite']
@@ -189,34 +189,18 @@ function refreshQuerschnitte(absId) {
       querschnitte[absId][key]['R'][i]['abs_von2'] = von_summe
       querschnitte[absId][key]['R'][i]['abs_bis2'] = bis_summe
     }
-
+	
     var geo = querschnitte[absId][key]['geo']
     var vec = []
     var seg = []
     var anzahl = geo.length
     if (anzahl >= 2) {
-      //console.log(v_einheit(v_lot(v_diff(geo[0], geo[1]))))
-      var first = v_einheit(v_lot(v_diff(geo[0], geo[1])))
+	  var first = v_azi2vec(v_azi(geo[0], geo[1]) - 0.5 * Math.PI ) 
       vec.push(first)
-	  //console.log("first")
-	  //console.log(first)
       for (var i = 1; i < anzahl - 1; i++) {
-		//vec.push(first)
-		//console.log(i)
-        //console.log(v_einheit(v_lot(geo[i - 1], geo[i])))
-		//console.log(v_einheit(v_lot(geo[i], geo[i + 1])))
-		vec.push(v_multi(
-			v_einheit(
-				v_sum(
-					v_einheit(v_lot(geo[i - 1], geo[i])), 
-					v_einheit(v_lot(geo[i], geo[i + 1]))
-				)
-			),-1)
-		);
+		vec.push(v_azi2vec((v_azi(geo[i-1], geo[i]) + v_azi(geo[i], geo[i+1]) - Math.PI ) / 2.) )
       }
-      vec.push(v_einheit(v_lot(v_diff(geo[anzahl - 2], geo[anzahl - 1]))))
-	  //console.log("last")
-	  //console.log(v_einheit(v_lot(v_diff(geo[anzahl - 2], geo[anzahl - 1]))))
+      vec.push(v_azi2vec(v_azi(geo[anzahl-2], geo[anzahl-1]) - 0.5 * Math.PI ) )
 
 
       querschnitte[absId][key]['linie'] = new ol.geom.LineString([v_sum(geo[0], v_multi(first, 30)), v_sum(geo[0], v_multi(first, -30))]);

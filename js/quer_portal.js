@@ -71,7 +71,7 @@ var wms_quer = new ol.layer.Tile({
 // Layerzusammenstellung
 var layers = [
 	wms_dop,
-	wms_quer,
+	//wms_quer,
 ];
 
 // Erzeugen der Map

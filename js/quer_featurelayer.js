@@ -111,7 +111,6 @@ var v_overlay = new ol.source.Vector({
 
 var l_overlay = new ol.layer.Vector({
   source: v_overlay,
-  opacity: 0.6,
   style: new ol.style.Style({
     stroke: new ol.style.Stroke({
       color: '#dd0000',

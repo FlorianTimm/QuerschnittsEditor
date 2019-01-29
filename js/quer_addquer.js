@@ -23,7 +23,7 @@ function updateStreifenNr (auswahl) {
 function insertQuerschnittDb() {
 	var sr = 
 		'<wfs:Insert><Dotquer>' +
-		'	<projekt xlink:href="#` + ereignisraum + `" typeName="Projekt" />' +
+		'	<projekt xlink:href="#' + ereignisraum + '" typeName="Projekt" />' +
 		'	<vtkNummer>2525</vtkNummer>' +
 		'	<vnkLfd>109</vnkLfd>' +
 		'	<vzusatz>O</vzusatz>' +

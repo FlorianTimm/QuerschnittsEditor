@@ -30,11 +30,11 @@
 
 				<sidebar>
 					<form id = "steuerung" name="steuerung">
-						<input type="radio" name="befehl" onchange="befehlChanged(this)" value="info" checked="checked">&nbsp;Info<br />
-						<input type="radio" name="befehl" onchange="befehlChanged(this)" value="modify">&nbsp;&Auml;ndern<br />
-						<input type="radio" name="befehl" onchange="befehlChanged(this)" value="delete">&nbsp;L&ouml;schen<br />
-						<input type="radio" name="befehl" onchange="befehlChanged(this)" value="part">&nbsp;Teilen<br />
-						<input type="radio" name="befehl" onchange="befehlChanged(this)" value="add">&nbsp;Hinzufügen<br />
+						<input type="radio" name="befehl" onchange="befehlChanged(this)" value="info" checked="checked" />&nbsp;Info<br />
+						<input type="radio" name="befehl" onchange="befehlChanged(this)" value="modify" />&nbsp;&Auml;ndern<br />
+						<input type="radio" name="befehl" onchange="befehlChanged(this)" value="delete" />&nbsp;L&ouml;schen<br />
+						<input type="radio" name="befehl" onchange="befehlChanged(this)" value="part" />&nbsp;Teilen<br />
+						<input type="radio" name="befehl" onchange="befehlChanged(this)" value="add" />&nbsp;Hinzufügen<br />
 					</form>
 					
 					<form id="loeschen" name="loeschen">
@@ -46,9 +46,27 @@
 					</form>
 					
 					<form id="teilen" name="teilen">
-						<input type="number" id="teilen_station" disabled="disabled" step="0.50" /><br />
-						<input type="number" id="teilen_abstand" disabled="disabled" step="0.50" /><br />
-						<input type="button" onclick="partQuerschnittButton()" value="Querschnitt teilen" disabled="disabled" />
+						<table>
+							<tr>
+								<td>VNK:</td>
+								<td id="teilen_vnk"></td>
+							</tr>
+							<tr>
+								<td>NNK:</td>
+								<td id="teilen_nnk"></td>
+							</tr>
+							<tr>
+								<td>Station</td>
+								<td id="teilen_station"></td>
+							</tr>
+						</table>
+						<input type="button" id="teilen_button" onclick="partQuerschnittButton()" value="Querschnitt teilen" disabled="disabled" />
+					</form>
+					
+					<form id="modify" name="modify">
+						Nachfolgende Querschnitte:<br />
+						<input type="radio" name="typ" value="move" checked="checked" />&nbsp;...verschieben<br />
+						<input type="radio" name="typ" value="fit" />&nbsp...anpassem<br />
 					</form>
 					
 					<form id = "info" name="info">
@@ -71,19 +89,19 @@
 							</tr>
 							<tr>
 								<td>Art:</td>
-								<td><select id="info_art" onchange="updateInfo()"></select></td>
+								<td><select id="info_art" onchange="updateInfo()" disabled="disabled" ></select></td>
 							</tr>
 							<tr>
 								<td>Art der Oberfl&auml;che:</td>
-								<td><select id="info_ober" onchange="updateInfo()"></select></td>
+								<td><select id="info_ober" onchange="updateInfo()" disabled="disabled" ></select></td>
 							</tr>
 							<tr>
 								<td>Von Breite:</td>
-								<td><input type="number" id="info_breite" onchange="updateInfo()" min="0" max="20" step="0.50" /></td>
+								<td><input type="number" id="info_breite" onchange="updateInfo()" min="0" max="20" step="0.50" disabled="disabled" /></td>
 							</tr>
 							<tr>
 								<td>Bis Breite:</td>
-								<td><input type="number" id="info_bisbreite" onchange="updateInfo()" min="0" max="20" step="0.50" /></td>
+								<td><input type="number" id="info_bisbreite" onchange="updateInfo()" min="0" max="20" step="0.50" disabled="disabled" /></td>
 							</tr>
 						</table>
 					</form>					
@@ -98,6 +116,7 @@
 				<script src="js/quer_darstellen.js"></script>
 				<script src="js/quer_update_db.js"></script>
 				<script src="js/quer_addquer.js"></script>
+				<script src="js/quer_teilen.js"></script>
 			</body>
 		</html>
 		

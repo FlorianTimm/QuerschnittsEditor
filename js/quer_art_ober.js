@@ -3,7 +3,7 @@ var kt_art = {},
 
 function loadArt() {
   var xmlhttp = new XMLHttpRequest();
-  xmlhttp.open('GET', 'proxy.jsp?Service=WFS&Request=GetFeature&TYPENAME=Itquerart', true);
+  xmlhttp.open('GET', PUBLIC_WFS_URL + '?Service=WFS&Request=GetFeature&TYPENAME=Itquerart', true);
   xmlhttp.onreadystatechange = function() {
     readArt(xmlhttp);
   }
@@ -41,7 +41,7 @@ function readArt(xmlhttp) {
 
 function loadOber() {
   var xmlhttp = new XMLHttpRequest();
-  xmlhttp.open('GET', 'proxy.jsp?Service=WFS&Request=GetFeature&TYPENAME=Itquerober', true);
+  xmlhttp.open('GET', PUBLIC_WFS_URL + '?Service=WFS&Request=GetFeature&TYPENAME=Itquerober', true);
   xmlhttp.onreadystatechange = function() {
     readOber(xmlhttp);
   }

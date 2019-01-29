@@ -2,7 +2,7 @@
 
 function loadER() {
 	var xmlhttp = new XMLHttpRequest();
-	xmlhttp.open('GET', 'proxy.jsp?Service=WFS&Request=GetFeature&TypeName=Projekt&Filter=' + encodeURIComponent('<Filter><And><PropertyIsEqualTo><PropertyName>status</PropertyName><Literal>1</Literal></PropertyIsEqualTo><PropertyIsEqualTo><PropertyName>typ</PropertyName><Literal>D</Literal></PropertyIsEqualTo></And></Filter>'), true);
+	xmlhttp.open('GET', PUBLIC_WFS_URL + '?Service=WFS&Request=GetFeature&TypeName=Projekt&Filter=' + encodeURIComponent('<Filter><And><PropertyIsEqualTo><PropertyName>status</PropertyName><Literal>1</Literal></PropertyIsEqualTo><PropertyIsEqualTo><PropertyName>typ</PropertyName><Literal>D</Literal></PropertyIsEqualTo></And></Filter>'), true);
 	xmlhttp.onreadystatechange = function () {
 		readER(xmlhttp);
     }

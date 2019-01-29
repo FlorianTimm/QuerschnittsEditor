@@ -30,10 +30,11 @@ sidebar>* {
 	width: 95%;
 }
 
-#info table {
+form table {
+	width: 95%;
 	border-collapse: collapse;
 }
-#info table, th, td {
+form table, th, td {
 	border: 1px solid black;
 } 
 
@@ -50,6 +51,10 @@ sidebar>* {
 	font-family: sans-serif;
 }
 
+form#info {
+	display: none;
+}
+
 form#hinzu {
 	text-align: center;
 	display:none;
@@ -62,5 +67,8 @@ form#loeschen{
 
 form#teilen{
 	text-align: center;
+	display:none;
+}
+form#modify{
 	display:none;
 }

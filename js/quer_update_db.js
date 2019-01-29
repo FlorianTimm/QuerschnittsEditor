@@ -33,7 +33,7 @@ function edit_breite(er, objid, breite, bisbreite) {
 
 function xml_db_request(xml, callbackSuccess, callbackFailed) {
 	var xmlhttp = new XMLHttpRequest();
-	xmlhttp.open('POST', 'proxy.jsp', true);
+	xmlhttp.open('POST', PUBLIC_WFS_URL, true);
 
 	
 	xmlhttp.onreadystatechange = function () {
@@ -99,6 +99,20 @@ function updateInfo() {
 	querschnitte[absid][station][streifen][nr]['artober'] = document.getElementById("info_ober").value
 	
 	refreshQuerschnitte(absid)
+	
+	/*
+	  if (document.forms.modify.typ.value == "move") { 
+	querschnitte[absid][station][streifen][nr][zuaendern] = abst
+	edit_breite(ereignisraum, querschnitte[absid][station][streifen][nr]['objektid'], querschnitte[absid][station][streifen][nr]['breite'], querschnitte[absid][station][streifen][nr]['bisbreite'])
+  } else {
+	  diff = querschnitte[absid][station][streifen][nr][zuaendern] - abst;
+	querschnitte[absid][station][streifen][nr][zuaendern] = abst
+	edit_breite(ereignisraum, querschnitte[absid][station][streifen][nr]['objektid'], querschnitte[absid][station][streifen][nr]['breite'], querschnitte[absid][station][streifen][nr]['bisbreite'])
+	if (streifen != "M" && (nr + 1) in querschnitte[absid][station][streifen]) {
+		querschnitte[absid][station][streifen][nr+1][zuaendern] += diff;
+		edit_breite(ereignisraum, querschnitte[absid][station][streifen][nr+1]['objektid'], querschnitte[absid][station][streifen][nr+1]['breite'], querschnitte[absid][station][streifen][nr+1]['bisbreite'])
+	}
+  }*/
 	
 	var sr = 
 		'<wfs:Update typeName="Dotquer">' +
