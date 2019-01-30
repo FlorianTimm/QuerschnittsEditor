@@ -97,14 +97,23 @@
 							</tr>
 							<tr>
 								<td>Von Breite:</td>
-								<td><input type="number" id="info_breite" onchange="updateInfo()" min="0" max="20" step="0.50" disabled="disabled" /></td>
+								<td><input type="number" id="info_breite" onchange="updateInfoBreite()" min="0" max="10000" step="10" disabled="disabled" /></td>
 							</tr>
 							<tr>
 								<td>Bis Breite:</td>
-								<td><input type="number" id="info_bisbreite" onchange="updateInfo()" min="0" max="20" step="0.50" disabled="disabled" /></td>
+								<td><input type="number" id="info_bisbreite" onchange="updateInfoBreite()" min="0" max="10000" step="10" disabled="disabled" /></td>
 							</tr>
 						</table>
-					</form>					
+					</form>
+
+					<form style="background-color: rgba(255,180,180,0.8);">Bekannte Fehler:
+						<ul>
+							<li>Kein Verschieben von M-Streifen</li>
+							<li>Nach Teilen Daten doppelt</li>
+							<li>Hinzufügen nicht möglich</li>
+							<li>Löschen nicht möglich</li>
+						</ul>
+					</form>			
 				</sidebar>
 				<div id="nachricht">[leer]</div>
 				<script src="js/quer_config.js"></script>

@@ -54,11 +54,11 @@ function querTeilen(abschnittid, station) {
 			'</wfs:Update>';
 	var si = ""
 
-	for (var streifen in {'M':null,'R':null, 'L':null}) {
-		for (var nr in querschnitte[abschnittid][von_station][streifen]) {
-			var str = querschnitte[abschnittid][von_station][streifen][nr];
+	for (var streifen in querschnitte[abschnittid][von_station]['streifen']) {
+		for (var nr in querschnitte[abschnittid][von_station]['streifen'][streifen]) {
+			var str = querschnitte[abschnittid][von_station]['streifen'][streifen][nr];
 			console.log(str)
-			var neueBreite = Math.round((str['breite'] + (str['bisbreite'] - str['breite']) * faktor)*100);
+			var neueBreite = Math.round((str['breite'] + (str['bisBreite'] - str['breite']) * faktor)*100);
 			console.log(neueBreite);
 			se += '<wfs:Update typeName="Dotquer">' +
 			'	<wfs:Property>' +
@@ -73,7 +73,7 @@ function querTeilen(abschnittid, station) {
 			'		<ogc:And>' +
 			'			<ogc:PropertyIsEqualTo>' +
 			'				<ogc:PropertyName>objektId</ogc:PropertyName>' +
-			'				<ogc:Literal>' + str['objektid'] + '</ogc:Literal>' +
+			'				<ogc:Literal>' + str['objektId'] + '</ogc:Literal>' +
 			'			</ogc:PropertyIsEqualTo>' +
 			'			<ogc:PropertyIsEqualTo>' +
 			'				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>' +
@@ -89,10 +89,10 @@ function querTeilen(abschnittid, station) {
 			'	<bst>' + bis_station + '</bst>' +
 			'	<streifen>' + streifen + '</streifen>' +
 			'	<streifennr>' + nr + '</streifennr>' +
-			'	<art xlink:href="#' + kt_art[str['art']]['objektid'] + '" typeName="Itquerart" luk="' + str['art'] + '"/>' +
-			'	<artober xlink:href="#' + kt_ober[str['artober']]['objektid'] + '" typeName="Itquerober" luk="' + str['artober'] + '"/>' +
+			'	<art xlink:href="#' + kt_art[str['art']]['objektId'] + '" typeName="Itquerart" luk="' + str['art'] + '"/>' +
+			'	<artober xlink:href="#' + kt_ober[str['artober']]['objektId'] + '" typeName="Itquerober" luk="' + str['artober'] + '"/>' +
 			'	<breite>' + neueBreite + '</breite>' +
-			'	<bisBreite>' + Math.round(str['bisbreite']*100) + '</bisBreite>' +
+			'	<bisBreite>' + Math.round(str['bisBreite']*100) + '</bisBreite>' +
 			'	<abschnittId>' + abschnittid + '</abschnittId>' +
 			'</Dotquer></wfs:Insert>';
 		}

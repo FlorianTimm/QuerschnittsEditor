@@ -1,7 +1,10 @@
 var ereignisraum = (new URLSearchParams(window.location.search)).get('er');
 
 var querschnitte = {};
+var quer_fid = {};
 var abschnitte = {};
+var test = null;
+
 
 function loadGeometry(abschnittid) {
   var xmlhttp = new XMLHttpRequest();
@@ -57,6 +60,86 @@ function drawGeometry(xmlhttp) {
   }
 }
 
+function loadAufbaudaten() {
+  var xmlhttp = new XMLHttpRequest();
+  xmlhttp.open('GET', PUBLIC_WFS_URL + '?Service=WFS&Request=GetFeature&TypeName=Otschicht&Filter=' + encodeURIComponent('<Filter>' +
+    '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName><Literal>' + ereignisraum + '</Literal></PropertyIsEqualTo></Filter>'), true);
+  xmlhttp.onreadystatechange = function() {
+    readAufbaudaten(xmlhttp);
+  }
+  xmlhttp.setRequestHeader('Content-Type', 'text/xml');
+  xmlhttp.send();
+}
+
+function readAufbaudaten(xmlhttp) {
+	console.log("drawGeometry()")
+	if (xmlhttp.readyState != 4) return;
+	if (xmlhttp.status != 200) return;
+	
+	var aufb = xmlhttp.responseXML.getElementsByTagName("Otschicht")
+	
+	var tags = {
+		'vst': 0,
+		'bst': 0,
+		'teilnr': 0,
+		'teilbreite': 0,
+		'decksch': 0,
+		'baujahr': 0,
+		'dicke': 0,
+		'baumonat': 0,
+		'korngr': 0,
+		'unscharf': 0,
+		'kennz': 1,
+		'art1': 1,
+		'art2': 1,
+		'art3': 1,
+		'artneu': 1,
+		'material1': 1,
+		'material2': 1,
+		'material3': 1,
+		'bindemit1': 1,
+		'bindemit2': 1,
+		'detaila': 1,
+		'detailb': 1,
+		'detailc': 1,
+		'detaild': 1,
+		'umweltr': 0,
+		'kherk': 1,
+		'baujahrGew': 0,
+		'abnahmeGew': 0,
+		'dauerGew': 0,
+		'ablaufGew': 0,
+		'objektId': 0,
+		'objektnr': 0,
+		'erfart': 1,
+		'quelle': 1,
+		'ADatum': 0,
+		'bemerkung': 0,
+		'bearbeiter': 0,
+		'behoerde': 0,
+	}
+	
+	for (var i = 0; i < aufb.length; i++) {
+		var quer = aufb[i].getElementsByTagName("parent")[0].getAttribute('xlink:href').substring(1);
+		var nr = Number(aufb[i].getElementsByTagName("schichtnr")[0].firstChild.data);
+
+		quer_fid[quer]['aufbau'][nr] = {}
+
+		for (var tag in tags) {
+			if (aufb[i].getElementsByTagName(tag).length <= 0) continue;
+			if (tags[tag] == 0) {
+				// Kein Klartext
+				quer_fid[quer]['aufbau'][nr][tag] = aufb[i].getElementsByTagName(tag)[0].firstChild.data;
+			} else {
+				// Klartext, xlink wird gespeichert
+				quer_fid[quer]['aufbau'][nr][tag] = aufb[i].getElementsByTagName(tag)[0].getAttribute('xlink:href');
+			}
+		}
+	}
+	
+	
+}
+
 function getQuerschnitte() {
   var xmlhttp = new XMLHttpRequest();
   xmlhttp.open('GET', PUBLIC_WFS_URL + '?Service=WFS&Request=GetFeature&TypeName=Dotquer&Filter=' + encodeURIComponent('<Filter>' +
@@ -69,37 +152,61 @@ function getQuerschnitte() {
 }
 
 
-function readQuerschnitte(xmlhttp, absId) {
+function readQuerschnitte(xmlhttp) {
   if (xmlhttp.readyState != 4) return;
   if (xmlhttp.status != 200) return;
 
   var quer = xmlhttp.responseXML.getElementsByTagName("Dotquer")
   
+  	var tags = {
+		'art': 3,
+		'artober': 3,
+		'breite': 1,
+		'bisBreite': 1,
+		'blpart': 2,
+		'blpart3': 2,
+		'uipart': 2,
+		'uipart3': 2,
+		'XVstL': 1,
+		'XVstR': 1,
+		'XBstL': 1,
+		'XBstR': 1,
+		'kherk': 2,
+		'baujahrGew': 0,
+		'abnahmeGew': 0,
+		'dauerGew': 0,
+		'ablaufGew': 0,
+		'objektId': 0,
+		'objektnr': 0,
+		'erfart': 2,
+		'quelle': 2,
+		'ADatum': 0,
+		'bemerkung': 0,
+		'bearbeiter': 0,
+		'behoerde': 0,
+	}
+  
   for (var i = 0; i < quer.length; i++) {
   
     var absId = quer[i].getElementsByTagName("abschnittId")[0].firstChild.data
-
     var vst = Number(quer[i].getElementsByTagName("vst")[0].firstChild.data)
-    var bst = Number(quer[i].getElementsByTagName("bst")[0].firstChild.data)
-    var breite = Number(quer[i].getElementsByTagName("breite")[0].firstChild.data) / 100.
-    var bisbreite = Number(quer[i].getElementsByTagName("bisBreite")[0].firstChild.data) / 100.
-    var streifen = quer[i].getElementsByTagName("streifen")[0].firstChild.data
-    var streifennr = Number(quer[i].getElementsByTagName("streifennr")[0].firstChild.data)
-    var art = quer[i].getElementsByTagName("art")[0].getAttribute('luk')
-    var artober = quer[i].getElementsByTagName("artober")[0].getAttribute('luk')
-    var objektid = quer[i].getElementsByTagName("objektId")[0].firstChild.data
-  
-    if (!(absId in querschnitte)) {
+	var streifen = quer[i].getElementsByTagName("streifen")[0].firstChild.data
+	var streifennr = Number(quer[i].getElementsByTagName("streifennr")[0].firstChild.data)
+	
+	// Abschnitt anlegen, falls er nicht existiert
+	if (!(absId in querschnitte)) {
       querschnitte[absId] = {}
     }
-  
+	
+    // Station anlegen, falls sie nicht existiert
     if (!(vst in querschnitte[absId])) {
       querschnitte[absId][vst] = {
-        'L': {},
-        'R': {},
-        'M': {},
+        'streifen': {
+			'L': {},
+			'R': {},
+			'M': {}},
         'vst': vst,
-        'bst': bst,
+        'bst': Number(quer[i].getElementsByTagName("bst")[0].firstChild.data),
         'geo': []
       }
       gml = quer[i].getElementsByTagName("gml:coordinates")[0].firstChild.data;
@@ -114,36 +221,55 @@ function readQuerschnitte(xmlhttp, absId) {
           querschnitte[absId][vst]['geo'].push([x, y]);
       }
     }
+	
+	querschnitte[absId][vst]['streifen'][streifen][streifennr] = {}
+	
+	// Attribute füllen
+	for (var tag in tags) {
+		if (quer[i].getElementsByTagName(tag).length <= 0) continue;
+		if (tags[tag] == 0) {
+			// Kein Klartext
+			querschnitte[absId][vst]['streifen'][streifen][streifennr][tag] = quer[i].getElementsByTagName(tag)[0].firstChild.data;
+		} else if (tags[tag] == 1) {
+			// Kein Klartext
+			querschnitte[absId][vst]['streifen'][streifen][streifennr][tag] = Number(quer[i].getElementsByTagName(tag)[0].firstChild.data);
+		} else if (tags[tag] == 2) {
+			// Klartext, xlink wird gespeichert
+			querschnitte[absId][vst]['streifen'][streifen][streifennr][tag] = quer[i].getElementsByTagName(tag)[0].getAttribute('xlink:href');
+		} else if (tags[tag] == 3) {
+			// Klartext, luk gespeichert
+			querschnitte[absId][vst]['streifen'][streifen][streifennr][tag] = quer[i].getElementsByTagName(tag)[0].getAttribute('luk');
+		}
+	}
   
-    querschnitte[absId][vst][streifen][streifennr] = {
-      'breite': breite,
-      'bisbreite': bisbreite,
-      'art': art,
-      'artober': artober,
-      'objektid': objektid,
-      'trenn': new ol.Feature({
-        geometry: null,
-        abschnittsid: absId,
-        station: vst,
-        streifen: streifen,
-        nr: streifennr
-      }),
-      'flaeche': new ol.Feature({
-        geometry: null,
-        abschnittsid: absId,
-        station: vst,
-        streifen: streifen,
-        nr: streifennr,
-		art: art
-      }),
-    }
+    querschnitte[absId][vst]['streifen'][streifen][streifennr]['trenn'] = 
+		new ol.Feature({
+			geometry: null,
+			abschnittsid: absId,
+			station: vst,
+			streifen: streifen,
+			nr: streifennr
+		  });
+      querschnitte[absId][vst]['streifen'][streifen][streifennr]['flaeche'] = 
+		new ol.Feature({
+			geometry: null,
+			abschnittsid: absId,
+			station: vst,
+			streifen: streifen,
+			nr: streifennr,
+			//art: querschnitte[absId][vst]['streifen'][streifen][streifennr]['art']
+		  });
+		  
+	  querschnitte[absId][vst]['streifen'][streifen][streifennr]['aufbau'] = {};
+	
+	quer_fid[quer[i].getAttribute('fid')] = querschnitte[absId][vst]['streifen'][streifen][streifennr];
   
-    v_quer.addFeature(querschnitte[absId][vst][streifen][streifennr]['flaeche']);
-    v_trenn.addFeature(querschnitte[absId][vst][streifen][streifennr]['trenn']);
+    v_quer.addFeature(querschnitte[absId][vst]['streifen'][streifen][streifennr]['flaeche']);
+    v_trenn.addFeature(querschnitte[absId][vst]['streifen'][streifen][streifennr]['trenn']);
   
   
   }
-  //console.log(querschnitte[absId]);
+  console.log(querschnitte[absId]);
   
   for (var absId in querschnitte) {
     refreshQuerschnitte(absId)
@@ -151,45 +277,14 @@ function readQuerschnitte(xmlhttp, absId) {
   }
   
   map.getView().fit(v_quer.getExtent())
+  loadAufbaudaten();
 }
 
 
 
 function refreshQuerschnitte(absId) {
+
   for (var key in querschnitte[absId]) {
-    var von_m_summe = 0
-    var bis_m_summe = 0
-    for (var i in querschnitte[absId][key]['M']) {
-      querschnitte[absId][key]['M'][i]['abs_von1'] = 0.5 * querschnitte[absId][key]['M'][i]['breite'] + von_m_summe
-      querschnitte[absId][key]['M'][i]['abs_bis1'] = 0.5 * querschnitte[absId][key]['M'][i]['bisbreite'] + bis_m_summe
-      querschnitte[absId][key]['M'][i]['abs_von2'] = -querschnitte[absId][key]['M'][i]['abs_von1']
-      querschnitte[absId][key]['M'][i]['abs_bis2'] = -querschnitte[absId][key]['M'][i]['abs_bis1']
-      von_m_summe += 0.5 * querschnitte[absId][key]['M'][i]['breite']
-      bis_m_summe += 0.5 * querschnitte[absId][key]['M'][i]['bisbreite']
-    }
-
-    var von_summe = -von_m_summe
-    var bis_summe = -bis_m_summe
-    for (var i in querschnitte[absId][key]['L']) {
-      querschnitte[absId][key]['L'][i]['abs_von1'] = von_summe
-      querschnitte[absId][key]['L'][i]['abs_bis1'] = bis_summe
-      von_summe -= querschnitte[absId][key]['L'][i]['breite']
-      bis_summe -= querschnitte[absId][key]['L'][i]['bisbreite']
-      querschnitte[absId][key]['L'][i]['abs_von2'] = von_summe
-      querschnitte[absId][key]['L'][i]['abs_bis2'] = bis_summe
-    }
-
-    var von_summe = von_m_summe
-    var bis_summe = bis_m_summe
-    for (var i in querschnitte[absId][key]['R']) {
-      querschnitte[absId][key]['R'][i]['abs_von1'] = von_summe
-      querschnitte[absId][key]['R'][i]['abs_bis1'] = bis_summe
-      von_summe += querschnitte[absId][key]['R'][i]['breite']
-      bis_summe += querschnitte[absId][key]['R'][i]['bisbreite']
-      querschnitte[absId][key]['R'][i]['abs_von2'] = von_summe
-      querschnitte[absId][key]['R'][i]['abs_bis2'] = bis_summe
-    }
-	
     var geo = querschnitte[absId][key]['geo']
     var vec = []
     var seg = []
@@ -222,32 +317,40 @@ function refreshQuerschnitte(absId) {
       //console.log(seg_len_add/len)
     }
 
-    for (var st in {
-        'L': 0,
-        'M': 0,
-        'R': 0
-      }) {
-      for (var i in querschnitte[absId][key][st]) {
-        var streifen = querschnitte[absId][key][st][i]
+    for (var st in querschnitte[absId][key]['streifen']) {
+      for (var i in querschnitte[absId][key]['streifen'][st]) {
+        var streifen = querschnitte[absId][key]['streifen'][st][i]
         var g = [];
+		var l = [];
+		var r = [];
 
-        var abst1 = streifen['abs_von1']
-        var diff1 = streifen['abs_bis1'] - streifen['abs_von1']
-        var abst2 = streifen['abs_von2']
-        var diff2 = streifen['abs_bis2'] - streifen['abs_von2']
+        var abst1 = streifen['XVstR']
+        var diff1 = streifen['XBstR'] - abst1
+        var abst2 = streifen['XVstL']
+        var diff2 = streifen['XBstL'] - abst2
+		
+		//console.log(diff1)
 
         for (var j = 0; j < anzahl; j++) {
-          g.push(v_sum(geo[j], v_multi(vec[j], seg[j] * diff2 + abst2)));
+			var coord = v_sum(geo[j], v_multi(vec[j], seg[j] * diff2 + abst2));
+			g.push(coord);
+			l.push(coord);
         }
 
-        querschnitte[absId][key][st][i]['trenn'].setGeometry(new ol.geom.LineString(g))
+        querschnitte[absId][key]['streifen'][st][i]['trenn'].setGeometry(new ol.geom.MultiLineString([g]))
 
         for (var j = anzahl - 1; j >= 0; j--) {
-          g.push(v_sum(geo[j], v_multi(vec[j], seg[j] * diff1 + abst1)));
+			var coord = v_sum(geo[j], v_multi(vec[j], seg[j] * diff1 + abst1));
+			g.push(coord);
+			r.unshift(coord);
         }
-        //console.log(seg)
+		
+		if (st == "L") querschnitte[absId][key]['streifen'][st][i]['trenn'].setGeometry(new ol.geom.MultiLineString([l]))
+		else if (st == "R")	querschnitte[absId][key]['streifen'][st][i]['trenn'].setGeometry(new ol.geom.MultiLineString([r]))
+		else			querschnitte[absId][key]['streifen'][st][i]['trenn'].setGeometry(new ol.geom.MultiLineString([l, r]))
+
         g.push(g[0])
-        querschnitte[absId][key][st][i]['flaeche'].setGeometry(new ol.geom.Polygon([g])) //setCoordinates([g])
+        querschnitte[absId][key]['streifen'][st][i]['flaeche'].setGeometry(new ol.geom.Polygon([g])) //setCoordinates([g])
 
       }
     }

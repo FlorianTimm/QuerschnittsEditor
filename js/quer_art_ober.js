@@ -25,7 +25,7 @@ function readArt(xmlhttp) {
     kt_art[art] = {
 		"kt": quer[i].getElementsByTagName("beschreib")[0].firstChild.data,
 		'select': document.createElement('option'),
-		'objektid': quer[i].getElementsByTagName("objektId")[0].firstChild.data
+		'objektId': quer[i].getElementsByTagName('objektId')[0].firstChild.data
 	}		
   }
   
@@ -66,7 +66,7 @@ function readOber(xmlhttp) {
     kt_ober[artober] = {
 		'kt': quer[i].getElementsByTagName("beschreib")[0].firstChild.data,
 		'select': document.createElement('option'),
-		'objektid': quer[i].getElementsByTagName("objektId")[0].firstChild.data
+		'objektId': quer[i].getElementsByTagName('objektId')[0].firstChild.data
 	}		
   }
   

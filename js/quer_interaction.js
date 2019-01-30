@@ -47,7 +47,7 @@ mod_select_fl.on('select', function(e) {
 		var streifen = auswahl.get('streifen')
 		var nr = auswahl.get('nr')
 		var station = auswahl.get('station')
-		a = querschnitte[absid][station][streifen][nr]['trenn']
+		a = querschnitte[absid][station]['streifen'][streifen][nr]['trenn']
 		mod_select.getFeatures().push(a)
 	}
 	logAuswahl(mod_select)
@@ -77,44 +77,158 @@ mod_modify.on('modifyend', function(e) {
 
   var nachher = auswahl.getGeometry().getCoordinates()
   var vorher = mod_geo_vorher.getCoordinates()
-
-  var zuaendern, abst;
   
-  if (nachher[0][0] != vorher[0][0] ||
-    nachher[0][1] != vorher[0][1]) {
-    zuaendern = 'breite'
-    var punkt = querschnitte[absid][station]['geo'][0]
-    abst = v_len(v_diff(punkt, nachher[0]))
-    abst -= Math.abs(querschnitte[absid][station][streifen][nr]['abs_von1'])
-
-  } else if (nachher[nachher.length - 1][0] != vorher[vorher.length - 1][0] ||
-    nachher[nachher.length - 1][1] != vorher[vorher.length - 1][1]) {
-    zuaendern = 'bisbreite'
-    var punkt = querschnitte[absid][station]['geo'][querschnitte[absid][station]['geo'].length - 1]
-    abst = v_len(v_diff(punkt, nachher[nachher.length - 1]))
-    abst -= Math.abs(querschnitte[absid][station][streifen][nr]['abs_bis1'])
+  var diff = 0, edit = null;
+  var max_diff_vst = null, max_diff_bst = null;
+  if (document.forms.modify.typ.value == "fit" && (nr + 1) in querschnitte[absid][station]['streifen'][streifen]) { 
+	max_diff_vst = querschnitte[absid][station]['streifen'][streifen][nr+1]['breite']/100;
+	max_diff_bst = querschnitte[absid][station]['streifen'][streifen][nr+1]['bisBreite']/100;
   }
-
-  if (abst < 0) abst = 0;
-
-  abst = Math.round(abst * 10) / 10
   
+  for (var i = 0; i < vorher.length; i++) {
+	  for (var j = 0; j < vorher[i].length;j += vorher[i].length - 1) {
+		 if (nachher[i][j][0] != vorher[i][j][0] || nachher[i][j][1] != vorher[i][j][1]) {
+			 var pos = get_pos(querschnitte[absid][station]['geo'], nachher[i][j]);
+			 var dist = Math.round(pos[4]*100)/100
+			 if (streifen == "L") dist *= -1;
+			 console.log(pos)
+			 
+			 if (j > 0) {
+				diff =  dist - querschnitte[absid][station]['streifen'][streifen][nr]['XBst' + streifen];
+				console.log((streifen=='L')?(-diff):(diff));
+				console.log(max_diff_bst);
+				if (max_diff_bst !== null && ((streifen=='L')?(-diff):(diff)) > max_diff_bst) {
+					diff = ((streifen=='L')?(-max_diff_bst):(max_diff_bst));
+				}
+				edit = "Bst";
+				querschnitte[absid][station]['streifen'][streifen][nr]['XBst' + streifen] += diff;
+				querschnitte[absid][station]['streifen'][streifen][nr]['bisBreite'] = 
+					Math.round( 100 * (querschnitte[absid][station]['streifen'][streifen][nr]['XBstR'] - 
+					querschnitte[absid][station]['streifen'][streifen][nr]['XBstL']));
+			 } else {
+				diff = dist - querschnitte[absid][station]['streifen'][streifen][nr]['XVst' + streifen]
+				edit = "Vst";
+				
+				console.log((streifen=='L')?(-diff):(diff));
+				console.log(max_diff_vst);
+				
+				if (max_diff_vst !== null && ((streifen=='L')?(-diff):(diff)) > max_diff_vst) {
+					diff = ((streifen=='L')?(-max_diff_vst):(max_diff_vst));
+				}
+
+				querschnitte[absid][station]['streifen'][streifen][nr]['XVst' + streifen] += diff;
+				querschnitte[absid][station]['streifen'][streifen][nr]['breite'] = 
+					Math.round( 100 * (querschnitte[absid][station]['streifen'][streifen][nr]['XVstR'] - 
+					querschnitte[absid][station]['streifen'][streifen][nr]['XVstL']));
+			 }
+			 break;
+		 }
+	  }
+  }
+  
+  if (edit == null) return;
+  breiteNachfAnpassen(absid, station, streifen, nr, edit, diff);
+});
+  
+function breiteNachfAnpassen(absid, station, streifen, nr, edit, diff) {
+	
+	querstreifen = [[absid, station, streifen, nr]];
+	
   if (document.forms.modify.typ.value == "move") { 
-	querschnitte[absid][station][streifen][nr][zuaendern] = abst
-	edit_breite(ereignisraum, querschnitte[absid][station][streifen][nr]['objektid'], querschnitte[absid][station][streifen][nr]['breite'], querschnitte[absid][station][streifen][nr]['bisbreite'])
+  // Verschieben
+	  for (var nnr in querschnitte[absid][station]['streifen'][streifen]) {
+		  if (nnr <= nr) continue;
+		  
+		  querschnitte[absid][station]['streifen'][streifen][nnr]['X'+edit+'L'] += diff
+		  querschnitte[absid][station]['streifen'][streifen][nnr]['X'+edit+'R'] += diff
+			querstreifen.push([absid, station, streifen, nnr]);
+	  }
   } else {
-	  diff = querschnitte[absid][station][streifen][nr][zuaendern] - abst;
-	querschnitte[absid][station][streifen][nr][zuaendern] = abst
-	edit_breite(ereignisraum, querschnitte[absid][station][streifen][nr]['objektid'], querschnitte[absid][station][streifen][nr]['breite'], querschnitte[absid][station][streifen][nr]['bisbreite'])
-	if (streifen != "M" && (nr + 1) in querschnitte[absid][station][streifen]) {
-		querschnitte[absid][station][streifen][nr+1][zuaendern] += diff;
-		edit_breite(ereignisraum, querschnitte[absid][station][streifen][nr+1]['objektid'], querschnitte[absid][station][streifen][nr+1]['breite'], querschnitte[absid][station][streifen][nr+1]['bisbreite'])
+	 // Anpassen
+	 if (streifen != "M" && (nr + 1) in querschnitte[absid][station]['streifen'][streifen]) {
+		if (streifen == 'L')
+			querschnitte[absid][station]['streifen'][streifen][nr+1]['X'+edit+'R'] += diff;
+		else if (streifen == 'R')
+			querschnitte[absid][station]['streifen'][streifen][nr+1]['X'+edit+'L'] += diff;
+		querschnitte[absid][station]['streifen'][streifen][nr + 1]['breite'] = 
+			Math.round( 100 * (querschnitte[absid][station]['streifen'][streifen][nr + 1]['XVstR'] - 
+			querschnitte[absid][station]['streifen'][streifen][nr + 1]['XVstL']));
+		querschnitte[absid][station]['streifen'][streifen][nr + 1]['bisBreite'] = 
+			Math.round( 100 * (querschnitte[absid][station]['streifen'][streifen][nr + 1]['XBstR'] - 
+			querschnitte[absid][station]['streifen'][streifen][nr + 1]['XBstL']));
+		querstreifen.push([absid, station, streifen, nr + 1]);
 	}
   }
+  
   logAuswahl(mod_select)
   refreshQuerschnitte(absid)
-});
+  updateQuerschnitt(querstreifen)
+}
 
+function updateInfo() {
+	var selection = mod_select.getFeatures();
+	if (mod_select.getFeatures().getLength() <= 0) return;
+	var auswahl = selection.item(0);
+	
+	var absid = auswahl.get('abschnittsid')
+	var streifen = auswahl.get('streifen')
+	var nr = auswahl.get('nr')
+	var station = auswahl.get('station')
+	
+	
+	
+	querschnitte[absid][station]['streifen'][streifen][nr]['art'] = document.getElementById("info_art").value
+	querschnitte[absid][station]['streifen'][streifen][nr]['flaeche'].set('art', document.getElementById("info_art").value)
+	querschnitte[absid][station]['streifen'][streifen][nr]['artober'] = document.getElementById("info_ober").value
+}
+
+function updateInfoBreite () {
+	var selection = mod_select.getFeatures();
+	if (mod_select.getFeatures().getLength() <= 0) return;
+	var auswahl = selection.item(0);
+	
+	var absid = auswahl.get('abschnittsid')
+	var streifen = auswahl.get('streifen')
+	var nr = auswahl.get('nr')
+	var station = auswahl.get('station')
+	
+	var max_diff_vst = null, max_diff_bst = null;
+if (document.forms.modify.typ.value == "fit" && (nr + 1) in querschnitte[absid][station]['streifen'][streifen]) { 
+	max_diff_vst = querschnitte[absid][station]['streifen'][streifen][nr+1]['breite']/100;
+	max_diff_bst = querschnitte[absid][station]['streifen'][streifen][nr+1]['bisBreite']/100;
+  }
+	
+	if (querschnitte[absid][station]['streifen'][streifen][nr]['breite'] != Number(document.getElementById("info_breite").value)) {
+		diff = (Math.round(Number(document.getElementById("info_breite").value)) - querschnitte[absid][station]['streifen'][streifen][nr]['breite'])/100;
+		if (max_diff_vst !== null && diff > max_diff_vst) {
+			diff = (max_diff_vst);
+		}
+		
+		querschnitte[absid][station]['streifen'][streifen][nr]['breite'] += diff * 100;
+		if (streifen == 'L') {
+			querschnitte[absid][station]['streifen'][streifen][nr]['XVstL'] -= diff;
+		} else if (streifen == 'R') {
+			querschnitte[absid][station]['streifen'][streifen][nr]['XVstR'] += diff;
+		}
+		breiteNachfAnpassen(absid, station, streifen, nr, "Vst", diff)
+	} else if (querschnitte[absid][station]['streifen'][streifen][nr]['bisBreite'] != Number(document.getElementById("info_bisbreite").value)) {
+		diff = (Math.round(Number(document.getElementById("info_bisbreite").value)) - querschnitte[absid][station]['streifen'][streifen][nr]['bisBreite'])/100;
+		
+		if (max_diff_bst !== null && diff > max_diff_bst) {
+			diff = (max_diff_bst);
+		}
+		
+		querschnitte[absid][station]['streifen'][streifen][nr]['bisBreite'] += diff * 100;
+		if (streifen == 'L') {
+			querschnitte[absid][station]['streifen'][streifen][nr]['XBstL'] -= diff;
+		} else if (streifen == 'R') {
+			querschnitte[absid][station]['streifen'][streifen][nr]['XBstR'] += diff
+		}
+		breiteNachfAnpassen(absid, station, streifen, nr, "Bst", diff)
+	} 
+		
+	
+}
 
 
 snap_trenn = new ol.interaction.Snap({
@@ -252,7 +366,7 @@ info_select_fl.on('select', function(e) {
 		var streifen = auswahl.get('streifen')
 		var nr = auswahl.get('nr')
 		var station = auswahl.get('station')
-		a = querschnitte[absid][station][streifen][nr]['trenn']
+		a = querschnitte[absid][station]['streifen'][streifen][nr]['trenn']
 		info_select.getFeatures().push(a)
 	}
 	logAuswahl(info_select)
@@ -437,7 +551,7 @@ add_select.on('select', function(e) {
 });
 
 function addQuerschnittButton() {
-	alert("noch ohne Funktion");
+	addQuerschnitt();
 }
 
 function startAdd() {
@@ -509,9 +623,9 @@ function logAuswahl(selectBefehl) {
   document.getElementById("info_station").innerHTML = querschnitte[absid][station]['vst'] + " - " + querschnitte[absid][station]['bst'];
   document.getElementById("info_streifen").innerHTML = streifen + " " + nr;
   
-  document.getElementById("info_art").value = querschnitte[absid][station][streifen][nr]['art'];
-  document.getElementById("info_ober").value = querschnitte[absid][station][streifen][nr]['artober'];
+  document.getElementById("info_art").value = querschnitte[absid][station]['streifen'][streifen][nr]['art'];
+  document.getElementById("info_ober").value = querschnitte[absid][station]['streifen'][streifen][nr]['artober'];
   
-  document.getElementById("info_breite").value = querschnitte[absid][station][streifen][nr]['breite'].toFixed(2);
-  document.getElementById("info_bisbreite").value = querschnitte[absid][station][streifen][nr]['bisbreite'].toFixed(2);
+  document.getElementById("info_breite").value = querschnitte[absid][station]['streifen'][streifen][nr]['breite'];
+  document.getElementById("info_bisbreite").value = querschnitte[absid][station]['streifen'][streifen][nr]['bisBreite'];
 }
