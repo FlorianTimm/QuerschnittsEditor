@@ -53,39 +53,75 @@ function addQuerschnitt() {
 	
 	refreshQuerschnitte(abschnittid);
 	
-	insertQuerschnittDb(abschnittid,station,streifen,nr+1);
+	insertQuerschnittDb(abschnittid,station);
 }
 
 
-function insertQuerschnittDb(abschnittid,station,streifen,nr) {
-	var sr = 
-		'<wfs:Insert><Dotquer>' +
-		'	<projekt xlink:href="#' + ereignisraum + '" typeName="Projekt" />' +
-		'	<XBstL>' + querschnitte[abschnittid][station]['streifen'][streifen][nr]['XBstL'] + '</XBstL>' +
-		'	<XBstR>' + querschnitte[abschnittid][station]['streifen'][streifen][nr]['XBstR'] + '</XBstR>' +
-		'	<XVstL>' + querschnitte[abschnittid][station]['streifen'][streifen][nr]['XVstL'] + '</XVstL>' +
-		'	<XVstR>' + querschnitte[abschnittid][station]['streifen'][streifen][nr]['XVstR'] + '</XVstR>' +
-		'	<vst>' + station + '</vst>' +
-		'	<bst>' + querschnitte[abschnittid][station]['bst'] + '</bst>' +
-		'	<streifen>' + streifen + '</streifen>' +
-		'	<streifennr>' + nr + '</streifennr>' +
-		'	<art xlink:href="#' + kt_art[querschnitte[abschnittid][station]['streifen'][streifen][nr]['art']]['objektId'] + 
-		'" typeName="Itquerart" luk="' + querschnitte[abschnittid][station]['streifen'][streifen][nr]['art'] + '"/>' +
-		'	<artober xlink:href="#' + kt_ober[querschnitte[abschnittid][station]['streifen'][streifen][nr]['artober']]['objektId'] + 
-		'" typeName="Itquerober" luk="' + querschnitte[abschnittid][station]['streifen'][streifen][nr]['artober'] + '"/>' +
-		'	<breite>' + querschnitte[abschnittid][station]['streifen'][streifen][nr]['breite'] + '</breite>' +
-		'	<bisBreite>' + querschnitte[abschnittid][station]['streifen'][streifen][nr]['bisBreite'] + '</bisBreite>' +
-		'	<abschnittId>' + abschnittid + '</abschnittId>' +
-		'</Dotquer></wfs:Insert>';
+function insertQuerschnittDb(abschnittid,station) {
+	
+	var sr = '<wfs:Delete typeName="Dotquer">' +
+		'	<ogc:Filter>' +
+		'		<ogc:And>' +
+		'			<ogc:PropertyIsEqualTo>' +
+		'				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>' +
+		'				<ogc:Literal>' + ereignisraum +'</ogc:Literal>' +
+		'			</ogc:PropertyIsEqualTo>' +
+		'			<ogc:PropertyIsEqualTo>' +
+		'				<ogc:PropertyName>abschnittId</ogc:PropertyName>' +
+		'				<ogc:Literal>' + abschnittid +'</ogc:Literal>' +
+		'			</ogc:PropertyIsEqualTo>' +
+		'			<ogc:PropertyIsEqualTo>' +
+		'				<ogc:PropertyName>vst</ogc:PropertyName>' +
+		'				<ogc:Literal>' + station +'</ogc:Literal>' +
+		'			</ogc:PropertyIsEqualTo>' +
+		'			<ogc:PropertyIsEqualTo>' +
+		'				<ogc:PropertyName>bst</ogc:PropertyName>' +
+		'				<ogc:Literal>' + querschnitte[abschnittid][station]['bst'] +'</ogc:Literal>' +
+		'			</ogc:PropertyIsEqualTo>' +
+		'		</ogc:And>' +
+		'	</ogc:Filter>' +
+		'</wfs:Delete>';
+		
+		
+	for (var streifen in querschnitte[abschnittid][station]['streifen']) {
+		for (var nr in querschnitte[abschnittid][station]['streifen'][streifen]) {
+			sr += '<wfs:Insert><Dotquer>';
+			if (querschnitte[abschnittid][station]['streifen'][streifen][nr]['objektId'] != null) {
+				sr += '	<objektId>' + querschnitte[abschnittid][station]['streifen'][streifen][nr]['objektId'] + '</objektId>';
+			}
+			sr += '	<projekt xlink:href="#' + ereignisraum + '" typeName="Projekt" />' +
+				'	<XBstL>' + querschnitte[abschnittid][station]['streifen'][streifen][nr]['XBstL'] + '</XBstL>' +
+				'	<XBstR>' + querschnitte[abschnittid][station]['streifen'][streifen][nr]['XBstR'] + '</XBstR>' +
+				'	<XVstL>' + querschnitte[abschnittid][station]['streifen'][streifen][nr]['XVstL'] + '</XVstL>' +
+				'	<XVstR>' + querschnitte[abschnittid][station]['streifen'][streifen][nr]['XVstR'] + '</XVstR>' +
+				'	<vst>' + station + '</vst>' +
+				'	<bst>' + querschnitte[abschnittid][station]['bst'] + '</bst>' +
+				'	<streifen>' + streifen + '</streifen>' +
+				'	<streifennr>' + nr + '</streifennr>' +
+				'	<art xlink:href="#' + kt_art[querschnitte[abschnittid][station]['streifen'][streifen][nr]['art']]['objektId'] + 
+				'" typeName="Itquerart" luk="' + querschnitte[abschnittid][station]['streifen'][streifen][nr]['art'] + '"/>' +
+				'	<artober xlink:href="#' + kt_ober[querschnitte[abschnittid][station]['streifen'][streifen][nr]['artober']]['objektId'] + 
+				'" typeName="Itquerober" luk="' + querschnitte[abschnittid][station]['streifen'][streifen][nr]['artober'] + '"/>' +
+				'	<breite>' + querschnitte[abschnittid][station]['streifen'][streifen][nr]['breite'] + '</breite>' +
+				'	<bisBreite>' + querschnitte[abschnittid][station]['streifen'][streifen][nr]['bisBreite'] + '</bisBreite>' +
+				'	<abschnittId>' + abschnittid + '</abschnittId>' +
+				'</Dotquer></wfs:Insert>';
+		}
+	}
 
 	wfs_transaction(sr, function(xml) {
-			querschnittHinzu(abschnittid,station,streifen, nr, xml);
+			querschnittHinzu(abschnittid,station);
 		}, function() {
 			showMessage("Fehler", true)
 	});
 }
 
-function querschnittHinzu (abschnittid,station,streifen, nr, xml) {
+function querschnittHinzu (abschnittid, station, xml) {
 	console.log(xml);
 	showMessage("Erfolgreich!", false);
+	
+	for (var streifen in querschnitte[abschnittid][station]['streifen']) {
+		for (var nr in querschnitte[abschnittid][station]['streifen'][streifen]) {
+		}
+	}
 }
