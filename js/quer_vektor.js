@@ -162,5 +162,6 @@ function v_azi (von, zu) {
 }
 	
 function v_azi2vec  (azi) {
+
 	return [Math.cos(azi), Math.sin(azi)]
 }

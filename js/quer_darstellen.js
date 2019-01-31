@@ -123,6 +123,11 @@ function readAufbaudaten(xmlhttp) {
 		var quer = aufb[i].getElementsByTagName("parent")[0].getAttribute('xlink:href').substring(1);
 		var nr = Number(aufb[i].getElementsByTagName("schichtnr")[0].firstChild.data);
 
+		if (!(quer in quer_fid)) {
+			console.log("Aufbaudaten konnten nicht geladen werden: " + quer);
+			showMessage("Aufbaudaten konnten nicht geladen werden: " + quer, true)
+			continue
+		}
 		quer_fid[quer]['aufbau'][nr] = {}
 
 		for (var tag in tags) {
@@ -272,6 +277,7 @@ function readQuerschnitte(xmlhttp) {
   console.log(querschnitte[absId]);
   
   for (var absId in querschnitte) {
+	calcVec(absId);
     refreshQuerschnitte(absId)
     loadGeometry(absId)
   }
@@ -282,20 +288,27 @@ function readQuerschnitte(xmlhttp) {
 
 
 
-function refreshQuerschnitte(absId) {
 
+function calcVec(absId) {
   for (var key in querschnitte[absId]) {
     var geo = querschnitte[absId][key]['geo']
     var vec = []
     var seg = []
+
     var anzahl = geo.length
     if (anzahl >= 2) {
-	  var first = v_azi2vec(v_azi(geo[0], geo[1]) - 0.5 * Math.PI ) 
+		
+	  var first = v_einheit(v_lot(v_diff(geo[0], geo[1])))
+	  //var first = v_azi2vec(v_azi(geo[0], geo[1]) - 0.5 * Math.PI ) 
       vec.push(first)
       for (var i = 1; i < anzahl - 1; i++) {
-		vec.push(v_azi2vec((v_azi(geo[i-1], geo[i]) + v_azi(geo[i], geo[i+1]) - Math.PI ) / 2.) )
+		  
+		//vec.push(v_azi2vec((v_azi(geo[i-1], geo[i]) + v_azi(geo[i], geo[i+1])  - Math.PI) / 2.) )
+		vec.push(v_einheit(v_lot(v_sum(v_einheit(v_diff(geo[i-1], geo[i])), v_einheit(v_diff(geo[i], geo[i+1]))))))
       }
-      vec.push(v_azi2vec(v_azi(geo[anzahl-2], geo[anzahl-1]) - 0.5 * Math.PI ) )
+      //vec.push(v_azi2vec(v_azi(geo[anzahl-2], geo[anzahl-1]) - 0.5 * Math.PI ) )
+	  vec.push(v_einheit(v_lot(v_diff(geo[anzahl-2], geo[anzahl-1]))));
+	  
 
 
       querschnitte[absId][key]['linie'] = new ol.geom.LineString([v_sum(geo[0], v_multi(first, 30)), v_sum(geo[0], v_multi(first, -30))]);
@@ -306,6 +319,7 @@ function refreshQuerschnitte(absId) {
       v_station.addFeature(feat);
 
       querschnitte[absId][key]['vec'] = vec
+
     }
 
     var len = l_len(geo)
@@ -316,7 +330,17 @@ function refreshQuerschnitte(absId) {
       seg.push(seg_len_add / len)
       //console.log(seg_len_add/len)
     }
-
+	querschnitte[absId][key]['seg'] = seg;
+  }
+}
+	
+function refreshQuerschnitte(absId) {
+  for (var key in querschnitte[absId]) {
+	var geo = querschnitte[absId][key]['geo']
+	var vec = querschnitte[absId][key]['vec'];
+	var seg = querschnitte[absId][key]['seg']
+	var anzahl = geo.length;
+	
     for (var st in querschnitte[absId][key]['streifen']) {
       for (var i in querschnitte[absId][key]['streifen'][st]) {
         var streifen = querschnitte[absId][key]['streifen'][st][i]
