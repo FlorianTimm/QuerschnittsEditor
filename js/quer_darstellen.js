@@ -21,7 +21,7 @@ function loadGeometry(abschnittid) {
 }
 
 function drawGeometry(xmlhttp) {
-  console.log("drawGeometry()")
+  //console.log("drawGeometry()")
   if (xmlhttp.readyState != 4) return;
   if (xmlhttp.status != 200) return;
   
@@ -60,19 +60,28 @@ function drawGeometry(xmlhttp) {
   }
 }
 
-function loadAufbaudaten() {
+aufbau_already_loaded = 0;
+function loadAufbaudaten(absId) {
+	if (absId == null && aufbau_already_loaded != 0) return;
+	
   var xmlhttp = new XMLHttpRequest();
-  xmlhttp.open('GET', PUBLIC_WFS_URL + '?Service=WFS&Request=GetFeature&TypeName=Otschicht&Filter=' + encodeURIComponent('<Filter>' +
-    '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName><Literal>' + ereignisraum + '</Literal></PropertyIsEqualTo></Filter>'), true);
+  var filter = '<Filter><And>';
+  filter += '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName><Literal>' + ereignisraum + '</Literal></PropertyIsEqualTo>';
+  if (absId != null) {
+	filter += '<PropertyIsEqualTo><PropertyName>abschnittId</PropertyName><Literal>' + absId + '</Literal></PropertyIsEqualTo>';
+  }
+  filter += '</And></Filter>';
+  xmlhttp.open('GET', PUBLIC_WFS_URL + '?Service=WFS&Request=GetFeature&TypeName=Otschicht&Filter=' + encodeURIComponent(filter), true);
   xmlhttp.onreadystatechange = function() {
-    readAufbaudaten(xmlhttp);
+    readAufbaudaten(xmlhttp, absId);
   }
   xmlhttp.setRequestHeader('Content-Type', 'text/xml');
   xmlhttp.send();
+  aufbau_already_loaded = 1;
 }
 
-function readAufbaudaten(xmlhttp) {
-	console.log("drawGeometry()")
+function readAufbaudaten(xmlhttp, absId) {
+	//console.log("drawGeometry()")
 	if (xmlhttp.readyState != 4) return;
 	if (xmlhttp.status != 200) return;
 	
@@ -125,10 +134,15 @@ function readAufbaudaten(xmlhttp) {
 
 		if (!(quer in quer_fid)) {
 			console.log("Aufbaudaten konnten nicht geladen werden: " + quer);
-			showMessage("Aufbaudaten konnten nicht geladen werden: " + quer, true)
+			showMessage("Aufbaudaten konnten nicht geladen werden: " + quer, true);
 			continue
 		}
-		quer_fid[quer]['aufbau'][nr] = {}
+		
+		if (!('aufbau' in quer_fid[quer])) {
+			quer_fid[quer]['aufbau'] = {};
+		}
+		
+		quer_fid[quer]['aufbau'][nr] = {};
 
 		for (var tag in tags) {
 			if (aufb[i].getElementsByTagName(tag).length <= 0) continue;
@@ -140,6 +154,10 @@ function readAufbaudaten(xmlhttp) {
 				quer_fid[quer]['aufbau'][nr][tag] = aufb[i].getElementsByTagName(tag)[0].getAttribute('xlink:href');
 			}
 		}
+	}
+	
+	if (absId == null) {
+		aufbau_already_loaded = 2;
 	}
 	
 	
@@ -262,10 +280,8 @@ function readQuerschnitte(xmlhttp) {
 			station: vst,
 			streifen: streifen,
 			nr: streifennr,
-			//art: querschnitte[absId][vst]['streifen'][streifen][streifennr]['art']
+			art: querschnitte[absId][vst]['streifen'][streifen][streifennr]['art']
 		  });
-		  
-	  querschnitte[absId][vst]['streifen'][streifen][streifennr]['aufbau'] = {};
 	
 	quer_fid[quer[i].getAttribute('fid')] = querschnitte[absId][vst]['streifen'][streifen][streifennr];
   
@@ -283,7 +299,6 @@ function readQuerschnitte(xmlhttp) {
   }
   
   map.getView().fit(v_quer.getExtent())
-  loadAufbaudaten();
 }
 
 

@@ -16,6 +16,7 @@ var l_quer = new ol.layer.Vector({
   opacity: 0.36,
   style: function(feature, resolution) {
     var art = Number(feature.get('art'));
+	//console.log(art);
 	if ((art >= 100 && art <=119) || (art >= 122 && art <=161) || (art >= 163 && art <=179) || art == 312) return fill_style('#444444');	// Fahrstreifen
 	else if (art >= 180 && art <=183) return fill_style('#333366');	// Parkstreifen
 	else if (art >= 940 && art <=942) return fill_style('#F914B8'); // Busanlagen

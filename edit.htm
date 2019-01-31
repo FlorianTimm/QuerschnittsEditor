@@ -30,11 +30,11 @@
 
 				<sidebar>
 					<form id = "steuerung" name="steuerung">
-						<input type="radio" name="befehl" onchange="befehlChanged(this)" value="info" checked="checked" />&nbsp;Info<br />
-						<input type="radio" name="befehl" onchange="befehlChanged(this)" value="modify" />&nbsp;&Auml;ndern<br />
-						<input type="radio" name="befehl" onchange="befehlChanged(this)" value="delete" />&nbsp;L&ouml;schen<br />
-						<input type="radio" name="befehl" onchange="befehlChanged(this)" value="part" />&nbsp;Teilen<br />
-						<input type="radio" name="befehl" onchange="befehlChanged(this)" value="add" />&nbsp;Hinzufügen<br />
+						<input type="radio" name="befehl" id="befehl_info" onchange="befehlChanged(this)" value="info" checked="checked" />&nbsp;Info<br />
+						<input type="radio" name="befehl" id="befehl_modify" onchange="befehlChanged(this)" value="modify" />&nbsp;&Auml;ndern<br />
+						<input type="radio" name="befehl" id="befehl_delete" onchange="befehlChanged(this)" value="delete" />&nbsp;L&ouml;schen<br />
+						<input type="radio" name="befehl" id="befehl_part" onchange="befehlChanged(this)" value="part" />&nbsp;Teilen<br />
+						<input type="radio" name="befehl" id="befehl_add" onchange="befehlChanged(this)" value="add" />&nbsp;Hinzufügen<br />
 					</form>
 					
 					<form id="loeschen" name="loeschen">
@@ -65,8 +65,8 @@
 					
 					<form id="modify" name="modify">
 						Nachfolgende Querschnitte:<br />
-						<input type="radio" name="typ" value="move" checked="checked" />&nbsp;...verschieben<br />
-						<input type="radio" name="typ" value="fit" />&nbsp...anpassem<br />
+						<input type="radio" name="typ" id="modify_move" value="move" checked="checked" />&nbsp;...verschieben<br />
+						<input type="radio" name="typ" id="modify_fit" value="fit" />&nbsp;...anpassem<br />
 					</form>
 					
 					<form id = "info" name="info">

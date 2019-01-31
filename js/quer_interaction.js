@@ -80,7 +80,7 @@ mod_modify.on('modifyend', function(e) {
   
   var diff = 0, edit = null;
   var max_diff_vst = null, max_diff_bst = null;
-  if (document.forms.modify.typ.value == "fit" && (nr + 1) in querschnitte[absid][station]['streifen'][streifen]) { 
+  if (document.getElementById("modify_fit").checked && (nr + 1) in querschnitte[absid][station]['streifen'][streifen]) { 
 	max_diff_vst = querschnitte[absid][station]['streifen'][streifen][nr+1]['breite']/100;
 	max_diff_bst = querschnitte[absid][station]['streifen'][streifen][nr+1]['bisBreite']/100;
   }
@@ -134,7 +134,7 @@ function breiteNachfAnpassen(absid, station, streifen, nr, edit, diff) {
 	
 	querstreifen = [[absid, station, streifen, nr]];
 	
-  if (document.forms.modify.typ.value == "move") { 
+  if (document.getElementById('modify_move').checked) { 
   // Verschieben
 	  for (var nnr in querschnitte[absid][station]['streifen'][streifen]) {
 		  if (nnr <= nr) continue;
@@ -193,7 +193,7 @@ function updateInfoBreite () {
 	var station = auswahl.get('station')
 	
 	var max_diff_vst = null, max_diff_bst = null;
-if (document.forms.modify.typ.value == "fit" && (nr + 1) in querschnitte[absid][station]['streifen'][streifen]) { 
+if (document.getElementById('modify_fit').checked && (nr + 1) in querschnitte[absid][station]['streifen'][streifen]) { 
 	max_diff_vst = querschnitte[absid][station]['streifen'][streifen][nr+1]['breite']/100;
 	max_diff_bst = querschnitte[absid][station]['streifen'][streifen][nr+1]['bisBreite']/100;
   }
@@ -504,11 +504,13 @@ function part_move(event) {
 }
 
 function partQuerschnittButton() {
+	//loadAufbaudaten(part_neu.get("abschnittid"));
 	querTeilen(part_neu.get("abschnittid"), part_neu.get("station"));
 }
 
 
 function startPart() {
+	loadAufbaudaten();
 	map.addInteraction(part_select);
 	document.forms.teilen.style.display = 'block';
 	map.on("pointermove", part_move);
@@ -555,6 +557,7 @@ function addQuerschnittButton() {
 }
 
 function startAdd() {
+	loadAufbaudaten();
 	document.forms.hinzu.style.display = 'block';
 	map.addInteraction(add_select);
 }
@@ -571,31 +574,31 @@ function stopAdd() {
 
 
 function befehlChanged(wert) {
-	var befehl = document.forms.steuerung.befehl.value
+	var befehl = document.forms.steuerung.befehl
 	
-	if (befehl == "info") {
+	if (document.getElementById("befehl_info").checked) {
 		startInfo();
 	} else {
 		stopInfo();
 	}
 	
-	if (befehl == "modify") {
+	if (document.getElementById("befehl_modify").checked) {
 		startModify();
 	} else {
 		stopModify();
 	}
 	
-	if (befehl == "delete")
+	if (document.getElementById("befehl_delete").checked)
 		startDelete();
 	else
 		stopDelete();
 	
-	if (befehl == "part")
+	if (document.getElementById("befehl_part").checked)
 		startPart();
 	else
 		stopPart();
 	
-	if (befehl == "add")
+	if (document.getElementById("befehl_add").checked)
 		startAdd();
 	else
 		stopAdd();
