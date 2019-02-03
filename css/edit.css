@@ -38,7 +38,7 @@ form table, th, td {
 	border: 1px solid black;
 } 
 
-#nachricht {
+.nachricht {
 	position: absolute;
 	top: 50px;
 	left: 40%;
