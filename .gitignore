@@ -3,5 +3,4 @@ proxy_er.jsp
 openlayers/
 node_modules/
 .cache
-dist
 package-lock.json
