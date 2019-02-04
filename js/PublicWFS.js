@@ -1,9 +1,10 @@
-import PUBLIC_WFS_URL from './Config.js';
+var CONFIG = require('./config.json');
 
 class PublicWFS {
-    doSoapRequest(xml, callbackSuccess, callbackFailed, ...args) {
+	
+    static doSoapRequest(xml, callbackSuccess, callbackFailed, ...args) {
         var xmlhttp = new XMLHttpRequest();
-        xmlhttp.open('POST', PUBLIC_WFS_URL, true);
+        xmlhttp.open('POST', CONFIG.PUBLIC_WFS_URL, true);
     
         
         xmlhttp.onreadystatechange = function () {
@@ -18,7 +19,7 @@ class PublicWFS {
         xmlhttp.send(xml);
     }
     
-    doTransaction(transaction, callbackSuccess, callbackFailed, ...args) {
+    static doTransaction(transaction, callbackSuccess, callbackFailed, ...args) {
         var xml = 
             '<?xml version="1.0" encoding="ISO-8859-1"?>' +
             '<wfs:Transaction service="WFS" version="1.0.0"' +
@@ -35,7 +36,7 @@ class PublicWFS {
             callbackSuccess, callbackFailed, ...args)
     }
 
-    _checkTransacktionSuccess (xml, callbackSuccess, callbackFailed, ...args) {
+    static _checkTransacktionSuccess (xml, callbackSuccess, callbackFailed, ...args) {
         if (xml.getElementsByTagName("SUCCESS").length > 0) {
             callbackSuccess(xml, ...args);
         } else {
@@ -43,27 +44,27 @@ class PublicWFS {
         }
     }
 
-    _checkTransacktionFailed (xml, callbackSuccess, callbackFailed, ...args) {
+    static _checkTransacktionFailed (xml, callbackSuccess, callbackFailed, ...args) {
         callbackFailed(xml, ...args);
     }
 
-    doQuery(klasse, filter, callbackSuccess, callbackFailed, ...args) {
+    static doQuery(klasse, filter, callbackSuccess, callbackFailed, ...args) {
         var xml = '<?xml version="1.0" encoding="ISO-8859-1"?>' +
-            '<wfs:GetFeature xmlns:ns="http://xml.novasib.de" ' +
+            '<wfs:GetFeature xmlns="http://xml.novasib.de" ' +
             'xmlns:wfs="http://www.opengis.net/wfs" ' +
             'xmlns:gml="http://www.opengis.net/gml" ' +
-            'xmlns="http://www.opengis.net/ogc" ' +
+            'xmlns:ogc="http://www.opengis.net/ogc" ' +
             'xmlns:xlink="http://www.w3.org/1999/xlink" ' +
             'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" service="WFS" version="1.0.0" ' +
             'xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-transaction.xsd">' +
             '<wfs:Query typeName="' + klasse + '">' +
-            filter
+            filter +
             '</wfs:Query>' +
             '</wfs:GetFeature>';
-        return doSoapRequest(xml, callbackSuccess, callbackFailed, ...args)
+        return PublicWFS.doSoapRequest(xml, callbackSuccess, callbackFailed, ...args)
     }
     
-    showMessage(text, error) {
+    static showMessage(text, error) {
         let m = document.createElement("div");
         m.className = 'nachricht';
         m.innerHTML = text;

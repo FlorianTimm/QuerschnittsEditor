@@ -10,8 +10,8 @@ import { transform, fromLonLat } from 'ol/proj.js';
 import '@babel/polyfill';
 import QuerEdit from './QuerEdit.js';
 import Daten from './Daten.js';
-import EPSG_CODE from './Config.js';
 
+var CONFIG = require('./config.json');
 
 window.addEventListener('load', function () {
     proj4.defs("EPSG:31467", "+proj=tmerc +lat_0=0 +lon_0=9 +k=1 +x_0=3500000 +y_0=0 +ellps=bessel +towgs84=598.1,73.7,418.2,0.202,0.045,-2.455,6.7 +units=m +no_defs");
@@ -23,7 +23,7 @@ window.addEventListener('load', function () {
     var daten = new Daten(map);
     var edit = new QuerEdit(daten);
 
-    daten.getAbschnitt("test");
+    daten.getAbschnitt("S8abeaa946341396401638cd8ccfa5b16");
 });
 
 
@@ -66,12 +66,12 @@ function createMap() {
             pinchRotate: false
         }),
         view: new View({
-            projection: EPSG_CODE,
-            center: fromLonLat([10.0045, 53.4975], EPSG_CODE),
+            projection: CONFIG.EPSG_CODE,
+            center: fromLonLat([10.0045, 53.4975], CONFIG.EPSG_CODE),
             zoom: 17,
             minZoom: 11,
             maxZoom: 24,
-            extent: transform([548000, 5916500, 588500, 5955000], 'EPSG:25832', EPSG_CODE),
+            extent: transform([548000, 5916500, 588500, 5955000], 'EPSG:25832', CONFIG.EPSG_CODE),
         })
     });
 }

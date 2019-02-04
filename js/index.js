@@ -1,8 +1,10 @@
+import '../css/index.css';
 import PublicWFS from './PublicWFS.js';
 
 //?Service=WFS&Request=GetFeature&TypeName=Projekt&Filter=<Filter><PropertyIsEqualTo><PropertyName>status</PropertyName><Literal>1</Literal></PropertyIsEqualTo></Filter>
 
 function loadER() {
+	console.log((new PublicWFS()).doQuery);
     PublicWFS.doQuery('Projekt',
         '<Filter><And>' +
         '<PropertyIsEqualTo><PropertyName>status</PropertyName>' +
@@ -13,14 +15,11 @@ function loadER() {
         '</PropertyIsEqualTo>' +
         '</And></Filter>', readER,
         function () { PublicWFS.showMessage("Konnte ERs nicht laden") });
-    xmlhttp.onreadystatechange = function () {
-        readER(xmlhttp);
-    }
-    xmlhttp.setRequestHeader('Content-Type', 'text/xml');
-    xmlhttp.send();
 }
 
-er = {}
+window.addEventListener('load', loadER());
+
+var er = {}
 var select = document.getElementById("er_select")
 
 function readER(xmlhttp) {

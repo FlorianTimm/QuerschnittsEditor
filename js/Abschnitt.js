@@ -5,6 +5,7 @@ import PublicWFS from './PublicWFS';
 class Abschnitt extends Feature {
 
     constructor(abschnittid) {
+		super();
         this.abschnittid = abschnittid;
         this.geom = null;
         this.vnk = null;
@@ -12,16 +13,20 @@ class Abschnitt extends Feature {
         this.len = null;
         this.faktor = null;
         this.querschnitte = {};
-        _loadData();
+        this._loadData();
     }
 
     _loadData() {
-        PublicWFS.doQuery('VI_STRASSENNETZ', '<Filter>' +
-            '<PropertyIsEqualTo><PropertyName>ABSCHNITT_ID</PropertyName><Literal>' + this.abschnittid + '</Literal></PropertyIsEqualTo>' +
-            '</Filter>',readData,PublicWFS.showMessage("Fehler beim Laden der Achse"))
+        PublicWFS.doQuery('VI_STRASSENNETZ', '<ogc:Filter>' +
+            '<ogc:PropertyIsEqualTo><ogc:PropertyName>ABSCHNITT_ID</ogc:PropertyName><ogc:Literal>' + this.abschnittid + '</ogc:Literal></ogc:PropertyIsEqualTo>' +
+            '</ogc:Filter>',this._readData,function() {PublicWFS.showMessage("Fehler beim Laden der Achse")})
     }
 
     _readData(xmlhttp) {
+		if (xmlhttp.responseXML == undefined) {
+			PublicWFS.showMessage("Abschnitt nicht gefunden", true);
+			return;
+		}
         let netz = xmlhttp.responseXML.getElementsByTagName("VI_STRASSENNETZ")
 
         if (netz.length == 0) return;
