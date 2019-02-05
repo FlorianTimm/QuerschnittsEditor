@@ -17,12 +17,12 @@ class Klartext {
 
     _read(xml, _this) {
 
-        var quer = xml.getElementsByTagName(_this.bezeichnung)
+        let quer = xml.getElementsByTagName(_this.bezeichnung)
 
-        for (var i = 0; i < quer.length; i++) {
-            var kt = quer[i].getElementsByTagName(_this.feld)[0].firstChild.data
-            _this.klartext[kt] = {
-                'kt': kt,
+        for (let i = 0; i < quer.length; i++) {
+            let id = quer[i].getElementsByTagName('objektId')[0].firstChild.data;
+            _this.klartext[id] = {
+                'kt': quer[i].getElementsByTagName(_this.feld)[0].firstChild.data,
                 'beschreib': quer[i].getElementsByTagName('beschreib')[0].firstChild.data,
                 'objektId': quer[i].getElementsByTagName('objektId')[0].firstChild.data
             }

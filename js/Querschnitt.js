@@ -67,10 +67,7 @@ class Querschnitt {
             } else if (CONFIG.QUERSCHNITT[tag] == 2) {
                 // Klartext, xlink wird gespeichert
                 r[tag] = xml.getElementsByTagName(tag)[0].getAttribute('xlink:href');
-            } else if (CONFIG.QUERSCHNITT[tag] == 3) {
-                // Klartext, luk gespeichert
-                r[tag] = xml.getElementsByTagName(tag)[0].getAttribute('luk');
-            }
+            } 
         }
         //console.log(r)
 
@@ -158,6 +155,46 @@ class Querschnitt {
         this.flaeche.setGeometry(new Polygon([g])) //setCoordinates([g])
 
 
+    }
+
+    createXML() {
+
+
+    }
+
+    editBreite(edit, diff, fit) {
+        let streifen = this.station.getStreifen(this.streifen);
+        let nr = this.streifennr;
+        let editiert = [];
+
+        if (fit) {
+            // Anpassen
+            if (streifen != 'M' && (this.streifennr + 1) in streifen) {
+                if (streifen == 'L')
+                    streifen[nr + 1]['X' + edit + 'R'] += diff;
+                else if (streifen == 'R')
+                    streifen[nr + 1]['X' + edit + 'L'] += diff;
+                streifen[nr + 1]['breite'] =
+                    Math.round(100 * (streifen[nr + 1]['XVstR'] - streifen[nr + 1]['XVstL']));
+                streifen[nr + 1]['bisBreite'] =
+                    Math.round(100 * (streifen[nr + 1]['XBstR'] - streifen[nr + 1]['XBstL']));
+                streifen[nr+1].createGeom();
+                editiert.push(streifen[nr+1]);
+            }
+        } else {
+            // Verschieben
+            for (var nnr in streifen) {
+                if (nnr <= nr)
+                    continue;
+                streifen[nnr]['X' + edit + 'L'] += diff;
+                streifen[nnr]['X' + edit + 'R'] += diff;
+                streifen[nnr].createGeom();
+                editiert.push(streifen[nnr]);
+            }
+        }
+        this.createGeom();
+
+        
     }
 }
 

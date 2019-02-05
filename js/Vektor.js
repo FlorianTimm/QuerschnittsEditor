@@ -43,7 +43,7 @@ class Vektor {
             sum += Vektor.len(v)
         }
         //console.log(posi.sort(sort_posi))
-        return posi.sort(Vector.sort_posi)[0]
+        return posi.sort(Vektor.sort_posi)[0]
     }
     
     static sort_posi(a, b) {

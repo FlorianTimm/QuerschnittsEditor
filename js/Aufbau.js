@@ -47,14 +47,17 @@ class Aufbau {
     static fromXML (xml) {
         let r = new Aufbau();
         for (var tag in CONFIG.AUFBAUDATEN) {
-			if (xml.getElementsByTagName(tag).length <= 0) continue;
-			if (CONFIG.AUFBAUDATEN[tag] == 0) {
-				// Kein Klartext
-				r[tag] = xml.getElementsByTagName(tag)[0].firstChild.data;
-			} else {
-				// Klartext, xlink wird gespeichert
-				r[tag] = xml.getElementsByTagName(tag)[0].getAttribute('xlink:href');
-			}
+            if (xml.getElementsByTagName(tag).length <= 0) continue;
+            if (CONFIG.AUFBAUDATEN[tag] == 0) {
+                // Kein Klartext
+                r[tag] = xml.getElementsByTagName(tag)[0].firstChild.data;
+            } else if (CONFIG.AUFBAUDATEN[tag] == 1) {
+                // Kein Klartext
+                r[tag] = Number(xml.getElementsByTagName(tag)[0].firstChild.data);
+            } else if (CONFIG.AUFBAUDATEN[tag] == 2) {
+                // Klartext, xlink wird gespeichert
+                r[tag] = xml.getElementsByTagName(tag)[0].getAttribute('xlink:href');
+            } 
 		}
         return r;
     }

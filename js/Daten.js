@@ -37,7 +37,7 @@ class Daten {
             let t = document.createTextNode(arten[a].beschreib);
             option.appendChild(t);
             let v = document.createAttribute('value');
-            v.value = arten[a].kt;
+            v.value = '#' + arten[a].objektId;
             option.setAttributeNode(v);
             document.forms.info.info_art.appendChild(option);
         }
@@ -50,7 +50,7 @@ class Daten {
             let t = document.createTextNode(arten[a].beschreib);
             option.appendChild(t);
             let v = document.createAttribute('value');
-            v.value = arten[a].kt;
+            v.value = '#' + arten[a].objektId;
             option.setAttributeNode(v);
             document.forms.info.info_ober.appendChild(option);
         }
