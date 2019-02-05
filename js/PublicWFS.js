@@ -12,7 +12,10 @@ class PublicWFS {
             if (xmlhttp.status == 200) {
                 callbackSuccess(xmlhttp.responseXML, ...args)
             } else {
-                callbackFailed(xmlhttp.responseXML, ...args)
+                if (callbackFailed != undefined)
+                    callbackFailed(xmlhttp.responseXML, ...args)
+                else
+                    PublicWFS.showMessage("Kommunikationsfehler");
             }
         }
         xmlhttp.setRequestHeader('Content-Type', 'text/xml');
@@ -62,32 +65,6 @@ class PublicWFS {
             '</wfs:Query>' +
             '</wfs:GetFeature>';
         return PublicWFS.doSoapRequest(xml, callbackSuccess, callbackFailed, ...args)
-    }
-
-    static doQueryWait(klasse, filter) {
-        var xml = '<?xml version="1.0" encoding="ISO-8859-1"?>' +
-            '<wfs:GetFeature xmlns="http://xml.novasib.de" ' +
-            'xmlns:wfs="http://www.opengis.net/wfs" ' +
-            'xmlns:gml="http://www.opengis.net/gml" ' +
-            'xmlns:ogc="http://www.opengis.net/ogc" ' +
-            'xmlns:xlink="http://www.w3.org/1999/xlink" ' +
-            'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" service="WFS" version="1.0.0" ' +
-            'xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-transaction.xsd">' +
-            '<wfs:Query typeName="' + klasse + '">' +
-            filter +
-            '</wfs:Query>' +
-            '</wfs:GetFeature>';
-
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.open('POST', CONFIG.PUBLIC_WFS_URL, true);
-        xmlhttp.setRequestHeader('Content-Type', 'text/xml');
-        xmlhttp.send(xml);
-
-        while(xmlhttp.readyState != 4) {};
-        if (xmlhttp.status == 200) {
-            return xmlhttp.responseXML;
-        } 
-        return null;
     }
     
     static showMessage(text, error) {

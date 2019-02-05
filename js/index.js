@@ -1,11 +1,16 @@
 import '../css/index.css';
 import PublicWFS from './PublicWFS.js';
 
+window.addEventListener('load', loadER());
+
+var er = {}
+var select = document.getElementById("er_select")
+select.addEventListener("change", aenderung);
+
 //?Service=WFS&Request=GetFeature&TypeName=Projekt&Filter=<Filter><PropertyIsEqualTo><PropertyName>status</PropertyName><Literal>1</Literal></PropertyIsEqualTo></Filter>
 
 function loadER() {
-	console.log((new PublicWFS()).doQuery);
-    PublicWFS.doQuery('Projekt',
+    let xml = PublicWFS.doQuery('Projekt',
         '<Filter><And>' +
         '<PropertyIsEqualTo><PropertyName>status</PropertyName>' +
         '<Literal>1</Literal>' +
@@ -13,32 +18,27 @@ function loadER() {
         '<PropertyName>typ</PropertyName>' +
         '<Literal>D</Literal>' +
         '</PropertyIsEqualTo>' +
-        '</And></Filter>', readER,
-        function () { PublicWFS.showMessage("Konnte ERs nicht laden") });
+        '</And></Filter>',  readER);
 }
 
-window.addEventListener('load', loadER());
-
-var er = {}
-var select = document.getElementById("er_select")
-
-function readER(xmlhttp) {
-    var proj = xmlhttp.responseXML.getElementsByTagName("Projekt")
+function readER(xml) {
+    console.log(xml)
+    let proj = xml.getElementsByTagName("Projekt")
     select.innerHTML = ""
 
     for (var i = 0; i < proj.length; i++) {
 
-        projekt = proj[i].getAttribute("fid")
+        let projekt = proj[i].getAttribute("fid")
 
         er[projekt] = {}
 
         er[projekt]['nr'] = proj[i].getElementsByTagName("projekt")[0].firstChild.data
-        var kurzbez = proj[i].getElementsByTagName("kurzbez")
+        let kurzbez = proj[i].getElementsByTagName("kurzbez")
         if (kurzbez.length > 0)
             er[projekt]['kurzbez'] = proj[i].getElementsByTagName("kurzbez")[0].firstChild.data
         else
             er[projekt]['kurzbez'] = ""
-        var langbez = proj[i].getElementsByTagName("langbez")
+        let langbez = proj[i].getElementsByTagName("langbez")
         if (langbez.length > 0)
             er[projekt]['langbez'] = proj[i].getElementsByTagName("langbez")[0].firstChild.data
         else
@@ -48,12 +48,12 @@ function readER(xmlhttp) {
     }
 
 
-    for (var pid in er) {
-        var o = document.createElement('option')
-        var v = document.createAttribute("value")
+    for (let pid in er) {
+        let o = document.createElement('option')
+        let v = document.createAttribute("value")
         v.value = pid
         o.setAttributeNode(v);
-        var t = document.createTextNode(er[pid]['nr'].substr(11) + " - " + er[pid]['kurzbez']);
+        let t = document.createTextNode(er[pid]['nr'].substr(11) + " - " + er[pid]['kurzbez']);
         o.appendChild(t)
         select.appendChild(o)
     }

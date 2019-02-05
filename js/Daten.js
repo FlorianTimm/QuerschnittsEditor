@@ -1,11 +1,17 @@
-import {Vector as VectorSource} from 'ol/source';
+import VectorSource from 'ol/source/Vector';
 import {Vector as VectorLayer} from 'ol/layer';
 import {Style, Stroke, Fill} from 'ol/style';
 import Abschnitt from './Abschnitt.js';
+import PublicWFS from './PublicWFS.js';
+import Querschnitt from './Querschnitt.js';
+
+var daten = null;
 
 class Daten {
-    constructor(map) {
+    constructor(map, ereignisraum) {
+        daten = this;
         this.map = map;
+        this.ereignisraum = ereignisraum;
 
         this._createLayerFlaechen();
         this._createLayerTrennLinien();
@@ -13,12 +19,33 @@ class Daten {
         this._createLayerAchsen();    
         
         this.abschnitte = {};
+        this.loadER();
+    }
+
+    static get() {
+        return daten;
+    }
+
+    loadER() {
+        PublicWFS.doQuery('Dotquer', '<Filter>' +
+        '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>'+
+        '<Literal>' + this.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', this._loadER_Callback, undefined, this);
+    }
+
+    _loadER_Callback(xml, _this) {
+        let dotquer = xml.getElementsByTagName("Dotquer");
+        for (let quer of dotquer) {
+            let q = Querschnitt.fromXML(_this, quer);
+        }
+        console.log(_this)
     }
 
     getAbschnitt (absId) {
         if (!(absId in this.abschnitte)) {
-            this.abschnitte[absId] = new Abschnitt(absId);
+            this.abschnitte[absId] = Abschnitt.loadFromPublicWFS(absId);
+            this.v_achse.addFeature(this.abschnitte[absId].getFeature());
         }
+        //console.log(this.abschnitte[absId]);
         return this.abschnitte[absId];
     }
 
@@ -92,7 +119,7 @@ class Daten {
             source: this.v_quer,
             opacity: 0.36,
             style: function (feature, resolution) {
-                var art = Number(feature.get('art'));
+                var art = Number(feature.get('objekt').art);
                 //console.log(art);
                 if ((art >= 100 && art <= 119) || (art >= 122 && art <= 161) || (art >= 163 && art <= 179) || art == 312) return fill_style('#444444');	// Fahrstreifen
                 else if (art >= 180 && art <= 183) return fill_style('#333366');	// Parkstreifen

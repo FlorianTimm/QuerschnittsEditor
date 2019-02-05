@@ -8,8 +8,10 @@ import { register } from 'ol/proj/proj4.js';
 import proj4 from 'proj4';
 import { transform, fromLonLat } from 'ol/proj.js';
 import '@babel/polyfill';
-import QuerEdit from './QuerEdit.js';
+import Modify from './Modify.js';
 import Daten from './Daten.js';
+import PublicWFS from './PublicWFS.js';
+import InfoTool from './InfoTool.js';
 
 var CONFIG = require('./config.json');
 
@@ -19,9 +21,17 @@ window.addEventListener('load', function () {
     register(proj4);
 
     var map = createMap();
-
-    var daten = new Daten(map);
-    var edit = new QuerEdit(daten);
+    let urlParam = new RegExp('[\?&]er=([^&#]*)').exec(window.location.href);
+    if (urlParam == null) {
+        PublicWFS.showMessage("Kein Ereignisraum ausgewählt!", true);
+        return;
+    }
+    var er = decodeURI(urlParam[1])
+    console.log("Ereignisraum: " + er);
+    var daten = new Daten(map, er);
+    var info = new InfoTool(map, daten);
+    var edit = new Modify(map, daten, info);
+    edit.start();
 
     daten.getAbschnitt("S8abeaa946341396401638cd8ccfa5b16");
 });

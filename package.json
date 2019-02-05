@@ -5,8 +5,8 @@
   "main": "js/edit.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "parcel *.htm",
-    "build": "parcel build --public-url . *.htm"
+    "start": "parcel --out-dir \"//gv-srv-w00118/GlassFish Docroot/querOO\" --hmr-hostname localhost --public-url . *.html",
+    "build": "parcel build --out-dir \"//gv-srv-w00118/GlassFish Docroot/querOO\" --public-url . *.html"
   },
   "author": "Florian Timm",
   "license": "MIT",
@@ -21,10 +21,11 @@
     "regenerator-runtime": "^0.13.1"
   },
   "devDependencies": {
+    "cssnano": "^4.1.8",
     "parcel-bundler": "^1.11.0"
   },
   "browserslist": [
     "> 1%",
-    "last 2 versions"
+    "last 3 versions"
   ]
 }
