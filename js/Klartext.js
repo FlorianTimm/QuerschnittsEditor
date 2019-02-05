@@ -1,4 +1,5 @@
 import PublicWFS from './PublicWFS.js';
+import { isNullOrUndefined } from 'util';
 
 class Klartext {
     constructor(bezeichnung, feld, whenReady, ...args) {
@@ -6,40 +7,40 @@ class Klartext {
         this.feld = feld;
         this.bezeichnung = bezeichnung;
         this.whenReady = whenReady;
-        _load();
+        this.args = args;
+        this._load();
     }
-    
+
     _load() {
-        PublicWFS.doQuery(this.bezeichnung, '', _read, undefined, this)
+        PublicWFS.doQuery(this.bezeichnung, '', this._read, undefined, this)
     }
 
     _read(xml, _this) {
 
-        var quer = xmlhttp.responseXML.getElementsByTagName(_this.bezeichnung)
+        var quer = xml.getElementsByTagName(_this.bezeichnung)
 
         for (var i = 0; i < quer.length; i++) {
-            var art = quer[i].getElementsByTagName(_this.feld)[0].firstChild.data
-            _this.klartext[art] = {
-                'kt': quer[i].getElementsByTagName('beschreib')[0].firstChild.data,
+            var kt = quer[i].getElementsByTagName(_this.feld)[0].firstChild.data
+            _this.klartext[kt] = {
+                'kt': kt,
+                'beschreib': quer[i].getElementsByTagName('beschreib')[0].firstChild.data,
                 'objektId': quer[i].getElementsByTagName('objektId')[0].firstChild.data
             }
         }
-
+        if (!isNullOrUndefined(_this.whenReady)) {
+            _this.whenReady(_this, ..._this.args);
+        }
     }
-}
 
-class KtArt extends Klartext() {
-    constructor(whenReady, ...args) {
-        super('Itquerart', 'art', whenReady, ...args)
+    get(bezeichnung) {
+        if (bezeichnung in this.klartext)
+            return this.klartext[bezeichnung];
+        return null;
     }
-}
 
-class KtArtOber extends Klartext() {
-    constructor(whenReady, ...args) {
-        super('Itquerober', 'artober', whenReady, ...args)
+    getAll() {
+        return this.klartext;
     }
 }
 
 module.exports = Klartext;
-module.exports = KtArt;
-module.exports = KtArtOber;

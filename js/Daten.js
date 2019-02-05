@@ -1,9 +1,10 @@
 import VectorSource from 'ol/source/Vector';
-import {Vector as VectorLayer} from 'ol/layer';
-import {Style, Stroke, Fill} from 'ol/style';
+import { Vector as VectorLayer } from 'ol/layer';
+import { Style, Stroke, Fill } from 'ol/style';
 import Abschnitt from './Abschnitt.js';
 import PublicWFS from './PublicWFS.js';
 import Querschnitt from './Querschnitt.js';
+import Klartext from './Klartext.js';
 
 var daten = null;
 
@@ -13,11 +14,14 @@ class Daten {
         this.map = map;
         this.ereignisraum = ereignisraum;
 
+        this.kt_art = new Klartext('Itquerart', 'art', this._showArt, this);
+        this.kt_artober = new Klartext('Itquerober', 'artober', this._showArtOber, this);
+
         this._createLayerFlaechen();
         this._createLayerTrennLinien();
         this._createLayerStationen();
-        this._createLayerAchsen();    
-        
+        this._createLayerAchsen();
+
         this.abschnitte = {};
         this.loadER();
     }
@@ -26,10 +30,36 @@ class Daten {
         return daten;
     }
 
+    _showArt(art, _this) {
+        let arten = art.getAll();
+        for (let a in arten) {
+            let option = document.createElement('option');
+            let t = document.createTextNode(arten[a].beschreib);
+            option.appendChild(t);
+            let v = document.createAttribute('value');
+            v.value = arten[a].kt;
+            option.setAttributeNode(v);
+            document.forms.info.info_art.appendChild(option);
+        }
+    }
+
+    _showArtOber(artober, _this) {
+        let arten = artober.getAll();
+        for (let a in arten) {
+            let option = document.createElement('option');
+            let t = document.createTextNode(arten[a].beschreib);
+            option.appendChild(t);
+            let v = document.createAttribute('value');
+            v.value = arten[a].kt;
+            option.setAttributeNode(v);
+            document.forms.info.info_ober.appendChild(option);
+        }
+    }
+
     loadER() {
         PublicWFS.doQuery('Dotquer', '<Filter>' +
-        '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>'+
-        '<Literal>' + this.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', this._loadER_Callback, undefined, this);
+            '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
+            '<Literal>' + this.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', this._loadER_Callback, undefined, this);
     }
 
     _loadER_Callback(xml, _this) {
@@ -40,7 +70,7 @@ class Daten {
         console.log(_this)
     }
 
-    getAbschnitt (absId) {
+    getAbschnitt(absId) {
         if (!(absId in this.abschnitte)) {
             this.abschnitte[absId] = Abschnitt.loadFromPublicWFS(absId);
             this.v_achse.addFeature(this.abschnitte[absId].getFeature());
