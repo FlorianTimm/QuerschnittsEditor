@@ -1,6 +1,6 @@
 var CONFIG = require('./config.json');
 import PublicWFS from './PublicWFS.js';
-import {Polygon, MultiLineString} from 'ol/geom';
+import { Polygon, MultiLineString } from 'ol/geom';
 import Feature from 'ol/Feature.js';
 import Station from './Station.js';
 import Vektor from './Vektor.js';
@@ -49,7 +49,6 @@ class Querschnitt {
         this.bearbeiter = null;
         this.behoerde = null
     }
-
     static fromXML(daten, xml) {
         let r = new Querschnitt(daten);
 
@@ -58,16 +57,16 @@ class Querschnitt {
         for (let tag in CONFIG.QUERSCHNITT) {
             //console.log(tag);
             if (xml.getElementsByTagName(tag).length <= 0) continue;
-            if (CONFIG.QUERSCHNITT[tag] == 0) {
+            if (CONFIG.QUERSCHNITT[tag].art == 0) {
                 // Kein Klartext
                 r[tag] = xml.getElementsByTagName(tag)[0].firstChild.data;
-            } else if (CONFIG.QUERSCHNITT[tag] == 1) {
+            } else if (CONFIG.QUERSCHNITT[tag].art == 1) {
                 // Kein Klartext
                 r[tag] = Number(xml.getElementsByTagName(tag)[0].firstChild.data);
-            } else if (CONFIG.QUERSCHNITT[tag] == 2) {
+            } else if (CONFIG.QUERSCHNITT[tag].art == 2) {
                 // Klartext, xlink wird gespeichert
                 r[tag] = xml.getElementsByTagName(tag)[0].getAttribute('xlink:href');
-            } 
+            }
         }
         //console.log(r)
 
@@ -98,15 +97,15 @@ class Querschnitt {
 
     getAufbauDaten() {
         if (this._aufbaudaten == null) {
-            let xml = PublicWFS.doQuery('Otschicht', '<ogc:Filter><ogc:And>' +
-                '<ogc:PropertyIsEqualTo>' +
-                '    <ogc:Property>projekt/@xlink:href</ogc:Property>' +
-                '    <ogc:Literal>' + ereignisraum + '</ogc:Literal>' +
-                '  </ogc:PropertyIsEqualTo>' +
-                '  <ogc:PropertyIsEqualTo>' +
-                '    <ogc:Property>parent/@xlink:href</ogc:Property>' +
-                '    <ogc:Literal>' + this.fid + '</ogc:Literal>' +
-                '  </ogc:PropertyIsEqualTo>' +
+            let xml = PublicWFS.doQuery('Otschicht', '<ogc:Filter><ogc:And>\n' +
+                '<ogc:PropertyIsEqualTo>\n' +
+                '    <ogc:Property>projekt/@xlink:href</ogc:Property>\n' +
+                '    <ogc:Literal>' + ereignisraum + '</ogc:Literal>\n' +
+                '  </ogc:PropertyIsEqualTo>\n' +
+                '  <ogc:PropertyIsEqualTo>\n' +
+                '    <ogc:Property>parent/@xlink:href</ogc:Property>\n' +
+                '    <ogc:Literal>' + this.fid + '</ogc:Literal>\n' +
+                '  </ogc:PropertyIsEqualTo>\n' +
                 '</ogc:And></ogc:Filter>', this._parseAufbaudaten(xml, this));
         }
     }
@@ -157,44 +156,174 @@ class Querschnitt {
 
     }
 
-    createXML() {
+    createInsertXML() {
+        let r = '<wfs:Insert>\n<Dotquer>\n';
 
+        for (let tag in CONFIG.QUERSCHNITT) {
+            //console.log(tag);
+            if (this[tag] === null || this[tag] === undefined) continue;
+            if (CONFIG.QUERSCHNITT[tag].art == 0 || CONFIG.QUERSCHNITT[tag].art == 1) {
+                // Kein Klartext
+                r += '<' + tag + '>' + this[tag] + '</' + tag + '>\n';
+            } else if (CONFIG.QUERSCHNITT[tag].art == 2) {
+                // Klartext
+                r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG.QUERSCHNITT[tag].kt + '" />\n' + this[tag];
+            }
+        }
 
+        r += '</Dotquer>\n</wfs:Insert>\n';
+        return r;
     }
 
+    createUpdateBreiteXML() {
+        return '<wfs:Update typeName="Dotquer">\n' +
+            '	<wfs:Property>\n' +
+            '		<wfs:Name>breite</wfs:Name>\n' +
+            '		<wfs:Value>' + Math.round(this.breite) + '</wfs:Value>\n' +
+            '	</wfs:Property>\n' +
+            '	<wfs:Property>\n' +
+            '		<wfs:Name>bisBreite</wfs:Name>\n' +
+            '		<wfs:Value>' + Math.round(this.bisBreite) + '</wfs:Value>\n' +
+            '	</wfs:Property>\n' +
+            '	<wfs:Property>\n' +
+            '		<wfs:Name>XVstL</wfs:Name>\n' +
+            '		<wfs:Value>' + Math.round(this.XVstL * 100) / 100 + '</wfs:Value>\n' +
+            '	</wfs:Property>\n' +
+            '	<wfs:Property>\n' +
+            '		<wfs:Name>XVstR</wfs:Name>\n' +
+            '		<wfs:Value>' + Math.round(this.XVstR * 100) / 100 + '</wfs:Value>\n' +
+            '	</wfs:Property>\n' +
+            '	<wfs:Property>\n' +
+            '		<wfs:Name>XBstL</wfs:Name>\n' +
+            '		<wfs:Value>' + Math.round(this.XBstL * 100) / 100 + '</wfs:Value>\n' +
+            '	</wfs:Property>\n' +
+            '	<wfs:Property>\n' +
+            '		<wfs:Name>XBstR</wfs:Name>\n' +
+            '		<wfs:Value>' + Math.round(this.XBstR * 100) / 100 + '</wfs:Value>\n' +
+            '	</wfs:Property>\n' +
+            '	<ogc:Filter>\n' +
+            '		<ogc:And>\n' +
+            '			<ogc:PropertyIsEqualTo>\n' +
+            '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
+            '				<ogc:Literal>' + this.objektId + '</ogc:Literal>\n' +
+            '			</ogc:PropertyIsEqualTo>\n' +
+            '			<ogc:PropertyIsEqualTo>\n' +
+            '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
+            '				<ogc:Literal>' + this.projekt + '</ogc:Literal>\n' +
+            '			</ogc:PropertyIsEqualTo>\n' +
+            '		</ogc:And>\n' +
+            '	</ogc:Filter>\n' +
+            '</wfs:Update>';
+    }
+
+
+    createUpdateStreifenXML() {
+        return '<wfs:Update typeName="Dotquer">\n' +
+            '	<wfs:Property>\n' +
+            '		<wfs:Name>streifennr</wfs:Name>\n' +
+            '		<wfs:Value>' + this.streifennr + '</wfs:Value>\n' +
+            '	</wfs:Property>\n' +
+            '	<wfs:Property>\n' +
+            '		<wfs:Name>XVstL</wfs:Name>\n' +
+            '		<wfs:Value>' + Math.round(this.XVstL * 100) / 100 + '</wfs:Value>\n' +
+            '	</wfs:Property>\n' +
+            '	<wfs:Property>\n' +
+            '		<wfs:Name>XVstR</wfs:Name>\n' +
+            '		<wfs:Value>' + Math.round(this.XVstR * 100) / 100 + '</wfs:Value>\n' +
+            '	</wfs:Property>\n' +
+            '	<wfs:Property>\n' +
+            '		<wfs:Name>XBstL</wfs:Name>\n' +
+            '		<wfs:Value>' + Math.round(this.XBstL * 100) / 100 + '</wfs:Value>\n' +
+            '	</wfs:Property>\n' +
+            '	<wfs:Property>\n' +
+            '		<wfs:Name>XBstR</wfs:Name>\n' +
+            '		<wfs:Value>' + Math.round(this.XBstR * 100) / 100 + '</wfs:Value>\n' +
+            '	</wfs:Property>\n' +
+            '	<ogc:Filter>\n' +
+            '		<ogc:And>\n' +
+            '			<ogc:PropertyIsEqualTo>\n' +
+            '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
+            '				<ogc:Literal>' + this.objektId + '</ogc:Literal>\n' +
+            '			</ogc:PropertyIsEqualTo>\n' +
+            '			<ogc:PropertyIsEqualTo>\n' +
+            '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
+            '				<ogc:Literal>' + this.projekt + '</ogc:Literal>\n' +
+            '			</ogc:PropertyIsEqualTo>\n' +
+            '		</ogc:And>\n' +
+            '	</ogc:Filter>\n' +
+            '</wfs:Update>';
+    }
+
+    createUpdateArtXML () {
+        return '<wfs:Update typeName="Dotquer">\n' +
+        '	<wfs:Property>\n' +
+        '		<wfs:Name>art/@xlink:href</wfs:Name>\n' +
+        '		<wfs:Value>' + this.art + '</wfs:Value>\n' +
+        '	</wfs:Property>\n' +
+        '	<wfs:Property>\n' +
+        '		<wfs:Name>artober/@xlink:href</wfs:Name>\n' +
+        '		<wfs:Value>' + this.artober + '</wfs:Value>\n' +
+        '	</wfs:Property>\n' +
+        '	<ogc:Filter>\n' +
+        '		<ogc:And>\n' +
+        '			<ogc:PropertyIsEqualTo>\n' +
+        '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
+        '				<ogc:Literal>' + this.objektId + '</ogc:Literal>\n' +
+        '			</ogc:PropertyIsEqualTo>\n' +
+        '			<ogc:PropertyIsEqualTo>\n' +
+        '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
+        '				<ogc:Literal>' + this.projekt + '</ogc:Literal>\n' +
+        '			</ogc:PropertyIsEqualTo>\n' +
+        '		</ogc:And>\n' +
+        '	</ogc:Filter>\n' +
+        '</wfs:Update>';
+    }
+
+
+    updateArt(art, artober) {
+        this.art = art;
+        this.artober = artober;
+        
+        PublicWFS.doTransaction(this.createUpdateArtXML());
+    }
+
+
     editBreite(edit, diff, fit) {
-        let streifen = this.station.getStreifen(this.streifen);
+        let gesStreifen = this.station.getStreifen(this.streifen);
         let nr = this.streifennr;
-        let editiert = [];
+
+        let soap = this.createUpdateBreiteXML();
 
         if (fit) {
             // Anpassen
-            if (streifen != 'M' && (this.streifennr + 1) in streifen) {
-                if (streifen == 'L')
-                    streifen[nr + 1]['X' + edit + 'R'] += diff;
-                else if (streifen == 'R')
-                    streifen[nr + 1]['X' + edit + 'L'] += diff;
-                streifen[nr + 1]['breite'] =
-                    Math.round(100 * (streifen[nr + 1]['XVstR'] - streifen[nr + 1]['XVstL']));
-                streifen[nr + 1]['bisBreite'] =
-                    Math.round(100 * (streifen[nr + 1]['XBstR'] - streifen[nr + 1]['XBstL']));
-                streifen[nr+1].createGeom();
-                editiert.push(streifen[nr+1]);
+            if (this.streifen != 'M' && (this.streifennr + 1) in gesStreifen) {
+                if (this.streifen == 'L')
+                    gesStreifen[nr + 1]['X' + edit + 'R'] += diff;
+                else if (this.streifen == 'R')
+                    gesStreifen[nr + 1]['X' + edit + 'L'] += diff;
+                gesStreifen[nr + 1]['breite'] =
+                    Math.round(100 * (gesStreifen[nr + 1]['XVstR'] - gesStreifen[nr + 1]['XVstL']));
+                gesStreifen[nr + 1]['bisBreite'] =
+                    Math.round(100 * (gesStreifen[nr + 1]['XBstR'] - gesStreifen[nr + 1]['XBstL']));
+                gesStreifen[nr + 1].createGeom();
+                soap += gesStreifen[nr + 1].createUpdateBreiteXML();
             }
         } else {
             // Verschieben
-            for (var nnr in streifen) {
+            for (var nnr in gesStreifen) {
                 if (nnr <= nr)
                     continue;
-                streifen[nnr]['X' + edit + 'L'] += diff;
-                streifen[nnr]['X' + edit + 'R'] += diff;
-                streifen[nnr].createGeom();
-                editiert.push(streifen[nnr]);
+                gesStreifen[nnr]['X' + edit + 'L'] += diff;
+                gesStreifen[nnr]['X' + edit + 'R'] += diff;
+                gesStreifen[nnr].createGeom();
+                soap += gesStreifen[nnr].createUpdateBreiteXML();
             }
         }
         this.createGeom();
 
-        
+        console.log(soap);
+
+        PublicWFS.doTransaction(soap);
     }
 }
 

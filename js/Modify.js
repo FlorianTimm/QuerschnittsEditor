@@ -14,7 +14,22 @@ class Modify {
         this._createFlaechenSelect();
         this._createModify();
         this._createSnap();
+
+        document.getElementById('info_art').addEventListener('change', this.updateInfo.bind(this));
+        document.getElementById('info_ober').addEventListener('change', this.updateInfo.bind(this));
+        document.getElementById('info_breite').addEventListener('change', this.updateInfoBreite.bind(this));
+        document.getElementById('info_bisbreite').addEventListener('change', this.updateInfoBreite.bind(this));
+
+        document.getElementById('befehl_modify').addEventListener('change', this._switch.bind(this));
     };
+
+    _switch () {
+        if (document.getElementById('befehl_info').checked) {
+            this.start();
+        } else {
+            this.stop();
+        }
+    }
 
     _createModify() {
         this.modify = new ModifyInteraction({
@@ -23,6 +38,7 @@ class Modify {
             features: this.select.getFeatures()
         });
         this.modify.geo_vorher = null;
+        this.modify.modify = this;
 
         this.modify.on('modifystart', function (e) {
             let auswahl = e.features.getArray()[0];
@@ -34,26 +50,26 @@ class Modify {
     _modifyEnd(event) {
         console.log(event);
         let auswahl = event.features.getArray()[0];
-        var querschnitt = auswahl.get('objekt');
-        var nachher = auswahl.getGeometry().getCoordinates();
-        var vorher = this.geo_vorher.getCoordinates();
+        let querschnitt = auswahl.get('objekt');
+        let nachher = auswahl.getGeometry().getCoordinates();
+        let vorher = this.geo_vorher.getCoordinates();
 
         let streifen = querschnitt.streifen;
         let nr = querschnitt.streifennr;
 
-        var diff = 0, edit = null;
-        var max_diff_vst = null, max_diff_bst = null;
+        let diff = 0, edit = null;
+        let max_diff_vst = null, max_diff_bst = null;
 
         if (document.getElementById('modify_fit').checked && querschnitt.station.getQuerschnitt(streifen, nr + 1) != null) {
             max_diff_vst = querschnitt.station.getQuerschnitt(streifen, nr + 1).breite / 100;
             max_diff_bst = querschnitt.station.getQuerschnitt(streifen, nr + 1).bisBreite / 100;
         }
 
-        for (var i = 0; i < vorher.length; i++) {
-            for (var j = 0; j < vorher[i].length; j += vorher[i].length - 1) {
+        for (let i = 0; i < vorher.length; i++) {
+            for (let j = 0; j < vorher[i].length; j += vorher[i].length - 1) {
                 if (nachher[i][j][0] != vorher[i][j][0] || nachher[i][j][1] != vorher[i][j][1]) {
-                    var pos = Vektor.get_pos(querschnitt.station.geo, nachher[i][j]);
-                    var dist = Math.round(pos[4] * 100) / 100;
+                    let pos = Vektor.get_pos(querschnitt.station.geo, nachher[i][j]);
+                    let dist = Math.round(pos[4] * 100) / 100;
                     if (streifen == 'L')
                         dist *= -1;
 
@@ -88,7 +104,7 @@ class Modify {
         if (edit == null) return;
         querschnitt.editBreite(edit, diff, document.getElementById('modify_fit').checked);
         //breiteNachfAnpassen(absid, station, streifen, nr, edit, diff);
-
+        this.modify.info.logAuswahl(this.modify.select);
     }
 
     _createLinienSelect() {
@@ -116,18 +132,16 @@ class Modify {
                 })
             })
         });
-        this.select_fl.info = this.info;
-        this.select_fl.select = this.select;
+
         this.select_fl.on('select', function (e, zwei) {
-            console.log(e);
-            e.target.select.getFeatures().clear();
+            this.select.getFeatures().clear();
             if (e.selected.length > 0) {
                 let auswahl = e.selected[0];
                 let a = auswahl.get('objekt').trenn;
-                e.target.select.getFeatures().push(a);
+                this.select.getFeatures().push(a);
             }
-            e.target.info.logAuswahl(e.target.select);
-        });
+            this.info.logAuswahl(this.select);
+        }.bind(this));
     }
 
     _createSnap() {
@@ -142,92 +156,60 @@ class Modify {
         });
     }
 
-    breiteNachfAnpassen(absid, station, streifen, nr, edit, diff) {
-        querstreifen = [[absid, station, streifen, nr]];
-        if (document.getElementById('modify_move').checked) {
-            // Verschieben
-            for (var nnr in querschnitte[absid][station]['streifen'][streifen]) {
-                if (nnr <= nr)
-                    continue;
-                querschnitte[absid][station]['streifen'][streifen][nnr]['X' + edit + 'L'] += diff;
-                querschnitte[absid][station]['streifen'][streifen][nnr]['X' + edit + 'R'] += diff;
-                querstreifen.push([absid, station, streifen, nnr]);
-            }
-        }
-        else {
-            // Anpassen
-            if (streifen != 'M' && (nr + 1) in querschnitte[absid][station]['streifen'][streifen]) {
-                if (streifen == 'L')
-                    querschnitte[absid][station]['streifen'][streifen][nr + 1]['X' + edit + 'R'] += diff;
-                else if (streifen == 'R')
-                    querschnitte[absid][station]['streifen'][streifen][nr + 1]['X' + edit + 'L'] += diff;
-                querschnitte[absid][station]['streifen'][streifen][nr + 1]['breite'] =
-                    Math.round(100 * (querschnitte[absid][station]['streifen'][streifen][nr + 1]['XVstR'] -
-                        querschnitte[absid][station]['streifen'][streifen][nr + 1]['XVstL']));
-                querschnitte[absid][station]['streifen'][streifen][nr + 1]['bisBreite'] =
-                    Math.round(100 * (querschnitte[absid][station]['streifen'][streifen][nr + 1]['XBstR'] -
-                        querschnitte[absid][station]['streifen'][streifen][nr + 1]['XBstL']));
-                querstreifen.push([absid, station, streifen, nr + 1]);
-            }
-        }
-        logAuswahl(this.select);
-        refreshQuerschnitte(absid);
-        updateQuerschnitt(querstreifen);
+    _getSelection() {
+        let selection = this.select.getFeatures();
+        if (this.select.getFeatures().getLength() <= 0)
+            return;
+        return selection.item(0).get('objekt');
     }
+
     updateInfo() {
-        var selection = this.select.getFeatures();
-        if (this.select.getFeatures().getLength() <= 0)
-            return;
-        var auswahl = selection.item(0);
-        var absid = auswahl.get('abschnittsid');
-        var streifen = auswahl.get('streifen');
-        var nr = auswahl.get('nr');
-        var station = auswahl.get('station');
-        querschnitte[absid][station]['streifen'][streifen][nr]['art'] = document.getElementById('info_art').value;
-        querschnitte[absid][station]['streifen'][streifen][nr]['flaeche'].set('art', document.getElementById('info_art').value);
-        querschnitte[absid][station]['streifen'][streifen][nr]['artober'] = document.getElementById('info_ober').value;
+        let querschnitt = this._getSelection();
+
+        let art = document.getElementById('info_art').value;
+        let artober = document.getElementById('info_ober').value;
+
+        querschnitt.updateArt(art, artober);
     }
-    updateInfoBreite() {
-        var selection = this.select.getFeatures();
-        if (this.select.getFeatures().getLength() <= 0)
-            return;
-        var auswahl = selection.item(0);
-        var absid = auswahl.get('abschnittsid');
-        var streifen = auswahl.get('streifen');
-        var nr = auswahl.get('nr');
-        var station = auswahl.get('station');
-        var max_diff_vst = null, max_diff_bst = null;
-        if (document.getElementById('modify_fit').checked && (nr + 1) in querschnitte[absid][station]['streifen'][streifen]) {
-            max_diff_vst = querschnitte[absid][station]['streifen'][streifen][nr + 1]['breite'] / 100;
-            max_diff_bst = querschnitte[absid][station]['streifen'][streifen][nr + 1]['bisBreite'] / 100;
+    updateInfoBreite(test) {
+        let querschnitt = this._getSelection();
+
+        let max_diff_vst = null, max_diff_bst = null;
+        if (document.getElementById('modify_fit').checked && querschnitt.station.getQuerschnitt(this.streifen, this.streifennr + 1) != null) {
+            max_diff_vst = querschnitt.station.getQuerschnitt(streifen, nr + 1).breite / 100;
+            max_diff_bst = querschnitt.station.getQuerschnitt(streifen, nr + 1).bisBreite / 100;
         }
-        if (querschnitte[absid][station]['streifen'][streifen][nr]['breite'] != Number(document.getElementById('info_breite').value)) {
-            diff = (Math.round(Number(document.getElementById('info_breite').value)) - querschnitte[absid][station]['streifen'][streifen][nr]['breite']) / 100;
+
+        if (querschnitt.breite != Number(document.getElementById('info_breite').value)) {
+            let diff = (Math.round(Number(document.getElementById('info_breite').value)) - querschnitt.breite) / 100;
             if (max_diff_vst !== null && diff > max_diff_vst) {
                 diff = (max_diff_vst);
             }
-            querschnitte[absid][station]['streifen'][streifen][nr]['breite'] += diff * 100;
-            if (streifen == 'L') {
-                querschnitte[absid][station]['streifen'][streifen][nr]['XVstL'] -= diff;
+            querschnitt.breite += diff * 100;
+            if (querschnitt.streifen == 'L') {
+                querschnitt.XVstL -= diff;
+                querschnitt.editBreite('Vst', -diff, document.getElementById('modify_fit').checked);
             }
-            else if (streifen == 'R') {
-                querschnitte[absid][station]['streifen'][streifen][nr]['XVstR'] += diff;
+            else if (querschnitt.streifen == 'R') {
+                querschnitt.XVstR += diff;
+                querschnitt.editBreite('Vst', diff, document.getElementById('modify_fit').checked);
             }
-            breiteNachfAnpassen(absid, station, streifen, nr, 'Vst', diff);
+            
         }
-        else if (querschnitte[absid][station]['streifen'][streifen][nr]['bisBreite'] != Number(document.getElementById('info_bisbreite').value)) {
-            diff = (Math.round(Number(document.getElementById('info_bisbreite').value)) - querschnitte[absid][station]['streifen'][streifen][nr]['bisBreite']) / 100;
+        else if (querschnitt.bisBreite != Number(document.getElementById('info_bisbreite').value)) {
+            let diff = (Math.round(Number(document.getElementById('info_bisbreite').value)) - querschnitt.bisBreite) / 100;
             if (max_diff_bst !== null && diff > max_diff_bst) {
                 diff = (max_diff_bst);
             }
-            querschnitte[absid][station]['streifen'][streifen][nr]['bisBreite'] += diff * 100;
-            if (streifen == 'L') {
-                querschnitte[absid][station]['streifen'][streifen][nr]['XBstL'] -= diff;
+            querschnitt.bisBreite += diff * 100;
+            if (querschnitt.streifen == 'L') {
+                querschnitt.XBstL -= diff;
+                querschnitt.editBreite('Bst', -diff, document.getElementById('modify_fit').checked);
             }
-            else if (streifen == 'R') {
-                querschnitte[absid][station]['streifen'][streifen][nr]['XBstR'] += diff;
+            else if (querschnitt.streifen == 'R') {
+                querschnitt.XBstR += diff;
+                querschnitt.editBreite('Bst', diff, document.getElementById('modify_fit').checked);
             }
-            breiteNachfAnpassen(absid, station, streifen, nr, 'Bst', diff);
         }
     }
 

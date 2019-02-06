@@ -12,8 +12,14 @@ import Modify from './Modify.js';
 import Daten from './Daten.js';
 import PublicWFS from './PublicWFS.js';
 import InfoTool from './InfoTool.js';
+import PartTool from './PartTool.js';
+import AddTool from './AddTool.js';
+import DelTool from './DelTool.js';
+import { add } from 'ol/coordinate';
 
 var CONFIG = require('./config.json');
+
+var infoTool, editTool, delTool, partTool, addTool;
 
 window.addEventListener('load', function () {
     proj4.defs("EPSG:31467", "+proj=tmerc +lat_0=0 +lon_0=9 +k=1 +x_0=3500000 +y_0=0 +ellps=bessel +towgs84=598.1,73.7,418.2,0.202,0.045,-2.455,6.7 +units=m +no_defs");
@@ -28,14 +34,40 @@ window.addEventListener('load', function () {
     }
     var er = decodeURI(urlParam[1])
     console.log("Ereignisraum: " + er);
-    var daten = new Daten(map, er);
-    var info = new InfoTool(map, daten);
-    var edit = new Modify(map, daten, info);
-    edit.start();
+    let daten = new Daten(map, er);
+    infoTool = new InfoTool(map, daten);
+    infoTool.start();
+    editTool = new Modify(map, daten, infoTool);
+    delTool = new DelTool(map, daten, infoTool);
+    addTool = new AddTool(map, daten, infoTool);
+    partTool = new PartTool(map, daten, infoTool);
 
-    daten.getAbschnitt("S8abeaa946341396401638cd8ccfa5b16");
+    document.getElementById("befehl_info").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_modify").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_delete").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_part").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_add").addEventListener('change', befehl_changed);
+
 });
 
+function befehl_changed() {
+    infoTool.stop();
+    editTool.stop();
+    delTool.stop();
+    partTool.stop();
+    addTool.stop();
+
+    if (document.getElementById("befehl_info").checked) 
+        infoTool.start();
+     else if (document.getElementById("befehl_modify").checked) 
+        editTool.start();
+     else if (document.getElementById("befehl_delete").checked)
+        delTool.start();
+    else if (document.getElementById("befehl_part").checked)
+        partTool.start();
+    else if (document.getElementById("befehl_add").checked)
+        addTool.start();
+}
 
 function createMap() {
     return new Map({

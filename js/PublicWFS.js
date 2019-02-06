@@ -15,7 +15,7 @@ class PublicWFS {
                 if (callbackFailed != undefined)
                     callbackFailed(xmlhttp.responseXML, ...args)
                 else
-                    PublicWFS.showMessage("Kommunikationsfehler");
+                    PublicWFS.showMessage("Kommunikationsfehler", true);
             }
         }
         xmlhttp.setRequestHeader('Content-Type', 'text/xml');
@@ -35,15 +35,21 @@ class PublicWFS {
             '		xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-transaction.xsd">' +
             transaction +
             '</wfs:Transaction>';
-        return xml_db_request(xml, _checkTransacktionSuccess, _checkTransacktionFailed, 
+        return PublicWFS.doSoapRequest(xml, this._checkTransacktionSuccess, this._checkTransacktionFailed, 
             callbackSuccess, callbackFailed, ...args)
     }
 
     static _checkTransacktionSuccess (xml, callbackSuccess, callbackFailed, ...args) {
         if (xml.getElementsByTagName('SUCCESS').length > 0) {
-            callbackSuccess(xml, ...args);
+            if (callbackSuccess != undefined)
+                callbackSuccess(xml, ...args);
+            else
+                PublicWFS.showMessage("Erfolgreich");
         } else {
-            callbackFailed(xml, ...args);
+            if (callbackFailed != undefined)
+                callbackFailed(xml, ...args);
+            else
+                PublicWFS.showMessage("Konnte nicht gespeichert werden", true);
         }
     }
 

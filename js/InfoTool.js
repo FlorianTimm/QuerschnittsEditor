@@ -32,20 +32,17 @@ class InfoTool {
                 })
             })
         });
-        this.select_fl.select = this.select;
+
         this.select_fl.on('select', function (e) {
-            info_select.getFeatures().clear()
+            this.select.getFeatures().clear()
             if (e.selected.length > 0) {
                 let auswahl = e.selected[0];
                 let a = auswahl.get('objekt').trenn;
-                e.target.select.getFeatures().push(a);
+                this.select.getFeatures().push(a);
             }
-            e.target.info.logAuswahl(e.target.info.select);
-        });
-
-
+            this.logAuswahl(this.select);
+        }.bind(this));
     }
-
 
     logAuswahl(selectBefehl) {
         var selection = selectBefehl.getFeatures();
@@ -61,8 +58,8 @@ class InfoTool {
         document.getElementById("info_station").innerHTML = querschnitt.vst + " - " + querschnitt.bst;
         document.getElementById("info_streifen").innerHTML = querschnitt.streifen + " " + querschnitt.streifennr;
     
-        document.getElementById("info_art").value = querschnitt.art;
-        document.getElementById("info_ober").value = querschnitt.artober;
+        document.getElementById("info_art").value = querschnitt.art.substr(-32);
+        document.getElementById("info_ober").value = querschnitt.artober.substr(-32);
     
         document.getElementById("info_breite").value = querschnitt.breite;
         document.getElementById("info_bisbreite").value = querschnitt.bisBreite;

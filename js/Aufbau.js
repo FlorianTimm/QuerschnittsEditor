@@ -48,18 +48,37 @@ class Aufbau {
         let r = new Aufbau();
         for (var tag in CONFIG.AUFBAUDATEN) {
             if (xml.getElementsByTagName(tag).length <= 0) continue;
-            if (CONFIG.AUFBAUDATEN[tag] == 0) {
+            if (CONFIG.AUFBAUDATEN[tag].art == 0) {
                 // Kein Klartext
                 r[tag] = xml.getElementsByTagName(tag)[0].firstChild.data;
-            } else if (CONFIG.AUFBAUDATEN[tag] == 1) {
+            } else if (CONFIG.AUFBAUDATEN[tag].art == 1) {
                 // Kein Klartext
                 r[tag] = Number(xml.getElementsByTagName(tag)[0].firstChild.data);
-            } else if (CONFIG.AUFBAUDATEN[tag] == 2) {
+            } else if (CONFIG.AUFBAUDATEN[tag].art == 2) {
                 // Klartext, xlink wird gespeichert
                 r[tag] = xml.getElementsByTagName(tag)[0].getAttribute('xlink:href');
             } 
 		}
         return r;
+	}
+	
+	createXML() {
+        let r = '<Otschicht>\n';
+
+        for (let tag in CONFIG.QUERSCHNITT) {
+            //console.log(tag);
+            if (this[tag] === null) continue;
+            if (CONFIG.QUERSCHNITT[tag].art == 0 || CONFIG.QUERSCHNITT[tag] == 1) {
+                // Kein Klartext
+                r += '<' + tag + '>' + this[tag] + '</' + tag + '>\n';
+                r[tag] = Number(xml.getElementsByTagName(tag)[0].firstChild.data);
+            } else if (CONFIG.QUERSCHNITT[tag].art == 2) {
+                // Klartext
+                r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG.QUERSCHNITT[tag].kt + '" />' + this[tag];
+            }
+        }
+
+        r += '</Otschicht>\n';
     }
 }
 

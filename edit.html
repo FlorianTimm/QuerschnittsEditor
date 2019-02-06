@@ -25,11 +25,11 @@
 
     <sidebar>
         <form id="steuerung" name="steuerung">
-            <input type="radio" name="befehl" id="befehl_info" onchange="befehlChanged(this)" value="info" checked="checked" />&nbsp;Info<br />
-            <input type="radio" name="befehl" id="befehl_modify" onchange="befehlChanged(this)" value="modify" />&nbsp;&Auml;ndern<br />
-            <input type="radio" name="befehl" id="befehl_delete" onchange="befehlChanged(this)" value="delete" />&nbsp;L&ouml;schen<br />
-            <input type="radio" name="befehl" id="befehl_part" onchange="befehlChanged(this)" value="part" />&nbsp;Teilen<br />
-            <input type="radio" name="befehl" id="befehl_add" onchange="befehlChanged(this)" value="add" />&nbsp;Hinzufügen<br />
+            <input type="radio" name="befehl" id="befehl_info" value="info" checked="checked" />&nbsp;Info<br />
+            <input type="radio" name="befehl" id="befehl_modify" value="modify" />&nbsp;&Auml;ndern<br />
+            <input type="radio" name="befehl" id="befehl_delete" value="delete" />&nbsp;L&ouml;schen<br />
+            <input type="radio" name="befehl" id="befehl_part" value="part" />&nbsp;Teilen<br />
+            <input type="radio" name="befehl" id="befehl_add" value="add" />&nbsp;Hinzufügen<br />
         </form>
 
         <form id="loeschen" name="loeschen">
@@ -37,7 +37,7 @@
         </form>
 
         <form id="hinzu" name="hinzu">
-            <input type="button" onclick="addQuerschnittButton()" value="Querschnitt hinzuf&uuml;gen" disabled="disabled" />
+            <input type="button" id="addQuerschnittButton" value="Querschnitt hinzuf&uuml;gen" disabled="disabled" />
         </form>
 
         <form id="teilen" name="teilen">
@@ -85,20 +85,20 @@
                 </tr>
                 <tr>
                     <td>Art:</td>
-                    <td><select id="info_art" onchange="updateInfo()" disabled="disabled"></select></td>
+                    <td><select id="info_art"  disabled="disabled"></select></td>
                 </tr>
                 <tr>
                     <td>Art der Oberfl&auml;che:</td>
-                    <td><select id="info_ober" onchange="updateInfo()" disabled="disabled"></select></td>
+                    <td><select id="info_ober" disabled="disabled"></select></td>
                 </tr>
                 <tr>
                     <td>Von Breite:</td>
-                    <td><input type="number" id="info_breite" onchange="updateInfoBreite()" min="0" max="10000" step="10"
+                    <td><input type="number" id="info_breite" min="0" max="10000" step="10"
                             disabled="disabled" /></td>
                 </tr>
                 <tr>
                     <td>Bis Breite:</td>
-                    <td><input type="number" id="info_bisbreite" onchange="updateInfoBreite()" min="0" max="10000" step="10"
+                    <td><input type="number" id="info_bisbreite" min="0" max="10000" step="10"
                             disabled="disabled" /></td>
                 </tr>
             </table>

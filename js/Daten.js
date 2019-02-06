@@ -5,6 +5,7 @@ import Abschnitt from './Abschnitt.js';
 import PublicWFS from './PublicWFS.js';
 import Querschnitt from './Querschnitt.js';
 import Klartext from './Klartext.js';
+import { isNullOrUndefined } from 'util';
 
 var daten = null;
 
@@ -31,26 +32,26 @@ class Daten {
     }
 
     _showArt(art, _this) {
-        let arten = art.getAll();
-        for (let a in arten) {
+        let arten = art.getAllSorted();
+        for (let a of arten) {
             let option = document.createElement('option');
-            let t = document.createTextNode(arten[a].beschreib);
+            let t = document.createTextNode(a.beschreib);
             option.appendChild(t);
             let v = document.createAttribute('value');
-            v.value = '#' + arten[a].objektId;
+            v.value = a.objektId;
             option.setAttributeNode(v);
             document.forms.info.info_art.appendChild(option);
         }
     }
 
     _showArtOber(artober, _this) {
-        let arten = artober.getAll();
-        for (let a in arten) {
+        let arten = artober.getAllSorted();
+        for (let a of arten) {
             let option = document.createElement('option');
-            let t = document.createTextNode(arten[a].beschreib);
+            let t = document.createTextNode(a.beschreib);
             option.appendChild(t);
             let v = document.createAttribute('value');
-            v.value = '#' + arten[a].objektId;
+            v.value = a.objektId;
             option.setAttributeNode(v);
             document.forms.info.info_ober.appendChild(option);
         }
@@ -67,7 +68,6 @@ class Daten {
         for (let quer of dotquer) {
             let q = Querschnitt.fromXML(_this, quer);
         }
-        console.log(_this)
     }
 
     getAbschnitt(absId) {
@@ -149,7 +149,10 @@ class Daten {
             source: this.v_quer,
             opacity: 0.36,
             style: function (feature, resolution) {
-                var art = Number(feature.get('objekt').art);
+                let kt = feature.get('objekt').daten.kt_art.get(feature.get('objekt').art)
+                let art = 0
+                if (!isNullOrUndefined(kt))
+                    art = Number(kt.kt);
                 //console.log(art);
                 if ((art >= 100 && art <= 119) || (art >= 122 && art <= 161) || (art >= 163 && art <= 179) || art == 312) return fill_style('#444444');	// Fahrstreifen
                 else if (art >= 180 && art <= 183) return fill_style('#333366');	// Parkstreifen

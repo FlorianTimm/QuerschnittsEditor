@@ -20,11 +20,11 @@ class Klartext {
         let quer = xml.getElementsByTagName(_this.bezeichnung)
 
         for (let i = 0; i < quer.length; i++) {
-            let id = quer[i].getElementsByTagName('objektId')[0].firstChild.data;
+            let id = quer[i].getElementsByTagName('objektId')[0].firstChild.data.substr(-32);
             _this.klartext[id] = {
                 'kt': quer[i].getElementsByTagName(_this.feld)[0].firstChild.data,
                 'beschreib': quer[i].getElementsByTagName('beschreib')[0].firstChild.data,
-                'objektId': quer[i].getElementsByTagName('objektId')[0].firstChild.data
+                'objektId': id,
             }
         }
         if (!isNullOrUndefined(_this.whenReady)) {
@@ -33,13 +33,31 @@ class Klartext {
     }
 
     get(bezeichnung) {
-        if (bezeichnung in this.klartext)
-            return this.klartext[bezeichnung];
+        let bez = bezeichnung.substr(-32);
+        if (bez in this.klartext) {
+            //console.log(this.klartext[bez])
+            return this.klartext[bez];
+        }
+        console.log(bez)
+        console.log(this.klartext)
         return null;
     }
 
     getAll() {
         return this.klartext;
+    }
+
+    getAllSorted() {
+        let sortable = [];
+        for (let kt in this.klartext) {
+            sortable.push(this.klartext[kt]);
+        }
+
+        sortable.sort(function (a, b) {
+            return Number(a.kt)  - Number(b.kt);
+        });
+
+        return sortable;
     }
 }
 
