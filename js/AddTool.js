@@ -52,6 +52,10 @@ class AddTool {
         let gesStreifen = querschnitt.station.getStreifen(querschnitt.streifen);
         let soap = "";
 
+        let querschnittNeu = new Querschnitt(this.daten);
+        querschnittNeu.breite = 2.75;
+        querschnittNeu.bisBreite = 2.75;
+
         let strArray = []
         for (let nnr in gesStreifen) {
             if (nnr <= querschnitt.streifennr) continue;
@@ -63,32 +67,33 @@ class AddTool {
             gesStreifen[quer.streifennr + 1] = quer;
             quer.streifennr = quer.streifennr + 1;
             if (quer.streifen == 'L') {
-                quer.XBstR -= 2.75;
-                quer.XVstR -= 2.75;
-                quer.XBstL -= 2.75;
-                quer.vstl -= 2.75;
+                quer.XBstR -= querschnittNeu.bisBreite;
+                quer.XVstR -= querschnittNeu.breite;
+                quer.XBstL -= querschnittNeu.bisBreite;
+                quer.XVstL -= querschnittNeu.breite;
             } else if (quer.streifen == 'R') {
-                quer.XBstL += 2.75;
-                quer.XVstL += 2.75;
-                quer.XBstR += 2.75;
-                quer.XVstR += 2.75;
+                quer.XBstL += querschnittNeu.bisBreite;
+                quer.XVstL += querschnittNeu.breite;
+                quer.XBstR += querschnittNeu.bisBreite;
+                quer.XVstR += querschnittNeu.breite;
             }
             quer.createGeom();
             soap += quer.createUpdateStreifenXML();
         }
 
-        let querschnittNeu = new Querschnitt(this.daten);
+        
         if (querschnitt.streifen == 'L') {
             querschnittNeu.XBstR = querschnitt.XBstL;
             querschnittNeu.XVstR = querschnitt.XVstL;
-            querschnittNeu.XBstL = querschnittNeu.XBstR - 2.75;
-            querschnittNeu.vstl = querschnittNeu.XVstR - 2.75;
+            querschnittNeu.XBstL = querschnittNeu.XBstR - querschnittNeu.bisBreite;
+            querschnittNeu.XVstL = querschnittNeu.XVstR - querschnittNeu.breite;
         } else if (querschnitt.streifen == 'R') {
             querschnittNeu.XBstL = querschnitt.XBstR;
             querschnittNeu.XVstL = querschnitt.XVstR;
-            querschnittNeu.XBstR = querschnittNeu.XBstL + 2.75;
-            querschnittNeu.XVstR = querschnittNeu.XVstL + 2.75;
+            querschnittNeu.XBstR = querschnittNeu.XBstL + querschnittNeu.bisBreite;
+            querschnittNeu.XVstR = querschnittNeu.XVstL + querschnittNeu.breite;
         }
+
         querschnittNeu.streifen = querschnitt.streifen;
         querschnittNeu.streifennr = querschnitt.streifennr + 1;
         querschnittNeu.art = querschnitt.art;

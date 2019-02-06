@@ -1,6 +1,7 @@
 import Vektor from './Vektor.js';
 import Feature from 'ol/Feature.js';
 import MultiLineString from 'ol/geom/MultiLineString.js';
+import PublicWFS from './PublicWFS.js';
 
 class Station {
     constructor(daten, abschnitt, vst, bst, geo) {
@@ -89,6 +90,11 @@ class Station {
             this.seg.push(seg_len_add / len)
             //console.log(seg_len_add/len)
         }
+    }
+
+
+    teilen () {
+        PublicWFS.showMessage("noch nicht möglich", true)
     }
 
 }

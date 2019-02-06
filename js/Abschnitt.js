@@ -85,6 +85,15 @@ class Abschnitt {
     existsStation(station) {
         return station in this._station;
     }
+
+    getStationByStation (station) {
+        let r = null;
+        for (var a in this._station) {
+            if (a > station) break;
+            r = this._station[a];
+        }
+        return r;
+    }
 }
 
 module.exports = Abschnitt;
