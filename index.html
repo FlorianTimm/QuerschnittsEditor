@@ -7,14 +7,12 @@
 	<meta name="robots" content="index, follow">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="icon" href="data:;base64,iVBORw0KGgo=">
-	<link href="openlayers/ol.css" rel="stylesheet">
-	<link href="css/index.css" rel="stylesheet">
   </head>
-  <body onload="loadER()">
+  <body>
   
-	<form name="erg" method="GET" action="edit.htm">
+	<form name="erg" method="GET" action="edit.html">
 		Ereignisraum auswählen<br>
-		<select name="er" id="er_select" disabled="disabled" onchange="aenderung()">
+		<select name="er" id="er_select" disabled="disabled">
 		<option id="platzhalter">Ereignisr&auml;ume werden geladen...</option>
 		</select><br>
 		<table>
@@ -28,7 +26,6 @@
 	</form>
 	<h1><span>LGV</span>QuerschnittsEditor</h1>
 	<div id="background"></div>
-	<script src="js/quer_config.js"></script>
-	<script src="js/quer_er_auswahl.js"></script>
+	<script src="js/index.js"></script>
   </body>
 </html>

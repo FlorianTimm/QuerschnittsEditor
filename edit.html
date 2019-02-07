@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>QuerschnittEdit</title>
+    <meta name="description" content="" />
+    <meta name="robots" content="index, follow" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
+</head>
+
+<body>
+
+    <div id="map" class="map">
+    </div>
+
+    <form id="abschnitt" name="abschnitt">
+        <!--<input type="textfield" name="vnk" value="252500109" />
+				<input type="textfield" name="nnk" value="252500110" />
+		<		input type="button" onclick="getQuerschnitte()" value="Laden" />-->
+        <!--<input type="button" onclick="addQuerschnitt()" value="Querschnitt hinzufügen" />-->
+        <input type="range" name="quer_trans" value="60" onchange="quer_transp()">
+    </form>
+
+    <sidebar>
+        <form id="steuerung" name="steuerung">
+            <input type="radio" name="befehl" id="befehl_info" value="info" checked="checked" />&nbsp;Info<br />
+            <input type="radio" name="befehl" id="befehl_modify" value="modify" />&nbsp;&Auml;ndern<br />
+            <input type="radio" name="befehl" id="befehl_delete" value="delete" />&nbsp;L&ouml;schen<br />
+            <input type="radio" name="befehl" id="befehl_part" value="part" />&nbsp;Teilen<br />
+            <input type="radio" name="befehl" id="befehl_add" value="add" />&nbsp;Hinzufügen<br />
+        </form>
+
+        <form id="loeschen" name="loeschen">
+            <input type="button" onclick="delQuerschnittButton()" value="Querschnitt l&ouml;schen" disabled="disabled" />
+        </form>
+
+        <form id="hinzu" name="hinzu">
+            <input type="button" id="addQuerschnittButton" value="Querschnitt hinzuf&uuml;gen" disabled="disabled" />
+        </form>
+
+        <form id="teilen" name="teilen">
+            <table>
+                <tr>
+                    <td>VNK:</td>
+                    <td id="teilen_vnk"></td>
+                </tr>
+                <tr>
+                    <td>NNK:</td>
+                    <td id="teilen_nnk"></td>
+                </tr>
+                <tr>
+                    <td>Station</td>
+                    <td id="teilen_station"></td>
+                </tr>
+            </table>
+            <input type="button" id="teilen_button" value="Querschnitt teilen"
+                disabled="disabled" />
+        </form>
+
+        <form id="modify" name="modify">
+            Nachfolgende Querschnitte:<br />
+            <input type="radio" name="typ" id="modify_move" value="move" checked="checked" />&nbsp;...verschieben<br />
+            <input type="radio" name="typ" id="modify_fit" value="fit" />&nbsp;...anpassem<br />
+        </form>
+
+        <form id="info" name="info">
+            <table>
+                <tr>
+                    <td>VNK:</td>
+                    <td id="info_vnk"></td>
+                </tr>
+                <tr>
+                    <td>NNK:</td>
+                    <td id="info_nnk"></td>
+                </tr>
+                <tr>
+                    <td>Station</td>
+                    <td id="info_station"></td>
+                </tr>
+                <tr>
+                    <td>Streifen:</td>
+                    <td id="info_streifen"></td>
+                </tr>
+                <tr>
+                    <td>Art:</td>
+                    <td><select id="info_art"  disabled="disabled"></select></td>
+                </tr>
+                <tr>
+                    <td>Art der Oberfl&auml;che:</td>
+                    <td><select id="info_ober" disabled="disabled"></select></td>
+                </tr>
+                <tr>
+                    <td>Von Breite:</td>
+                    <td><input type="number" id="info_breite" min="0" max="10000" step="10"
+                            disabled="disabled" /></td>
+                </tr>
+                <tr>
+                    <td>Bis Breite:</td>
+                    <td><input type="number" id="info_bisbreite" min="0" max="10000" step="10"
+                            disabled="disabled" /></td>
+                </tr>
+            </table>
+        </form>
+
+        <form style="background-color: rgba(255,180,180,0.8);">Bekannte Fehler:
+            <ul>
+                <li>Kein Verschieben von M-Streifen</li>
+                <li>Nach Teilen Daten doppelt</li>
+                <li>Hinzufügen nicht möglich</li>
+                <li>Löschen nicht möglich</li>
+            </ul>
+        </form>
+    </sidebar>
+    <script src="js/edit.js"></script>
+</body>
+
+</html>
