@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "parcel --out-dir \"//gv-srv-w00118/GlassFish Docroot/querOO\" --hmr-hostname localhost --public-url . *.html",
-    "build": "parcel build --out-dir \"//gv-srv-w00118/GlassFish Docroot/querOO\" --public-url . *.html"
+    "build": "parcel build --public-url . *.html"
   },
   "author": "Florian Timm",
   "license": "MIT",
