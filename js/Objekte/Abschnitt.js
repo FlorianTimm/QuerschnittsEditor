@@ -14,6 +14,7 @@ class Abschnitt {
         this.faktor = null;
         this._station = {};
         this._feature = new Feature({geom: null, objekt: this});
+        this._aufstell = {};
     }
 
 

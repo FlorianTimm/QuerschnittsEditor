@@ -1,4 +1,4 @@
-var CONFIG = require('./config.json');
+var CONFIG_WFS = require('./config_wfs.json');
 
 class Aufbau {
     constructor() {
@@ -46,15 +46,15 @@ class Aufbau {
 
     static fromXML (xml) {
         let r = new Aufbau();
-        for (var tag in CONFIG.AUFBAUDATEN) {
+        for (var tag in CONFIG_WFS.AUFBAUDATEN) {
             if (xml.getElementsByTagName(tag).length <= 0) continue;
-            if (CONFIG.AUFBAUDATEN[tag].art == 0) {
+            if (CONFIG_WFS.AUFBAUDATEN[tag].art == 0) {
                 // Kein Klartext
                 r[tag] = xml.getElementsByTagName(tag)[0].firstChild.data;
-            } else if (CONFIG.AUFBAUDATEN[tag].art == 1) {
+            } else if (CONFIG_WFS.AUFBAUDATEN[tag].art == 1) {
                 // Kein Klartext
                 r[tag] = Number(xml.getElementsByTagName(tag)[0].firstChild.data);
-            } else if (CONFIG.AUFBAUDATEN[tag].art == 2) {
+            } else if (CONFIG_WFS.AUFBAUDATEN[tag].art == 2) {
                 // Klartext, xlink wird gespeichert
                 r[tag] = xml.getElementsByTagName(tag)[0].getAttribute('xlink:href');
             } 
@@ -65,16 +65,16 @@ class Aufbau {
 	createXML() {
         let r = '<Otschicht>\n';
 
-        for (let tag in CONFIG.QUERSCHNITT) {
+        for (let tag in CONFIG_WFS.QUERSCHNITT) {
             //console.log(tag);
             if (this[tag] === null) continue;
-            if (CONFIG.QUERSCHNITT[tag].art == 0 || CONFIG.QUERSCHNITT[tag] == 1) {
+            if (CONFIG_WFS.QUERSCHNITT[tag].art == 0 || CONFIG_WFS.QUERSCHNITT[tag] == 1) {
                 // Kein Klartext
                 r += '<' + tag + '>' + this[tag] + '</' + tag + '>\n';
                 r[tag] = Number(xml.getElementsByTagName(tag)[0].firstChild.data);
-            } else if (CONFIG.QUERSCHNITT[tag].art == 2) {
+            } else if (CONFIG_WFS.QUERSCHNITT[tag].art == 2) {
                 // Klartext
-                r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG.QUERSCHNITT[tag].kt + '" />' + this[tag];
+                r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS.QUERSCHNITT[tag].kt + '" />' + this[tag];
             }
         }
 

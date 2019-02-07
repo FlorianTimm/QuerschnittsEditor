@@ -1,10 +1,11 @@
 import VectorSource from 'ol/source/Vector';
 import { Vector as VectorLayer } from 'ol/layer';
-import { Style, Stroke, Fill } from 'ol/style';
+import { Style, Stroke, Fill, Circle } from 'ol/style';
 import Abschnitt from './Objekte/Abschnitt.js';
 import PublicWFS from './PublicWFS.js';
 import Querschnitt from './Objekte/Querschnittsdaten.js';
 import Klartext from './Objekte/Klartext.js';
+import Aufstellvorrichtung from './Objekte/Aufstellvorrichtung.js';
 import { isNullOrUndefined } from 'util';
 
 var daten = null;
@@ -25,6 +26,9 @@ class Daten {
 
         this.abschnitte = {};
         this.loadER();
+
+        this.l_aufstell = Aufstellvorrichtung.createLayer(this.map);
+        Aufstellvorrichtung.loadAbschnittER(this.ereignisraum, this.l_aufstell);
     }
 
     static get() {
@@ -66,7 +70,7 @@ class Daten {
     _loadER_Callback(xml, _this) {
         let dotquer = xml.getElementsByTagName("Dotquer");
         for (let quer of dotquer) {
-            let q = Querschnitt.fromXML(_this, quer);
+            Querschnitt.fromXML(_this, quer);
         }
     }
 
