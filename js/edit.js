@@ -8,13 +8,13 @@ import { register } from 'ol/proj/proj4.js';
 import proj4 from 'proj4';
 import { transform, fromLonLat } from 'ol/proj.js';
 import '@babel/polyfill';
-import Modify from './Modify.js';
+import ModifyTool from './QuerTools/ModifyTool.js';
 import Daten from './Daten.js';
 import PublicWFS from './PublicWFS.js';
-import InfoTool from './InfoTool.js';
-import PartTool from './PartTool.js';
-import AddTool from './AddTool.js';
-import DelTool from './DelTool.js';
+import InfoTool from './QuerTools/InfoTool.js';
+import PartTool from './QuerTools/PartTool.js';
+import AddTool from './QuerTools/AddTool.js';
+import DelTool from './QuerTools/DelTool.js';
 import { add } from 'ol/coordinate';
 
 var CONFIG = require('./config.json');
@@ -37,7 +37,7 @@ window.addEventListener('load', function () {
     let daten = new Daten(map, er);
     infoTool = new InfoTool(map, daten);
     infoTool.start();
-    editTool = new Modify(map, daten, infoTool);
+    editTool = new ModifyTool(map, daten, infoTool);
     delTool = new DelTool(map, daten, infoTool);
     addTool = new AddTool(map, daten, infoTool);
     partTool = new PartTool(map, daten, infoTool);

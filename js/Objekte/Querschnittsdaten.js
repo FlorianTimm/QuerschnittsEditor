@@ -1,9 +1,9 @@
-var CONFIG = require('./config.json');
-import PublicWFS from './PublicWFS.js';
+var CONFIG = require('../config.json');
+import PublicWFS from '../PublicWFS.js';
 import { Polygon, MultiLineString } from 'ol/geom';
 import Feature from 'ol/Feature.js';
-import Station from './Station.js';
-import Vektor from './Vektor.js';
+import Station from './QuerStation.js';
+import Vektor from '../Vektor.js';
 
 class Querschnitt {
     constructor(daten) {

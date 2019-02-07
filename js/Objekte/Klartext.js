@@ -1,4 +1,4 @@
-import PublicWFS from './PublicWFS.js';
+import PublicWFS from '../PublicWFS.js';
 import { isNullOrUndefined } from 'util';
 
 class Klartext {

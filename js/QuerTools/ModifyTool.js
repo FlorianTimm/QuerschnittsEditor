@@ -1,10 +1,10 @@
 import never from 'ol/events/condition';
 import { Modify as ModifyInteraction, Select as SelectInteraction, Snap } from 'ol/interaction';
 import { Fill, Stroke, Style } from 'ol/style';
-import Vektor from './Vektor.js';
+import Vektor from '../Vektor.js';
 
 
-class Modify {
+class ModifyTool {
     constructor(map, daten, info) {
         this.map = map;
         this.daten = daten;
@@ -244,4 +244,4 @@ class Modify {
     }
 }
 
-module.exports = Modify;
+module.exports = ModifyTool;

@@ -1,10 +1,10 @@
 import VectorSource from 'ol/source/Vector';
 import { Vector as VectorLayer } from 'ol/layer';
 import { Style, Stroke, Fill } from 'ol/style';
-import Abschnitt from './Abschnitt.js';
+import Abschnitt from './Objekte/Abschnitt.js';
 import PublicWFS from './PublicWFS.js';
-import Querschnitt from './Querschnitt.js';
-import Klartext from './Klartext.js';
+import Querschnitt from './Objekte/Querschnittsdaten.js';
+import Klartext from './Objekte/Klartext.js';
 import { isNullOrUndefined } from 'util';
 
 var daten = null;

@@ -1,7 +1,7 @@
 import {Style, Stroke} from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
-import PublicWFS from './PublicWFS.js';
-import Querschnitt from './Querschnitt.js';
+import PublicWFS from '../PublicWFS.js';
+import Querschnitt from '../Objekte/Querschnittsdaten.js';
 
 class AddTool {
     constructor(map, daten, info) {

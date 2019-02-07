@@ -1,6 +1,6 @@
 import {Circle, Style, Stroke, Fill} from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
-import Vektor from './Vektor.js';
+import Vektor from '../Vektor.js';
 import VectorSource from 'ol/source/Vector';
 import { Vector as VectorLayer } from 'ol/layer';
 import {  Point, LineString } from 'ol/geom';

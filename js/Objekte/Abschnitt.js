@@ -1,7 +1,6 @@
 import Feature from 'ol/Feature.js';
 import LineString from 'ol/geom/LineString.js';
-import PublicWFS from './PublicWFS';
-import Vektor from './Vektor.js';
+import PublicWFS from '../PublicWFS.js';
 
 class Abschnitt {
 
