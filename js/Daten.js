@@ -77,7 +77,7 @@ class Daten {
     getAbschnitt(absId) {
         if (!(absId in this.abschnitte)) {
             this.abschnitte[absId] = Abschnitt.loadFromPublicWFS(absId);
-            this.v_achse.addFeature(this.abschnitte[absId].getFeature());
+            this.v_achse.addFeature(this.abschnitte[absId]);
         }
         //console.log(this.abschnitte[absId]);
         return this.abschnitte[absId];

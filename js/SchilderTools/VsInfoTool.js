@@ -1,4 +1,3 @@
-import {Style, Stroke, Fill} from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
 
 class VsInfoTool {

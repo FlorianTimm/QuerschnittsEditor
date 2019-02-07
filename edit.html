@@ -27,6 +27,7 @@
         <form id="steuerung" name="steuerung">
             <input type="radio" name="befehl" id="befehl_info" value="info" checked="checked" />&nbsp;Info<br />
             <input type="radio" name="befehl" id="befehl_vsinfo" value="vsinfo" />&nbsp;SchildInfo<br />
+            <input type="radio" name="befehl" id="befehl_avadd" value="avadd" />&nbsp;Aufstellvor. hinzuf&uuml;gen<br />
             <input type="radio" name="befehl" id="befehl_modify" value="modify" />&nbsp;&Auml;ndern<br />
             <input type="radio" name="befehl" id="befehl_delete" value="delete" />&nbsp;L&ouml;schen<br />
             <input type="radio" name="befehl" id="befehl_part" value="part" />&nbsp;Teilen<br />
@@ -58,6 +59,28 @@
             </table>
             <input type="button" id="teilen_button" value="Querschnitt teilen"
                 disabled="disabled" />
+        </form>
+
+        <form id="avadd" name="avadd">
+            <table>
+                <tr>
+                    <td>VNK:</td>
+                    <td id="avadd_vnk"></td>
+                </tr>
+                <tr>
+                    <td>NNK:</td>
+                    <td id="avadd_nnk"></td>
+                </tr>
+                <tr>
+                    <td>Station</td>
+                    <td id="avadd_station"></td>
+                </tr>
+                <tr>
+                    <td>Abstand</td>
+                    <td id="avadd_abstand"></td>
+                </tr>
+            </table>
+            <input type="button" id="avadd_button" value="Aufstellvor. hinzu."  disabled="disabled" />
         </form>
 
         <form id="modify" name="modify">

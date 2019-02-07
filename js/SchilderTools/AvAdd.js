@@ -1,16 +1,22 @@
-import {Circle, Style, Stroke, Fill} from 'ol/style';
+import { Circle, Style, Stroke, Fill } from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
 import Vektor from '../Vektor.js';
 import VectorSource from 'ol/source/Vector';
 import { Vector as VectorLayer } from 'ol/layer';
-import {  Point, LineString } from 'ol/geom';
+import { Point, LineString } from 'ol/geom';
 import Feature from 'ol/Feature.js';
+import PublicWFS from '../PublicWFS.js';
 
-class PartTool {
-    constructor(map, daten, info) {
+class AvAdd {
+    constructor(map, daten) {
         this.map = map;
         this.daten = daten;
-        this.info = info;
+
+
+        this.absid = null;
+        this.station = null;
+        this.abstand = null;
+        this.seite = null;
 
         this.select = new SelectInteraction({
             layers: [this.daten.l_achse],
@@ -26,7 +32,7 @@ class PartTool {
         this.v_overlay = new VectorSource({
             features: []
         });
-        
+
         this.l_overlay = new VectorLayer({
             source: this.v_overlay,
             style: new Style({
@@ -43,7 +49,7 @@ class PartTool {
                 }),
             })
         });
-        
+
 
         this.feat_station = new Feature({ geometry: new Point([0, 0]) });
         this.feat_station.setStyle(
@@ -59,21 +65,20 @@ class PartTool {
         )
         this.v_overlay.addFeature(this.feat_station);
 
-        this.feat_teilung = new Feature({
-            geometry: new LineString([[0, 0][0, 0]]),
-            isset: false,
-            abschnittid: null,
-            station: 0,
-        });
-        this.feat_teilung.setStyle(
+
+        this.feat_neu = new Feature({ geometry: new Point([0, 0]) });
+        this.feat_neu.setStyle(
             new Style({
-                stroke: new Stroke({
-                    color: 'rgba(255, 0, 0, 1)',
-                    width: 2
+                image: new Circle({
+                    radius: 4,
+                    fill: new Fill({ color: 'rgba(255,0,0, 0.5)', }),
+                    stroke: new Stroke({
+                        color: 'rgba(0, 0, 0, 0.7)', width: 1
+                    })
                 }),
             })
-        );
-        this.v_overlay.addFeature(this.feat_teilung);
+        )
+        this.v_overlay.addFeature(this.feat_neu);
 
         this.feat_station_line = new Feature({ geometry: new LineString([[0, 0][0, 0]]) });
         this.feat_station_line.setStyle(
@@ -86,7 +91,7 @@ class PartTool {
         );
         this.v_overlay.addFeature(this.feat_station_line);
 
-        document.getElementById('teilen_button').addEventListener('click', this.partQuerschnittButton.bind(this))
+        document.getElementById('avadd_button').addEventListener('click', this.partQuerschnittButton.bind(this))
     }
 
     part_get_station(event) {
@@ -108,28 +113,25 @@ class PartTool {
 
 
     part_click(event) {
-        if (!this.feat_teilung.get('isset')) {
-            this.feat_teilung.set('isset', true);
-            let daten = this.part_get_station(event);
-            if (daten['pos'] == null) return;
+        this.feat_neu.set('isset', true);
+        let daten = this.part_get_station(event);
+        if (daten['pos'] == null) return;
 
-            let vektor = Vektor.multi(Vektor.einheit(Vektor.diff(daten['pos'][6], daten['pos'][5])), 50);
-            let coord = [Vektor.diff(daten['pos'][5], vektor), Vektor.sum(daten['pos'][5], vektor)];
+        this.feat_neu.getGeometry().setCoordinates(daten['pos'][6]);
 
-            this.feat_teilung.getGeometry().setCoordinates(coord);
-            this.feat_teilung.set("abschnittid", daten['achse'].abschnittid);
-            this.feat_teilung.set("station", Math.round(daten['pos'][2]));
+        this.absid = daten['achse'].abschnittid;
+        this.station = Math.round(daten['pos'][2]);
+        this.abstand = Math.round(daten['pos'][4] * 10) / 10;
+        this.seite = daten['pos'][3]
+        if (this.seite = 'M') this.abstand = 0;
 
-            document.getElementById("teilen_vnk").innerHTML = daten['achse'].vnk;
-            document.getElementById("teilen_nnk").innerHTML = daten['achse'].nnk;
-            document.getElementById("teilen_station").innerHTML = Math.round(daten['pos'][2])
+        document.getElementById("avadd_vnk").innerHTML = daten['achse'].vnk;
+        document.getElementById("avadd_nnk").innerHTML = daten['achse'].nnk;
+        document.getElementById("avadd_station").innerHTML = Math.round(daten['pos'][2])
+        document.getElementById("avadd_abstand").innerHTML = daten['pos'][3] + ' ' + daten['pos'][4].toFixed(1)
 
-            document.getElementById("teilen_button").disabled = "";
-        } else {
-            this.feat_teilung.set('isset', false);
-            this.feat_teilung.getGeometry().setCoordinates([[0, 0], [0, 0]]);
-            document.getElementById("teilen_button").disabled = "disabled";
-        }
+        document.getElementById("avadd_button").disabled = "";
+
     }
 
     part_move(event) {
@@ -140,26 +142,21 @@ class PartTool {
         this.feat_station.getGeometry().setCoordinates(daten['pos'][6]);
         this.feat_station_line.getGeometry().setCoordinates([daten['pos'][6], daten['pos'][5]]);
 
-        if (!this.feat_teilung.get('isset')) {
-            document.getElementById("teilen_vnk").innerHTML = daten['achse'].vnk;
-            document.getElementById("teilen_nnk").innerHTML = daten['achse'].nnk;
-            document.getElementById("teilen_station").innerHTML = Math.round(daten['pos'][2])
+        if (this.absid == null) {
+            document.getElementById("avadd_vnk").innerHTML = daten['achse'].vnk;
+            document.getElementById("avadd_nnk").innerHTML = daten['achse'].nnk;
+            document.getElementById("avadd_station").innerHTML = Math.round(daten['pos'][2])
+            document.getElementById("avadd_abstand").innerHTML = daten['pos'][3] + ' ' + daten['pos'][4].toFixed(1)
         }
     }
 
     partQuerschnittButton() {
-        let absid = this.feat_teilung.get("abschnittid");
-        let station = this.feat_teilung.get("station");
-
-        console.log(this.daten.getAbschnitt(absid));
-
-        let sta = this.daten.getAbschnitt(absid).getStationByStation(station);
-        sta.teilen(station);        
+        PublicWFS.showMessage("noch nicht möglich", true)
     }
 
     start() {
         this.map.addInteraction(this.select);
-        document.forms.teilen.style.display = 'block';
+        document.forms.avadd.style.display = 'block';
         this.map.on("pointermove", this.part_move.bind(this));
         this.map.on("singleclick", this.part_click.bind(this));
         this.map.addLayer(this.l_overlay);
@@ -167,14 +164,11 @@ class PartTool {
 
     stop() {
         this.map.removeInteraction(this.select);
-        document.forms.teilen.style.display = 'none';
+        document.forms.avadd.style.display = 'none';
         this.map.un("pointermove", this.part_move);
         this.map.un("singleclick", this.part_click);
-        this.feat_station.getGeometry().setCoordinates([0, 0]);
-        this.feat_teilung.getGeometry().setCoordinates([[0, 0], [0, 0]]);
-        document.forms.info.style.display = "none";
         this.map.removeLayer(this.l_overlay);
     }
 }
 
-module.exports = PartTool;
+module.exports = AvAdd;

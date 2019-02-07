@@ -16,10 +16,11 @@ import PartTool from './QuerTools/PartTool.js';
 import AddTool from './QuerTools/AddTool.js';
 import DelTool from './QuerTools/DelTool.js';
 import VsInfoTool from './SchilderTools/VsInfoTool.js';
+import AvAdd from './SchilderTools/AvAdd.js';
 
 var CONFIG = require('./config.json');
 
-var infoTool, editTool, delTool, partTool, addTool, vsInfoTool;
+var infoTool, editTool, delTool, partTool, addTool, vsInfoTool, avAdd;
 
 window.addEventListener('load', function () {
     proj4.defs("EPSG:31467", "+proj=tmerc +lat_0=0 +lon_0=9 +k=1 +x_0=3500000 +y_0=0 +ellps=bessel +towgs84=598.1,73.7,418.2,0.202,0.045,-2.455,6.7 +units=m +no_defs");
@@ -42,9 +43,11 @@ window.addEventListener('load', function () {
     addTool = new AddTool(map, daten, infoTool);
     partTool = new PartTool(map, daten, infoTool);
     vsInfoTool = new VsInfoTool(map, [daten.l_aufstell], "sidebar");
+    avAdd = new AvAdd(map, daten); //map, daten.l_aufstell, er, "sidebar");
 
     document.getElementById("befehl_info").addEventListener('change', befehl_changed);
     document.getElementById("befehl_vsinfo").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_avadd").addEventListener('change', befehl_changed);
     document.getElementById("befehl_modify").addEventListener('change', befehl_changed);
     document.getElementById("befehl_delete").addEventListener('change', befehl_changed);
     document.getElementById("befehl_part").addEventListener('change', befehl_changed);
@@ -59,11 +62,14 @@ function befehl_changed() {
     partTool.stop();
     addTool.stop();
     vsInfoTool.stop();
+    avAdd.stop();
 
     if (document.getElementById("befehl_info").checked)
         infoTool.start();
     else if (document.getElementById("befehl_vsinfo").checked)
         vsInfoTool.start();
+    else if (document.getElementById("befehl_avadd").checked)
+        avAdd.start();
     else if (document.getElementById("befehl_modify").checked)
         editTool.start();
     else if (document.getElementById("befehl_delete").checked)

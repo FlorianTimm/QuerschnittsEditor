@@ -16,9 +16,9 @@ class Vektor {
             seite = 'M'
             if (dist > 0.01) {
                 c3 = Vektor.kreuz(Vektor.add3(v), Vektor.add3(lot))[2]
-                if (c3 > 0) {
+                if (c3 < 0) {
                     seite = 'R'
-                } else if (c3 < 0) {
+                } else if (c3 > 0) {
                     seite = 'L'
                 }
             }
