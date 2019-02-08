@@ -15,25 +15,29 @@ import InfoTool from './QuerTools/InfoTool.js';
 import PartTool from './QuerTools/PartTool.js';
 import AddTool from './QuerTools/AddTool.js';
 import DelTool from './QuerTools/DelTool.js';
-import { add } from 'ol/coordinate';
+import VsInfoTool from './SchilderTools/VsInfoTool.js';
+import AvAdd from './SchilderTools/AvAdd.js';
 
 var CONFIG = require('./config.json');
 
-var infoTool, editTool, delTool, partTool, addTool;
+let urlParam = new RegExp('[\?&]er=([^&#]*)').exec(window.location.href);
+if (urlParam == null) {
+    PublicWFS.showMessage("Kein Ereignisraum ausgewählt!", true);
+    location.href = "./index.html";
+}
+var er = decodeURI(urlParam[1])
+console.log("Ereignisraum: " + er);
+
+let infoTool, editTool, delTool, partTool, addTool, vsInfoTool, avAdd;
 
 window.addEventListener('load', function () {
+
     proj4.defs("EPSG:31467", "+proj=tmerc +lat_0=0 +lon_0=9 +k=1 +x_0=3500000 +y_0=0 +ellps=bessel +towgs84=598.1,73.7,418.2,0.202,0.045,-2.455,6.7 +units=m +no_defs");
     proj4.defs("EPSG:25832", "+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
     register(proj4);
 
     var map = createMap();
-    let urlParam = new RegExp('[\?&]er=([^&#]*)').exec(window.location.href);
-    if (urlParam == null) {
-        PublicWFS.showMessage("Kein Ereignisraum ausgewählt!", true);
-        return;
-    }
-    var er = decodeURI(urlParam[1])
-    console.log("Ereignisraum: " + er);
+
     let daten = new Daten(map, er);
     infoTool = new InfoTool(map, daten);
     infoTool.start();
@@ -41,12 +45,32 @@ window.addEventListener('load', function () {
     delTool = new DelTool(map, daten, infoTool);
     addTool = new AddTool(map, daten, infoTool);
     partTool = new PartTool(map, daten, infoTool);
+    vsInfoTool = new VsInfoTool(map, [daten.l_aufstell], "sidebar");
+    avAdd = new AvAdd(map, daten); //map, daten.l_aufstell, er, "sidebar");
 
     document.getElementById("befehl_info").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_vsinfo").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_avadd").addEventListener('change', befehl_changed);
     document.getElementById("befehl_modify").addEventListener('change', befehl_changed);
     document.getElementById("befehl_delete").addEventListener('change', befehl_changed);
     document.getElementById("befehl_part").addEventListener('change', befehl_changed);
     document.getElementById("befehl_add").addEventListener('change', befehl_changed);
+
+
+    document.getElementById("zoomToExtent").addEventListener('click', function () {
+        let minX = null, maxX = null, minY = null, maxY = null;
+        for (let f of daten.l_achse.getSource().getFeatures()) {
+            let p = f.getGeometry().getExtent();
+
+            if (minX == null || minX > p[0]) minX = p[0];
+            if (minY == null || minY > p[1]) minY = p[1];
+            if (maxX == null || maxX < p[2]) maxX = p[2];
+            if (maxY == null || maxY < p[3]) maxY = p[3];
+        }
+        console.log([minX, minY, maxX, maxY])
+        map.getView().fit([minX, minY, maxX, maxY], {padding: [20,240,20,20]})
+        //map.getView().fit(daten.l_achse.getExtent());
+    })
 
 });
 
@@ -56,12 +80,18 @@ function befehl_changed() {
     delTool.stop();
     partTool.stop();
     addTool.stop();
+    vsInfoTool.stop();
+    avAdd.stop();
 
-    if (document.getElementById("befehl_info").checked) 
+    if (document.getElementById("befehl_info").checked)
         infoTool.start();
-     else if (document.getElementById("befehl_modify").checked) 
+    else if (document.getElementById("befehl_vsinfo").checked)
+        vsInfoTool.start();
+    else if (document.getElementById("befehl_avadd").checked)
+        avAdd.start();
+    else if (document.getElementById("befehl_modify").checked)
         editTool.start();
-     else if (document.getElementById("befehl_delete").checked)
+    else if (document.getElementById("befehl_delete").checked)
         delTool.start();
     else if (document.getElementById("befehl_part").checked)
         partTool.start();
@@ -77,7 +107,7 @@ function createMap() {
                 //visible: false,
                 opacity: 0.7,
                 source: new TileWMS({
-                    url: 'http://geodienste.hamburg.de/HH_WMS_DOP20',
+                    url: 'http://geodienste.hamburg.de/HH_WMS_DOP10',
                     params: {
                         'LAYERS': '1',
                         'FORMAT': 'image/png'
@@ -117,3 +147,34 @@ function createMap() {
         })
     });
 }
+
+function openTab(evt) {
+    // Declare all variables
+    let i, tabcontent, tablinks;
+
+    // Get all elements with class="tabcontent" and hide them
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+
+    // Get all elements with class="tablinks" and remove the class "active"
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+
+    // Show the current tab, and add an "active" class to the button that opened the tab
+    let tabName = evt.currentTarget.dataset.tab;
+    document.getElementById(tabName).style.display = "block";
+    evt.currentTarget.className += " active";
+    document.getElementById(tabName).getElementsByTagName('input')[0].click();
+}
+
+window.addEventListener('load', function () {
+    let tablinks = document.getElementsByClassName("tablinks");
+    for (let i = 0; i < tablinks.length; i++) {
+        tablinks[i].addEventListener('click', openTab);
+    }
+    document.getElementById("defaultOpen").click();
+});

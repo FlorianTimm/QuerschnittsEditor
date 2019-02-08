@@ -2,9 +2,9 @@ import Feature from 'ol/Feature.js';
 import LineString from 'ol/geom/LineString.js';
 import PublicWFS from '../PublicWFS.js';
 
-class Abschnitt {
-
+class Abschnitt extends Feature {
     constructor() {
+        super();
         this.fid = null;
         this.abschnittid = null;
         this.geom = null;
@@ -13,19 +13,19 @@ class Abschnitt {
         this.len = null;
         this.faktor = null;
         this._station = {};
-        this._feature = new Feature({geom: null, objekt: this});
+        this._aufstell = {};
     }
 
 
     static loadFromPublicWFS(abschnittid) {
         let r = new Abschnitt();
         r.abschnittid = abschnittid;
-        
+
         PublicWFS.doQuery('VI_STRASSENNETZ', '<ogc:Filter>' +
             '<ogc:PropertyIsEqualTo><ogc:PropertyName>ABSCHNITT_ID</ogc:PropertyName>' +
             '<ogc:Literal>' + r.abschnittid + '</ogc:Literal></ogc:PropertyIsEqualTo>' +
             '</ogc:Filter>', r._loadCallback, undefined, r);
-        
+
         return r;
     }
 
@@ -45,7 +45,7 @@ class Abschnitt {
 
     _fromXML(xml) {
         this.fid = xml.getAttribute('fid');
-        
+
         this.len = Number(xml.getElementsByTagName('LEN')[0].firstChild.data);
         this.abschnittid = xml.getElementsByTagName('ABSCHNITT_ID')[0].firstChild.data;
         this.vnk = xml.getElementsByTagName('VNP')[0].firstChild.data;
@@ -59,14 +59,14 @@ class Abschnitt {
             let y = Number(k[1]);
             ak.push([x, y]);
         }
-        this._feature.setGeometry(new LineString(ak));
+        this.setGeometry(new LineString(ak));
     }
 
     _readData(xmlhttp) {
-		if (xmlhttp.responseXML == undefined) {
-			PublicWFS.showMessage('Abschnitt nicht gefunden', true);
-			return;
-		}  
+        if (xmlhttp.responseXML == undefined) {
+            PublicWFS.showMessage('Abschnitt nicht gefunden', true);
+            return;
+        }
     }
 
     getFeature() {
@@ -77,15 +77,15 @@ class Abschnitt {
         this._station[station.vst] = station;
     }
 
-    getStation (station) {
-        return this._station[station];        
+    getStation(station) {
+        return this._station[station];
     }
 
     existsStation(station) {
         return station in this._station;
     }
 
-    getStationByStation (station) {
+    getStationByStation(station) {
         let r = null;
         for (var a in this._station) {
             if (a > station) break;

@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>QuerschnittEdit</title>
+    <title>LGV QuerschnittEditor</title>
     <meta name="description" content="" />
     <meta name="robots" content="index, follow" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -23,13 +23,26 @@
         <input type="range" name="quer_trans" value="60" onchange="quer_transp()">
     </form>
 
-    <sidebar>
+    <sidebar id="sidebar">
         <form id="steuerung" name="steuerung">
-            <input type="radio" name="befehl" id="befehl_info" value="info" checked="checked" />&nbsp;Info<br />
-            <input type="radio" name="befehl" id="befehl_modify" value="modify" />&nbsp;&Auml;ndern<br />
-            <input type="radio" name="befehl" id="befehl_delete" value="delete" />&nbsp;L&ouml;schen<br />
-            <input type="radio" name="befehl" id="befehl_part" value="part" />&nbsp;Teilen<br />
-            <input type="radio" name="befehl" id="befehl_add" value="add" />&nbsp;Hinzufügen<br />
+            <div class="tab">
+                <button type="button" class="tablinks" data-tab="tab_querschnitt" id="defaultOpen">Querschnitt</button>
+                <button type="button" class="tablinks" data-tab="tab_aufstell">Aufstellv.</button>
+            </div>
+
+            <div id="tab_querschnitt" class="tabcontent">
+                <input type="radio" name="befehl" id="befehl_info" value="info" checked="checked" /><label for="befehl_info">&nbsp;Info</label><br />
+                <input type="radio" name="befehl" id="befehl_modify" value="modify" /><label for="befehl_modify">&nbsp;&Auml;ndern</label><br />
+                <input type="radio" name="befehl" id="befehl_delete" value="delete" /><label for="befehl_delete">&nbsp;L&ouml;schen</label><br />
+                <input type="radio" name="befehl" id="befehl_part" value="part" /><label for="befehl_part">&nbsp;Teilen</label><br />
+                <input type="radio" name="befehl" id="befehl_add" value="add" /><label for="befehl_add">&nbsp;Hinzufügen</label><br />
+            </div>
+            <div id="tab_aufstell" class="tabcontent">
+
+                <input type="radio" name="befehl" id="befehl_vsinfo" value="vsinfo" /><label for="befehl_vsinfo">&nbsp;Info</label><br />
+                <input type="radio" name="befehl" id="befehl_avadd" value="avadd" /><label for="befehl_avadd">&nbsp;Hinzufügen</label><br />
+            </div>
+            <button type="button" id="zoomToExtent">Auf Ausdehnung zoomen</button>
         </form>
 
         <form id="loeschen" name="loeschen">
@@ -55,8 +68,41 @@
                     <td id="teilen_station"></td>
                 </tr>
             </table>
-            <input type="button" id="teilen_button" value="Querschnitt teilen"
-                disabled="disabled" />
+            <input type="button" id="teilen_button" value="Querschnitt teilen" disabled="disabled" />
+        </form>
+
+        <form id="avadd" name="avadd">
+            <table>
+                <tr>
+                    <td>Quelle</td>
+                    <td><select id="avadd_quelle"></select></td>
+                </tr>
+                <tr>
+                    <td>VNK:</td>
+                    <td id="avadd_vnk"></td>
+                </tr>
+                <tr>
+                    <td>NNK:</td>
+                    <td id="avadd_nnk"></td>
+                </tr>
+                <tr>
+                    <td>Station</td>
+                    <td id="avadd_station"></td>
+                </tr>
+                <tr>
+                    <td>Abstand</td>
+                    <td id="avadd_abstand"></td>
+                </tr>
+                <tr>
+                    <td>Lage</td>
+                    <td><select id="avadd_lage"></select></td>
+                </tr>
+                <tr>
+                    <td>Art</td>
+                    <td><select id="avadd_art"></select></td>
+                </tr>
+            </table>
+            <input type="button" id="avadd_button" value="Aufstellvor. hinzu." disabled="disabled" />
         </form>
 
         <form id="modify" name="modify">
@@ -85,7 +131,7 @@
                 </tr>
                 <tr>
                     <td>Art:</td>
-                    <td><select id="info_art"  disabled="disabled"></select></td>
+                    <td><select id="info_art" disabled="disabled"></select></td>
                 </tr>
                 <tr>
                     <td>Art der Oberfl&auml;che:</td>
@@ -93,13 +139,11 @@
                 </tr>
                 <tr>
                     <td>Von Breite:</td>
-                    <td><input type="number" id="info_breite" min="0" max="10000" step="10"
-                            disabled="disabled" /></td>
+                    <td><input type="number" id="info_breite" min="0" max="10000" step="10" disabled="disabled" /></td>
                 </tr>
                 <tr>
                     <td>Bis Breite:</td>
-                    <td><input type="number" id="info_bisbreite" min="0" max="10000" step="10"
-                            disabled="disabled" /></td>
+                    <td><input type="number" id="info_bisbreite" min="0" max="10000" step="10" disabled="disabled" /></td>
                 </tr>
             </table>
         </form>

@@ -15,8 +15,6 @@ class InfoTool {
                 })
             })
         });
-
-        this.select.info = this;
         
         this.select.on('select', function (e) {
             e.target.info.logAuswahl(e.target);

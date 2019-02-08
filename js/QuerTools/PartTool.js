@@ -13,7 +13,7 @@ class PartTool {
         this.info = info;
 
         this.select = new SelectInteraction({
-            layers: [this.info.l_achse],
+            layers: [this.daten.l_achse],
             style: new Style({
                 stroke: new Stroke({
                     color: 'rgba(0, 50, 255, 0.5)',
@@ -117,11 +117,11 @@ class PartTool {
             let coord = [Vektor.diff(daten['pos'][5], vektor), Vektor.sum(daten['pos'][5], vektor)];
 
             this.feat_teilung.getGeometry().setCoordinates(coord);
-            this.feat_teilung.set("abschnittid", daten['achse'].get('objekt').abschnittid);
+            this.feat_teilung.set("abschnittid", daten['achse'].abschnittid);
             this.feat_teilung.set("station", Math.round(daten['pos'][2]));
 
-            document.getElementById("teilen_vnk").innerHTML = daten['achse'].get('objekt').vnk;
-            document.getElementById("teilen_nnk").innerHTML = daten['achse'].get('objekt').nnk;
+            document.getElementById("teilen_vnk").innerHTML = daten['achse'].vnk;
+            document.getElementById("teilen_nnk").innerHTML = daten['achse'].nnk;
             document.getElementById("teilen_station").innerHTML = Math.round(daten['pos'][2])
 
             document.getElementById("teilen_button").disabled = "";
@@ -141,8 +141,8 @@ class PartTool {
         this.feat_station_line.getGeometry().setCoordinates([daten['pos'][6], daten['pos'][5]]);
 
         if (!this.feat_teilung.get('isset')) {
-            document.getElementById("teilen_vnk").innerHTML = daten['achse'].get('objekt').vnk;
-            document.getElementById("teilen_nnk").innerHTML = daten['achse'].get('objekt').nnk;
+            document.getElementById("teilen_vnk").innerHTML = daten['achse'].vnk;
+            document.getElementById("teilen_nnk").innerHTML = daten['achse'].nnk;
             document.getElementById("teilen_station").innerHTML = Math.round(daten['pos'][2])
         }
     }

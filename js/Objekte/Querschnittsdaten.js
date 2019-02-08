@@ -1,4 +1,4 @@
-var CONFIG = require('../config.json');
+var CONFIG_WFS = require('../config_wfs.json');
 import PublicWFS from '../PublicWFS.js';
 import { Polygon, MultiLineString } from 'ol/geom';
 import Feature from 'ol/Feature.js';
@@ -54,16 +54,16 @@ class Querschnitt {
 
         r.fid = xml.getAttribute('fid');
 
-        for (let tag in CONFIG.QUERSCHNITT) {
+        for (let tag in CONFIG_WFS.QUERSCHNITT) {
             //console.log(tag);
             if (xml.getElementsByTagName(tag).length <= 0) continue;
-            if (CONFIG.QUERSCHNITT[tag].art == 0) {
+            if (CONFIG_WFS.QUERSCHNITT[tag].art == 0) {
                 // Kein Klartext
                 r[tag] = xml.getElementsByTagName(tag)[0].firstChild.data;
-            } else if (CONFIG.QUERSCHNITT[tag].art == 1) {
+            } else if (CONFIG_WFS.QUERSCHNITT[tag].art == 1) {
                 // Kein Klartext
                 r[tag] = Number(xml.getElementsByTagName(tag)[0].firstChild.data);
-            } else if (CONFIG.QUERSCHNITT[tag].art == 2) {
+            } else if (CONFIG_WFS.QUERSCHNITT[tag].art == 2) {
                 // Klartext, xlink wird gespeichert
                 r[tag] = xml.getElementsByTagName(tag)[0].getAttribute('xlink:href');
             }
@@ -159,15 +159,15 @@ class Querschnitt {
     createInsertXML() {
         let r = '<wfs:Insert>\n<Dotquer>\n';
 
-        for (let tag in CONFIG.QUERSCHNITT) {
+        for (let tag in CONFIG_WFS.QUERSCHNITT) {
             //console.log(tag);
             if (this[tag] === null || this[tag] === undefined) continue;
-            if (CONFIG.QUERSCHNITT[tag].art == 0 || CONFIG.QUERSCHNITT[tag].art == 1) {
+            if (CONFIG_WFS.QUERSCHNITT[tag].art == 0 || CONFIG_WFS.QUERSCHNITT[tag].art == 1) {
                 // Kein Klartext
                 r += '<' + tag + '>' + this[tag] + '</' + tag + '>\n';
-            } else if (CONFIG.QUERSCHNITT[tag].art == 2) {
+            } else if (CONFIG_WFS.QUERSCHNITT[tag].art == 2) {
                 // Klartext
-                r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG.QUERSCHNITT[tag].kt + '" />\n' + this[tag];
+                r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS.QUERSCHNITT[tag].kt + '" />\n' + this[tag];
             }
         }
 
