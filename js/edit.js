@@ -20,21 +20,25 @@ import AvAdd from './SchilderTools/AvAdd.js';
 
 var CONFIG = require('./config.json');
 
-var infoTool, editTool, delTool, partTool, addTool, vsInfoTool, avAdd;
+let urlParam = new RegExp('[\?&]er=([^&#]*)').exec(window.location.href);
+if (urlParam == null) {
+    PublicWFS.showMessage("Kein Ereignisraum ausgewählt!", true);
+    location.href = "./index.html";
+    return;
+}
+var er = decodeURI(urlParam[1])
+console.log("Ereignisraum: " + er);
+
+let infoTool, editTool, delTool, partTool, addTool, vsInfoTool, avAdd;
 
 window.addEventListener('load', function () {
+    
     proj4.defs("EPSG:31467", "+proj=tmerc +lat_0=0 +lon_0=9 +k=1 +x_0=3500000 +y_0=0 +ellps=bessel +towgs84=598.1,73.7,418.2,0.202,0.045,-2.455,6.7 +units=m +no_defs");
     proj4.defs("EPSG:25832", "+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
     register(proj4);
 
     var map = createMap();
-    let urlParam = new RegExp('[\?&]er=([^&#]*)').exec(window.location.href);
-    if (urlParam == null) {
-        PublicWFS.showMessage("Kein Ereignisraum ausgewählt!", true);
-        return;
-    }
-    var er = decodeURI(urlParam[1])
-    console.log("Ereignisraum: " + er);
+
     let daten = new Daten(map, er);
     infoTool = new InfoTool(map, daten);
     infoTool.start();
@@ -128,3 +132,34 @@ function createMap() {
         })
     });
 }
+
+function openTab(evt) {
+    // Declare all variables
+    let i, tabcontent, tablinks;
+
+    // Get all elements with class="tabcontent" and hide them
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+
+    // Get all elements with class="tablinks" and remove the class "active"
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+
+    // Show the current tab, and add an "active" class to the button that opened the tab
+    let tabName = evt.currentTarget.dataset.tab;
+    document.getElementById(tabName).style.display = "block";
+    evt.currentTarget.className += " active";
+    document.getElementById(tabName).getElementsByTagName('input')[0].click();
+}
+
+window.addEventListener('load', function () {
+    let tablinks = document.getElementsByClassName("tablinks");
+    for (let i = 0; i < tablinks.length; i++) {
+        tablinks[i].addEventListener('click', openTab);
+    }
+    document.getElementById("defaultOpen").click();
+});
