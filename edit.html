@@ -27,20 +27,20 @@
         <form id="steuerung" name="steuerung">
             <div class="tab">
                 <button type="button" class="tablinks" data-tab="tab_querschnitt" id="defaultOpen">Querschnitt</button>
-                <button type="button" class="tablinks" data-tab="tab_aufstell">Schild</button>
+                <button type="button" class="tablinks" data-tab="tab_aufstell">Aufstellv.</button>
             </div>
 
             <div id="tab_querschnitt" class="tabcontent">
-                <input type="radio" name="befehl" id="befehl_info" value="info" checked="checked" />&nbsp;Info<br />
-                <input type="radio" name="befehl" id="befehl_modify" value="modify" />&nbsp;&Auml;ndern<br />
-                <input type="radio" name="befehl" id="befehl_delete" value="delete" />&nbsp;L&ouml;schen<br />
-                <input type="radio" name="befehl" id="befehl_part" value="part" />&nbsp;Teilen<br />
-                <input type="radio" name="befehl" id="befehl_add" value="add" />&nbsp;Hinzufügen<br />
+                <input type="radio" name="befehl" id="befehl_info" value="info" checked="checked" /><label for="befehl_info">&nbsp;Info</label><br />
+                <input type="radio" name="befehl" id="befehl_modify" value="modify" /><label for="befehl_modify">&nbsp;&Auml;ndern</label><br />
+                <input type="radio" name="befehl" id="befehl_delete" value="delete" /><label for="befehl_delete">&nbsp;L&ouml;schen</label><br />
+                <input type="radio" name="befehl" id="befehl_part" value="part" /><label for="befehl_part">&nbsp;Teilen</label><br />
+                <input type="radio" name="befehl" id="befehl_add" value="add" /><label for="befehl_add">&nbsp;Hinzufügen</label><br />
             </div>
             <div id="tab_aufstell" class="tabcontent">
 
-                <input type="radio" name="befehl" id="befehl_vsinfo" value="vsinfo" />&nbsp;SchildInfo<br />
-                <input type="radio" name="befehl" id="befehl_avadd" value="avadd" />&nbsp;Aufstellvor. hinzuf.<br />
+                <input type="radio" name="befehl" id="befehl_vsinfo" value="vsinfo" /><label for="befehl_vsinfo">&nbsp;Info</label><br />
+                <input type="radio" name="befehl" id="befehl_avadd" value="avadd" /><label for="befehl_avadd">&nbsp;Hinzufügen</label><br />
             </div>
             <button type="button" id="zoomToExtent">Auf Ausdehnung zoomen</button>
         </form>

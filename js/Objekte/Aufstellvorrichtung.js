@@ -138,7 +138,7 @@ class Aufstellvorrichtung extends Feature {
         });
         let layer = new VectorLayer({
             source: source,
-            opacity: 0.6
+            opacity: 0.7,
         });
         layer.setStyle(function (feature, zoom) {
             return new Style({
@@ -146,7 +146,7 @@ class Aufstellvorrichtung extends Feature {
                     radius: 3,
                     fill: new Fill({ color: 'black' }),
                     stroke: new Stroke({
-                        color: [255, 0, 0], width: 2
+                        color: 'rgba(250,120,0,0.8)', width: 3
                     })
                 }),
                 text: new Text({

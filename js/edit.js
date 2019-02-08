@@ -24,7 +24,6 @@ let urlParam = new RegExp('[\?&]er=([^&#]*)').exec(window.location.href);
 if (urlParam == null) {
     PublicWFS.showMessage("Kein Ereignisraum ausgewählt!", true);
     location.href = "./index.html";
-    return;
 }
 var er = decodeURI(urlParam[1])
 console.log("Ereignisraum: " + er);
@@ -60,20 +59,7 @@ window.addEventListener('load', function () {
 
     document.getElementById("zoomToExtent").addEventListener('click', function () {
         let minX = null, maxX = null, minY = null, maxY = null;
-        /*for (let f of daten.l_achse.getSource().getFeatures()) {
-            console.log(f)
-            console.log(f.getGeometry());
-            let geo = f.getGeometry().getCoordinates();
-            for (let p of geo) {
-                if (minX == null || minX > p[0]) minX = p[0];
-                if (maxX == null || maxX < p[0]) maxX = p[0];
-                if (minY == null || minY > p[1]) minY = p[1];
-                if (maxY == null || maxY < p[1]) maxY = p[1];
-            }
-        }*/
         for (let f of daten.l_achse.getSource().getFeatures()) {
-            console.log(f)
-            console.log(f.getGeometry());
             let p = f.getGeometry().getExtent();
 
             if (minX == null || minX > p[0]) minX = p[0];

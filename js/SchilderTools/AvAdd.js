@@ -69,17 +69,17 @@ class AvAdd {
 
 
         this.feat_neu = new Feature({ geometry: new Point([0, 0]) });
-        this.feat_neu.setStyle(
-            new Style({
+        this.feat_neu.setStyle(function (feature, zoom) {
+            return new Style({
                 image: new Circle({
-                    radius: 4,
-                    fill: new Fill({ color: 'rgba(255,0,0, 0.5)', }),
+                    radius: 3,
+                    fill: new Fill({ color: 'black' }),
                     stroke: new Stroke({
-                        color: 'rgba(0, 0, 0, 0.7)', width: 1
+                        color: 'rgba(250,0,0,0.9)', width: 3
                     })
-                }),
-            })
-        )
+                })
+            });
+        });
         this.v_overlay.addFeature(this.feat_neu);
 
         this.feat_station_line = new Feature({ geometry: new LineString([[0, 0][0, 0]]) });

@@ -17,27 +17,26 @@ class VsInfoTool {
         this.select.on('select', this.featureSelected.bind(this))
     }
 
-    featureSelected (event) {
-        console.log(event);
-        if (event.selected.length == 0) {
-            this.infoField.style.display = "none";
-            return;
-        }
-        this.infoField.style.display = "block";
-        let auswahl = event.selected[0];
-
-        this.infoField.innerHTML = auswahl.getHTMLInfo();
-    }
-
-
-    start() {
-        this.map.addInteraction(this.select);
-    }
-
-    stop() {
-        this.map.removeInteraction(this.select);
+featureSelected(event) {
+    if (event.selected.length == 0) {
         this.infoField.style.display = "none";
+        return;
     }
+    this.infoField.style.display = "block";
+    let auswahl = event.selected[0];
+
+    this.infoField.innerHTML = auswahl.getHTMLInfo();
+}
+
+
+start() {
+    this.map.addInteraction(this.select);
+}
+
+stop() {
+    this.map.removeInteraction(this.select);
+    this.infoField.style.display = "none";
+}
 
 }
 
