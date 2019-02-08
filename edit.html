@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>QuerschnittEdit</title>
+    <title>LGV QuerschnittEditor</title>
     <meta name="description" content="" />
     <meta name="robots" content="index, follow" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -42,6 +42,7 @@
                 <input type="radio" name="befehl" id="befehl_vsinfo" value="vsinfo" />&nbsp;SchildInfo<br />
                 <input type="radio" name="befehl" id="befehl_avadd" value="avadd" />&nbsp;Aufstellvor. hinzuf.<br />
             </div>
+            <button type="button" id="zoomToExtent">Auf Ausdehnung zoomen</button>
         </form>
 
         <form id="loeschen" name="loeschen">
@@ -73,6 +74,10 @@
         <form id="avadd" name="avadd">
             <table>
                 <tr>
+                    <td>Quelle</td>
+                    <td><select id="avadd_quelle"></select></td>
+                </tr>
+                <tr>
                     <td>VNK:</td>
                     <td id="avadd_vnk"></td>
                 </tr>
@@ -87,6 +92,14 @@
                 <tr>
                     <td>Abstand</td>
                     <td id="avadd_abstand"></td>
+                </tr>
+                <tr>
+                    <td>Lage</td>
+                    <td><select id="avadd_lage"></select></td>
+                </tr>
+                <tr>
+                    <td>Art</td>
+                    <td><select id="avadd_art"></select></td>
                 </tr>
             </table>
             <input type="button" id="avadd_button" value="Aufstellvor. hinzu." disabled="disabled" />

@@ -77,11 +77,11 @@ class PublicWFS {
         let m = document.createElement('div');
         m.className = 'nachricht';
         m.innerHTML = text;
-        document.body.append(m);
+        document.body.appendChild(m);
 
         let ausblenden = function () {
             m.style.display = 'none';
-            m.remove();
+            document.body.removeChild(m);
         }
 
         if (error) {

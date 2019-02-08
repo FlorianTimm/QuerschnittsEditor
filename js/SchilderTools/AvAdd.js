@@ -1,3 +1,4 @@
+var CONFIG = require('../config.json');
 import { Circle, Style, Stroke, Fill } from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
 import Vektor from '../Vektor.js';
@@ -6,6 +7,7 @@ import { Vector as VectorLayer } from 'ol/layer';
 import { Point, LineString } from 'ol/geom';
 import Feature from 'ol/Feature.js';
 import PublicWFS from '../PublicWFS.js';
+import Aufstellvorrichtung from '../Objekte/Aufstellvorrichtung.js';
 
 class AvAdd {
     constructor(map, daten) {
@@ -123,7 +125,8 @@ class AvAdd {
         this.station = Math.round(daten['pos'][2]);
         this.abstand = Math.round(daten['pos'][4] * 10) / 10;
         this.seite = daten['pos'][3]
-        if (this.seite = 'M') this.abstand = 0;
+        if (this.seite == 'M') this.abstand = 0;
+        if (this.seite == 'L') this.abstand = -this.abstand;
 
         document.getElementById("avadd_vnk").innerHTML = daten['achse'].vnk;
         document.getElementById("avadd_nnk").innerHTML = daten['achse'].nnk;
@@ -151,7 +154,40 @@ class AvAdd {
     }
 
     partQuerschnittButton() {
-        PublicWFS.showMessage("noch nicht möglich", true)
+        let soap = '<wfs:Insert>\n' +
+            '<Otaufstvor>\n' +
+            '<projekt xlink:href="#' + this.daten.ereignisraum + '" typeName="Projekt" />\n' +
+            '<abschnittId>' + this.absid + '</abschnittId>\n' +
+            '<vst>' + this.station + '</vst>\n' +
+            '<bst>' + this.station + '</bst>\n' +
+            '<rabstbaVst>' + this.abstand + '</rabstbaVst>\n' +
+            '<vabstVst>' + this.abstand + '</vabstVst>\n' +
+            '<vabstBst>' + this.abstand + '</vabstBst>\n' +
+            '<bemerkung>mit QuerschnittsEditor erfasst</bemerkung>\n' + 
+            '<detailgrad xlink:href="'+ CONFIG.DETAIL_HOCH + '" typeName="Itobjdetailgrad" />\n' +
+            '<erfart xlink:href="' + CONFIG.ERFASSUNG + '" typeName="Iterfart" />\n' +
+            '<ADatum>' + (new Date()).toISOString().substring(0, 10) + '</ADatum>\n' +
+            '<rlageVst xlink:href="#S' + document.forms.avadd.avadd_lage.value + '" typeName="Itallglage" />\n' +
+            '<art xlink:href="#S' + document.forms.avadd.avadd_art.value + '" typeName="Itaufstvorart" />\n' +
+            '<quelle xlink:href="#S' + document.forms.avadd.avadd_quelle.value + '" typeName="Itquelle" />\n' +
+            '</Otaufstvor> </wfs:Insert>';
+        console.log(soap)
+        PublicWFS.doTransaction(soap, this._getInsertResults, undefined, this);
+    }
+
+    _getInsertResults(xml, _this) {
+        PublicWFS.showMessage("erfolgreich");
+        _this.absid = null;
+        _this.station = null;
+        _this.seite = null;
+        _this.feat_neu.getGeometry().setCoordinates([0,0]);
+        console.log(_this);
+        let filter = '<Filter>';
+        for (let f of xml.getElementsByTagName('InsertResult')[0].childNodes) {
+            filter += '<ogc:FeatureId fid="' + f.getAttribute('fid') + '"/>';
+        }
+        filter += '</Filter>';
+        PublicWFS.doQuery('Otaufstvor', filter, Aufstellvorrichtung._loadER_Callback, undefined, _this.daten.l_aufstell, _this.daten);
     }
 
     start() {

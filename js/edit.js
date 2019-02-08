@@ -32,7 +32,7 @@ console.log("Ereignisraum: " + er);
 let infoTool, editTool, delTool, partTool, addTool, vsInfoTool, avAdd;
 
 window.addEventListener('load', function () {
-    
+
     proj4.defs("EPSG:31467", "+proj=tmerc +lat_0=0 +lon_0=9 +k=1 +x_0=3500000 +y_0=0 +ellps=bessel +towgs84=598.1,73.7,418.2,0.202,0.045,-2.455,6.7 +units=m +no_defs");
     proj4.defs("EPSG:25832", "+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
     register(proj4);
@@ -56,6 +56,35 @@ window.addEventListener('load', function () {
     document.getElementById("befehl_delete").addEventListener('change', befehl_changed);
     document.getElementById("befehl_part").addEventListener('change', befehl_changed);
     document.getElementById("befehl_add").addEventListener('change', befehl_changed);
+
+
+    document.getElementById("zoomToExtent").addEventListener('click', function () {
+        let minX = null, maxX = null, minY = null, maxY = null;
+        /*for (let f of daten.l_achse.getSource().getFeatures()) {
+            console.log(f)
+            console.log(f.getGeometry());
+            let geo = f.getGeometry().getCoordinates();
+            for (let p of geo) {
+                if (minX == null || minX > p[0]) minX = p[0];
+                if (maxX == null || maxX < p[0]) maxX = p[0];
+                if (minY == null || minY > p[1]) minY = p[1];
+                if (maxY == null || maxY < p[1]) maxY = p[1];
+            }
+        }*/
+        for (let f of daten.l_achse.getSource().getFeatures()) {
+            console.log(f)
+            console.log(f.getGeometry());
+            let p = f.getGeometry().getExtent();
+
+            if (minX == null || minX > p[0]) minX = p[0];
+            if (minY == null || minY > p[1]) minY = p[1];
+            if (maxX == null || maxX < p[2]) maxX = p[2];
+            if (maxY == null || maxY < p[3]) maxY = p[3];
+        }
+        console.log([minX, minY, maxX, maxY])
+        map.getView().fit([minX, minY, maxX, maxY], {padding: [20,240,20,20]})
+        //map.getView().fit(daten.l_achse.getExtent());
+    })
 
 });
 

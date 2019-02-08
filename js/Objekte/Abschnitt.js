@@ -4,7 +4,7 @@ import PublicWFS from '../PublicWFS.js';
 
 class Abschnitt extends Feature {
     constructor() {
-        super({ geom: null });
+        super();
         this.fid = null;
         this.abschnittid = null;
         this.geom = null;

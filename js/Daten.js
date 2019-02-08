@@ -28,7 +28,7 @@ class Daten {
         this.loadER();
 
         this.l_aufstell = Aufstellvorrichtung.createLayer(this.map);
-        Aufstellvorrichtung.loadAbschnittER(this.ereignisraum, this.l_aufstell);
+        Aufstellvorrichtung.loadAbschnittER(this.ereignisraum, this.l_aufstell, this);        
     }
 
     static get() {
