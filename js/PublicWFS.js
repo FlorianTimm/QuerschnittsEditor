@@ -1,7 +1,7 @@
 var CONFIG = require('./config.json');
 
 class PublicWFS {
-	
+
     static doSoapRequest(xml, callbackSuccess, callbackFailed, ...args) {
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.open('POST', CONFIG.PUBLIC_WFS_URL, true);
