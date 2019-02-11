@@ -38,6 +38,46 @@ window.addEventListener('load', function () {
 
     var map = createMap();
 
+    if (document.location.hash != "") {
+        let hash = document.location.hash.replace("#", "").split('&')
+
+        let hashP = {}
+
+        for (let i = 0; i < hash.length; i++) {
+            let t = hash[i].split("=");
+            hashP[t[0]] = t[1];
+        }
+
+        if ("zoom" in hashP) {
+            map.getView().setZoom(parseInt(hashP['zoom']));
+        }
+
+        if ("x" in hashP && "y" in hashP) {
+            map.getView().setCenter([parseFloat(hashP['x']), parseFloat(hashP['y'])]);
+        }
+
+        if ("layer" in hashP) {
+            let selection = hashP['layer'].split(',');
+            map.getLayers().forEach(function (layer, id, array) {
+                if (layer.get('switchable') == true) {
+                    if (selection.indexOf(id + "") != -1) {
+                        layer.setVisible(true);
+                    } else {
+                        layer.setVisible(false);
+                    }
+                }
+            });
+        }
+    }
+    map.getLayers().forEach(function (layer, id, array) {
+        if (layer.get('switchable') == undefined || layer.get('switchable') == true) {
+            layer.on("propertychange", recreateHash)
+        }
+    });
+    map.firstHash = true;
+
+    map.on("moveend", recreateHash);
+
     let daten = new Daten(map, er);
     infoTool = new InfoTool(map, daten);
     infoTool.start();
@@ -68,11 +108,34 @@ window.addEventListener('load', function () {
             if (maxY == null || maxY < p[3]) maxY = p[3];
         }
         console.log([minX, minY, maxX, maxY])
-        map.getView().fit([minX, minY, maxX, maxY], {padding: [20,240,20,20]})
+        map.getView().fit([minX, minY, maxX, maxY], { padding: [20, 240, 20, 20] })
         //map.getView().fit(daten.l_achse.getExtent());
     })
 
 });
+
+
+function recreateHash(event) {
+    console.log(event)
+    if (event.target.firstHash) {
+        let view = event.target.getView();
+        let hash = "#zoom=" + view.getZoom();
+        hash += "&x=" + Math.round(view.getCenter()[0]);
+        hash += "&y=" + Math.round(view.getCenter()[1]);
+
+        let visible = []
+        event.target.getLayers().forEach(function (layer, id, array) {
+            if (layer.get('switchable') == true) {
+                if (layer.getVisible()) {
+                    visible.push(id);
+                }
+            }
+        });
+
+        hash += "&layer=" + visible.join(',');
+        document.location.hash = hash;
+    }
+}
 
 function befehl_changed() {
     infoTool.stop();
@@ -178,3 +241,5 @@ window.addEventListener('load', function () {
     }
     document.getElementById("defaultOpen").click();
 });
+
+
