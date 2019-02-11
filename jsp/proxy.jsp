@@ -1,25 +1,48 @@
 <%@page session="false"%>
 <%@page import="java.net.*,java.io.*,javax.xml.bind.DatatypeConverter" %>
-<%@page trimDirectiveWhitespaces="true"%> 
+<%@page trimDirectiveWhitespaces="true"%>
 <%
 HttpURLConnection urlConnection = null;
-try {
-	String reqUrl = request.getQueryString();
-	/*String decodedUrl = "";
+
+String urlStr = "http://lverkpa001.fhhnet.stadt.hamburg.de:8380/publicWFS/WFS?";
+//String urlStr = "http://lverkpa001.fhhnet.stadt.hamburg.de:8380/publicWFS/webservices/EBFFCore?wsdl";
+
+String basicAuth = "";
+
+if (request.getParameter("user") != null && request.getParameter("password") != null) {
+	basicAuth = "Basic " + new String(DatatypeConverter.printBase64Binary((request.getParameter("user") + ":" + request.getParameter("password")).getBytes()));
+	request.getSession().setAttribute("Authorization", basicAuth);
+} else if (request.getSession().getAttribute("Authorization") != null) {
+	basicAuth = (String) request.getSession().getAttribute("Authorization");
+} else if (request.getHeader("Authorization") != null) {
+	basicAuth = (String) request.getHeader("Authorization");
+	request.getSession().setAttribute("Authorization", basicAuth);
+}
+
+if (basicAuth == null || basicAuth.length() < 12) {
+	response.setStatus(401);
+	response.addHeader("WWW-Authenticate", "Basic realm=\"Login zum publicWFS\"");
+	return;
+}
+
+try { 
+	String reqUrl = request.getQueryString(); 
+	
+	/*
+	String decodedUrl = "";
 	if (reqUrl != null) {
 		reqUrl = URLDecoder.decode(reqUrl, "UTF-8");
 	} else {
 		reqUrl = "";
-	}*/
+	}
+	*/
 	
-	// Hier URL anpassen
-	String urlStr = "http://Nutzer:Passwort@Server/publicWFS/WFS?" + reqUrl;
+	urlStr += reqUrl;
 	
 	URL url = new URL(urlStr);
 	urlConnection = (HttpURLConnection) url.openConnection();
 
-	if (url.getUserInfo() != null) {
-		String basicAuth = "Basic " + new String(DatatypeConverter.printBase64Binary(url.getUserInfo().getBytes()));
+	if (basicAuth != null) {
 		urlConnection.setRequestProperty("Authorization", basicAuth);
 	}
 	
