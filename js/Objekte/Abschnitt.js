@@ -51,6 +51,12 @@ class Abschnitt extends Feature {
         this.abschnittid = xml.getElementsByTagName('ABSCHNITT_ID')[0].firstChild.data;
         this.vnk = xml.getElementsByTagName('VNP')[0].firstChild.data;
         this.nnk = xml.getElementsByTagName('NNP')[0].firstChild.data;
+        this.vtknr = xml.getElementsByTagName('VTKNUMMER')[0].firstChild.data;
+        this.vnklfd = xml.getElementsByTagName('VNKLFD')[0].firstChild.data;
+        this.vzusatz = xml.getElementsByTagName('VZUSATZ')[0].firstChild.data;
+        this.ntknr = xml.getElementsByTagName('NTKNUMMER')[0].firstChild.data;
+        this.nnklfd = xml.getElementsByTagName('NNKLFD')[0].firstChild.data;
+        this.nzusatz = xml.getElementsByTagName('NZUSATZ')[0].firstChild.data;
         let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.data.split(' ');
         let ak = [];
 

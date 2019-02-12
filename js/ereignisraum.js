@@ -64,6 +64,7 @@ function readER(xml) {
 
 function aenderung() {
     var p = er[select.value]
+    document.getElementById("ernr").value = p['nr']
     document.getElementById("nummer").innerHTML = p['nr']
     document.getElementById("kurzbez").innerHTML = p['kurzbez']
     document.getElementById("langbez").innerHTML = p['langbez']

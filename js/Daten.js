@@ -12,10 +12,11 @@ var CONFIG = require('./config.json');
 var daten = null;
 
 class Daten {
-    constructor(map, ereignisraum) {
+    constructor(map, ereignisraum, ereignisraum_nr) {
         daten = this;
         this.map = map;
         this.ereignisraum = ereignisraum;
+        this.ereignisraum_nr = ereignisraum_nr;
 
         this.kt_art = new Klartext('Itquerart', 'art', this._showArt, this);
         this.kt_artober = new Klartext('Itquerober', 'artober', this._showArtOber, this);
@@ -29,7 +30,7 @@ class Daten {
         this.loadER();
 
         this.l_aufstell = Aufstellvorrichtung.createLayer(this.map);
-        Aufstellvorrichtung.loadAbschnittER(this.ereignisraum, this.l_aufstell, this);
+        Aufstellvorrichtung.loadER(this);
     }
 
     static get() {

@@ -22,13 +22,15 @@ import LayerSwitch from './LayerSwitch.js';
 
 var CONFIG = require('./config.json');
 
-let urlParam = new RegExp('[\?&]er=([^&#]*)').exec(window.location.href);
-if (urlParam == null) {
+let urlParamER = new RegExp('[\?&]er=([^&#]*)').exec(window.location.href);
+let urlParamERNR = new RegExp('[\?&]ernr=([^&#]*)').exec(window.location.href);
+if (urlParamER == null || urlParamERNR == null) {
     PublicWFS.showMessage("Kein Ereignisraum ausgewählt!", true);
     location.href = "./index.html";
 }
-var er = decodeURI(urlParam[1])
-console.log("Ereignisraum: " + er);
+var er = decodeURI(urlParamER[1])
+var ernr = decodeURI(urlParamERNR[1])
+console.log("Ereignisraum: " + ernr);
 
 let infoTool, editTool, delTool, partTool, addTool, vsInfoTool, avAdd;
 
@@ -81,7 +83,7 @@ window.addEventListener('load', function () {
 
     map.on("moveend", recreateHash);
 
-    let daten = new Daten(map, er);
+    let daten = new Daten(map, er, ernr);
     infoTool = new InfoTool(map, daten);
     infoTool.start();
     editTool = new ModifyTool(map, daten, infoTool);

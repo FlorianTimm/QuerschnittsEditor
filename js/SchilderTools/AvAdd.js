@@ -15,7 +15,7 @@ class AvAdd {
         this.daten = daten;
 
 
-        this.absid = null;
+        this.abschnitt = null;
         this.station = null;
         this.abstand = null;
         this.seite = null;
@@ -93,7 +93,7 @@ class AvAdd {
         );
         this.v_overlay.addFeature(this.feat_station_line);
 
-        document.getElementById('avadd_button').addEventListener('click', this.partQuerschnittButton.bind(this))
+        document.getElementById('avadd_button').addEventListener('click', this.addAufstellButton.bind(this))
     }
 
     part_get_station(event) {
@@ -121,7 +121,7 @@ class AvAdd {
 
         this.feat_neu.getGeometry().setCoordinates(daten['pos'][6]);
 
-        this.absid = daten['achse'].abschnittid;
+        this.abschnitt = daten['achse'];
         this.station = Math.round(daten['pos'][2]);
         this.abstand = Math.round(daten['pos'][4] * 10) / 10;
         this.seite = daten['pos'][3]
@@ -145,7 +145,7 @@ class AvAdd {
         this.feat_station.getGeometry().setCoordinates(daten['pos'][6]);
         this.feat_station_line.getGeometry().setCoordinates([daten['pos'][6], daten['pos'][5]]);
 
-        if (this.absid == null) {
+        if (this.abschnitt == null) {
             document.getElementById("avadd_vnk").innerHTML = daten['achse'].vnk;
             document.getElementById("avadd_nnk").innerHTML = daten['achse'].nnk;
             document.getElementById("avadd_station").innerHTML = Math.round(daten['pos'][2])
@@ -153,16 +153,30 @@ class AvAdd {
         }
     }
 
-    partQuerschnittButton() {
+    addAufstellButton() {
+        // im ER?
+        if (!("Otaufstvor" in this.abschnitt.inER)) {
+            PublicWFS.addInER(this.abschnitt, "Otaufstvor", this.daten.ereignisraum_nr, AvAdd._addInER_Callback, undefined, this);
+        } else {
+            AvAdd._wfsAddAufstell(this)
+        }
+    }
+
+    static _addInER_Callback(xml, _this) {
+        console.log(_this.daten)
+        Aufstellvorrichtung.loadAbschnittER (_this.daten, _this.abschnitt, AvAdd._wfsAddAufstell, _this)
+    }
+
+    static _wfsAddAufstell(_this) {
         let soap = '<wfs:Insert>\n' +
             '<Otaufstvor>\n' +
-            '<projekt xlink:href="#' + this.daten.ereignisraum + '" typeName="Projekt" />\n' +
-            '<abschnittId>' + this.absid + '</abschnittId>\n' +
-            '<vst>' + this.station + '</vst>\n' +
-            '<bst>' + this.station + '</bst>\n' +
-            '<rabstbaVst>' + this.abstand + '</rabstbaVst>\n' +
-            '<vabstVst>' + this.abstand + '</vabstVst>\n' +
-            '<vabstBst>' + this.abstand + '</vabstBst>\n' +
+            '<projekt xlink:href="#' + _this.daten.ereignisraum + '" typeName="Projekt" />\n' +
+            '<abschnittId>' + _this.abschnitt.abschnittid + '</abschnittId>\n' +
+            '<vst>' + _this.station + '</vst>\n' +
+            '<bst>' + _this.station + '</bst>\n' +
+            '<rabstbaVst>' + _this.abstand + '</rabstbaVst>\n' +
+            '<vabstVst>' + _this.abstand + '</vabstVst>\n' +
+            '<vabstBst>' + _this.abstand + '</vabstBst>\n' +
             '<bemerkung>mit QuerschnittsEditor erfasst</bemerkung>\n' + 
             '<detailgrad xlink:href="'+ CONFIG.DETAIL_HOCH + '" typeName="Itobjdetailgrad" />\n' +
             '<erfart xlink:href="' + CONFIG.ERFASSUNG + '" typeName="Iterfart" />\n' +
@@ -171,23 +185,24 @@ class AvAdd {
             '<art xlink:href="#S' + document.forms.avadd.avadd_art.value + '" typeName="Itaufstvorart" />\n' +
             '<quelle xlink:href="#S' + document.forms.avadd.avadd_quelle.value + '" typeName="Itquelle" />\n' +
             '</Otaufstvor> </wfs:Insert>';
-        console.log(soap)
-        PublicWFS.doTransaction(soap, this._getInsertResults, undefined, this);
+        //console.log(soap)
+        PublicWFS.doTransaction(soap, _this._getInsertResults, undefined, _this);
     }
 
     _getInsertResults(xml, _this) {
+        console.log(_this)
         PublicWFS.showMessage("erfolgreich");
-        _this.absid = null;
+        _this.abschnitt = null;
         _this.station = null;
         _this.seite = null;
         _this.feat_neu.getGeometry().setCoordinates([0,0]);
-        console.log(_this);
+        console.log(_this.daten);
         let filter = '<Filter>';
         for (let f of xml.getElementsByTagName('InsertResult')[0].childNodes) {
             filter += '<ogc:FeatureId fid="' + f.getAttribute('fid') + '"/>';
         }
         filter += '</Filter>';
-        PublicWFS.doQuery('Otaufstvor', filter, Aufstellvorrichtung._loadER_Callback, undefined, _this.daten.l_aufstell, _this.daten);
+        PublicWFS.doQuery('Otaufstvor', filter, Aufstellvorrichtung._loadER_Callback, undefined, _this.daten);
     }
 
     start() {
