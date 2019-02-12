@@ -14,6 +14,7 @@ class Abschnitt extends Feature {
         this.faktor = null;
         this._station = {};
         this._aufstell = {};
+        this.inER = {};
     }
 
 

@@ -71,6 +71,7 @@ class Querschnitt {
         //console.log(r)
 
         let abschnitt = r.daten.getAbschnitt(r.abschnittId);
+        abschnitt.inER[Querschnitt] = true;
 
         if (!(abschnitt.existsStation(r.vst))) {
             let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.data.split(' ');

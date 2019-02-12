@@ -115,6 +115,10 @@ window.addEventListener('load', function () {
         //map.getView().fit(daten.l_achse.getExtent());
     })
 
+
+    document.getElementById("loadExtent").addEventListener('click', function () {
+        daten.loadExtent();
+    })
 });
 
 
@@ -206,7 +210,7 @@ function createMap() {
                     params: {
                         'LAYERS': 'querschnitte',
                         'STYLE': 'querschnitte_gruppiert',
-                        'FORMAT': 'image/png'   
+                        'FORMAT': 'image/png'
                     },
                     serverType: ('geoserver'),
                     attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
@@ -259,5 +263,8 @@ window.addEventListener('load', function () {
     }
     document.getElementById("defaultOpen").click();
 });
+
+
+
 
 

@@ -17,7 +17,7 @@ body,
 }
 
 #abschnitt input {
-	width: 90px;
+    width: 90px;
 }
 
 sidebar {
@@ -117,10 +117,11 @@ form#modify {
     width: 50%;
 }
 
-button#zoomToExtent {
+button#zoomToExtent,
+button#loadExtent {
     background-color: #ccc;
     float: left;
-    border: none;
+    border: 1px solid #999;
     /*outline: none;*/
     cursor: pointer;
     padding: 5px 5px;

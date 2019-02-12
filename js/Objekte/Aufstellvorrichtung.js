@@ -129,6 +129,7 @@ class Aufstellvorrichtung extends Feature {
         let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.data.split(',');
         r.setGeometry(new Point(koords));
         r.abschnitt = r.daten.getAbschnitt(r.abschnittId);
+        r.abschnitt.inER['Aufstell'] = true;
         return r;
     }
 
