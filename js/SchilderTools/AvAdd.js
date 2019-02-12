@@ -140,7 +140,7 @@ class AvAdd {
     part_move(event) {
         let daten = this.part_get_station(event);
 
-        if (daten['pos'] == null) return;
+        if (daten == null || daten['pos'] == null) return;
 
         this.feat_station.getGeometry().setCoordinates(daten['pos'][6]);
         this.feat_station_line.getGeometry().setCoordinates([daten['pos'][6], daten['pos'][5]]);

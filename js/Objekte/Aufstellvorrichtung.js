@@ -14,18 +14,24 @@ class Aufstellvorrichtung extends Feature {
     constructor(daten) {
         super({ geom: null });
         this.daten = daten;
+
+        Aufstellvorrichtung.loadKlartexte();
+    }
+
+    static loadKlartexte() {
+        console.log("Klartexte laden")
         if (art == null) {
-            art = new Klartext('Itaufstvorart', 'art', this._ktArtLoaded, this);
+            art = new Klartext('Itaufstvorart', 'art', Aufstellvorrichtung._ktArtLoaded);
         }
         if (lage == null) {
-            lage = new Klartext('Itallglage', 'allglage', this._ktLageLoaded, this);
+            lage = new Klartext('Itallglage', 'allglage', Aufstellvorrichtung._ktLageLoaded);
         }
         if (quelle == null) {
-            quelle = new Klartext('Itquelle', 'quelle', this._ktQuelleLoaded, this);
+            quelle = new Klartext('Itquelle', 'quelle', Aufstellvorrichtung._ktQuelleLoaded);
         }
     }
 
-    _ktArtLoaded(art, _this) {
+    static _ktArtLoaded(art) {
         let arten = art.getAllSorted();
         for (let a of arten) {
             let option = document.createElement('option');
@@ -38,7 +44,7 @@ class Aufstellvorrichtung extends Feature {
         }
     }
 
-    _ktLageLoaded(art, _this) {
+    static _ktLageLoaded(art) {
         let arten = art.getAllSorted();
         for (let a of arten) {
             let option = document.createElement('option');
@@ -51,7 +57,7 @@ class Aufstellvorrichtung extends Feature {
         }
     }
 
-    _ktQuelleLoaded(art, _this) {
+    static _ktQuelleLoaded(art) {
         let arten = art.getAllSorted();
         for (let a of arten) {
             let option = document.createElement('option');
@@ -100,6 +106,7 @@ class Aufstellvorrichtung extends Feature {
      * @param {*} daten 
      */
     static loadER(daten) {
+        Aufstellvorrichtung.loadKlartexte();
         PublicWFS.doQuery('Otaufstvor', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
             '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Aufstellvorrichtung._loadER_Callback, undefined, daten);
