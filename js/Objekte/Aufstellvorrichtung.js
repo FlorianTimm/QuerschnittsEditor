@@ -120,7 +120,7 @@ class Aufstellvorrichtung extends Feature {
      * @param {Abschnitt} abschnitt 
      */
     static loadAbschnittER(daten, abschnitt, callback, ...args) {
-        console.log(daten);
+        //console.log(daten);
         PublicWFS.doQuery('Otaufstvor', '<Filter>' +
             '<And><PropertyIsEqualTo><PropertyName>abschnittId</PropertyName>' +
             '<Literal>' + abschnitt.abschnittid + '</Literal></PropertyIsEqualTo><PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
@@ -129,7 +129,7 @@ class Aufstellvorrichtung extends Feature {
     }
 
     static _loadAbschnittER_Callback(xml, daten, callback, ...args) {
-        console.log(daten);
+        //console.log(daten);
         let aufstell = xml.getElementsByTagName("Otaufstvor");
         for (let auf of aufstell) {
             let f = Aufstellvorrichtung.fromXML(auf, daten);
@@ -139,7 +139,7 @@ class Aufstellvorrichtung extends Feature {
     }
 
     static fromXML(xml, daten) {
-        console.log(daten);
+        //console.log(daten);
         let r = new Aufstellvorrichtung(daten);
         for (var tag in CONFIG_WFS.AUFSTELL) {
             if (xml.getElementsByTagName(tag).length <= 0) continue;

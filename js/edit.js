@@ -121,6 +121,11 @@ window.addEventListener('load', function () {
     document.getElementById("loadExtent").addEventListener('click', function () {
         daten.loadExtent();
     })
+    /*map.addEventListener('moveend', function (event) {
+        if (map.getView().getResolution() < 0.03) {
+            daten.loadExtent();
+        }
+    })*/
 });
 
 

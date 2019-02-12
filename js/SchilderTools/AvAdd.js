@@ -163,7 +163,7 @@ class AvAdd {
     }
 
     static _addInER_Callback(xml, _this) {
-        console.log(_this.daten)
+        //console.log(_this.daten)
         Aufstellvorrichtung.loadAbschnittER (_this.daten, _this.abschnitt, AvAdd._wfsAddAufstell, _this)
     }
 
@@ -190,13 +190,13 @@ class AvAdd {
     }
 
     _getInsertResults(xml, _this) {
-        console.log(_this)
+        //console.log(_this)
         PublicWFS.showMessage("erfolgreich");
         _this.abschnitt = null;
         _this.station = null;
         _this.seite = null;
         _this.feat_neu.getGeometry().setCoordinates([0,0]);
-        console.log(_this.daten);
+        //console.log(_this.daten);
         let filter = '<Filter>';
         for (let f of xml.getElementsByTagName('InsertResult')[0].childNodes) {
             filter += '<ogc:FeatureId fid="' + f.getAttribute('fid') + '"/>';

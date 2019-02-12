@@ -322,7 +322,7 @@ class Querschnitt {
         }
         this.createGeom();
 
-        console.log(soap);
+        //console.log(soap);
 
         PublicWFS.doTransaction(soap);
     }

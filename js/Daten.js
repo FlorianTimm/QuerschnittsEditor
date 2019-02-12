@@ -86,6 +86,7 @@ class Daten {
     }
 
     loadExtent() {
+        document.body.style.cursor = 'wait'
         let extent = this.map.getView().calculateExtent();
         let filter = '<Filter>\n' +
             '	<BBOX>\n' +
@@ -109,6 +110,7 @@ class Daten {
                 _this.v_achse.addFeature(_this.abschnitte[abschnitt.abschnittid]);
             }
         }
+        document.body.style.cursor = '';
     }
 
     _createLayerAchsen() {
