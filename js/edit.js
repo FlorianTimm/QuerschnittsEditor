@@ -2,6 +2,7 @@ import 'ol/ol.css';
 import '../css/edit.css';
 import { Map, View } from 'ol';
 import { defaults as defaultInteractions } from 'ol/interaction.js';
+import { defaults as defaultControls } from 'ol/control.js';
 import { Tile as TileLayer } from 'ol/layer';
 import { TileWMS as TileWMS } from 'ol/source';
 import { register } from 'ol/proj/proj4.js';
@@ -17,6 +18,7 @@ import AddTool from './QuerTools/AddTool.js';
 import DelTool from './QuerTools/DelTool.js';
 import VsInfoTool from './SchilderTools/VsInfoTool.js';
 import AvAdd from './SchilderTools/AvAdd.js';
+import LayerSwitch from './LayerSwitch.js';
 
 var CONFIG = require('./config.json');
 
@@ -37,6 +39,7 @@ window.addEventListener('load', function () {
     register(proj4);
 
     var map = createMap();
+    console.log(map.getControls());
 
     if (document.location.hash != "") {
         let hash = document.location.hash.replace("#", "").split('&')
@@ -166,8 +169,23 @@ function createMap() {
     return new Map({
         layers: [
             new TileLayer({
+                name: 'ALKIS',
+                visible: false,
+                switchable: true,
+                opacity: 1,
+                source: new TileWMS({
+                    url: 'http://geodienste.hamburg.de/HH_WMS_ALKIS_Basiskarte',
+                    params: {
+                        'LAYERS': '1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,20,21,23,24,25,26,28,29,30,31,32',
+                        'FORMAT': 'image/png'
+                    },
+                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
+                })
+            }),
+            new TileLayer({
                 name: 'LGV DOP10',
-                //visible: false,
+                visible: true,
+                switchable: true,
                 opacity: 0.7,
                 source: new TileWMS({
                     url: 'http://geodienste.hamburg.de/HH_WMS_DOP10',
@@ -178,10 +196,10 @@ function createMap() {
                     attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
                 })
             }),
-            /*
             new TileLayer({
                 name: "Querschnitte gruppiert",
-                //visible: false,
+                visible: false,
+                switchable: true,
                 opacity: 0.6,
                 source: new TileWMS({
                     url: 'http://gv-srv-w00118:20031/deegree/services/wms?',
@@ -194,12 +212,12 @@ function createMap() {
                     attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
                 })
             })
-            */
         ],
         target: 'map',
         interactions: defaultInteractions({
             pinchRotate: false
         }),
+        controls: defaultControls().extend([new LayerSwitch()]),
         view: new View({
             projection: CONFIG.EPSG_CODE,
             center: fromLonLat([10.0045, 53.4975], CONFIG.EPSG_CODE),
