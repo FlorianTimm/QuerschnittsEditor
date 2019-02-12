@@ -15,13 +15,11 @@
     <div id="map" class="map">
     </div>
 
-    <form id="abschnitt" name="abschnitt">
-        <!--<input type="textfield" name="vnk" value="252500109" />
-				<input type="textfield" name="nnk" value="252500110" />
-		<		input type="button" onclick="getQuerschnitte()" value="Laden" />-->
-        <!--<input type="button" onclick="addQuerschnitt()" value="Querschnitt hinzufügen" />-->
-        <input type="range" name="quer_trans" value="60" onchange="quer_transp()">
-    </form>
+    <!--<form id="abschnitt" name="abschnitt">
+        <input type="textfield" name="vnk" maxlength="10" placeholder="VNK" />
+		<input type="textfield" name="nnk" maxlength="10" placeholder="NNK" />
+		<input type="button" value="Laden" />
+    </form>-->
 
     <sidebar id="sidebar">
         <form id="steuerung" name="steuerung">
@@ -43,6 +41,7 @@
                 <input type="radio" name="befehl" id="befehl_avadd" value="avadd" /><label for="befehl_avadd">&nbsp;Hinzufügen</label><br />
             </div>
             <button type="button" id="zoomToExtent">Auf Ausdehnung zoomen</button>
+            <button type="button" id="loadExtent">Abschnitte laden</button>
         </form>
 
         <form id="loeschen" name="loeschen">

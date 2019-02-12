@@ -7,14 +7,16 @@ import Querschnitt from './Objekte/Querschnittsdaten.js';
 import Klartext from './Objekte/Klartext.js';
 import Aufstellvorrichtung from './Objekte/Aufstellvorrichtung.js';
 import { isNullOrUndefined } from 'util';
+var CONFIG = require('./config.json');
 
 var daten = null;
 
 class Daten {
-    constructor(map, ereignisraum) {
+    constructor(map, ereignisraum, ereignisraum_nr) {
         daten = this;
         this.map = map;
         this.ereignisraum = ereignisraum;
+        this.ereignisraum_nr = ereignisraum_nr;
 
         this.kt_art = new Klartext('Itquerart', 'art', this._showArt, this);
         this.kt_artober = new Klartext('Itquerober', 'artober', this._showArtOber, this);
@@ -28,7 +30,7 @@ class Daten {
         this.loadER();
 
         this.l_aufstell = Aufstellvorrichtung.createLayer(this.map);
-        Aufstellvorrichtung.loadAbschnittER(this.ereignisraum, this.l_aufstell, this);        
+        Aufstellvorrichtung.loadER(this);
     }
 
     static get() {
@@ -83,6 +85,33 @@ class Daten {
         return this.abschnitte[absId];
     }
 
+    loadExtent() {
+        document.body.style.cursor = 'wait'
+        let extent = this.map.getView().calculateExtent();
+        let filter = '<Filter>\n' +
+            '	<BBOX>\n' +
+            '	<PropertyName>GEOMETRY</PropertyName>\n' +
+            '	<gml:Box srsName="' + CONFIG.EPSG_CODE + '">\n' +
+            '		<gml:coordinates>' + extent[0] + ',' + extent[1] + ' ' + extent[2] + ',' + extent[3] + ' ' + '</gml:coordinates>\n' +
+            '	</gml:Box>\n' +
+            '	</BBOX>\n' +
+            '</Filter>\n' +
+            '<maxFeatures>100</maxFeatures>\n';
+        PublicWFS.doQuery('VI_STRASSENNETZ', filter, this._loadExtent_Callback, undefined, this);
+
+    }
+
+    _loadExtent_Callback(xml, _this) {
+        let netz = xml.getElementsByTagName("VI_STRASSENNETZ");
+        for (let abschnittXML of netz) {
+            let abschnitt = Abschnitt.fromXML(abschnittXML);
+            if (!(abschnitt.abschnittid in _this.abschnitte)) {
+                _this.abschnitte[abschnitt.abschnittid] = abschnitt;
+                _this.v_achse.addFeature(_this.abschnitte[abschnitt.abschnittid]);
+            }
+        }
+        document.body.style.cursor = '';
+    }
 
     _createLayerAchsen() {
         this.v_achse = new VectorSource({
@@ -91,12 +120,23 @@ class Daten {
         this.l_achse = new VectorLayer({
             source: this.v_achse,
             opacity: 0.6,
-            style: new Style({
-                stroke: new Stroke({
-                    color: '#dd0000',
-                    width: 3
-                })
-            })
+            style: function (feature, resolution) {
+                if (Object.keys(feature.inER).length) {
+                    return new Style({
+                        stroke: new Stroke({
+                            color: '#dd0000',
+                            width: 3
+                        })
+                    })
+                } else {
+                    return new Style({
+                        stroke: new Stroke({
+                            color: '#333',
+                            width: 3
+                        })
+                    })
+                }
+            }
         });
         this.map.addLayer(this.l_achse);
     }

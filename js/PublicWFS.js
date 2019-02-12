@@ -5,8 +5,8 @@ class PublicWFS {
     static doSoapRequest(xml, callbackSuccess, callbackFailed, ...args) {
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.open('POST', CONFIG.PUBLIC_WFS_URL, true);
-    
-        
+
+
         xmlhttp.onreadystatechange = function () {
             if (xmlhttp.readyState != 4) return;
             if (xmlhttp.status == 200) {
@@ -21,9 +21,49 @@ class PublicWFS {
         xmlhttp.setRequestHeader('Content-Type', 'text/xml');
         xmlhttp.send(xml);
     }
-    
+
+    static addInER(abschnitt, objekt, ereignisraum_nr, callbackSuccess, callbackFailed, ...args) {
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.open('POST', CONFIG.ER_WFS_URL, true);
+
+        xmlhttp.onreadystatechange = function () {
+            if (xmlhttp.readyState != 4) return;
+            if (xmlhttp.status == 200) {
+                callbackSuccess(xmlhttp.responseXML, ...args)
+            } else {
+                if (callbackFailed != undefined)
+                    callbackFailed(xmlhttp.responseXML, ...args)
+                else
+                    PublicWFS.showMessage("Kommunikationsfehler", true);
+            }
+        }
+        xmlhttp.setRequestHeader('Content-Type', 'text/xml');
+        xmlhttp.send('<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
+            'xmlns:pub="http://ttsib.novasib.de/PublicServices" xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">\n' +
+            '<soapenv:Header/>\n' +
+            '<soapenv:Body>\n' +
+            '     <pub:expandProjektAbsObj>\n' +
+            '            <projekt>\n' +
+            '                   <int:ProjektNr>' + ereignisraum_nr + '</int:ProjektNr>\n' +
+            '            </projekt>\n' +
+            '            <abschnitte>\n' +
+            '                   <int:vonKartenblatt>' + abschnitt.vtknr + '</int:vonKartenblatt>\n' +
+            '                   <int:vonNkLfd>' + abschnitt.vnklfd + '</int:vonNkLfd>\n' +
+            '                   <int:vonZusatz>' + abschnitt.vzusatz + '</int:vonZusatz>\n' +
+            '                   <int:nachKartenblatt>' + abschnitt.ntknr + '</int:nachKartenblatt>\n' +
+            '                   <int:nachNkLfd>' + abschnitt.nnklfd + '</int:nachNkLfd>\n' +
+            '                   <int:nachZusatz>' + abschnitt.nzusatz + '</int:nachZusatz>\n' +
+            '            </abschnitte>\n' +
+            '            <objektKlassen>\n' +
+            '                   <int:objektKlasse>' + objekt + '</int:objektKlasse>\n' +
+            '            </objektKlassen>\n' +
+            '     </pub:expandProjektAbsObj>\n' +
+            '</soapenv:Body>\n' +
+            '</soapenv:Envelope>');
+    }
+
     static doTransaction(transaction, callbackSuccess, callbackFailed, ...args) {
-        var xml = 
+        var xml =
             '<?xml version="1.0" encoding="ISO-8859-1"?>' +
             '<wfs:Transaction service="WFS" version="1.0.0"' +
             '		xmlns="http://xml.novasib.de"' +
@@ -35,11 +75,11 @@ class PublicWFS {
             '		xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-transaction.xsd">' +
             transaction +
             '</wfs:Transaction>';
-        return PublicWFS.doSoapRequest(xml, this._checkTransacktionSuccess, this._checkTransacktionFailed, 
+        return PublicWFS.doSoapRequest(xml, this._checkTransacktionSuccess, this._checkTransacktionFailed,
             callbackSuccess, callbackFailed, ...args)
     }
 
-    static _checkTransacktionSuccess (xml, callbackSuccess, callbackFailed, ...args) {
+    static _checkTransacktionSuccess(xml, callbackSuccess, callbackFailed, ...args) {
         if (xml.getElementsByTagName('SUCCESS').length > 0) {
             if (callbackSuccess != undefined)
                 callbackSuccess(xml, ...args);
@@ -53,7 +93,7 @@ class PublicWFS {
         }
     }
 
-    static _checkTransacktionFailed (xml, callbackSuccess, callbackFailed, ...args) {
+    static _checkTransacktionFailed(xml, callbackSuccess, callbackFailed, ...args) {
         callbackFailed(xml, ...args);
     }
 
@@ -72,7 +112,7 @@ class PublicWFS {
             '</wfs:GetFeature>';
         return PublicWFS.doSoapRequest(xml, callbackSuccess, callbackFailed, ...args)
     }
-    
+
     static showMessage(text, error) {
         let m = document.createElement('div');
         m.className = 'nachricht';

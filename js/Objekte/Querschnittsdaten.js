@@ -71,6 +71,7 @@ class Querschnitt {
         //console.log(r)
 
         let abschnitt = r.daten.getAbschnitt(r.abschnittId);
+        abschnitt.inER['Dotquer'] = true;
 
         if (!(abschnitt.existsStation(r.vst))) {
             let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.data.split(' ');
@@ -321,7 +322,7 @@ class Querschnitt {
         }
         this.createGeom();
 
-        console.log(soap);
+        //console.log(soap);
 
         PublicWFS.doTransaction(soap);
     }

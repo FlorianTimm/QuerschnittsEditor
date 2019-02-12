@@ -14,18 +14,24 @@ class Aufstellvorrichtung extends Feature {
     constructor(daten) {
         super({ geom: null });
         this.daten = daten;
+
+        Aufstellvorrichtung.loadKlartexte();
+    }
+
+    static loadKlartexte() {
+        console.log("Klartexte laden")
         if (art == null) {
-            art = new Klartext('Itaufstvorart', 'art', this._ktArtLoaded, this);
+            art = new Klartext('Itaufstvorart', 'art', Aufstellvorrichtung._ktArtLoaded);
         }
         if (lage == null) {
-            lage = new Klartext('Itallglage', 'allglage', this._ktLageLoaded, this);
+            lage = new Klartext('Itallglage', 'allglage', Aufstellvorrichtung._ktLageLoaded);
         }
         if (quelle == null) {
-            quelle = new Klartext('Itquelle', 'quelle', this._ktQuelleLoaded, this);
+            quelle = new Klartext('Itquelle', 'quelle', Aufstellvorrichtung._ktQuelleLoaded);
         }
     }
 
-    _ktArtLoaded(art, _this) {
+    static _ktArtLoaded(art) {
         let arten = art.getAllSorted();
         for (let a of arten) {
             let option = document.createElement('option');
@@ -38,7 +44,7 @@ class Aufstellvorrichtung extends Feature {
         }
     }
 
-    _ktLageLoaded(art, _this) {
+    static _ktLageLoaded(art) {
         let arten = art.getAllSorted();
         for (let a of arten) {
             let option = document.createElement('option');
@@ -51,7 +57,7 @@ class Aufstellvorrichtung extends Feature {
         }
     }
 
-    _ktQuelleLoaded(art, _this) {
+    static _ktQuelleLoaded(art) {
         let arten = art.getAllSorted();
         for (let a of arten) {
             let option = document.createElement('option');
@@ -94,23 +100,53 @@ class Aufstellvorrichtung extends Feature {
         return r;
     }
 
-
-    static loadAbschnittER(ereignisraum, layer, daten) {
+    /**
+     * 
+     * @param {*} ereignisraum 
+     * @param {*} daten 
+     */
+    static loadER(daten) {
+        Aufstellvorrichtung.loadKlartexte();
         PublicWFS.doQuery('Otaufstvor', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Aufstellvorrichtung._loadER_Callback, undefined, layer, daten);
+            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Aufstellvorrichtung._loadER_Callback, undefined, daten);
 
     }
 
-    static _loadER_Callback(xml, layer, daten) {
+    static _loadER_Callback(xml, daten) {
         let aufstell = xml.getElementsByTagName("Otaufstvor");
         for (let auf of aufstell) {
             let f = Aufstellvorrichtung.fromXML(auf, daten);
-            layer.getSource().addFeature(f);
+            daten.l_aufstell.getSource().addFeature(f);
         }
     }
 
+    /**
+     * Lädt einen Abschnitt nach
+     * @param {Daten} daten 
+     * @param {Abschnitt} abschnitt 
+     */
+    static loadAbschnittER(daten, abschnitt, callback, ...args) {
+        //console.log(daten);
+        PublicWFS.doQuery('Otaufstvor', '<Filter>' +
+            '<And><PropertyIsEqualTo><PropertyName>abschnittId</PropertyName>' +
+            '<Literal>' + abschnitt.abschnittid + '</Literal></PropertyIsEqualTo><PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
+            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>', Aufstellvorrichtung._loadAbschnittER_Callback, undefined, daten, callback, ...args);
+
+    }
+
+    static _loadAbschnittER_Callback(xml, daten, callback, ...args) {
+        //console.log(daten);
+        let aufstell = xml.getElementsByTagName("Otaufstvor");
+        for (let auf of aufstell) {
+            let f = Aufstellvorrichtung.fromXML(auf, daten);
+            daten.l_aufstell.getSource().addFeature(f);
+        }
+        callback(...args)
+    }
+
     static fromXML(xml, daten) {
+        //console.log(daten);
         let r = new Aufstellvorrichtung(daten);
         for (var tag in CONFIG_WFS.AUFSTELL) {
             if (xml.getElementsByTagName(tag).length <= 0) continue;
@@ -128,7 +164,8 @@ class Aufstellvorrichtung extends Feature {
 
         let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.data.split(',');
         r.setGeometry(new Point(koords));
-        r.abschnitt = r.daten.getAbschnitt(r.abschnittId);
+        r.abschnitt = daten.getAbschnitt(r.abschnittId);
+        r.abschnitt.inER['Otaufstvor'] = true;
         return r;
     }
 

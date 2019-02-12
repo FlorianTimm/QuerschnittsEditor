@@ -22,7 +22,6 @@ function loadER() {
 }
 
 function readER(xml) {
-    console.log(xml)
     let proj = xml.getElementsByTagName("Projekt")
     select.innerHTML = ""
 
@@ -32,21 +31,26 @@ function readER(xml) {
 
         er[projekt] = {}
 
-        er[projekt]['nr'] = proj[i].getElementsByTagName("projekt")[0].firstChild.data
+        er[projekt].nr = proj[i].getElementsByTagName("projekt")[0].firstChild.data
         let kurzbez = proj[i].getElementsByTagName("kurzbez")
         if (kurzbez.length > 0)
-            er[projekt]['kurzbez'] = proj[i].getElementsByTagName("kurzbez")[0].firstChild.data
+            er[projekt].kurzbez = proj[i].getElementsByTagName("kurzbez")[0].firstChild.data
         else
-            er[projekt]['kurzbez'] = ""
+            er[projekt].kurzbez = ""
         let langbez = proj[i].getElementsByTagName("langbez")
         if (langbez.length > 0)
-            er[projekt]['langbez'] = proj[i].getElementsByTagName("langbez")[0].firstChild.data
+            er[projekt].langbez = proj[i].getElementsByTagName("langbez")[0].firstChild.data
         else
-            er[projekt]['langbez'] = ""
-        er[projekt]['ownerName'] = proj[i].getElementsByTagName("ownerName")[0].firstChild.data
-        er[projekt]['anlagedat'] = proj[i].getElementsByTagName("anlagedat")[0].firstChild.data
+            er[projekt].langbez = ""
+        er[projekt].ownerName = proj[i].getElementsByTagName("ownerName")[0].firstChild.data
+        er[projekt].anlagedat = proj[i].getElementsByTagName("anlagedat")[0].firstChild.data
     }
 
+    /*console.log(er);
+    er.sort(function (a, b) {
+        return Number(a.nr) - Number(b.nr);
+    });
+    console.log(er);*/
 
     for (let pid in er) {
         let o = document.createElement('option')
@@ -64,6 +68,7 @@ function readER(xml) {
 
 function aenderung() {
     var p = er[select.value]
+    document.getElementById("ernr").value = p['nr']
     document.getElementById("nummer").innerHTML = p['nr']
     document.getElementById("kurzbez").innerHTML = p['kurzbez']
     document.getElementById("langbez").innerHTML = p['langbez']
