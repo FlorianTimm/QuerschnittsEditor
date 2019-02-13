@@ -166,6 +166,7 @@ class Aufstellvorrichtung extends Feature {
         r.setGeometry(new Point(koords));
         r.abschnitt = daten.getAbschnitt(r.abschnittId);
         r.abschnitt.inER['Otaufstvor'] = true;
+        daten.l_achse.changed();
         return r;
     }
 

@@ -11,7 +11,7 @@ java.util.Properties info=new java.util.Properties();
 Connection conn  = null;
  
 String st_maxFeatures = request.getParameter("MAXFEATURES");
-int maxFeatures = 100;
+int maxFeatures = 200;
 if (st_maxFeatures != null) {
 	try {
 		maxFeatures = Integer.parseInt(st_maxFeatures);
@@ -20,9 +20,9 @@ if (st_maxFeatures != null) {
 
 String filter = "";
 
-String abschnittsId = request.getParameter("ABSCHNITTSID");
-if (abschnittsId != null) {
-	filter += " and ID = '" + abschnittsId + "'";
+String abschnittId = request.getParameter("ABSCHNITTID");
+if (abschnittId != null) {
+	filter += " and ID = '" + abschnittId + "'";
 }
 
 String vnk = request.getParameter("VNK");
@@ -30,6 +30,14 @@ String nnk = request.getParameter("NNK");
 if (vnk != null && nnk != null) {
 	filter += " and VNP = '" + vnk + "' and NNP = '" + nnk + "'";
 }
+
+
+String bbox = request.getParameter("BBOX");
+if (bbox != null) {
+	filter += " and sdo_filter(GEOMETRY, SDO_geometry(2003,25832,NULL,SDO_elem_info_array(1,1003,3),SDO_ordinate_array("+bbox+"))) = 'TRUE'";
+}
+
+
 
 
 try {
@@ -42,7 +50,8 @@ try {
   String sql;
   //sql = "select PROJEKT, SDO_UTIL.TO_WKTGEOMETRY(GEOMETRY) from GEOADM.VI_STRASSENNETZ WHERE PROJEKT = 0 AND ROWNUM <= 5";
   //sql = "select SDO_UTIL.TO_GMLGEOMETRY(GEOMETRY) from GEOADM.VI_STRASSENNETZ WHERE PROJEKT = 0 AND ROWNUM <= 5";
-  sql = "SELECT xmlelement(\"VI_STRASSENNETZ\", xmlattributes('http://www.opengis.net/gml' as \"xmlns:gml\"),  xmlforest(ID as \"ID\", VNP as \"VNK\", NNP as \"NNK\", STRNAME as \"STRNAME\", LEN as \"LEN\" , xmltype(sdo_util.to_gmlgeometry(SDO_UTIL.SIMPLIFY(GEOMETRY, 0.01, 0.001))) as \"gml:geometryProperty\")).getCLobVal() AS theXMLElements  from GEOADM.VI_STRASSENNETZ WHERE PROJEKT = 0" + filter + " AND ROWNUM <= " + maxFeatures;
+  sql = "SELECT xmlelement(\"VI_STRASSENNETZ\", xmlattributes('http://www.opengis.net/gml' as \"xmlns:gml\"),  xmlforest(ID as \"ABSCHNITT_ID\", VNP as \"VNP\", " + 
+	"NNP as \"NNP\", STRNAME as \"STRNAME\", LEN as \"LEN\" , xmltype(sdo_util.to_gmlgeometry(SDO_UTIL.SIMPLIFY(GEOMETRY, 0.01, 0.001))) as \"gml:geometryProperty\")).getCLobVal() AS theXMLElements  from GEOADM.VI_STRASSENNETZ WHERE PROJEKT = 0" + filter + " AND ROWNUM <= " + maxFeatures;
   //out.println(sql);
   out.print("<Objektmenge>");
   ResultSet rset = stmt.executeQuery(sql);

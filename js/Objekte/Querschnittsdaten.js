@@ -49,6 +49,31 @@ class Querschnitt {
         this.bearbeiter = null;
         this.behoerde = null
     }
+
+    static loadER(daten, callback, ...args) {
+        PublicWFS.doQuery('Dotquer', '<Filter>' +
+            '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
+            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Querschnitt._loadER_Callback, undefined, daten, callback, ...args);
+    }
+
+    static loadAbschnittER(daten, abschnitt, callback, ...args) {
+        PublicWFS.doQuery('Dotquer', '<Filter>' +
+            '<And><PropertyIsEqualTo><PropertyName>abschnittId</PropertyName>' +
+            '<Literal>' + abschnitt.abschnittid + '</Literal></PropertyIsEqualTo><PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
+            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Querschnitt._loadER_Callback, undefined, daten, callback, ...args);
+    }
+
+    static _loadER_Callback(xml, daten, callback, ...args) {
+        let dotquer = xml.getElementsByTagName("Dotquer");
+        for (let quer of dotquer) {
+            Querschnitt.fromXML(daten, quer);
+        }
+        if (callback != undefined) {
+            callback(...args);
+        }
+    }
+
+
     static fromXML(daten, xml) {
         let r = new Querschnitt(daten);
 
@@ -71,7 +96,7 @@ class Querschnitt {
         //console.log(r)
 
         let abschnitt = r.daten.getAbschnitt(r.abschnittId);
-        abschnitt.inER['Dotquer'] = true;
+        abschnitt.inER['Querschnitt'] = true;
 
         if (!(abschnitt.existsStation(r.vst))) {
             let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.data.split(' ');
@@ -255,36 +280,36 @@ class Querschnitt {
             '</wfs:Update>';
     }
 
-    createUpdateArtXML () {
+    createUpdateArtXML() {
         return '<wfs:Update typeName="Dotquer">\n' +
-        '	<wfs:Property>\n' +
-        '		<wfs:Name>art/@xlink:href</wfs:Name>\n' +
-        '		<wfs:Value>' + this.art + '</wfs:Value>\n' +
-        '	</wfs:Property>\n' +
-        '	<wfs:Property>\n' +
-        '		<wfs:Name>artober/@xlink:href</wfs:Name>\n' +
-        '		<wfs:Value>' + this.artober + '</wfs:Value>\n' +
-        '	</wfs:Property>\n' +
-        '	<ogc:Filter>\n' +
-        '		<ogc:And>\n' +
-        '			<ogc:PropertyIsEqualTo>\n' +
-        '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
-        '				<ogc:Literal>' + this.objektId + '</ogc:Literal>\n' +
-        '			</ogc:PropertyIsEqualTo>\n' +
-        '			<ogc:PropertyIsEqualTo>\n' +
-        '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
-        '				<ogc:Literal>' + this.projekt + '</ogc:Literal>\n' +
-        '			</ogc:PropertyIsEqualTo>\n' +
-        '		</ogc:And>\n' +
-        '	</ogc:Filter>\n' +
-        '</wfs:Update>';
+            '	<wfs:Property>\n' +
+            '		<wfs:Name>art/@xlink:href</wfs:Name>\n' +
+            '		<wfs:Value>' + this.art + '</wfs:Value>\n' +
+            '	</wfs:Property>\n' +
+            '	<wfs:Property>\n' +
+            '		<wfs:Name>artober/@xlink:href</wfs:Name>\n' +
+            '		<wfs:Value>' + this.artober + '</wfs:Value>\n' +
+            '	</wfs:Property>\n' +
+            '	<ogc:Filter>\n' +
+            '		<ogc:And>\n' +
+            '			<ogc:PropertyIsEqualTo>\n' +
+            '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
+            '				<ogc:Literal>' + this.objektId + '</ogc:Literal>\n' +
+            '			</ogc:PropertyIsEqualTo>\n' +
+            '			<ogc:PropertyIsEqualTo>\n' +
+            '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
+            '				<ogc:Literal>' + this.projekt + '</ogc:Literal>\n' +
+            '			</ogc:PropertyIsEqualTo>\n' +
+            '		</ogc:And>\n' +
+            '	</ogc:Filter>\n' +
+            '</wfs:Update>';
     }
 
 
     updateArt(art, artober) {
         this.art = art;
         this.artober = artober;
-        
+
         PublicWFS.doTransaction(this.createUpdateArtXML());
     }
 

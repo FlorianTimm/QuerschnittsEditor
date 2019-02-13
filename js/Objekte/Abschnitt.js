@@ -1,25 +1,49 @@
 import Feature from 'ol/Feature.js';
 import LineString from 'ol/geom/LineString.js';
 import PublicWFS from '../PublicWFS.js';
+import AbschnittWFS from '../AbschnittWFS.js';
+import Vektor from '../Vektor.js';
+
+var CONFIG = require('../config.json');
 
 class Abschnitt extends Feature {
-    constructor() {
+    constructor(daten) {
         super();
+        this.daten = daten;
         this.fid = null;
         this.abschnittid = null;
-        this.geom = null;
         this.vnk = null;
         this.nnk = null;
         this.len = null;
-        this.faktor = null;
+        this._faktor = null;
         this._station = {};
         this._aufstell = {};
         this.inER = {};
     }
 
+    getFaktor() {
+        if (this._faktor == null)
+            this._faktor = this.len / Vektor.line_len(this.getGeometry().getCoordinates());
+        return this._faktor;
+    }
 
-    static loadFromPublicWFS(abschnittid) {
-        let r = new Abschnitt();
+    static load(daten, abschnittid) {
+        if ("ABSCHNITT_WFS_URL" in CONFIG) {
+            return Abschnitt.loadFromAbschnittWFS(daten, abschnittid);
+        } else {
+            return Abschnitt.loadFromPublicWFS(daten, abschnittid);
+        }
+    }
+
+    static loadFromAbschnittWFS(daten, abschnittid) {
+        let r = new Abschnitt(daten);
+        r.abschnittid = abschnittid;
+        AbschnittWFS.getById(abschnittid, r._loadCallback, undefined, r);
+        return r;
+    }
+
+    static loadFromPublicWFS(daten, abschnittid) {
+        let r = new Abschnitt(daten);
         r.abschnittid = abschnittid;
 
         PublicWFS.doQuery('VI_STRASSENNETZ', '<ogc:Filter>' +
@@ -38,26 +62,28 @@ class Abschnitt extends Feature {
         }
     }
 
-    static fromXML(xml) {
-        let r = new Abschnitt();
+    static fromXML(daten, xml) {
+        console.log(xml);
+        let r = new Abschnitt(daten);
         r._fromXML(xml);
         return r;
     }
 
     _fromXML(xml) {
-        this.fid = xml.getAttribute('fid');
+        console.log(xml)
 
         this.len = Number(xml.getElementsByTagName('LEN')[0].firstChild.data);
         this.abschnittid = xml.getElementsByTagName('ABSCHNITT_ID')[0].firstChild.data;
+        this.fid = "S" + this.abschnittid;
         this.vnk = xml.getElementsByTagName('VNP')[0].firstChild.data;
         this.nnk = xml.getElementsByTagName('NNP')[0].firstChild.data;
-        this.vtknr = xml.getElementsByTagName('VTKNUMMER')[0].firstChild.data;
-        this.vnklfd = xml.getElementsByTagName('VNKLFD')[0].firstChild.data;
-        this.vzusatz = xml.getElementsByTagName('VZUSATZ')[0].firstChild.data;
-        this.ntknr = xml.getElementsByTagName('NTKNUMMER')[0].firstChild.data;
-        this.nnklfd = xml.getElementsByTagName('NNKLFD')[0].firstChild.data;
-        this.nzusatz = xml.getElementsByTagName('NZUSATZ')[0].firstChild.data;
-        let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.data.split(' ');
+        this.vtknr = this.vnk.substring(0, 4);
+        this.vnklfd = Number(this.vnk.substring(4, 9));
+        this.vzusatz = this.vnk.substring(9, 10);
+        this.ntknr = this.nnk.substring(0, 4);
+        this.nnklfd = Number(this.nnk.substring(4, 9));
+        this.nzusatz = this.nnk.substring(9, 10);
+        let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.data.trim().split(' ');
         let ak = [];
 
         for (let i = 0; i < koords.length; i++) {
@@ -66,6 +92,7 @@ class Abschnitt extends Feature {
             let y = Number(k[1]);
             ak.push([x, y]);
         }
+        console.log(ak);
         this.setGeometry(new LineString(ak));
     }
 
