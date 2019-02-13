@@ -27,7 +27,7 @@ class AvAdd2ER {
 
         let abschnitt = this.select.getFeatures().getArray()[0];
         if ("Otaufstvor" in abschnitt.inER && abschnitt.inER["Otaufstvor"]) return;
-
+        document.body.style.cursor = 'wait'
         PublicWFS.addInER(abschnitt, "Otaufstvor", this.daten.ereignisraum_nr, AvAdd2ER._onSelect_Callback, undefined, this, abschnitt);
     }
 

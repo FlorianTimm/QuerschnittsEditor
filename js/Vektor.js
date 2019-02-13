@@ -154,7 +154,7 @@ class Vektor {
     
     static line_len(line) {
         let len = 0
-        console.log(line)
+        //console.log(line)
         for (var i = 1; i < line.length; i++) {
             len += Vektor.len(Vektor.diff(line[i-1],line[i]))
         }

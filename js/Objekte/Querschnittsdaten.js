@@ -51,26 +51,30 @@ class Querschnitt {
     }
 
     static loadER(daten, callback, ...args) {
+        document.body.style.cursor = 'wait'
         PublicWFS.doQuery('Dotquer', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
             '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Querschnitt._loadER_Callback, undefined, daten, callback, ...args);
     }
 
     static loadAbschnittER(daten, abschnitt, callback, ...args) {
+        document.body.style.cursor = 'wait'
         PublicWFS.doQuery('Dotquer', '<Filter>' +
             '<And><PropertyIsEqualTo><PropertyName>abschnittId</PropertyName>' +
             '<Literal>' + abschnitt.abschnittid + '</Literal></PropertyIsEqualTo><PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Querschnitt._loadER_Callback, undefined, daten, callback, ...args);
+            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>', Querschnitt._loadER_Callback, undefined, daten, callback, ...args);
     }
 
     static _loadER_Callback(xml, daten, callback, ...args) {
         let dotquer = xml.getElementsByTagName("Dotquer");
         for (let quer of dotquer) {
+            //console.log(quer);
             Querschnitt.fromXML(daten, quer);
         }
         if (callback != undefined) {
             callback(...args);
         }
+        document.body.style.cursor = ''
     }
 
 

@@ -70,7 +70,7 @@ class Abschnitt extends Feature {
     }
 
     _fromXML(xml) {
-        console.log(xml)
+        //console.log(xml)
 
         this.len = Number(xml.getElementsByTagName('LEN')[0].firstChild.data);
         this.abschnittid = xml.getElementsByTagName('ABSCHNITT_ID')[0].firstChild.data;
@@ -92,7 +92,7 @@ class Abschnitt extends Feature {
             let y = Number(k[1]);
             ak.push([x, y]);
         }
-        console.log(ak);
+        //console.log(ak);
         this.setGeometry(new LineString(ak));
     }
 

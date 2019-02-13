@@ -43,7 +43,7 @@ window.addEventListener('load', function () {
     register(proj4);
 
     var map = createMap();
-    console.log(map.getControls());
+    //console.log(map.getControls());
 
     if (document.location.hash != "") {
         let hash = document.location.hash.replace("#", "").split('&')

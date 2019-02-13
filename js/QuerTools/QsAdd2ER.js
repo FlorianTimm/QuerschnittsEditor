@@ -22,12 +22,12 @@ class QsAdd2ER {
     }
 
     onSelect(event) {
-        console.log("Auswahl");
+        //console.log("Auswahl");
         if (this.select.getFeatures().getArray().length == 0) return;
 
         let abschnitt = this.select.getFeatures().getArray()[0];
         if ("Querschnitt" in abschnitt.inER && abschnitt.inER["Querschnitt"]) return;
-
+        document.body.style.cursor = 'wait'
         PublicWFS.addInER(abschnitt, "Querschnitt", this.daten.ereignisraum_nr, QsAdd2ER._onSelect_Callback, undefined, this, abschnitt);
     }
 
