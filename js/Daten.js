@@ -96,7 +96,7 @@ class Daten {
     _loadExtent_Callback(xml, _this) {
         let netz = xml.getElementsByTagName("VI_STRASSENNETZ");
         for (let abschnittXML of netz) {
-            console.log(abschnittXML)
+            //console.log(abschnittXML)
             let abschnitt = Abschnitt.fromXML(_this, abschnittXML);
             if (!(abschnitt.abschnittid in _this.abschnitte)) {
                 _this.abschnitte[abschnitt.abschnittid] = abschnitt;

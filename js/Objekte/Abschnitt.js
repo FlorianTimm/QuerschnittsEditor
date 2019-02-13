@@ -63,7 +63,7 @@ class Abschnitt extends Feature {
     }
 
     static fromXML(daten, xml) {
-        console.log(xml);
+        //console.log(xml);
         let r = new Abschnitt(daten);
         r._fromXML(xml);
         return r;
