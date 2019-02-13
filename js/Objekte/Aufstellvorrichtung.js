@@ -19,7 +19,7 @@ class Aufstellvorrichtung extends Feature {
     }
 
     static loadKlartexte() {
-        console.log("Klartexte laden")
+        //console.log("Klartexte laden")
         if (art == null) {
             art = new Klartext('Itaufstvorart', 'art', Aufstellvorrichtung._ktArtLoaded);
         }
@@ -128,11 +128,11 @@ class Aufstellvorrichtung extends Feature {
      */
     static loadAbschnittER(daten, abschnitt, callback, ...args) {
         //console.log(daten);
+        document.body.style.cursor = 'wait';
         PublicWFS.doQuery('Otaufstvor', '<Filter>' +
             '<And><PropertyIsEqualTo><PropertyName>abschnittId</PropertyName>' +
             '<Literal>' + abschnitt.abschnittid + '</Literal></PropertyIsEqualTo><PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
             '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>', Aufstellvorrichtung._loadAbschnittER_Callback, undefined, daten, callback, ...args);
-
     }
 
     static _loadAbschnittER_Callback(xml, daten, callback, ...args) {
@@ -143,6 +143,7 @@ class Aufstellvorrichtung extends Feature {
             daten.l_aufstell.getSource().addFeature(f);
         }
         callback(...args)
+        document.body.style.cursor = ''
     }
 
     static fromXML(xml, daten) {
@@ -166,6 +167,7 @@ class Aufstellvorrichtung extends Feature {
         r.setGeometry(new Point(koords));
         r.abschnitt = daten.getAbschnitt(r.abschnittId);
         r.abschnitt.inER['Otaufstvor'] = true;
+        daten.l_achse.changed();
         return r;
     }
 

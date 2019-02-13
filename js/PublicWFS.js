@@ -29,12 +29,17 @@ class PublicWFS {
         xmlhttp.onreadystatechange = function () {
             if (xmlhttp.readyState != 4) return;
             if (xmlhttp.status == 200) {
-                callbackSuccess(xmlhttp.responseXML, ...args)
+                abschnitt.inER[objekt] = true;
+                if (callbackSuccess != undefined) {
+                    callbackSuccess(xmlhttp.responseXML, ...args)
+                } else {
+                    PublicWFS.showMessage("Abschnitt in ER kopiert");
+                }
             } else {
                 if (callbackFailed != undefined)
                     callbackFailed(xmlhttp.responseXML, ...args)
                 else
-                    PublicWFS.showMessage("Kommunikationsfehler", true);
+                    PublicWFS.showMessage("Abschnitt konnte nicht in ER kopiert werden", true);
             }
         }
         xmlhttp.setRequestHeader('Content-Type', 'text/xml');

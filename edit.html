@@ -24,20 +24,22 @@
     <sidebar id="sidebar">
         <form id="steuerung" name="steuerung">
             <div class="tab">
-                <button type="button" class="tablinks" data-tab="tab_querschnitt">Querschnitt</button>
-                <button type="button" class="tablinks" data-tab="tab_aufstell" id="defaultOpen">Aufstellv.</button>
+                <button type="button" class="tablinks" data-tab="tab_Querschnitt">Querschnitt</button>
+                <button type="button" class="tablinks" data-tab="tab_Otaufstvor" id="defaultOpen">Aufstellv.</button>
             </div>
 
-            <div id="tab_querschnitt" class="tabcontent">
+            <div id="tab_Querschnitt" class="tabcontent">
                 <input type="radio" name="befehl" id="befehl_info" value="info" checked="checked" /><label for="befehl_info">&nbsp;Info</label><br />
+                <input type="radio" name="befehl" id="befehl_qsadd2er" value="qsadd2er" /><label for="befehl_qsadd2er">&nbsp;zum ER hinzufügen</label><br />
                 <input type="radio" name="befehl" id="befehl_modify" value="modify" /><label for="befehl_modify">&nbsp;&Auml;ndern</label><br />
                 <input type="radio" name="befehl" id="befehl_delete" value="delete" /><label for="befehl_delete">&nbsp;L&ouml;schen</label><br />
                 <input type="radio" name="befehl" id="befehl_part" value="part" /><label for="befehl_part">&nbsp;Teilen</label><br />
                 <input type="radio" name="befehl" id="befehl_add" value="add" /><label for="befehl_add">&nbsp;Hinzufügen</label><br />
             </div>
-            <div id="tab_aufstell" class="tabcontent">
+            <div id="tab_Otaufstvor" class="tabcontent">
 
                 <input type="radio" name="befehl" id="befehl_vsinfo" value="vsinfo" /><label for="befehl_vsinfo">&nbsp;Info</label><br />
+                <input type="radio" name="befehl" id="befehl_avadd2er" value="avadd2er" /><label for="befehl_avadd2er">&nbsp;zum ER hinzufügen</label><br />
                 <input type="radio" name="befehl" id="befehl_avadd" value="avadd" /><label for="befehl_avadd">&nbsp;Hinzufügen</label><br />
             </div>
             <button type="button" id="zoomToExtent">Auf Ausdehnung zoomen</button>

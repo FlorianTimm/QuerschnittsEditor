@@ -3,14 +3,14 @@
        <soapenv:Body>
              <pub:expandProjektAbsObj>
                     <projekt>
-                           <int:ProjektNr>201916100000008</int:ProjektNr>
+                           <int:ProjektNr>201902000000073</int:ProjektNr>
                     </projekt>
                     <abschnitte>
-                           <int:vonKartenblatt>5231</int:vonKartenblatt>
-                           <int:vonNkLfd>59</int:vonNkLfd>
+                           <int:vonKartenblatt>2525</int:vonKartenblatt>
+                           <int:vonNkLfd>110</int:vonNkLfd>
                            <int:vonZusatz>O</int:vonZusatz>
-                           <int:nachKartenblatt>5231</int:nachKartenblatt>
-                           <int:nachNkLfd>58</int:nachNkLfd>
+                           <int:nachKartenblatt>2425</int:nachKartenblatt>
+                           <int:nachNkLfd>10</int:nachNkLfd>
                            <int:nachZusatz>O</int:nachZusatz>
                     </abschnitte>
                     <objektKlassen>

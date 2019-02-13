@@ -1,6 +1,7 @@
 {
 	"PUBLIC_WFS_URL": "jsp/proxy.jsp",
 	"ER_WFS_URL": "jsp/proxy_er.jsp",
+	"ABSCHNITT_WFS_URL": "jsp/abschnittWFS.jsp",
 	"EPSG_CODE": "EPSG:25832",
 	"DETAIL_HOCH": "#A03985F1986E1681E040480A20124127",
 	"ERFASSUNG": "#S8ac892a124b8e9f20124c3756edd03f7"

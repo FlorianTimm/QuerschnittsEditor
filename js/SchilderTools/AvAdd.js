@@ -122,7 +122,7 @@ class AvAdd {
         this.feat_neu.getGeometry().setCoordinates(daten['pos'][6]);
 
         this.abschnitt = daten['achse'];
-        this.station = Math.round(daten['pos'][2]);
+        this.station = Math.round(daten['pos'][2] * this.abschnitt.getFaktor());
         this.abstand = Math.round(daten['pos'][4] * 10) / 10;
         this.seite = daten['pos'][3]
         if (this.seite == 'M') this.abstand = 0;
@@ -130,7 +130,7 @@ class AvAdd {
 
         document.getElementById("avadd_vnk").innerHTML = daten['achse'].vnk;
         document.getElementById("avadd_nnk").innerHTML = daten['achse'].nnk;
-        document.getElementById("avadd_station").innerHTML = Math.round(daten['pos'][2])
+        document.getElementById("avadd_station").innerHTML = this.station
         document.getElementById("avadd_abstand").innerHTML = daten['pos'][3] + ' ' + daten['pos'][4].toFixed(1)
 
         document.getElementById("avadd_button").disabled = "";
@@ -148,7 +148,7 @@ class AvAdd {
         if (this.abschnitt == null) {
             document.getElementById("avadd_vnk").innerHTML = daten['achse'].vnk;
             document.getElementById("avadd_nnk").innerHTML = daten['achse'].nnk;
-            document.getElementById("avadd_station").innerHTML = Math.round(daten['pos'][2])
+            document.getElementById("avadd_station").innerHTML = Math.round(daten['pos'][2] * daten['achse'].getFaktor());
             document.getElementById("avadd_abstand").innerHTML = daten['pos'][3] + ' ' + daten['pos'][4].toFixed(1)
         }
     }
@@ -164,7 +164,7 @@ class AvAdd {
 
     static _addInER_Callback(xml, _this) {
         //console.log(_this.daten)
-        Aufstellvorrichtung.loadAbschnittER (_this.daten, _this.abschnitt, AvAdd._wfsAddAufstell, _this)
+        Aufstellvorrichtung.loadAbschnittER(_this.daten, _this.abschnitt, AvAdd._wfsAddAufstell, _this)
     }
 
     static _wfsAddAufstell(_this) {
@@ -177,8 +177,8 @@ class AvAdd {
             '<rabstbaVst>' + _this.abstand + '</rabstbaVst>\n' +
             '<vabstVst>' + _this.abstand + '</vabstVst>\n' +
             '<vabstBst>' + _this.abstand + '</vabstBst>\n' +
-            '<bemerkung>mit QuerschnittsEditor erfasst</bemerkung>\n' + 
-            '<detailgrad xlink:href="'+ CONFIG.DETAIL_HOCH + '" typeName="Itobjdetailgrad" />\n' +
+            '<bemerkung>mit QuerschnittsEditor erfasst</bemerkung>\n' +
+            '<detailgrad xlink:href="' + CONFIG.DETAIL_HOCH + '" typeName="Itobjdetailgrad" />\n' +
             '<erfart xlink:href="' + CONFIG.ERFASSUNG + '" typeName="Iterfart" />\n' +
             '<ADatum>' + (new Date()).toISOString().substring(0, 10) + '</ADatum>\n' +
             '<rlageVst xlink:href="#S' + document.forms.avadd.avadd_lage.value + '" typeName="Itallglage" />\n' +
@@ -195,7 +195,7 @@ class AvAdd {
         _this.abschnitt = null;
         _this.station = null;
         _this.seite = null;
-        _this.feat_neu.getGeometry().setCoordinates([0,0]);
+        _this.feat_neu.getGeometry().setCoordinates([0, 0]);
         //console.log(_this.daten);
         let filter = '<Filter>';
         for (let f of xml.getElementsByTagName('InsertResult')[0].childNodes) {

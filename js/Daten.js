@@ -3,6 +3,7 @@ import { Vector as VectorLayer } from 'ol/layer';
 import { Style, Stroke, Fill, Circle } from 'ol/style';
 import Abschnitt from './Objekte/Abschnitt.js';
 import PublicWFS from './PublicWFS.js';
+import AbschnittWFS from './AbschnittWFS.js';
 import Querschnitt from './Objekte/Querschnittsdaten.js';
 import Klartext from './Objekte/Klartext.js';
 import Aufstellvorrichtung from './Objekte/Aufstellvorrichtung.js';
@@ -15,6 +16,7 @@ class Daten {
     constructor(map, ereignisraum, ereignisraum_nr) {
         daten = this;
         this.map = map;
+        this.modus = "Otaufstvor";
         this.ereignisraum = ereignisraum;
         this.ereignisraum_nr = ereignisraum_nr;
 
@@ -27,7 +29,7 @@ class Daten {
         this._createLayerAchsen();
 
         this.abschnitte = {};
-        this.loadER();
+        Querschnitt.loadER(this);
 
         this.l_aufstell = Aufstellvorrichtung.createLayer(this.map);
         Aufstellvorrichtung.loadER(this);
@@ -63,22 +65,9 @@ class Daten {
         }
     }
 
-    loadER() {
-        PublicWFS.doQuery('Dotquer', '<Filter>' +
-            '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + this.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', this._loadER_Callback, undefined, this);
-    }
-
-    _loadER_Callback(xml, _this) {
-        let dotquer = xml.getElementsByTagName("Dotquer");
-        for (let quer of dotquer) {
-            Querschnitt.fromXML(_this, quer);
-        }
-    }
-
     getAbschnitt(absId) {
         if (!(absId in this.abschnitte)) {
-            this.abschnitte[absId] = Abschnitt.loadFromPublicWFS(absId);
+            this.abschnitte[absId] = Abschnitt.load(this, absId);
             this.v_achse.addFeature(this.abschnitte[absId]);
         }
         //console.log(this.abschnitte[absId]);
@@ -88,23 +77,27 @@ class Daten {
     loadExtent() {
         document.body.style.cursor = 'wait'
         let extent = this.map.getView().calculateExtent();
-        let filter = '<Filter>\n' +
-            '	<BBOX>\n' +
-            '	<PropertyName>GEOMETRY</PropertyName>\n' +
-            '	<gml:Box srsName="' + CONFIG.EPSG_CODE + '">\n' +
-            '		<gml:coordinates>' + extent[0] + ',' + extent[1] + ' ' + extent[2] + ',' + extent[3] + ' ' + '</gml:coordinates>\n' +
-            '	</gml:Box>\n' +
-            '	</BBOX>\n' +
-            '</Filter>\n' +
-            '<maxFeatures>100</maxFeatures>\n';
-        PublicWFS.doQuery('VI_STRASSENNETZ', filter, this._loadExtent_Callback, undefined, this);
-
+        if ("ABSCHNITT_WFS_URL" in CONFIG) {
+            AbschnittWFS.getByExtent(extent, this._loadExtent_Callback, undefined, this);
+        } else {
+            let filter = '<Filter>\n' +
+                '	<BBOX>\n' +
+                '	<PropertyName>GEOMETRY</PropertyName>\n' +
+                '	<gml:Box srsName="' + CONFIG.EPSG_CODE + '">\n' +
+                '		<gml:coordinates>' + extent[0] + ',' + extent[1] + ' ' + extent[2] + ',' + extent[3] + ' ' + '</gml:coordinates>\n' +
+                '	</gml:Box>\n' +
+                '	</BBOX>\n' +
+                '</Filter>\n' +
+                '<maxFeatures>100</maxFeatures>\n';
+            PublicWFS.doQuery('VI_STRASSENNETZ', filter, this._loadExtent_Callback, undefined, this);
+        }
     }
 
     _loadExtent_Callback(xml, _this) {
         let netz = xml.getElementsByTagName("VI_STRASSENNETZ");
         for (let abschnittXML of netz) {
-            let abschnitt = Abschnitt.fromXML(abschnittXML);
+            //console.log(abschnittXML)
+            let abschnitt = Abschnitt.fromXML(_this, abschnittXML);
             if (!(abschnitt.abschnittid in _this.abschnitte)) {
                 _this.abschnitte[abschnitt.abschnittid] = abschnitt;
                 _this.v_achse.addFeature(_this.abschnitte[abschnitt.abschnittid]);
@@ -118,10 +111,11 @@ class Daten {
             features: []
         });
         this.l_achse = new VectorLayer({
+            daten: this,
             source: this.v_achse,
             opacity: 0.6,
             style: function (feature, resolution) {
-                if (Object.keys(feature.inER).length) {
+                if (feature.daten.modus in feature.inER) {
                     return new Style({
                         stroke: new Stroke({
                             color: '#dd0000',

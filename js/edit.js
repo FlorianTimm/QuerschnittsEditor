@@ -18,6 +18,8 @@ import AddTool from './QuerTools/AddTool.js';
 import DelTool from './QuerTools/DelTool.js';
 import VsInfoTool from './SchilderTools/VsInfoTool.js';
 import AvAdd from './SchilderTools/AvAdd.js';
+import AvAdd2ER from './SchilderTools/AvAdd2ER.js';
+import QsAdd2ER from './QuerTools/QsAdd2ER.js';
 import LayerSwitch from './LayerSwitch.js';
 
 var CONFIG = require('./config.json');
@@ -32,7 +34,7 @@ var er = decodeURI(urlParamER[1])
 var ernr = decodeURI(urlParamERNR[1])
 console.log("Ereignisraum: " + ernr);
 
-let infoTool, editTool, delTool, partTool, addTool, vsInfoTool, avAdd;
+let daten, infoTool, editTool, delTool, partTool, addTool, vsInfoTool, avAdd, avAdd2ER, qsAdd2ER;
 
 window.addEventListener('load', function () {
 
@@ -41,7 +43,7 @@ window.addEventListener('load', function () {
     register(proj4);
 
     var map = createMap();
-    console.log(map.getControls());
+    //console.log(map.getControls());
 
     if (document.location.hash != "") {
         let hash = document.location.hash.replace("#", "").split('&')
@@ -83,7 +85,7 @@ window.addEventListener('load', function () {
 
     map.on("moveend", recreateHash);
 
-    let daten = new Daten(map, er, ernr);
+    daten = new Daten(map, er, ernr);
     infoTool = new InfoTool(map, daten);
     infoTool.start();
     editTool = new ModifyTool(map, daten, infoTool);
@@ -92,6 +94,8 @@ window.addEventListener('load', function () {
     partTool = new PartTool(map, daten, infoTool);
     vsInfoTool = new VsInfoTool(map, [daten.l_aufstell], "sidebar");
     avAdd = new AvAdd(map, daten); //map, daten.l_aufstell, er, "sidebar");
+    avAdd2ER = new AvAdd2ER(map, daten);
+    qsAdd2ER = new QsAdd2ER(map, daten);
 
     document.getElementById("befehl_info").addEventListener('change', befehl_changed);
     document.getElementById("befehl_vsinfo").addEventListener('change', befehl_changed);
@@ -100,6 +104,8 @@ window.addEventListener('load', function () {
     document.getElementById("befehl_delete").addEventListener('change', befehl_changed);
     document.getElementById("befehl_part").addEventListener('change', befehl_changed);
     document.getElementById("befehl_add").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_avadd2er").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_qsadd2er").addEventListener('change', befehl_changed);
 
 
     document.getElementById("zoomToExtent").addEventListener('click', function () {
@@ -112,7 +118,7 @@ window.addEventListener('load', function () {
             if (maxX == null || maxX < p[2]) maxX = p[2];
             if (maxY == null || maxY < p[3]) maxY = p[3];
         }
-        console.log([minX, minY, maxX, maxY])
+        //console.log([minX, minY, maxX, maxY])
         map.getView().fit([minX, minY, maxX, maxY], { padding: [20, 240, 20, 20] })
         //map.getView().fit(daten.l_achse.getExtent());
     })
@@ -130,7 +136,7 @@ window.addEventListener('load', function () {
 
 
 function recreateHash(event) {
-    console.log(event)
+    //console.log(event)
     if (event.target.firstHash) {
         let view = event.target.getView();
         let hash = "#zoom=" + view.getZoom();
@@ -159,6 +165,8 @@ function befehl_changed() {
     addTool.stop();
     vsInfoTool.stop();
     avAdd.stop();
+    avAdd2ER.stop();
+    qsAdd2ER.stop();
 
     if (document.getElementById("befehl_info").checked)
         infoTool.start();
@@ -166,6 +174,10 @@ function befehl_changed() {
         vsInfoTool.start();
     else if (document.getElementById("befehl_avadd").checked)
         avAdd.start();
+    else if (document.getElementById("befehl_avadd2er").checked)
+        avAdd2ER.start();
+    else if (document.getElementById("befehl_qsadd2er").checked)
+        qsAdd2ER.start();
     else if (document.getElementById("befehl_modify").checked)
         editTool.start();
     else if (document.getElementById("befehl_delete").checked)
@@ -261,6 +273,9 @@ function openTab(evt) {
     document.getElementById(tabName).style.display = "block";
     evt.currentTarget.className += " active";
     document.getElementById(tabName).getElementsByTagName('input')[0].click();
+
+    daten.modus = evt.currentTarget.dataset.tab.replace("tab_", "")
+    daten.l_achse.changed();
 }
 
 window.addEventListener('load', function () {
