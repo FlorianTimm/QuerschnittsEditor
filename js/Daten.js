@@ -19,6 +19,7 @@ class Daten {
         this.modus = "Otaufstvor";
         this.ereignisraum = ereignisraum;
         this.ereignisraum_nr = ereignisraum_nr;
+        this.querschnitteFID = {};
 
         this.kt_art = new Klartext('Itquerart', 'art', this._showArt, this);
         this.kt_artober = new Klartext('Itquerober', 'artober', this._showArtOber, this);

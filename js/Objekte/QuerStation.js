@@ -79,8 +79,14 @@ export class Station {
             //console.log(seg_len_add/len)
         }
     }
-    teilen() {
+    teilen(station) {
         PublicWFS.showMessage("noch nicht möglich", true);
+        this.abschnitt.getAufbauDaten(Station.teilen_callback, undefined, this, station);
+    }
+
+    static teilen_callback(_this, station) {
+        
+        _this.abschnitt.writeQuerAufbau();
     }
 }
 

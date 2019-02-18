@@ -3,6 +3,7 @@ import LineString from 'ol/geom/LineString.js';
 import PublicWFS from '../PublicWFS.js';
 import AbschnittWFS from '../AbschnittWFS.js';
 import Vektor from '../Vektor.js';
+import Aufbaudaten from './Aufbaudaten.js';
 
 var CONFIG = require('../config.json');
 
@@ -19,6 +20,7 @@ class Abschnitt extends Feature {
         this._station = {};
         this._aufstell = {};
         this.inER = {};
+        this._querschnitte = {};
     }
 
     getFaktor() {
@@ -46,10 +48,10 @@ class Abschnitt extends Feature {
         let r = new Abschnitt(daten);
         r.abschnittid = abschnittid;
 
-        PublicWFS.doQuery('VI_STRASSENNETZ', '<ogc:Filter>' +
-            '<ogc:PropertyIsEqualTo><ogc:PropertyName>ABSCHNITT_ID</ogc:PropertyName>' +
-            '<ogc:Literal>' + r.abschnittid + '</ogc:Literal></ogc:PropertyIsEqualTo>' +
-            '</ogc:Filter>', r._loadCallback, undefined, r);
+        PublicWFS.doQuery('VI_STRASSENNETZ', '<Filter>' +
+            '<PropertyIsEqualTo><PropertyName>ABSCHNITT_ID</PropertyName>' +
+            '<Literal>' + r.abschnittid + '</Literal></PropertyIsEqualTo>' +
+            '</Filter>', r._loadCallback, undefined, r);
 
         return r;
     }
@@ -126,6 +128,68 @@ class Abschnitt extends Feature {
             r = this._station[a];
         }
         return r;
+    }
+
+    getAufbauDaten(callbackSuccess, callbackError, ...args) {
+        console.log(callbackSuccess);
+        if (this._aufbaudaten == null) {
+            let xml = PublicWFS.doQuery('Otschicht', '<Filter><And>' +
+                '<PropertyIsEqualTo>' +
+                '<PropertyName>projekt/@xlink:href</PropertyName>' +
+                '<Literal>' + this.daten.ereignisraum + '</Literal>' +
+                '</PropertyIsEqualTo>' +
+                '<PropertyIsEqualTo>' +
+                '<PropertyName>abschnittOderAst/@xlink:href</PropertyName>' +
+                '<Literal>S' + this.abschnittid + '</Literal>' +
+                '</PropertyIsEqualTo>' +
+                '</And></Filter>', this._parseAufbaudaten, callbackError, this, callbackSuccess, ...args);
+        }
+    }
+    _parseAufbaudaten(xml, _this, callbackSuccess, ...args) {
+        let aufbau = xml.getElementsByTagName('Otschicht');
+        for (let i = 0; i < aufbau.length; i++) {
+            let a = Aufbaudaten.fromXML(aufbau[i]);
+            let quer = _this.daten.querschnitteFID[a.parent.replace('#','')];
+            if (quer._aufbaudaten == null) {
+                quer._aufbaudaten = {};
+            }
+
+            quer._aufbaudaten[a.schichtnr] = a;
+        }
+        if (callbackSuccess != undefined) {
+            callbackSuccess(...args);
+        }
+    }
+
+    writeQuerAufbau() {
+        let xml = '<wfs:Delete typeName="Dotquer">\n' + 
+        '	<ogc:Filter>\n' +
+        '		<ogc:And>\n' +
+        '			<ogc:PropertyIsEqualTo>\n' +
+        '				<ogc:PropertyName>abschnittId</ogc:PropertyName>\n' +
+        '				<ogc:Literal>' + this.abschnittid + '</ogc:Literal>\n' +
+        '			</ogc:PropertyIsEqualTo>\n' +
+        '			<ogc:PropertyIsEqualTo>\n' +
+        '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
+        '				<ogc:Literal>' + this.daten.ereignisraum + '</ogc:Literal>\n' +
+        '			</ogc:PropertyIsEqualTo>\n' +
+        '		</ogc:And>\n' +
+        '	</ogc:Filter>\n' +
+        '</wfs:Delete>';
+
+        for (let station_key in this._station) {
+            let station = this._station[station_key];
+            for (let streifen_key in station._querschnitte) {
+                let streifen = station._querschnitte[streifen_key];
+                console.log(streifen);
+                for (let querschnitt_key in streifen) {
+                    xml += streifen[querschnitt_key].createInsertXML();
+                }
+            }
+        }
+        //PublicWFS.doTransaction(xml, callback())
+
+        console.log(xml);
     }
 }
 
