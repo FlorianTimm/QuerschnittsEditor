@@ -22,6 +22,25 @@ class PublicWFS {
         xmlhttp.send(xml);
     }
 
+    static doGetRequest(url_param, callbackSuccess, callbackFailed, ...args) {
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.open('GET', CONFIG.PUBLIC_WFS_URL + '?' + url_param, true);
+
+
+        xmlhttp.onreadystatechange = function () {
+            if (xmlhttp.readyState != 4) return;
+            if (xmlhttp.status == 200) {
+                callbackSuccess(xmlhttp.responseXML, ...args)
+            } else {
+                if (callbackFailed != undefined)
+                    callbackFailed(xmlhttp.responseXML, ...args)
+                else
+                    PublicWFS.showMessage("Kommunikationsfehler", true);
+            }
+        }
+        xmlhttp.send();
+    }
+
     static addInER(abschnitt, objekt, ereignisraum_nr, callbackSuccess, callbackFailed, ...args) {
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.open('POST', CONFIG.ER_WFS_URL, true);
@@ -103,7 +122,7 @@ class PublicWFS {
     }
 
     static doQuery(klasse, filter, callbackSuccess, callbackFailed, ...args) {
-        var xml = '<?xml version="1.0" encoding="ISO-8859-1"?>' +
+        /*var xml = '<?xml version="1.0" encoding="ISO-8859-1"?>' +
             '<wfs:GetFeature xmlns="http://xml.novasib.de" ' +
             'xmlns:wfs="http://www.opengis.net/wfs" ' +
             'xmlns:gml="http://www.opengis.net/gml" ' +
@@ -111,11 +130,16 @@ class PublicWFS {
             'xmlns:xlink="http://www.w3.org/1999/xlink" ' +
             'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" service="WFS" version="1.0.0" ' +
             'xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-transaction.xsd">' +
-            '<wfs:Query typeName="' + klasse + '">' +
+            '<wfs:Query typeName="' + klasse + '"><MPP>0</MPP>' +
             filter +
             '</wfs:Query>' +
             '</wfs:GetFeature>';
-        return PublicWFS.doSoapRequest(xml, callbackSuccess, callbackFailed, ...args)
+        return PublicWFS.doSoapRequest(xml, callbackSuccess, callbackFailed, ...args);*/
+
+        let url_param = "Request=GetFeature&TYPENAME=" + klasse + "&MPP=0&filter=" + encodeURIComponent(filter);
+        return PublicWFS.doGetRequest(url_param, callbackSuccess, callbackFailed, ...args);
+
+
     }
 
     static showMessage(text, error) {

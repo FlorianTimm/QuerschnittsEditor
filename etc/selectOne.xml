@@ -8,14 +8,14 @@
 			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 			xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-transaction.xsd">
 	<wfs:Query typeName="VI_STRASSENNETZ">
+	<MPP>0</MPP>
 		<ogc:Filter>
-			<ogc:BBOX>
-			<ogc:PropertyName>GEOMETRY</ogc:PropertyName>
-			<gml:Box srsName="EPSG:25832">
-				<gml:coordinates>566043.2786473111,5927910.015311562 566580.7213526889,5928493.984688438</gml:coordinates>
-			</gml:Box>
-			</ogc:BBOX>
+			<ogc:And>
+				<ogc:PropertyIsEqualTo>
+					<ogc:PropertyName>ABSCHNITT_ID</ogc:PropertyName>
+					<ogc:Literal>8ac892a13ccfe5dd013d49c57cb50b9d</ogc:Literal>
+				</ogc:PropertyIsEqualTo>
+			</ogc:And>
 		</ogc:Filter>
-		<ogc:maxFeatures>1</ogc:maxFeatures>
 	</wfs:Query>
 </wfs:GetFeature>

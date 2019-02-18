@@ -118,9 +118,14 @@ window.addEventListener('load', function () {
             if (maxX == null || maxX < p[2]) maxX = p[2];
             if (maxY == null || maxY < p[3]) maxY = p[3];
         }
-        //console.log([minX, minY, maxX, maxY])
         map.getView().fit([minX, minY, maxX, maxY], { padding: [20, 240, 20, 20] })
+
         //map.getView().fit(daten.l_achse.getExtent());
+
+        /*
+        let extent = Daten.calcAbschnitteExtent(daten.l_achse.getSource().getFeatures());
+        map.getView().fit(extent, { padding: [20, 240, 20, 20] })
+        */
     })
 
 
@@ -132,6 +137,15 @@ window.addEventListener('load', function () {
             daten.loadExtent();
         }
     })*/
+
+    document.getElementById("sucheButton").addEventListener('click', function () {
+        daten.searchForStreet();
+    })
+
+    document.forms.suche.addEventListener('submit', function (event) {
+        event.preventDefault();
+        daten.searchForStreet();
+    })
 });
 
 

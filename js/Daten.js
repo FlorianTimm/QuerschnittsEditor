@@ -217,6 +217,76 @@ class Daten {
         this.map.addLayer(this.l_quer);
     }
 
+    searchForStreet(event) {
+        console.log(document.forms.suche.suche.value);
+        let wert = document.forms.suche.suche.value;
+        if (wert == "") return;
+        if ("ABSCHNITT_WFS_URL" in CONFIG) {
+            document.body.style.cursor = 'wait'
+
+            const vnknnk = /(\d{7,9}[A-Z]?)\s+(\d{7,9}[A-Z]?)/gm;
+            let found1 = vnknnk.exec(wert)
+            if (found1 != null) {
+                console.log(found1)
+                let vnk = found1[1];
+                let nnk = found1[2];
+                AbschnittWFS.getByVNKNNK(vnk, nnk, this._loadSearch_Callback, undefined, this);
+                return;
+            }
+
+            const wnr = /([ABGKLabgkl])\s?(\d{1,4})\s?([A-Za-z]?)/gm;
+            let found2 = wnr.exec(wert)
+            if (found2 != null) {
+                console.log(found2)
+                let klasse = found2[1];
+                let nummer = found2[2];
+                let buchstabe = (found2.lenth > 2)?found2[3]:'';
+                AbschnittWFS.getByWegenummer(klasse, nummer, buchstabe, this._loadSearch_Callback, undefined, this);
+                return;
+            }
+            AbschnittWFS.getByStrName(wert, this._loadSearch_Callback, undefined, this);
+        } else {
+            PublicWFS.showMessage("Straßennamen-Suche ist nur über den AbschnittWFS möglich");
+            /*let filter = '<Filter><Like><PropertyName><PropertyName><Literal><Literal></Like></Filter>'
+            PublicWFS.doQuery('VI_STRASSENNETZ', filter, this._loadSearch_Callback, undefined, this);*/
+        }
+    }
+
+    _loadSearch_Callback(xml, _this) {
+        let netz = xml.getElementsByTagName("VI_STRASSENNETZ");
+        let geladen = [];
+        for (let abschnittXML of netz) {
+            //console.log(abschnittXML)
+            let abschnitt = Abschnitt.fromXML(_this, abschnittXML);
+            geladen.push(abschnitt);
+            if (!(abschnitt.abschnittid in _this.abschnitte)) {
+                _this.abschnitte[abschnitt.abschnittid] = abschnitt;
+                _this.v_achse.addFeature(_this.abschnitte[abschnitt.abschnittid]);
+            }
+        }
+        if (geladen.length > 0) {
+        let extent = Daten.calcAbschnitteExtent(geladen);
+        _this.map.getView().fit(extent, { padding: [20, 240, 20, 20] })
+        } else {
+            PublicWFS.showMessage("Kein Abschnitt gefunden!", true);
+        }
+        document.body.style.cursor = '';
+    }
+
+    static calcAbschnitteExtent(abschnitte) {
+        let minX = null, maxX = null, minY = null, maxY = null;
+        for (let i = 0; i < abschnitte.length; i++) {
+            let f = abschnitte[i];
+            let p = f.getGeometry().getExtent();
+
+            if (minX == null || minX > p[0]) minX = p[0];
+            if (minY == null || minY > p[1]) minY = p[1];
+            if (maxX == null || maxX < p[2]) maxX = p[2];
+            if (maxY == null || maxY < p[3]) maxY = p[3];
+        }
+        //console.log([minX, minY, maxX, maxY])
+        return [minX, minY, maxX, maxY];
+    }
 }
 
 module.exports = Daten;
