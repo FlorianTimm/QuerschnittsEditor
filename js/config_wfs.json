@@ -12,6 +12,9 @@
             "art": 2,
             "kt": "AsbAbschn"
         },
+        "schichtnr": {
+            "art": 1
+        },
         "vst": {
             "art": 1
         },

@@ -87,7 +87,7 @@ class Aufstellvorrichtung extends Feature {
         r += "<tr><td>VNK:</td><td>" + this.abschnitt.vnk + "</td></tr>";
         r += "<tr><td>NNK:</td><td>" + this.abschnitt.nnk + "</td></tr>";
         r += "<tr><td>VST:</td><td>" + this.vst + "</td></tr>";
-        r += "<tr><td>Abstand:</td><td>" 
+        r += "<tr><td>Abstand:</td><td>"
         if (this.rabstbaVst >= 0.01) r += "R";
         else if (this.rabstbaVst <= 0.01) r += "L";
         else r += "M";
@@ -95,7 +95,7 @@ class Aufstellvorrichtung extends Feature {
         r += "<tr><td>Art:</td><td>" + art.get(this.art).beschreib + "</td></tr>";
         r += "<tr><td>Lage:</td><td>" + lage.get(this.rlageVst).beschreib + "</td></tr>";
         r += "<tr><td>Schilder:</td><td>" + this.hasSekObj + "</td></tr>";
-        r += "<tr><td>Quelle:</td><td>" + ((this.quelle!=null)?(quelle.get(this.quelle).beschreib):'') + "</td></tr>";
+        r += "<tr><td>Quelle:</td><td>" + ((this.quelle != null) ? (quelle.get(this.quelle).beschreib) : '') + "</td></tr>";
         r += "</table>"
         return r;
     }
@@ -199,7 +199,7 @@ class Aufstellvorrichtung extends Feature {
                     textAlign: 'left',
                     // get the text from the feature - `this` is ol.Feature
                     // and show only under certain resolution
-                    text: ((zoom < 0.2)?("" + feature.vst):'')
+                    text: ((zoom < 0.2) ? ("" + feature.vst) : '')
                 }),
             });
         });
@@ -209,6 +209,50 @@ class Aufstellvorrichtung extends Feature {
 
     _getText() {
         return "test";
+    }
+
+    updateStation(station, abstand) {
+        this.vabstVst = Math.round(abstand * 10) / 10;
+        this.vabstBst = this.vabstVst;
+        this.rabstbaVst = this.vabstVst;
+        this.vst = Math.round(station);
+        this.bst = this.vst;
+        let xml = '<wfs:Update typeName="Otaufstvor">\n' +
+            '	<wfs:Property>\n' +
+            '		<wfs:Name>vabstVst</wfs:Name>\n' +
+            '		<wfs:Value>' + this.vabstVst + '</wfs:Value>\n' +
+            '	</wfs:Property>\n' +
+            '	<wfs:Property>\n' +
+            '		<wfs:Name>vabstBst</wfs:Name>\n' +
+            '		<wfs:Value>' + this.vabstBst + '</wfs:Value>\n' +
+            '	</wfs:Property>\n' +
+            '	<wfs:Property>\n' +
+            '		<wfs:Name>rabstbaVst</wfs:Name>\n' +
+            '		<wfs:Value>' + this.rabstbaVst + '</wfs:Value>\n' +
+            '	</wfs:Property>\n' +
+            '	<wfs:Property>\n' +
+            '		<wfs:Name>vst</wfs:Name>\n' +
+            '		<wfs:Value>' + this.vst + '</wfs:Value>\n' +
+            '	</wfs:Property>\n' +
+            '	<wfs:Property>\n' +
+            '		<wfs:Name>bst</wfs:Name>\n' +
+            '		<wfs:Value>' + this.bst + '</wfs:Value>\n' +
+            '	</wfs:Property>\n' +
+            '	<ogc:Filter>\n' +
+            '		<ogc:And>\n' +
+            '			<ogc:PropertyIsEqualTo>\n' +
+            '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
+            '				<ogc:Literal>' + this.objektId + '</ogc:Literal>\n' +
+            '			</ogc:PropertyIsEqualTo>\n' +
+            '			<ogc:PropertyIsEqualTo>\n' +
+            '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
+            '				<ogc:Literal>' + this.projekt + '</ogc:Literal>\n' +
+            '			</ogc:PropertyIsEqualTo>\n' +
+            '		</ogc:And>\n' +
+            '	</ogc:Filter>\n' +
+            '</wfs:Update>';
+        
+        PublicWFS.doTransaction(xml);
     }
 
 }

@@ -15,11 +15,10 @@
     <div id="map" class="map">
     </div>
 
-    <!--<form id="abschnitt" name="abschnitt">
-        <input type="textfield" name="vnk" maxlength="10" placeholder="VNK" />
-		<input type="textfield" name="nnk" maxlength="10" placeholder="NNK" />
-		<input type="button" value="Laden" />
-    </form>-->
+    <form id="suche" name="suche">
+		<input type="textfield" name="suche" placeholder="Suche" />
+		<input type="button" id="sucheButton" value="Laden" />
+    </form>
 
     <sidebar id="sidebar">
         <form id="steuerung" name="steuerung">
@@ -41,6 +40,7 @@
                 <input type="radio" name="befehl" id="befehl_vsinfo" value="vsinfo" /><label for="befehl_vsinfo">&nbsp;Info</label><br />
                 <input type="radio" name="befehl" id="befehl_avadd2er" value="avadd2er" /><label for="befehl_avadd2er">&nbsp;zum ER hinzufügen</label><br />
                 <input type="radio" name="befehl" id="befehl_avadd" value="avadd" /><label for="befehl_avadd">&nbsp;Hinzufügen</label><br />
+                <input type="radio" name="befehl" id="befehl_avmove" value="avmove" /><label for="befehl_avmove">&nbsp;Verschieben</label><br />
             </div>
             <button type="button" id="zoomToExtent">Auf Ausdehnung zoomen</button>
             <button type="button" id="loadExtent">Abschnitte laden</button>
@@ -149,14 +149,14 @@
             </table>
         </form>
 
-        <form style="background-color: rgba(255,180,180,0.8);">Bekannte Fehler:
+        <!--<form style="background-color: rgba(255,180,180,0.8);">Bekannte Fehler:
             <ul>
                 <li>Kein Verschieben von M-Streifen</li>
                 <li>Nach Teilen Daten doppelt</li>
                 <li>Hinzufügen nicht möglich</li>
                 <li>Löschen nicht möglich</li>
             </ul>
-        </form>
+        </form>-->
     </sidebar>
     <script src="js/edit.js"></script>
 </body>

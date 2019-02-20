@@ -28,8 +28,7 @@
 
 .layerswitch button {
     /*height: inherit;*/
-    width: inherit;
-    min-width: 20em;
+    width: 14em;
     padding: 2px;
     padding-left: 5px;
     padding-right: 5px;

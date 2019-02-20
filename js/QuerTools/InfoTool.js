@@ -56,8 +56,8 @@ class InfoTool {
         document.getElementById("info_station").innerHTML = querschnitt.vst + " - " + querschnitt.bst;
         document.getElementById("info_streifen").innerHTML = querschnitt.streifen + " " + querschnitt.streifennr;
     
-        document.getElementById("info_art").value = querschnitt.art.substr(-32);
-        document.getElementById("info_ober").value = querschnitt.artober.substr(-32);
+        document.getElementById("info_art").value = (querschnitt.art == null)?'':querschnitt.art.substr(-32);
+        document.getElementById("info_ober").value = (querschnitt.artober == null)?'':querschnitt.artober.substr(-32);
     
         document.getElementById("info_breite").value = querschnitt.breite;
         document.getElementById("info_bisbreite").value = querschnitt.bisBreite;

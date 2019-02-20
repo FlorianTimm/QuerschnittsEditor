@@ -18,6 +18,7 @@ import AddTool from './QuerTools/AddTool.js';
 import DelTool from './QuerTools/DelTool.js';
 import VsInfoTool from './SchilderTools/VsInfoTool.js';
 import AvAdd from './SchilderTools/AvAdd.js';
+import AvMove from './SchilderTools/AvMove.js';
 import AvAdd2ER from './SchilderTools/AvAdd2ER.js';
 import QsAdd2ER from './QuerTools/QsAdd2ER.js';
 import LayerSwitch from './LayerSwitch.js';
@@ -34,7 +35,7 @@ var er = decodeURI(urlParamER[1])
 var ernr = decodeURI(urlParamERNR[1])
 console.log("Ereignisraum: " + ernr);
 
-let daten, infoTool, editTool, delTool, partTool, addTool, vsInfoTool, avAdd, avAdd2ER, qsAdd2ER;
+let daten, infoTool, editTool, delTool, partTool, addTool, vsInfoTool, avAdd, avAdd2ER, qsAdd2ER, avMove;
 
 window.addEventListener('load', function () {
 
@@ -94,6 +95,7 @@ window.addEventListener('load', function () {
     partTool = new PartTool(map, daten, infoTool);
     vsInfoTool = new VsInfoTool(map, [daten.l_aufstell], "sidebar");
     avAdd = new AvAdd(map, daten); //map, daten.l_aufstell, er, "sidebar");
+    avMove = new AvMove(map, daten, vsInfoTool);
     avAdd2ER = new AvAdd2ER(map, daten);
     qsAdd2ER = new QsAdd2ER(map, daten);
 
@@ -105,6 +107,7 @@ window.addEventListener('load', function () {
     document.getElementById("befehl_part").addEventListener('change', befehl_changed);
     document.getElementById("befehl_add").addEventListener('change', befehl_changed);
     document.getElementById("befehl_avadd2er").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_avmove").addEventListener('change', befehl_changed);
     document.getElementById("befehl_qsadd2er").addEventListener('change', befehl_changed);
 
 
@@ -118,9 +121,14 @@ window.addEventListener('load', function () {
             if (maxX == null || maxX < p[2]) maxX = p[2];
             if (maxY == null || maxY < p[3]) maxY = p[3];
         }
-        //console.log([minX, minY, maxX, maxY])
         map.getView().fit([minX, minY, maxX, maxY], { padding: [20, 240, 20, 20] })
+
         //map.getView().fit(daten.l_achse.getExtent());
+
+        /*
+        let extent = Daten.calcAbschnitteExtent(daten.l_achse.getSource().getFeatures());
+        map.getView().fit(extent, { padding: [20, 240, 20, 20] })
+        */
     })
 
 
@@ -132,6 +140,15 @@ window.addEventListener('load', function () {
             daten.loadExtent();
         }
     })*/
+
+    document.getElementById("sucheButton").addEventListener('click', function () {
+        daten.searchForStreet();
+    })
+
+    document.forms.suche.addEventListener('submit', function (event) {
+        event.preventDefault();
+        daten.searchForStreet();
+    })
 });
 
 
@@ -167,6 +184,7 @@ function befehl_changed() {
     avAdd.stop();
     avAdd2ER.stop();
     qsAdd2ER.stop();
+    avMove.stop();
 
     if (document.getElementById("befehl_info").checked)
         infoTool.start();
@@ -176,6 +194,8 @@ function befehl_changed() {
         avAdd.start();
     else if (document.getElementById("befehl_avadd2er").checked)
         avAdd2ER.start();
+    else if (document.getElementById("befehl_avmove").checked)
+        avMove.start();
     else if (document.getElementById("befehl_qsadd2er").checked)
         qsAdd2ER.start();
     else if (document.getElementById("befehl_modify").checked)

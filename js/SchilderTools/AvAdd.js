@@ -199,7 +199,7 @@ class AvAdd {
         //console.log(_this.daten);
         let filter = '<Filter>';
         for (let f of xml.getElementsByTagName('InsertResult')[0].childNodes) {
-            filter += '<ogc:FeatureId fid="' + f.getAttribute('fid') + '"/>';
+            filter += '<FeatureId fid="' + f.getAttribute('fid') + '"/>';
         }
         filter += '</Filter>';
         PublicWFS.doQuery('Otaufstvor', filter, Aufstellvorrichtung._loadER_Callback, undefined, _this.daten);

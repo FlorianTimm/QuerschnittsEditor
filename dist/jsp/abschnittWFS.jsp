@@ -25,10 +25,29 @@ if (abschnittId != null) {
 	filter += " and ID = '" + abschnittId + "'";
 }
 
+String name = request.getParameter("STRNAME");
+if (name != null) {
+	filter += " and upper(STRNAME) LIKE upper('" + name + "%')";
+}
+
 String vnk = request.getParameter("VNK");
 String nnk = request.getParameter("NNK");
 if (vnk != null && nnk != null) {
+	if (vnk.length() == 9 || vnk.length() == 7) vnk += "O";
+	if (nnk.length() == 9 || nnk.length() == 7) nnk += "O";
 	filter += " and VNP = '" + vnk + "' and NNP = '" + nnk + "'";
+}
+
+String klasse = request.getParameter("KLASSE");
+String nr = request.getParameter("NR");
+String buchstabe = request.getParameter("BUCHSTABE");
+if (klasse != null && nr != null) {
+	filter += " and KLASSE = '" + klasse.toUpperCase() + "' and NUMMER = " + nr + "";
+	if (buchstabe != null && buchstabe.length() > 0) {
+		filter += " and BUCHSTABE = '" + buchstabe.toUpperCase() + "'" ;
+	} else {
+		filter += " and BUCHSTABE IS NULL" ;
+	}
 }
 
 

@@ -1,8 +1,9 @@
-var CONFIG_WFS = require('./config_wfs.json');
+var CONFIG_WFS = require('../config_wfs.json');
 
 class Aufbau {
     constructor() {
-        this.abschnittOderAst = null;
+		this.abschnittOderAst = null;
+		this.schichtnr = null;
         this.parent = null;
         this.vst = null;
 		this.bst = null;
@@ -45,6 +46,7 @@ class Aufbau {
     }
 
     static fromXML (xml) {
+		//console.log(xml);
         let r = new Aufbau();
         for (var tag in CONFIG_WFS.AUFBAUDATEN) {
             if (xml.getElementsByTagName(tag).length <= 0) continue;

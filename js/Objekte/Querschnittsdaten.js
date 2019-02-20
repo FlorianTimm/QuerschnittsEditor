@@ -82,6 +82,7 @@ class Querschnitt {
         let r = new Querschnitt(daten);
 
         r.fid = xml.getAttribute('fid');
+        daten.querschnitteFID[r.fid] = r;
 
         for (let tag in CONFIG_WFS.QUERSCHNITT) {
             //console.log(tag);
@@ -197,7 +198,7 @@ class Querschnitt {
                 r += '<' + tag + '>' + this[tag] + '</' + tag + '>\n';
             } else if (CONFIG_WFS.QUERSCHNITT[tag].art == 2) {
                 // Klartext
-                r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS.QUERSCHNITT[tag].kt + '" />\n' + this[tag];
+                r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS.QUERSCHNITT[tag].kt + '" />\n';
             }
         }
 

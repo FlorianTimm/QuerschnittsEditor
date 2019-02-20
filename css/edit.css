@@ -174,3 +174,14 @@ input[type="radio"]:checked+label {
         opacity: 1;
     }
 }
+
+
+form#suche {
+    position: absolute;
+    top: .5em;
+    left: 20em;
+    display: block;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 3px;
+    overflow-x: hidden;
+}
