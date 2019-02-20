@@ -95,7 +95,7 @@ window.addEventListener('load', function () {
     partTool = new PartTool(map, daten, infoTool);
     vsInfoTool = new VsInfoTool(map, [daten.l_aufstell], "sidebar");
     avAdd = new AvAdd(map, daten); //map, daten.l_aufstell, er, "sidebar");
-    avMove = new AvMove(map, daten);
+    avMove = new AvMove(map, daten, vsInfoTool);
     avAdd2ER = new AvAdd2ER(map, daten);
     qsAdd2ER = new QsAdd2ER(map, daten);
 
