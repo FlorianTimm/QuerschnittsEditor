@@ -75,7 +75,7 @@ class AvAdd {
                     radius: 3,
                     fill: new Fill({ color: 'black' }),
                     stroke: new Stroke({
-                        color: 'rgba(250,0,0,0.9)', width: 3
+                        color: 'rgba(50,50,250,0.9)', width: 3
                     })
                 })
             });

@@ -18,6 +18,7 @@ import AddTool from './QuerTools/AddTool.js';
 import DelTool from './QuerTools/DelTool.js';
 import VsInfoTool from './SchilderTools/VsInfoTool.js';
 import AvAdd from './SchilderTools/AvAdd.js';
+import VzAdd from './SchilderTools/VzAdd.js';
 import AvMove from './SchilderTools/AvMove.js';
 import AvAdd2ER from './SchilderTools/AvAdd2ER.js';
 import QsAdd2ER from './QuerTools/QsAdd2ER.js';
@@ -35,7 +36,7 @@ var er = decodeURI(urlParamER[1])
 var ernr = decodeURI(urlParamERNR[1])
 console.log("Ereignisraum: " + ernr);
 
-let daten, infoTool, editTool, delTool, partTool, addTool, vsInfoTool, avAdd, avAdd2ER, qsAdd2ER, avMove;
+let daten, infoTool, editTool, delTool, partTool, addTool, vsInfoTool, avAdd, avAdd2ER, qsAdd2ER, avMove, vzAdd;
 
 window.addEventListener('load', function () {
 
@@ -95,6 +96,7 @@ window.addEventListener('load', function () {
     partTool = new PartTool(map, daten, infoTool);
     vsInfoTool = new VsInfoTool(map, [daten.l_aufstell], "sidebar");
     avAdd = new AvAdd(map, daten); //map, daten.l_aufstell, er, "sidebar");
+    vzAdd = new VzAdd(map, daten);
     avMove = new AvMove(map, daten, vsInfoTool);
     avAdd2ER = new AvAdd2ER(map, daten);
     qsAdd2ER = new QsAdd2ER(map, daten);
@@ -102,6 +104,7 @@ window.addEventListener('load', function () {
     document.getElementById("befehl_info").addEventListener('change', befehl_changed);
     document.getElementById("befehl_vsinfo").addEventListener('change', befehl_changed);
     document.getElementById("befehl_avadd").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_vzadd").addEventListener('change', befehl_changed);
     document.getElementById("befehl_modify").addEventListener('change', befehl_changed);
     document.getElementById("befehl_delete").addEventListener('change', befehl_changed);
     document.getElementById("befehl_part").addEventListener('change', befehl_changed);
@@ -185,6 +188,7 @@ function befehl_changed() {
     avAdd2ER.stop();
     qsAdd2ER.stop();
     avMove.stop();
+    vzAdd.stop();
 
     if (document.getElementById("befehl_info").checked)
         infoTool.start();
@@ -192,6 +196,8 @@ function befehl_changed() {
         vsInfoTool.start();
     else if (document.getElementById("befehl_avadd").checked)
         avAdd.start();
+    else if (document.getElementById("befehl_vzadd").checked)
+        vzAdd.start();
     else if (document.getElementById("befehl_avadd2er").checked)
         avAdd2ER.start();
     else if (document.getElementById("befehl_avmove").checked)

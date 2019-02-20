@@ -23,6 +23,11 @@ class Daten {
 
         this.kt_art = new Klartext('Itquerart', 'art', this._showArt, this);
         this.kt_artober = new Klartext('Itquerober', 'artober', this._showArtOber, this);
+        this.kt_artober = new Klartext('Itquerober', 'artober', this._showArtOber, this);
+        this.kt_lageAv = null;
+        this.kt_artAv = null;
+        this.kt_quelle = null;
+        this.kt_stvoznr = null
 
         this._createLayerFlaechen();
         this._createLayerTrennLinien();

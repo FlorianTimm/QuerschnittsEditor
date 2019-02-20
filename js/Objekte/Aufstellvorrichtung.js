@@ -8,26 +8,25 @@ import { Style, Stroke, Fill, Circle, Text } from 'ol/style';
 
 var CONFIG_WFS = require('../config_wfs.json');
 
-var art = null, lage = null, quelle = null;
 
 class Aufstellvorrichtung extends Feature {
     constructor(daten) {
         super({ geom: null });
-        this.daten = daten;
+        this._daten = daten;
 
-        Aufstellvorrichtung.loadKlartexte();
+        Aufstellvorrichtung.loadKlartexte(this._daten);
     }
 
-    static loadKlartexte() {
+    static loadKlartexte(daten) {
         //console.log("Klartexte laden")
-        if (art == null) {
-            art = new Klartext('Itaufstvorart', 'art', Aufstellvorrichtung._ktArtLoaded);
+        if (daten.kt_artAv == null) {
+            daten.kt_artAv = new Klartext('Itaufstvorart', 'art', Aufstellvorrichtung._ktArtLoaded);
         }
-        if (lage == null) {
-            lage = new Klartext('Itallglage', 'allglage', Aufstellvorrichtung._ktLageLoaded);
+        if (daten.kt_lageAv == null) {
+            daten.kt_lageAv = new Klartext('Itallglage', 'allglage', Aufstellvorrichtung._ktLageLoaded);
         }
-        if (quelle == null) {
-            quelle = new Klartext('Itquelle', 'quelle', Aufstellvorrichtung._ktQuelleLoaded);
+        if (daten.kt_quelle == null) {
+            daten.kt_quelle = new Klartext('Itquelle', 'quelle', Aufstellvorrichtung._ktQuelleLoaded);
         }
     }
 
@@ -92,10 +91,10 @@ class Aufstellvorrichtung extends Feature {
         else if (this.rabstbaVst <= 0.01) r += "L";
         else r += "M";
         r += " " + Math.abs(this.rabstbaVst) + '</td></tr>';
-        r += "<tr><td>Art:</td><td>" + art.get(this.art).beschreib + "</td></tr>";
-        r += "<tr><td>Lage:</td><td>" + lage.get(this.rlageVst).beschreib + "</td></tr>";
+        r += "<tr><td>Art:</td><td>" + this._daten.kt_artAv.get(this.art).beschreib + "</td></tr>";
+        r += "<tr><td>Lage:</td><td>" + this._daten.kt_lageAv.get(this.rlageVst).beschreib + "</td></tr>";
         r += "<tr><td>Schilder:</td><td>" + this.hasSekObj + "</td></tr>";
-        r += "<tr><td>Quelle:</td><td>" + ((this.quelle != null) ? (quelle.get(this.quelle).beschreib) : '') + "</td></tr>";
+        r += "<tr><td>Quelle:</td><td>" + ((this.quelle != null) ? (this._daten.kt_quelle.get(this.quelle).beschreib) : '') + "</td></tr>";
         r += "</table>"
         return r;
     }
@@ -106,7 +105,7 @@ class Aufstellvorrichtung extends Feature {
      * @param {*} daten 
      */
     static loadER(daten) {
-        Aufstellvorrichtung.loadKlartexte();
+        Aufstellvorrichtung.loadKlartexte(daten);
         PublicWFS.doQuery('Otaufstvor', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
             '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Aufstellvorrichtung._loadER_Callback, undefined, daten);
@@ -185,7 +184,8 @@ class Aufstellvorrichtung extends Feature {
                     radius: 3,
                     fill: new Fill({ color: 'black' }),
                     stroke: new Stroke({
-                        color: 'rgba(250,120,0,0.8)', width: 3
+                        color: (feature.hasSekObj > 0)?('rgba(250,120,0,0.8)'):('rgba(255,0,0,0.8)'), 
+                        width: 3
                     })
                 }),
                 text: new Text({
