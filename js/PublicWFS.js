@@ -52,17 +52,17 @@ class PublicWFS {
                 if (callbackSuccess != undefined) {
                     callbackSuccess(xmlhttp.responseXML, ...args)
                 } else {
-                    PublicWFS.showMessage("Abschnitt in ER kopiert");
+                    PublicWFS.showMessage("Objekt in ER kopiert");
                 }
             } else {
                 if (callbackFailed != undefined)
                     callbackFailed(xmlhttp.responseXML, ...args)
                 else
-                    PublicWFS.showMessage("Abschnitt konnte nicht in ER kopiert werden", true);
+                    PublicWFS.showMessage("Objekt konnte nicht in ER kopiert werden", true);
             }
         }
         xmlhttp.setRequestHeader('Content-Type', 'text/xml');
-        xmlhttp.send('<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
+        let xml = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
             'xmlns:pub="http://ttsib.novasib.de/PublicServices" xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">\n' +
             '<soapenv:Header/>\n' +
             '<soapenv:Body>\n' +
@@ -83,7 +83,50 @@ class PublicWFS {
             '            </objektKlassen>\n' +
             '     </pub:expandProjektAbsObj>\n' +
             '</soapenv:Body>\n' +
-            '</soapenv:Envelope>');
+            '</soapenv:Envelope>'
+        xmlhttp.send(xml);
+    }
+
+    static addSekInER(objektPrim, objektTypePrim, objekt, ereignisraum_nr, callbackSuccess, callbackFailed, ...args) {
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.open('POST', CONFIG.ER_WFS_URL, true);
+
+        xmlhttp.onreadystatechange = function () {
+            if (xmlhttp.readyState != 4) return;
+            if (xmlhttp.status == 200) {
+                objektPrim.inER[objekt] = true;
+                if (callbackSuccess != undefined) {
+                    callbackSuccess(xmlhttp.responseXML, ...args)
+                } else {
+                    PublicWFS.showMessage("Objekt in ER kopiert");
+                }
+            } else {
+                if (callbackFailed != undefined)
+                    callbackFailed(xmlhttp.responseXML, ...args)
+                else
+                    PublicWFS.showMessage("Objekt konnte nicht in ER kopiert werden", true);
+            }
+        }
+        xmlhttp.setRequestHeader('Content-Type', 'text/xml');
+        let xml = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
+            'xmlns:pub="http://ttsib.novasib.de/PublicServices" xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">\n' +
+            '<soapenv:Header/>\n' +
+            '<soapenv:Body>\n' +
+            '     <pub:expandProjektPrimObj>\n' +
+            '            <projekt>\n' +
+            '                   <int:ProjektNr>' + ereignisraum_nr + '</int:ProjektNr>\n' +
+            '            </projekt>\n' +
+            '            <primObjekte>\n' +
+            '                   <int:objektId>' + objektPrim.objektId + '</int:objektId>\n' +
+            '                   <int:objektKlasse>' + objektTypePrim + '</int:objektKlasse>\n' +
+            '            </primObjekte>\n' +
+            '            <objektKlassen>\n' +
+            '                   <int:objektKlasse>' + objekt + '</int:objektKlasse>\n' +
+            '            </objektKlassen>\n' +
+            '     </pub:expandProjektPrimObj>\n' +
+            '</soapenv:Body>\n' +
+            '</soapenv:Envelope>'
+        xmlhttp.send(xml);
     }
 
     static doTransaction(transaction, callbackSuccess, callbackFailed, ...args) {

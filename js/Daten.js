@@ -27,7 +27,7 @@ class Daten {
         this.kt_lageAv = null;
         this.kt_artAv = null;
         this.kt_quelle = null;
-        this.kt_stvoznr = null
+        this.kt_stvoznr = null;
 
         this._createLayerFlaechen();
         this._createLayerTrennLinien();

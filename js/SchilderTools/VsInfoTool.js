@@ -25,7 +25,7 @@ class VsInfoTool {
         this._infoField.style.display = "block";
         let auswahl = event.selected[0];
 
-        this._infoField.innerHTML = auswahl.getHTMLInfo();
+        auswahl.getHTMLInfo(this._infoField);
     }
 
 

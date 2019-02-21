@@ -24,6 +24,10 @@ import AvAdd2ER from './SchilderTools/AvAdd2ER.js';
 import QsAdd2ER from './QuerTools/QsAdd2ER.js';
 import LayerSwitch from './LayerSwitch.js';
 
+import ImageLayer from 'ol/layer/Image.js';
+import Projection from 'ol/proj/Projection.js';
+import Static from 'ol/source/ImageStatic.js';
+
 var CONFIG = require('./config.json');
 
 let urlParamER = new RegExp('[\?&]er=([^&#]*)').exec(window.location.href);
@@ -245,6 +249,32 @@ function createMap() {
                     attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
                 })
             }),
+            new TileLayer({
+                name: 'LGV DOP20',
+                visible: false,
+                switchable: true,
+                opacity: 0.7,
+                source: new TileWMS({
+                    url: 'http://geodienste.hamburg.de/HH_WMS_DOP20',
+                    params: {
+                        'LAYERS': '1',
+                        'FORMAT': 'image/png'
+                    },
+                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
+                })
+            }),
+
+            new ImageLayer({
+                name: 'LGV DOP5 (nur LGV)',
+                visible: false,
+                switchable: true,
+                source: new Static({
+                  attributions: ['Freie und Hansestadt Hamburg, LGV 2019'],
+                  url: 'http://gv-srv-w00118:8080/dop5rgb_3256650_592800_hh_2018.jpg',
+                  imageExtent: [566500,5928000, 566750,5928250]
+                })
+              }),
+
             new TileLayer({
                 name: "Querschnitte gruppiert",
                 visible: false,

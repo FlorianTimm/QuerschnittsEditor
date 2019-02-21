@@ -6,10 +6,10 @@
 	<soapenv:Body>
 		<pub:expandProjektPrimObj>
 			<projekt>
-				<int:ProjektNr>201902000000073</int:ProjektNr>
+				<int:ProjektNr>201902000000129</int:ProjektNr>
 			</projekt>
 			<primObjekte>
-				<int:objektId>4276428B77248DE9D3F42D1884EE62C</int:objektId>
+				<int:objektId>d54311e8013648518e4dc7427d92885c</int:objektId>
 				<int:objektKlasse>Otaufstvor</int:objektKlasse>
 			</primObjekte>
 			<objektKlassen>

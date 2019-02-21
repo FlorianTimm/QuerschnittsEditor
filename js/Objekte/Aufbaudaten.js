@@ -67,16 +67,16 @@ class Aufbau {
 	createXML() {
         let r = '<Otschicht>\n';
 
-        for (let tag in CONFIG_WFS.QUERSCHNITT) {
+        for (let tag in CONFIG_WFS.AUFBAUDATEN) {
             //console.log(tag);
             if (this[tag] === null) continue;
-            if (CONFIG_WFS.QUERSCHNITT[tag].art == 0 || CONFIG_WFS.QUERSCHNITT[tag] == 1) {
+            if (CONFIG_WFS.AUFBAUDATEN[tag].art == 0 || CONFIG_WFS.AUFBAUDATEN[tag] == 1) {
                 // Kein Klartext
                 r += '<' + tag + '>' + this[tag] + '</' + tag + '>\n';
                 r[tag] = Number(xml.getElementsByTagName(tag)[0].firstChild.data);
-            } else if (CONFIG_WFS.QUERSCHNITT[tag].art == 2) {
+            } else if (CONFIG_WFS.AUFBAUDATEN[tag].art == 2) {
                 // Klartext
-                r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS.QUERSCHNITT[tag].kt + '" />' + this[tag];
+                r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS.AUFBAUDATEN[tag].kt + '" />' + this[tag];
             }
         }
 

@@ -23,7 +23,7 @@ class Klartext {
             let id = quer[i].getElementsByTagName('objektId')[0].firstChild.data.substr(-32);
             _this.klartext[id] = {
                 'kt': quer[i].getElementsByTagName(_this.feld)[0].firstChild.data,
-                'beschreib': quer[i].getElementsByTagName('beschreib')[0].firstChild.data,
+                'beschreib': quer[i].getElementsByTagName(_this.feld)[0].firstChild.data + ' - ' + quer[i].getElementsByTagName('beschreib')[0].firstChild.data,
                 'objektId': id,
             }
         }
