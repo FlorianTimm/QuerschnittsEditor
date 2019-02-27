@@ -21,15 +21,9 @@ class Daten {
         this.ereignisraum_nr = ereignisraum_nr;
         this.querschnitteFID = {};
 
-        this.kt_art = new Klartext('Itquerart', 'art', this._showArt, this);
-        this.kt_artober = new Klartext('Itquerober', 'artober', this._showArtOber, this);
-        this.kt_artober = new Klartext('Itquerober', 'artober', this._showArtOber, this);
-        this.kt_lageAv = null;
-        this.kt_artAv = null;
-        this.kt_quelle = null;
-        this.kt_stvoznr = null;
-
-        //this.klartext = new Klartext()
+        this.klartexte = new Klartext();
+        this.klartexte.load("Itquerart", this._showArt, this);
+        this.klartexte.load("Itquerober", this._showArtOber, this);
 
         this._createLayerFlaechen();
         this._createLayerTrennLinien();
@@ -48,7 +42,7 @@ class Daten {
     }
 
     _showArt(art, _this) {
-        let arten = art.getAllSorted();
+        let arten = _this.klartexte.getAllSorted("Itquerart");
         for (let a of arten) {
             let option = document.createElement('option');
             let t = document.createTextNode(a.beschreib);
@@ -61,7 +55,7 @@ class Daten {
     }
 
     _showArtOber(artober, _this) {
-        let arten = artober.getAllSorted();
+        let arten = _this.klartexte.getAllSorted("Itquerober");
         for (let a of arten) {
             let option = document.createElement('option');
             let t = document.createTextNode(a.beschreib);
@@ -195,7 +189,7 @@ class Daten {
             source: this.v_quer,
             opacity: 0.36,
             style: function (feature, resolution) {
-                let kt = feature.get('objekt').daten.kt_art.get(feature.get('objekt').art)
+                let kt = feature.get('objekt').daten.klartexte.get('Itquerart', feature.get('objekt').art)
                 let art = 0
                 if (!isNullOrUndefined(kt))
                     art = Number(kt.kt);

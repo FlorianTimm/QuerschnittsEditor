@@ -2,55 +2,75 @@ import PublicWFS from '../PublicWFS.js';
 import { isNullOrUndefined } from 'util';
 
 class Klartext {
-    constructor(bezeichnung, feld, whenReady, ...args) {
-        this.klartext = {};
-        this.feld = feld;
-        this.bezeichnung = bezeichnung;
-        this.whenReady = whenReady;
-        this.args = args;
-        this._load();
+    _felder = {
+        "Itquerart": "art",
+        "Itquerober": "artober",
+        "Itaufstvorart": "art",
+        "Itallglage": "allglage",
+        "Itquelle": "quelle",
+        "Itaufstvorart":"art",
+        "Itvzstvoznr":"stvoznr"
     }
 
-    _load() {
-        PublicWFS.doQuery(this.bezeichnung, '', this._read, undefined, this)
+    constructor() {
+        this._klartexte = {};
     }
 
-    _read(xml, _this) {
+    load(klartext, whenReady, ...args) {
+        if (!(klartext in this._klartexte)) {
+            PublicWFS.doQuery(klartext, '', this._read, undefined, klartext, this, whenReady, ...args);
+        } else {
+            whenReady(this._klartexte[klartext], ...args);
+        }
+    }
 
-        let quer = xml.getElementsByTagName(_this.bezeichnung)
+    _read(xml, klartext, _this, whenReady, ...args) {
+        if (!(klartext in _this._klartexte)) {
+            _this._klartexte[klartext] = {}
 
-        for (let i = 0; i < quer.length; i++) {
-            let id = quer[i].getElementsByTagName('objektId')[0].firstChild.data.substr(-32);
-            _this.klartext[id] = {
-                'kt': quer[i].getElementsByTagName(_this.feld)[0].firstChild.data,
-                'beschreib': quer[i].getElementsByTagName(_this.feld)[0].firstChild.data + ' - ' + quer[i].getElementsByTagName('beschreib')[0].firstChild.data,
-                'objektId': id,
+            let quer = xml.getElementsByTagName(klartext)
+
+            for (let i = 0; i < quer.length; i++) {
+                let id = quer[i].getElementsByTagName('objektId')[0].firstChild.data.substr(-32);
+                _this._klartexte[klartext][id] = {
+                    'kt': quer[i].getElementsByTagName(_this._felder[klartext])[0].firstChild.data,
+                    'beschreib': quer[i].getElementsByTagName(_this._felder[klartext])[0].firstChild.data + ' - ' + quer[i].getElementsByTagName('beschreib')[0].firstChild.data,
+                    'objektId': id,
+                }
             }
         }
-        if (!isNullOrUndefined(_this.whenReady)) {
-            _this.whenReady(_this, ..._this.args);
-        }
+        if (whenReady != undefined) whenReady(_this._klartexte[klartext], ...args);
     }
 
-    get(bezeichnung) {
+    get(klartext, bezeichnung) {
         let bez = bezeichnung.substr(-32);
-        if (bez in this.klartext) {
-            //console.log(this.klartext[bez])
-            return this.klartext[bez];
+        if (!(klartext in this._klartexte)) {
+            this.load(klartext);
+            return null;
         }
-        console.log(bez)
-        console.log(this.klartext)
+        if (bez in this._klartexte[klartext]) {
+            return this._klartexte[klartext][bez];
+        }
         return null;
     }
 
-    getAll() {
+    getAll(klartext) {
+        if (!(klartext in this._klartexte)) {
+            this.load(klartext);
+            return null;
+        }
         return this.klartext;
     }
 
-    getAllSorted() {
+    getAllSorted(klartext) {
+        if (!(klartext in this._klartexte)) {
+            this.load(klartext);
+            return null;
+        }
+
         let sortable = [];
-        for (let kt in this.klartext) {
-            sortable.push(this.klartext[kt]);
+        for (let kt in this._klartexte[klartext]) {
+            sortable.push(this._klartexte[klartext][kt]);
         }
 
         sortable.sort(function (a, b) {

@@ -55,29 +55,25 @@ class VzAdd {
             let vzimg = document.createElement("td");
             let img = document.createElement("img");
             img.style.width = "50px";
-            img.src = "http://gv-srv-w00118:8080/schilder/" + _this._daten.kt_stvoznr.get(eintrag.stvoznr)['kt'] + ".svg";
-            img.title = _this._daten.kt_stvoznr.get(eintrag.stvoznr)['beschreib'] + (eintrag.vztext != null)?("\n" + eintrag.vztext):('')
+            img.src = "http://gv-srv-w00118:8080/schilder/" + _this._daten.klartexte.get("Itvzstvoznr", eintrag.stvoznr)['kt'] + ".svg";
+            img.title = _this._daten.klartexte.get("Itvzstvoznr", eintrag.stvoznr)['beschreib'] + (eintrag.vztext != null)?("\n" + eintrag.vztext):('')
             vzimg.appendChild(img);
             tr.appendChild(vzimg);
 
             let stvonr = document.createElement("td");
-            stvonr.innerHTML = _this._daten.kt_stvoznr.get(eintrag.stvoznr)['beschreib'];
+            stvonr.innerHTML = _this._daten.klartexte.get("Itvzstvoznr", eintrag.stvoznr)['beschreib'];
             tr.appendChild(stvonr);
 
             let lage = document.createElement("td");
-            lage.innerHTML = _this._daten.kt_lageAv.get(eintrag.lageFbs)['beschreib'];
+            lage.innerHTML = _this._daten.klartexte.get("Itvzlagefb", eintrag.lageFb)['beschreib'];
 
             _this._table.appendChild(tr);
         }
     }
 
     static loadKlartexte(daten) {
-        if (daten.kt_stvoznr == null) {
-            daten.kt_stvoznr = new Klartext('Itvzstvoznr', 'stvoznr');
-        }
-        if (daten.kt_quelle == null) {
-            daten.kt_quelle = new Klartext('Itquelle', 'quelle');
-        }
+        daten.klartexte.load('Itvzstvoznr');
+        daten.klartexte.load('Itquelle');
     }
 
     _closePopup (event) {
