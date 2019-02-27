@@ -2,41 +2,41 @@ import { Select as SelectInteraction } from 'ol/interaction';
 
 class VsInfoTool {
     constructor(map, layer, sidebar) {
-        this.map = map;
-        this.layer = layer;
-        this.sidebar = document.getElementById(sidebar);
+        this._map = map;
+        this._layer = layer;
+        this._sidebar = document.getElementById(sidebar);
 
-        this.infoField = document.createElement("form");
-        this.sidebar.appendChild(this.infoField);
-        this.infoField.style.display = "none";
+        this._infoField = document.createElement("form");
+        this._sidebar.appendChild(this._infoField);
+        this._infoField.style.display = "none";
 
-        this.select = new SelectInteraction({
-            layers: this.layer,
+        this._select = new SelectInteraction({
+            layers: this._layer,
             hitTolerance: 10
         });
-        this.select.on('select', this.featureSelected.bind(this))
+        this._select.on('select', this.featureSelected.bind(this))
     }
 
-featureSelected(event) {
-    if (event.selected.length == 0) {
-        this.infoField.style.display = "none";
-        return;
+    featureSelected(event) {
+        if (event.selected.length == 0) {
+            this._infoField.style.display = "none";
+            return;
+        }
+        this._infoField.style.display = "block";
+        let auswahl = event.selected[0];
+
+        auswahl.getHTMLInfo(this._infoField);
     }
-    this.infoField.style.display = "block";
-    let auswahl = event.selected[0];
-
-    this.infoField.innerHTML = auswahl.getHTMLInfo();
-}
 
 
-start() {
-    this.map.addInteraction(this.select);
-}
+    start() {
+        this._map.addInteraction(this._select);
+    }
 
-stop() {
-    this.map.removeInteraction(this.select);
-    this.infoField.style.display = "none";
-}
+    stop() {
+        this._map.removeInteraction(this._select);
+        this._infoField.style.display = "none";
+    }
 
 }
 

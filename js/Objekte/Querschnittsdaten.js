@@ -137,7 +137,7 @@ class Querschnitt {
                 '    <ogc:Property>parent/@xlink:href</ogc:Property>\n' +
                 '    <ogc:Literal>' + this.fid + '</ogc:Literal>\n' +
                 '  </ogc:PropertyIsEqualTo>\n' +
-                '</ogc:And></ogc:Filter>', this._parseAufbaudaten(xml, this));
+                '</ogc:And></ogc:Filter>', this._parseAufbaudaten, undefined, this);
         }
     }
 

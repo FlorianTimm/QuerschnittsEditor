@@ -5,34 +5,30 @@ import Feature from 'ol/Feature.js';
 import VectorSource from 'ol/source/Vector';
 import { Vector as VectorLayer } from 'ol/layer';
 import { Style, Stroke, Fill, Circle, Text } from 'ol/style';
+import Zeichen from './Zeichen.js';
 
 var CONFIG_WFS = require('../config_wfs.json');
 
-var art = null, lage = null, quelle = null;
 
 class Aufstellvorrichtung extends Feature {
     constructor(daten) {
         super({ geom: null });
-        this.daten = daten;
+        this._daten = daten;
+        this._zeichen = null;
+        this.fid = null;
+        this.inER = {};
 
-        Aufstellvorrichtung.loadKlartexte();
+        Aufstellvorrichtung.loadKlartexte(this._daten.klartexte);
     }
 
-    static loadKlartexte() {
-        //console.log("Klartexte laden")
-        if (art == null) {
-            art = new Klartext('Itaufstvorart', 'art', Aufstellvorrichtung._ktArtLoaded);
-        }
-        if (lage == null) {
-            lage = new Klartext('Itallglage', 'allglage', Aufstellvorrichtung._ktLageLoaded);
-        }
-        if (quelle == null) {
-            quelle = new Klartext('Itquelle', 'quelle', Aufstellvorrichtung._ktQuelleLoaded);
-        }
+    static loadKlartexte(klartexte) {
+        klartexte.load('Itaufstvorart', Aufstellvorrichtung._ktArtLoaded, klartexte);
+        klartexte.load('Itallglage', Aufstellvorrichtung._ktLageLoaded, klartexte);
+        klartexte.load('Itquelle', Aufstellvorrichtung._ktQuelleLoaded, klartexte);
     }
 
-    static _ktArtLoaded(art) {
-        let arten = art.getAllSorted();
+    static _ktArtLoaded(__,klartexte) {
+        let arten = klartexte.getAllSorted('Itaufstvorart');
         for (let a of arten) {
             let option = document.createElement('option');
             let t = document.createTextNode(a.beschreib);
@@ -44,8 +40,8 @@ class Aufstellvorrichtung extends Feature {
         }
     }
 
-    static _ktLageLoaded(art) {
-        let arten = art.getAllSorted();
+    static _ktLageLoaded(__, klartexte) {
+        let arten = klartexte.getAllSorted('Itallglage');
         for (let a of arten) {
             let option = document.createElement('option');
             let t = document.createTextNode(a.beschreib);
@@ -57,8 +53,8 @@ class Aufstellvorrichtung extends Feature {
         }
     }
 
-    static _ktQuelleLoaded(art) {
-        let arten = art.getAllSorted();
+    static _ktQuelleLoaded(__,klartexte) {
+        let arten = klartexte.getAllSorted('Itquelle');
         for (let a of arten) {
             let option = document.createElement('option');
             let t = document.createTextNode(a.beschreib);
@@ -70,7 +66,8 @@ class Aufstellvorrichtung extends Feature {
         }
     }
 
-    getHTMLInfo() {
+    getHTMLInfo(ziel) {
+        let kt = this._daten.klartexte;
         let r = "<table>";
         /*for (var tag in CONFIG_WFS.AUFSTELL) {
             if (this[tag] == null || this[tag] == undefined) continue;
@@ -92,13 +89,34 @@ class Aufstellvorrichtung extends Feature {
         else if (this.rabstbaVst <= 0.01) r += "L";
         else r += "M";
         r += " " + Math.abs(this.rabstbaVst) + '</td></tr>';
-        r += "<tr><td>Art:</td><td>" + art.get(this.art).beschreib + "</td></tr>";
-        r += "<tr><td>Lage:</td><td>" + lage.get(this.rlageVst).beschreib + "</td></tr>";
+        console.log(kt);
+        r += "<tr><td>Art:</td><td>" + kt.get('Itaufstvorart', this.art).beschreib + "</td></tr>";
+        r += "<tr><td>Lage:</td><td>" + kt.get('Itallglage', this.rlageVst).beschreib + "</td></tr>";
         r += "<tr><td>Schilder:</td><td>" + this.hasSekObj + "</td></tr>";
-        r += "<tr><td>Quelle:</td><td>" + ((this.quelle != null) ? (quelle.get(this.quelle).beschreib) : '') + "</td></tr>";
+        r += "<tr><td>Quelle:</td><td>" + ((this.quelle != null) ? (kt.get("Itquelle", this.quelle).beschreib) : '') + "</td></tr>";
         r += "</table>"
+
+        if (ziel != undefined) {
+            ziel.innerHTML = r;
+            this.getZeichen(Aufstellvorrichtung._vz_addHTML, this, ziel)
+        }
+
         return r;
     }
+
+    static _vz_addHTML(zeichen, _this, ziel) {
+        let div = document.createElement('div');
+        div.style.marginTop = '5px';
+        for (let eintrag of zeichen) {
+            let img = document.createElement("img");
+            img.style.height = "30px";
+            img.src = "http://gv-srv-w00118:8080/schilder/" + _this._daten.klartexte.get("Itvzstvoznr", eintrag.stvoznr)['kt'] + ".svg";
+            img.title = _this._daten.klartexte.get("Itvzstvoznr", eintrag.stvoznr)['beschreib'] + ((eintrag.vztext != null)?("\n" + eintrag.vztext):(''))
+            div.appendChild(img);
+        }
+        ziel.appendChild(div);
+    }
+
 
     /**
      * 
@@ -106,7 +124,7 @@ class Aufstellvorrichtung extends Feature {
      * @param {*} daten 
      */
     static loadER(daten) {
-        Aufstellvorrichtung.loadKlartexte();
+        Aufstellvorrichtung.loadKlartexte(daten.klartexte);
         PublicWFS.doQuery('Otaufstvor', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
             '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Aufstellvorrichtung._loadER_Callback, undefined, daten);
@@ -149,6 +167,7 @@ class Aufstellvorrichtung extends Feature {
     static fromXML(xml, daten) {
         //console.log(daten);
         let r = new Aufstellvorrichtung(daten);
+        r.fid = xml.getAttribute('fid');
         for (var tag in CONFIG_WFS.AUFSTELL) {
             if (xml.getElementsByTagName(tag).length <= 0) continue;
             if (CONFIG_WFS.AUFSTELL[tag].art == 0) {
@@ -185,7 +204,8 @@ class Aufstellvorrichtung extends Feature {
                     radius: 3,
                     fill: new Fill({ color: 'black' }),
                     stroke: new Stroke({
-                        color: 'rgba(250,120,0,0.8)', width: 3
+                        color: (feature.hasSekObj > 0) ? ('rgba(250,120,0,0.8)') : ('rgba(255,0,0,0.8)'),
+                        width: 3
                     })
                 }),
                 text: new Text({
@@ -251,8 +271,42 @@ class Aufstellvorrichtung extends Feature {
             '		</ogc:And>\n' +
             '	</ogc:Filter>\n' +
             '</wfs:Update>';
-        
         PublicWFS.doTransaction(xml);
+    }
+
+
+    getZeichen(callback, ...args) {
+        console.log(callback);
+        if (this._zeichen == null && this.hasSekObj > 0) {
+            PublicWFS.doQuery('Otvzeichlp', '<Filter>\n' +
+                '  <PropertyIsEqualTo>\n' +
+                '    <PropertyName>parent/@xlink:href</PropertyName>\n' +
+                '    <Literal>' + this.fid + '</Literal>\n' +
+                '  </PropertyIsEqualTo>\n' +
+                '</Filter>', this._parseZeichen, undefined, this, callback, ...args);
+        } else if (this.hasSekObj > 0) {
+            if (callback != undefined) {
+                callback(this._zeichen, ...args);
+            }
+        }
+    }
+
+    _parseZeichen(xml, _this, callback, ...args) {
+        let zeichen = [];
+        console.log(xml);
+        let zeichenXML = xml.getElementsByTagName('Otvzeichlp');
+
+        for (let eintrag of zeichenXML) {
+            console.log(eintrag);
+            if(!eintrag.getElementsByTagName("enr").length > 0) {
+                zeichen.push(Zeichen.fromXML(eintrag, _this._daten));
+            }
+        }
+        _this._zeichen = zeichen;
+        console.log(callback);
+        if (callback != undefined) {
+            callback(_this._zeichen, ...args);
+        }
     }
 
 }
