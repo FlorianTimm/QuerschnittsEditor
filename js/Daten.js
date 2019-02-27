@@ -29,6 +29,8 @@ class Daten {
         this.kt_quelle = null;
         this.kt_stvoznr = null;
 
+        //this.klartext = new Klartext()
+
         this._createLayerFlaechen();
         this._createLayerTrennLinien();
         this._createLayerStationen();

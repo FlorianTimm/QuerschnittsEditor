@@ -64,6 +64,9 @@ class VzAdd {
             stvonr.innerHTML = _this._daten.kt_stvoznr.get(eintrag.stvoznr)['beschreib'];
             tr.appendChild(stvonr);
 
+            let lage = document.createElement("td");
+            lage.innerHTML = _this._daten.kt_lageAv.get(eintrag.lageFbs)['beschreib'];
+
             _this._table.appendChild(tr);
         }
     }
