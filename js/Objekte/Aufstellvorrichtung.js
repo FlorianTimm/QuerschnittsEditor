@@ -27,7 +27,7 @@ class Aufstellvorrichtung extends Feature {
         klartexte.load('Itquelle', Aufstellvorrichtung._ktQuelleLoaded, klartexte);
     }
 
-    static _ktArtLoaded(__,klartexte) {
+    static _ktArtLoaded(__, klartexte) {
         let arten = klartexte.getAllSorted('Itaufstvorart');
         for (let a of arten) {
             let option = document.createElement('option');
@@ -53,7 +53,7 @@ class Aufstellvorrichtung extends Feature {
         }
     }
 
-    static _ktQuelleLoaded(__,klartexte) {
+    static _ktQuelleLoaded(__, klartexte) {
         let arten = klartexte.getAllSorted('Itquelle');
         for (let a of arten) {
             let option = document.createElement('option');
@@ -81,19 +81,32 @@ class Aufstellvorrichtung extends Feature {
             r += "</td></tr>";
         }
         */
-        r += "<tr><td>VNK:</td><td>" + this.abschnitt.vnk + "</td></tr>";
-        r += "<tr><td>NNK:</td><td>" + this.abschnitt.nnk + "</td></tr>";
-        r += "<tr><td>VST:</td><td>" + this.vst + "</td></tr>";
-        r += "<tr><td>Abstand:</td><td>"
+        r += "<tr><td>VNK</td><td>" + this.abschnitt.vnk + "</td></tr>";
+        r += "<tr><td>NNK</td><td>" + this.abschnitt.nnk + "</td></tr>";
+        r += "<tr><td>VST</td><td>" + this.vst + "</td></tr>";
+        if (this.labstbaVst == null) {
+            r += "<tr><td>Abstand:</td><td>"
+        } else {
+            r += "<tr><td>Abst.&nbsp;re.</td><td>"
+        }
+
         if (this.rabstbaVst >= 0.01) r += "R";
         else if (this.rabstbaVst <= 0.01) r += "L";
         else r += "M";
         r += " " + Math.abs(this.rabstbaVst) + '</td></tr>';
-        console.log(kt);
-        r += "<tr><td>Art:</td><td>" + kt.get('Itaufstvorart', this.art).beschreib + "</td></tr>";
-        r += "<tr><td>Lage:</td><td>" + kt.get('Itallglage', this.rlageVst).beschreib + "</td></tr>";
-        r += "<tr><td>Schilder:</td><td>" + this.hasSekObj + "</td></tr>";
-        r += "<tr><td>Quelle:</td><td>" + ((this.quelle != null) ? (kt.get("Itquelle", this.quelle).beschreib) : '') + "</td></tr>";
+        console.log(this.labstbaVst);
+        if (this.labstbaVst != null) {
+            r += "<tr><td>Abst.&nbsp;li.</td><td>"
+            if (this.labstbaVst >= 0.01) r += "R";
+            else if (this.labstbaVst <= 0.01) r += "L";
+            else r += "M";
+            r += " " + Math.abs(this.labstbaVst) + '</td></tr>';
+        }
+
+        r += "<tr><td>Art</td><td>" + kt.get('Itaufstvorart', this.art).beschreib + "</td></tr>";
+        r += "<tr><td>Lage</td><td>" + kt.get('Itallglage', this.rlageVst).beschreib + "</td></tr>";
+        r += "<tr><td>Schilder</td><td>" + this.hasSekObj + "</td></tr>";
+        r += "<tr><td>Quelle</td><td>" + ((this.quelle != null) ? (kt.get("Itquelle", this.quelle).beschreib) : '') + "</td></tr>";
         r += "</table>"
 
         if (ziel != undefined) {
@@ -111,7 +124,7 @@ class Aufstellvorrichtung extends Feature {
             let img = document.createElement("img");
             img.style.height = "30px";
             img.src = "http://gv-srv-w00118:8080/schilder/" + _this._daten.klartexte.get("Itvzstvoznr", eintrag.stvoznr)['kt'] + ".svg";
-            img.title = _this._daten.klartexte.get("Itvzstvoznr", eintrag.stvoznr)['beschreib'] + ((eintrag.vztext != null)?("\n" + eintrag.vztext):(''))
+            img.title = _this._daten.klartexte.get("Itvzstvoznr", eintrag.stvoznr)['beschreib'] + ((eintrag.vztext != null) ? ("\n" + eintrag.vztext) : (''))
             div.appendChild(img);
         }
         ziel.appendChild(div);
@@ -298,7 +311,7 @@ class Aufstellvorrichtung extends Feature {
 
         for (let eintrag of zeichenXML) {
             console.log(eintrag);
-            if(!eintrag.getElementsByTagName("enr").length > 0) {
+            if (!eintrag.getElementsByTagName("enr").length > 0) {
                 zeichen.push(Zeichen.fromXML(eintrag, _this._daten));
             }
         }

@@ -19,6 +19,10 @@ class VzAdd {
     }
 
     _selected (event) {
+        if (event.selected.length == 0) {
+            this._infoField.style.display = "none";
+            return;
+        }
         let auswahl = event.selected[0];
         auswahl.getZeichen(VzAdd._zeichenGeladen, this)
 
@@ -77,6 +81,7 @@ class VzAdd {
     }
 
     _closePopup (event) {
+        //this._ausblenden.remove();
         document.body.removeChild(this._ausblenden);
     }
 

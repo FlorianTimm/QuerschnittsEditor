@@ -2,16 +2,6 @@ import PublicWFS from '../PublicWFS.js';
 import { isNullOrUndefined } from 'util';
 
 class Klartext {
-    _felder = {
-        "Itquerart": "art",
-        "Itquerober": "artober",
-        "Itaufstvorart": "art",
-        "Itallglage": "allglage",
-        "Itquelle": "quelle",
-        "Itaufstvorart":"art",
-        "Itvzstvoznr":"stvoznr"
-    }
-
     constructor() {
         this._klartexte = {};
     }
@@ -29,12 +19,17 @@ class Klartext {
             _this._klartexte[klartext] = {}
 
             let quer = xml.getElementsByTagName(klartext)
-
             for (let i = 0; i < quer.length; i++) {
                 let id = quer[i].getElementsByTagName('objektId')[0].firstChild.data.substr(-32);
+                let beschreibListe = quer[i].getElementsByTagName('beschreib');
+                let beschreib = "";
+                if (beschreibListe.length > 0) {
+                    beschreib = beschreibListe[0].firstChild.data;
+                }
+                var luk = quer[i].getAttribute("luk")
                 _this._klartexte[klartext][id] = {
-                    'kt': quer[i].getElementsByTagName(_this._felder[klartext])[0].firstChild.data,
-                    'beschreib': quer[i].getElementsByTagName(_this._felder[klartext])[0].firstChild.data + ' - ' + quer[i].getElementsByTagName('beschreib')[0].firstChild.data,
+                    'kt': luk,
+                    'beschreib': luk + ' - ' + beschreib,
                     'objektId': id,
                 }
             }

@@ -23,6 +23,7 @@ import AvMove from './SchilderTools/AvMove.js';
 import AvAdd2ER from './SchilderTools/AvAdd2ER.js';
 import QsAdd2ER from './QuerTools/QsAdd2ER.js';
 import LayerSwitch from './LayerSwitch.js';
+import OSM from 'ol/source/OSM.js';
 
 import ImageLayer from 'ol/layer/Image.js';
 import Projection from 'ol/proj/Projection.js';
@@ -222,6 +223,12 @@ function createMap() {
     return new Map({
         layers: [
             new TileLayer({
+                name: 'OpenStreetMap',
+                visible: false,
+                switchable: true,
+                source: new OSM()
+              }),
+            new TileLayer({
                 name: 'ALKIS',
                 visible: false,
                 switchable: true,
@@ -271,7 +278,7 @@ function createMap() {
                 source: new Static({
                   attributions: ['Freie und Hansestadt Hamburg, LGV 2019'],
                   url: 'http://gv-srv-w00118:8080/dop5rgb_3256650_592800_hh_2018.jpg',
-                  imageExtent: [566500,5928000, 566750,5928250]
+                  imageExtent: transform([566500,5928000, 566750,5928250], 'EPSG:25832', CONFIG.EPSG_CODE)
                 })
               }),
 
@@ -303,7 +310,7 @@ function createMap() {
             zoom: 17,
             minZoom: 11,
             maxZoom: 24,
-            extent: transform([548000, 5916500, 588500, 5955000], 'EPSG:25832', CONFIG.EPSG_CODE),
+            //extent: transform([548000, 5916500, 588500, 5955000], 'EPSG:25832', CONFIG.EPSG_CODE),
         })
     });
 }

@@ -4,6 +4,7 @@
 String connStr = "jdbc:oracle:thin:@10.62.42.25:6543:verklhhp";
 String dbUser  = "QUERSCHNITTSEDITORSIB";
 String dbPass  = "LGVSIB";
+String epsg = "25832";
  
 request.setCharacterEncoding("UTF-8");
 
@@ -53,7 +54,7 @@ if (klasse != null && nr != null) {
 
 String bbox = request.getParameter("BBOX");
 if (bbox != null) {
-	filter += " and sdo_filter(GEOMETRY, SDO_geometry(2003,25832,NULL,SDO_elem_info_array(1,1003,3),SDO_ordinate_array("+bbox+"))) = 'TRUE'";
+	filter += " and sdo_filter(GEOMETRY, SDO_geometry(2003," + epsg + ",NULL,SDO_elem_info_array(1,1003,3),SDO_ordinate_array("+bbox+"))) = 'TRUE'";
 }
 
 

@@ -18,7 +18,7 @@ function loadER() {
         '<PropertyName>typ</PropertyName>' +
         '<Literal>D</Literal>' +
         '</PropertyIsEqualTo>' +
-        '</And></Filter>',  readER);
+        '</And></Filter>', readER);
 }
 
 function readER(xml) {
@@ -62,8 +62,13 @@ function readER(xml) {
         select.appendChild(o)
     }
     //document.getElementById("platzhalter").remove();
-    select.disabled = false
-    aenderung()
+    if (proj.length > 0) {
+        aenderung();
+        select.disabled = false;
+        document.getElementById("submit").disabled = false;
+    } else {
+        select.innerHTML  = '<option id="platzhalter">Keine Ereignisr&auml;ume vorhanden!</option>'
+    }
 }
 
 function aenderung() {
