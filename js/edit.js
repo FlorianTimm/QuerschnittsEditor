@@ -236,7 +236,7 @@ function createMap() {
                 source: new TileWMS({
                     url: 'http://geodienste.hamburg.de/HH_WMS_ALKIS_Basiskarte',
                     params: {
-                        'LAYERS': '1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,20,21,23,24,25,26,28,29,30,31,32',
+                        'LAYERS': '0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,23,24,26,27,28,29,30,32,33,34,35,36,37',
                         'FORMAT': 'image/png'
                     },
                     attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
