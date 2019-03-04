@@ -13,8 +13,10 @@
   "dependencies": {
     "@babel/polyfill": "^7.2.5",
     "@babel/runtime": "^7.3.1",
+    "chosen-js": "^1.8.7",
     "core-js": "^2.6.5",
     "css": "^2.2.4",
+    "jquery": "^3.3.1",
     "js": "^0.1.0",
     "npm": "^6.7.0",
     "ol": "^5.3.0",
