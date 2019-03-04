@@ -1,5 +1,4 @@
 import PublicWFS from '../PublicWFS.js';
-import Klartext from './Klartext.js';
 import { Point } from 'ol/geom';
 import Feature from 'ol/Feature.js';
 import VectorSource from 'ol/source/Vector';
@@ -33,9 +32,7 @@ class Aufstellvorrichtung extends Feature {
             let option = document.createElement('option');
             let t = document.createTextNode(a.beschreib);
             option.appendChild(t);
-            let v = document.createAttribute('value');
-            v.value = a.objektId;
-            option.setAttributeNode(v);
+            option.setAttribute('value', a.objektId);
             document.forms.avadd.avadd_art.appendChild(option);
         }
     }
@@ -46,9 +43,7 @@ class Aufstellvorrichtung extends Feature {
             let option = document.createElement('option');
             let t = document.createTextNode(a.beschreib);
             option.appendChild(t);
-            let v = document.createAttribute('value');
-            v.value = a.objektId;
-            option.setAttributeNode(v);
+            option.setAttribute('value', a.objektId);
             document.forms.avadd.avadd_lage.appendChild(option);
         }
     }
@@ -59,9 +54,7 @@ class Aufstellvorrichtung extends Feature {
             let option = document.createElement('option');
             let t = document.createTextNode(a.beschreib);
             option.appendChild(t);
-            let v = document.createAttribute('value');
-            v.value = a.objektId;
-            option.setAttributeNode(v);
+            option.setAttribute('value', a.objektId);
             document.forms.avadd.avadd_quelle.appendChild(option);
         }
     }

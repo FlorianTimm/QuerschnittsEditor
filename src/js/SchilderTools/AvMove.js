@@ -1,4 +1,3 @@
-var CONFIG = require('../config.json');
 import { Circle, Style, Stroke, Fill } from 'ol/style';
 import {Modify as ModifyInteraction, Select as SelectInteraction } from 'ol/interaction';
 import Vektor from '../Vektor.js';
@@ -6,8 +5,6 @@ import VectorSource from 'ol/source/Vector';
 import { Vector as VectorLayer } from 'ol/layer';
 import { LineString } from 'ol/geom';
 import Feature from 'ol/Feature.js';
-import PublicWFS from '../PublicWFS.js';
-import Aufstellvorrichtung from '../Objekte/Aufstellvorrichtung.js';
 import never from 'ol/events/condition';
 
 class AvMove {

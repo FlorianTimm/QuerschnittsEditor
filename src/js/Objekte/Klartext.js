@@ -1,5 +1,4 @@
 import PublicWFS from '../PublicWFS.js';
-import { isNullOrUndefined } from 'util';
 
 class Klartext {
     constructor() {
@@ -69,6 +68,11 @@ class Klartext {
         }
 
         sortable.sort(function (a, b) {
+            if (isNaN(a.kt) || isNaN(b.kt)) {
+                if (a.kt < b.kt) return -1;
+                if (a.kt > b.kt) return 1;
+                return 0;
+            }
             return Number(a.kt)  - Number(b.kt);
         });
 
