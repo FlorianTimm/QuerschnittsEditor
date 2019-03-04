@@ -1,6 +1,6 @@
 import { Select as SelectInteraction } from 'ol/interaction';
 import '../../css/vzadd.css';
-import $ from "jquery";
+import "../import_jquery";
 import 'chosen-js';
 
 class VzAdd {
