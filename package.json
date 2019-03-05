@@ -12,8 +12,7 @@
   "license": "MIT",
   "dependencies": {
     "@babel/polyfill": "^7.2.5",
-    "@babel/runtime": "^7.3.1",
-    "chosen-js": "^1.8.7",
+    "@babel/runtime": "^7.3.4",
     "core-js": "^2.6.5",
     "css": "^2.2.4",
     "jquery": "^3.3.1",
@@ -30,7 +29,8 @@
     "@babel/preset-env": "^7.3.4",
     "@babel/preset-react": "^7.0.0",
     "babel-preset-env": "^1.7.0",
-    "cssnano": "^4.1.8",
+    "chosen-js": "^1.8.7",
+    "cssnano": "^4.1.10",
     "parcel-bundler": "^1.11.0"
   },
   "browserslist": [

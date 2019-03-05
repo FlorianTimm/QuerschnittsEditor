@@ -5,6 +5,9 @@ import VectorSource from 'ol/source/Vector';
 import { Vector as VectorLayer } from 'ol/layer';
 import { Style, Stroke, Fill, Circle, Text } from 'ol/style';
 import Zeichen from './Zeichen.js';
+import "../import_jquery";
+import 'chosen-js';
+import 'chosen-js/chosen.css';
 
 var CONFIG_WFS = require('../config_wfs.json');
 
@@ -35,6 +38,7 @@ class Aufstellvorrichtung extends Feature {
             option.setAttribute('value', a.objektId);
             document.forms.avadd.avadd_art.appendChild(option);
         }
+        $("select#avadd_art").chosen({width: "95%", search_contains: true});
     }
 
     static _ktLageLoaded(__, klartexte) {
@@ -46,6 +50,7 @@ class Aufstellvorrichtung extends Feature {
             option.setAttribute('value', a.objektId);
             document.forms.avadd.avadd_lage.appendChild(option);
         }
+        $("select#avadd_lage").chosen({width: "95%", search_contains: true});
     }
 
     static _ktQuelleLoaded(__, klartexte) {
@@ -57,6 +62,7 @@ class Aufstellvorrichtung extends Feature {
             option.setAttribute('value', a.objektId);
             document.forms.avadd.avadd_quelle.appendChild(option);
         }
+        $("select#avadd_quelle").chosen({width: "95%", search_contains: true});
     }
 
     getHTMLInfo(ziel) {

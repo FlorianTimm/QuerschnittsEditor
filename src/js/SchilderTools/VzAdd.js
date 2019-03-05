@@ -2,6 +2,7 @@ import { Select as SelectInteraction } from 'ol/interaction';
 import '../../css/vzadd.css';
 import "../import_jquery";
 import 'chosen-js';
+import 'chosen-js/chosen.css';
 
 class VzAdd {
     constructor(map, daten) {
@@ -86,6 +87,7 @@ class VzAdd {
         }
 
         let tr_neu = document.createElement("tr");
+        tr_neu.appendChild(document.createElement("td"));
         let td_neu = document.createElement("td");
 
         /*
@@ -116,10 +118,10 @@ class VzAdd {
         }
         td_neu.appendChild(liste);
 
-
-
         tr_neu.appendChild(td_neu);
         _this._table.appendChild(tr_neu)
+
+        $(liste).chosen({search_contains: true});
     }
 
     static loadKlartexte(daten) {

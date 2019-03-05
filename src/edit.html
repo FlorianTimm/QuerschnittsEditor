@@ -74,36 +74,27 @@
         </form>
 
         <form id="avadd" name="avadd">
-            <table>
-                <tr>
-                    <td>Quelle</td>
-                    <td><select id="avadd_quelle"></select></td>
-                </tr>
-                <tr>
-                    <td>VNK:</td>
-                    <td id="avadd_vnk"></td>
-                </tr>
-                <tr>
-                    <td>NNK:</td>
-                    <td id="avadd_nnk"></td>
-                </tr>
-                <tr>
-                    <td>Station</td>
-                    <td id="avadd_station"></td>
-                </tr>
-                <tr>
-                    <td>Abstand</td>
-                    <td id="avadd_abstand"></td>
-                </tr>
-                <tr>
-                    <td>Lage</td>
-                    <td><select id="avadd_lage"></select></td>
-                </tr>
-                <tr>
-                    <td>Art</td>
-                    <td><select id="avadd_art"></select></td>
-                </tr>
-            </table>
+            <label for="avadd_quelle">Quelle</label><br />
+            <select id="avadd_quelle"></select>
+            <br />
+            <label for="avadd_vnk">VNK</label><br />
+            <input type="text" id="avadd_vnk" readonly="readonly" />
+            <br />
+            <label for="avadd_nnk">NNK</label><br />
+            <input type="text" id="avadd_nnk" readonly="readonly" />
+            <br />
+            <label for="avadd_station">Station</label><br />
+            <input type="text" id="avadd_station" readonly="readonly" />
+            <br />
+            <label for="avadd_abstand">Abstand</label><br />
+            <input type="text" id="avadd_abstand" readonly="readonly" />
+            <br />
+            <label for="avadd_lage">Lage</label><br />
+            <select id="avadd_lage"></select>
+            <br />
+            <label for="avadd_art">Art</label><br />
+            <select id="avadd_art"></select>
+            <br />
             <input type="button" id="avadd_button" value="Aufstellvor. hinzu." disabled="disabled" />
         </form>
 

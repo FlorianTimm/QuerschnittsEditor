@@ -93,7 +93,7 @@ class AvAdd {
         );
         this.v_overlay.addFeature(this.feat_station_line);
 
-        document.getElementById('avadd_button').addEventListener('click', this.addAufstellButton.bind(this))
+        document.getElementById('avadd_button').addEventListener('click', this.addAufstellButton.bind(this));
     }
 
     part_get_station(event) {
@@ -128,10 +128,10 @@ class AvAdd {
         if (this.seite == 'M') this.abstand = 0;
         if (this.seite == 'L') this.abstand = -this.abstand;
 
-        document.getElementById("avadd_vnk").innerHTML = daten['achse'].vnk;
-        document.getElementById("avadd_nnk").innerHTML = daten['achse'].nnk;
-        document.getElementById("avadd_station").innerHTML = this.station
-        document.getElementById("avadd_abstand").innerHTML = daten['pos'][3] + ' ' + daten['pos'][4].toFixed(1)
+        document.getElementById("avadd_vnk").value = daten['achse'].vnk;
+        document.getElementById("avadd_nnk").value = daten['achse'].nnk;
+        document.getElementById("avadd_station").value = this.station
+        document.getElementById("avadd_abstand").value = daten['pos'][3] + ' ' + daten['pos'][4].toFixed(1)
 
         document.getElementById("avadd_button").disabled = "";
 
@@ -146,10 +146,10 @@ class AvAdd {
         this.feat_station_line.getGeometry().setCoordinates([daten['pos'][6], daten['pos'][5]]);
 
         if (this.abschnitt == null) {
-            document.getElementById("avadd_vnk").innerHTML = daten['achse'].vnk;
-            document.getElementById("avadd_nnk").innerHTML = daten['achse'].nnk;
-            document.getElementById("avadd_station").innerHTML = Math.round(daten['pos'][2] * daten['achse'].getFaktor());
-            document.getElementById("avadd_abstand").innerHTML = daten['pos'][3] + ' ' + daten['pos'][4].toFixed(1)
+            document.getElementById("avadd_vnk").value = daten['achse'].vnk;
+            document.getElementById("avadd_nnk").value = daten['achse'].nnk;
+            document.getElementById("avadd_station").value = Math.round(daten['pos'][2] * daten['achse'].getFaktor());
+            document.getElementById("avadd_abstand").value = daten['pos'][3] + ' ' + daten['pos'][4].toFixed(1)
         }
     }
 

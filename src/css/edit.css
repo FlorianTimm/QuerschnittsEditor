@@ -185,3 +185,22 @@ form#suche {
     padding: 3px;
     overflow-x: hidden;
 }
+
+
+form#avadd {
+    overflow-x: inherit;
+    text-align: left;
+}
+
+form#avadd input, form#avadd select, form#avadd .chosen-container {
+    margin-bottom: 4px;
+    width: 95%;
+}
+
+form#avadd .chosen-container {
+    font-size: 9pt;
+}
+
+form#avadd label {
+    font-size: 8pt;
+}
