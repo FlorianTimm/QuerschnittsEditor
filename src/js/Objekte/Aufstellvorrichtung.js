@@ -38,7 +38,7 @@ class Aufstellvorrichtung extends Feature {
             option.setAttribute('value', a.objektId);
             document.forms.avadd.avadd_art.appendChild(option);
         }
-        $("select#avadd_art").chosen({width: "95%", search_contains: true});
+        $("select#avadd_art").chosen({ width: "95%", search_contains: true });
     }
 
     static _ktLageLoaded(__, klartexte) {
@@ -50,7 +50,7 @@ class Aufstellvorrichtung extends Feature {
             option.setAttribute('value', a.objektId);
             document.forms.avadd.avadd_lage.appendChild(option);
         }
-        $("select#avadd_lage").chosen({width: "95%", search_contains: true});
+        $("select#avadd_lage").chosen({ width: "95%", search_contains: true });
     }
 
     static _ktQuelleLoaded(__, klartexte) {
@@ -62,7 +62,7 @@ class Aufstellvorrichtung extends Feature {
             option.setAttribute('value', a.objektId);
             document.forms.avadd.avadd_quelle.appendChild(option);
         }
-        $("select#avadd_quelle").chosen({width: "95%", search_contains: true});
+        $("select#avadd_quelle").chosen({ width: "95%", search_contains: true });
     }
 
     getHTMLInfo(ziel) {
@@ -288,7 +288,6 @@ class Aufstellvorrichtung extends Feature {
 
 
     getZeichen(callback, ...args) {
-        console.log(callback);
         if (this._zeichen == null && this.hasSekObj > 0) {
             PublicWFS.doQuery('Otvzeichlp', '<Filter>\n' +
                 '  <PropertyIsEqualTo>\n' +
@@ -315,7 +314,6 @@ class Aufstellvorrichtung extends Feature {
             }
         }
         _this._zeichen = zeichen;
-        console.log(callback);
         if (callback != undefined) {
             callback(_this._zeichen, ...args);
         }

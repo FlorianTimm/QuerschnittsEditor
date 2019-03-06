@@ -16,8 +16,8 @@
     </div>
 
     <form id="suche" name="suche">
-		<input type="textfield" name="suche" placeholder="Suche" />
-		<input type="button" id="sucheButton" value="Laden" />
+        <input type="textfield" name="suche" placeholder="Suche" />
+        <input type="button" id="sucheButton" value="Laden" />
     </form>
 
     <sidebar id="sidebar">
@@ -29,7 +29,8 @@
 
             <div id="tab_Querschnitt" class="tabcontent">
                 <input type="radio" name="befehl" id="befehl_info" value="info" checked="checked" /><label for="befehl_info">&nbsp;Info</label><br />
-                <input type="radio" name="befehl" id="befehl_qsadd2er" value="qsadd2er" /><label for="befehl_qsadd2er">&nbsp;zum ER hinzufügen</label><br />
+                <input type="radio" name="befehl" id="befehl_qsadd2er" value="qsadd2er" /><label for="befehl_qsadd2er">&nbsp;zum
+                    ER hinzufügen</label><br />
                 <input type="radio" name="befehl" id="befehl_modify" value="modify" /><label for="befehl_modify">&nbsp;&Auml;ndern</label><br />
                 <input type="radio" name="befehl" id="befehl_delete" value="delete" /><label for="befehl_delete">&nbsp;L&ouml;schen</label><br />
                 <input type="radio" name="befehl" id="befehl_part" value="part" /><label for="befehl_part">&nbsp;Teilen</label><br />
@@ -38,9 +39,12 @@
             <div id="tab_Otaufstvor" class="tabcontent">
 
                 <input type="radio" name="befehl" id="befehl_vsinfo" value="vsinfo" /><label for="befehl_vsinfo">&nbsp;Info</label><br />
-                <input type="radio" name="befehl" id="befehl_avadd2er" value="avadd2er" /><label for="befehl_avadd2er">&nbsp;zum ER hinzufügen</label><br />
-                <input type="radio" name="befehl" id="befehl_avadd" value="avadd" /><label for="befehl_avadd">&nbsp;Aufstellv. hinzuf&uuml;gen</label><br />
-                <input type="radio" name="befehl" id="befehl_vzadd" value="vzadd" /><label for="befehl_vzadd">&nbsp;Schild hinzuf&uuml;gen</label><br />
+                <input type="radio" name="befehl" id="befehl_avadd2er" value="avadd2er" /><label for="befehl_avadd2er">&nbsp;zum
+                    ER hinzufügen</label><br />
+                <input type="radio" name="befehl" id="befehl_avadd" value="avadd" /><label for="befehl_avadd">&nbsp;Aufstellv.
+                    hinzuf&uuml;gen</label><br />
+                <input type="radio" name="befehl" id="befehl_vzadd" value="vzadd" /><label for="befehl_vzadd">&nbsp;Schild
+                    hinzuf&uuml;gen</label><br />
                 <input type="radio" name="befehl" id="befehl_avmove" value="avmove" /><label for="befehl_avmove">&nbsp;Verschieben</label><br />
             </div>
             <button type="button" id="zoomToExtent">Auf Ausdehnung zoomen</button>
@@ -78,16 +82,16 @@
             <select id="avadd_quelle"></select>
             <br />
             <label for="avadd_vnk">VNK</label><br />
-            <input type="text" id="avadd_vnk" readonly="readonly" />
+            <input type="text" id="avadd_vnk" disabled="disabled" />
             <br />
             <label for="avadd_nnk">NNK</label><br />
-            <input type="text" id="avadd_nnk" readonly="readonly" />
+            <input type="text" id="avadd_nnk" disabled="disabled" />
             <br />
             <label for="avadd_station">Station</label><br />
-            <input type="text" id="avadd_station" readonly="readonly" />
+            <input type="text" id="avadd_station" disabled="disabled" />
             <br />
             <label for="avadd_abstand">Abstand</label><br />
-            <input type="text" id="avadd_abstand" readonly="readonly" />
+            <input type="text" id="avadd_abstand" disabled="disabled" />
             <br />
             <label for="avadd_lage">Lage</label><br />
             <select id="avadd_lage"></select>
@@ -150,6 +154,12 @@
             </ul>
         </form>-->
     </sidebar>
+
+    <div id="dialog-confirm" title="Schild wirklich löschen?" style="display: none;">
+        <p>
+            <span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>
+            M&ouml;chten Sie dieses Schild wirklich löschen?</p>
+    </div>
     <script src="js/edit.js"></script>
 </body>
 

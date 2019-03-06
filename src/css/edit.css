@@ -175,7 +175,6 @@ input[type="radio"]:checked+label {
     }
 }
 
-
 form#suche {
     position: absolute;
     top: .5em;
@@ -186,13 +185,14 @@ form#suche {
     overflow-x: hidden;
 }
 
-
 form#avadd {
     overflow-x: inherit;
     text-align: left;
 }
 
-form#avadd input, form#avadd select, form#avadd .chosen-container {
+form#avadd input,
+form#avadd select,
+form#avadd .chosen-container {
     margin-bottom: 4px;
     width: 95%;
 }
@@ -203,4 +203,12 @@ form#avadd .chosen-container {
 
 form#avadd label {
     font-size: 8pt;
+}
+
+.ui-front {
+    z-index: 1050 !important;
+}
+
+.ui-dialog {
+    z-index: 1100 !important;
 }

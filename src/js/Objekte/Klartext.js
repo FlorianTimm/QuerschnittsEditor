@@ -73,7 +73,7 @@ class Klartext {
                 if (a.kt > b.kt) return 1;
                 return 0;
             }
-            return Number(a.kt)  - Number(b.kt);
+            return Number(a.kt) - Number(b.kt);
         });
 
         return sortable;
