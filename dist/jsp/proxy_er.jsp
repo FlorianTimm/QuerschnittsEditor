@@ -4,8 +4,7 @@
 <%
 HttpURLConnection urlConnection = null;
 
-//String urlStr = "http://lverkpa001.fhhnet.stadt.hamburg.de:8380/publicWFS/WFS?";
-String urlStr = "http://lverkpa001.fhhnet.stadt.hamburg.de:8380/publicWFS/webservices/EBFFCore?wsdl";
+String urlStr = "http://lverkpa001.fhhnet.stadt.hamburg.de:8380/publicWFS/webservices/EBFFCore";
 
 String basicAuth = "";
 
@@ -28,14 +27,11 @@ if (basicAuth == null || basicAuth.length() < 12) {
 try { 
 	String reqUrl = request.getQueryString(); 
 	
-	/*
-	String decodedUrl = "";
-	if (reqUrl != null) {
-		reqUrl = URLDecoder.decode(reqUrl, "UTF-8");
-	} else {
+	if (reqUrl == null) {
 		reqUrl = "";
+	} else {
+		reqUrl = "?" + reqUrl;
 	}
-	*/
 	
 	urlStr += reqUrl;
 	

@@ -1,0 +1,71 @@
+#vzadd_ausblenden {
+    background-color: rgba(0, 0, 0, 0.7);
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    padding: 0px;
+    text-align: center;
+}
+
+#vz_popup {
+    background-color: rgba(255, 255, 255, 0.8);
+    display: inline-block;
+    margin-top: 100px;
+    padding: 20px;
+    max-height: 80%;
+    padding-bottom: 100px;
+}
+
+#vz_popup button {
+    margin: 5px;
+    padding: 3px;
+}
+
+.schilderListe .schild {
+    background-color: #f6f6f6;
+    display: block;
+    text-align: left;
+    padding: 10px;
+    margin: 5px;
+    overflow: scroll-x;
+}
+
+.schilderListe .schildBild {
+    display: block;
+    width: 50px;
+    float: left;
+}
+
+.schilderListe .schildText {
+    vertical-align: top;
+    padding-left: 60px;
+    width: 450px;
+}
+
+.schildText .chosen-container {
+    font-size: 9pt;
+}
+
+.schildText label {
+    font-size: 8pt;
+}
+
+.ui-state-highlight {
+    height: 180px;
+    line-height: 1.2em;
+    background-color: #ff4;
+}
+
+.ui-sortable-placeholder {
+    background-color: #ff4;
+    padding: 5px;
+    margin: 5px;
+}
+
+.chosen-drop {
+    width:  !130%;
+}
