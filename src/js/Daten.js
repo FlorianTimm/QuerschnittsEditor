@@ -187,14 +187,16 @@ class Daten {
 
         this.l_quer = new VectorLayer({
             source: this.v_quer,
-            opacity: 0.36,
+            opacity: 0.40,
             style: function (feature, resolution) {
                 let kt = feature.get('objekt').daten.klartexte.get('Itquerart', feature.get('objekt').art)
                 let art = 0
                 if (!isNullOrUndefined(kt))
                     art = Number(kt.kt);
                 //console.log(art);
-                if ((art >= 100 && art <= 119) || (art >= 122 && art <= 161) || (art >= 163 && art <= 179) || art == 312) return fill_style('#444444');	// Fahrstreifen
+                if ((art >= 100 && art <= 110) || (art >= 113 && art <= 119) || (art >= 122 && art <= 161) || (art >= 163 && art <= 179) || art == 312) return fill_style('#222222');	// Fahrstreifen
+                else if (art == 111) return fill_style('#444444'); // 1. Überholfahrstreifen
+                else if (art == 112) return fill_style('#666666'); // 2. Überholfahrstreifen
                 else if (art >= 180 && art <= 183) return fill_style('#333366');	// Parkstreifen
                 else if (art >= 940 && art <= 942) return fill_style('#F914B8'); // Busanlagen
                 else if (art == 210) return fill_style('#2222ff');	// Gehweg
