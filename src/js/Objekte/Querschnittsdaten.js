@@ -314,6 +314,7 @@ class Querschnitt {
     updateArt(art, artober) {
         this.art = art;
         this.artober = artober;
+        this.daten.v_quer.changed();
 
         PublicWFS.doTransaction(this.createUpdateArtXML());
     }
