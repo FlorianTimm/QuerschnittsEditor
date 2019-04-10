@@ -1,6 +1,6 @@
 import VectorSource from 'ol/source/Vector';
 import { Vector as VectorLayer } from 'ol/layer';
-import { Style, Stroke, Fill, Circle } from 'ol/style';
+import { Style, Stroke, Fill, Text } from 'ol/style';
 import Abschnitt from './Objekte/Abschnitt.js';
 import PublicWFS from './PublicWFS.js';
 import AbschnittWFS from './AbschnittWFS.js';
@@ -8,6 +8,8 @@ import Querschnitt from './Objekte/Querschnittsdaten.js';
 import Klartext from './Objekte/Klartext.js';
 import Aufstellvorrichtung from './Objekte/Aufstellvorrichtung.js';
 import { isNullOrUndefined } from 'util';
+import ol_color from 'ol/color';
+
 var CONFIG = require('./config.json');
 
 var daten = null;
@@ -51,6 +53,7 @@ class Daten {
             v.value = a.objektId;
             option.setAttributeNode(v);
             document.forms.info.info_art.appendChild(option);
+            document.forms.qsMultiMod.qsmm_art.appendChild(option.cloneNode(true));
         }
     }
 
@@ -64,6 +67,7 @@ class Daten {
             v.value = a.objektId;
             option.setAttributeNode(v);
             document.forms.info.info_ober.appendChild(option);
+            document.forms.qsMultiMod.qsmm_ober.appendChild(option.cloneNode(true));
         }
     }
 
@@ -125,10 +129,23 @@ class Daten {
                         })
                     })
                 } else {
+                    console.log(feature);
                     return new Style({
                         stroke: new Stroke({
                             color: '#333',
                             width: 3
+                        }),
+                        text: new Text({
+                            font: '12px Calibri,sans-serif',
+                            fill: new Fill({ color: '#000' }),
+                            stroke: new Stroke({
+                                color: '#fff', width: 2
+                            }),
+                            // get the text from the feature - `this` is ol.Feature
+                            // and show only under certain resolution
+                            text: feature.vnk + ' - ' + feature.nnk,
+                            placement: 'line',
+                            offsetY: -6
                         })
                     })
                 }
@@ -177,44 +194,81 @@ class Daten {
             features: []
         });
 
-        function fill_style(color) {
+        let createStyle = function (feature, resolution) {
+            let kt_art = feature.get('objekt').daten.klartexte.get('Itquerart', feature.get('objekt').art)
+            let kt_ober = feature.get('objekt').daten.klartexte.get('Itquerober', feature.get('objekt').artober)
+            let art = 0
+            if (!isNullOrUndefined(kt_art))
+                art = Number(kt_art.kt);
+
+            let color = '#ffffff'
+
+            // Farbe für Querschnittsfläche
+            if ((art >= 100 && art <= 110) || (art >= 113 && art <= 119) || (art >= 122 && art <= 161) || (art >= 163 && art <= 179) || art == 312)
+                color = [33, 33, 33];	// Fahrstreifen
+            else if (art == 111)
+                color = [66, 66, 66]; // 1. Überholfahrstreifen
+            else if (art == 112)
+                color = [100, 100, 100]; // 2. Überholfahrstreifen
+            else if (art >= 180 && art <= 183)
+                color = [50, 50, 100];	// Parkstreifen
+            else if (art >= 940 && art <= 942)
+                color = [0xF9, 0x14, 0xB8]; // Busanlagen
+            else if (art == 210) color = [0x22, 0x22, 0xff];	// Gehweg
+            else if ((art >= 240 && art <= 243) || art == 162)
+                color = [0x33, 0x33, 0x66];	// Radweg
+            else if (art == 250 || art == 251)
+                color = [0xcc, 0x22, 0xcc];	// Fuß-Rad-Weg
+            else if (art == 220)
+                color = [0xff, 0xdd, 0x00];	// paralleler Wirtschaftsweg
+            else if (art == 420 || art == 430 || art == 900)
+                color = [0xff, 0xff, 0xff];	// Markierungen
+            else if (art == 310 || art == 311 || art == 313 || art == 320 || art == 330 || (art >= 910 && art <= 916))
+                color = [0xee, 0xee, 0xee];	// Trenn-, Schutzstreifen und Schwellen
+            else if (art == 120 || art == 121)
+                color = [0x1F, 0x22, 0x97];	// Rinne
+            else if (art == 301)
+                color = [0x75, 0x9F, 0x1E];	// Banket
+            else if (art == 510 || art == 511 || art == 520)
+                color = [0x12, 0x0a, 0x8f];	// Gräben und Mulden
+            else if (art == 700 || art == 710)
+                color = [0x00, 0x44, 0x00];	// Böschungen
+            else if (art == 314 || art == 315)
+                color = [0x8A, 0x60, 0xD8];	// Inseln
+            else if (art == 400 || art == 410 || art == 715)
+                color = [0x8A, 0x60, 0xD8];	// Randstreifen und Sichtflächen
+            else if (art == 600 || art == 610 || art == 620 || art == 630 || art == 640)
+                color = [0xC1, 0xBA, 0xC8];	// Borde und Kantsteine
+            else if (art == 340)
+                color = [0, 0, 0];	// Gleiskörper
+            else if (art == 999)
+                color = [0x88, 0x88, 0x88];	// Bestandsachse
+            else if (art == 990 || art == 720)
+                color = [0xFC, 0x8A, 0x57];	// sonstige Streifenart
+
+            color.push(0.4);
+
             return new Style({
                 fill: new Fill({
                     color: color
+                }),
+                text: new Text({
+                    font: '12px Calibri,sans-serif',
+                    fill: new Fill({ color: '#000' }),
+                    stroke: new Stroke({
+                        color: '#fff', width: 2
+                    }),
+                    // get the text from the feature - `this` is ol.Feature
+                    // and show only under certain resolution
+                    text: ((resolution < 0.05) ? (kt_art.kt + " - " + kt_ober.kt) : '')
                 })
             })
         }
 
         this.l_quer = new VectorLayer({
             source: this.v_quer,
-            opacity: 0.36,
-            style: function (feature, resolution) {
-                let kt = feature.get('objekt').daten.klartexte.get('Itquerart', feature.get('objekt').art)
-                let art = 0
-                if (!isNullOrUndefined(kt))
-                    art = Number(kt.kt);
-                //console.log(art);
-                if ((art >= 100 && art <= 119) || (art >= 122 && art <= 161) || (art >= 163 && art <= 179) || art == 312) return fill_style('#444444');	// Fahrstreifen
-                else if (art >= 180 && art <= 183) return fill_style('#333366');	// Parkstreifen
-                else if (art >= 940 && art <= 942) return fill_style('#F914B8'); // Busanlagen
-                else if (art == 210) return fill_style('#2222ff');	// Gehweg
-                else if ((art >= 240 && art <= 243) || art == 162) return fill_style('#333366');	// Radweg
-                else if (art == 250 || art == 251) return fill_style('#cc22cc');	// Fuß-Rad-Weg
-                else if (art == 220) return fill_style('#ffdd00');	// paralleler Wirtschaftsweg
-                else if (art == 420 || art == 430 || art == 900) return fill_style('#ffffff');	// Markierungen
-                else if (art == 310 || art == 311 || art == 313 || art == 320 || art == 330 || (art >= 910 && art <= 916)) return fill_style('#eeeeee');	// Trenn-, Schutzstreifen und Schwellen
-                else if (art == 120 || art == 121) return fill_style('#1F2297');	// Rinne
-                else if (art == 301) return fill_style('#759F1E');	// Banket
-                else if (art == 510 || art == 511 || art == 520) return fill_style('#120a8f');	// Gräben und Mulden
-                else if (art == 700 || art == 710) return fill_style('#004400');	// Böschungen
-                else if (art == 314 || art == 315) return fill_style('#8A60D8');	// Inseln
-                else if (art == 400 || art == 410 || art == 715) return fill_style('#8A60D8');	// Randstreifen und Sichtflächen
-                else if (art == 600 || art == 610 || art == 620 || art == 630 || art == 640) return fill_style('#C1BAC8');	// Borde und Kantsteine
-                else if (art == 340) return fill_style('#000000');	// Gleiskörper
-                else if (art == 999) return fill_style('#888888');	// Bestandsachse
-                else if (art == 990 || art == 720) return fill_style('#FC8A57');	// sonstige Streifenart
-                else return fill_style('#ffffff');
-            }
+            //opacity: 0.40,
+            style: createStyle
         });
         this.map.addLayer(this.l_quer);
     }
@@ -226,7 +280,7 @@ class Daten {
         if ("ABSCHNITT_WFS_URL" in CONFIG) {
             document.body.style.cursor = 'wait'
 
-            const vnknnk = /(\d{7,9}[A-Z]?)\s+(\d{7,9}[A-Z]?)/gm;
+            const vnknnk = /(\d{7,9}[A-Z]?)[\s\-]+(\d{7,9}[A-Z]?)/gm;
             let found1 = vnknnk.exec(wert)
             if (found1 != null) {
                 console.log(found1)
@@ -242,7 +296,7 @@ class Daten {
                 console.log(found2)
                 let klasse = found2[1];
                 let nummer = found2[2];
-                let buchstabe = (found2.lenth > 2)?found2[3]:'';
+                let buchstabe = (found2.lenth > 2) ? found2[3] : '';
                 AbschnittWFS.getByWegenummer(klasse, nummer, buchstabe, this._loadSearch_Callback, undefined, this);
                 return;
             }
@@ -267,8 +321,8 @@ class Daten {
             }
         }
         if (geladen.length > 0) {
-        let extent = Daten.calcAbschnitteExtent(geladen);
-        _this.map.getView().fit(extent, { padding: [20, 240, 20, 20] })
+            let extent = Daten.calcAbschnitteExtent(geladen);
+            _this.map.getView().fit(extent, { padding: [20, 240, 20, 20] })
         } else {
             PublicWFS.showMessage("Kein Abschnitt gefunden!", true);
         }

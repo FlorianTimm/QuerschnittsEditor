@@ -37,6 +37,8 @@ sidebar>* {
     max-width: 200px;
 }
 
+#qsMultiMod select,
+#qsMultiMod input,
 #info input,
 #info select,
 #avadd select {
@@ -68,31 +70,17 @@ td {
     font-family: sans-serif;
 }
 
-form#info {
+form#info,
+form#modify,
+form#qsMultiMod {
     display: none;
 }
 
-form#hinzu {
-    text-align: center;
-    display: none;
-}
-
-form#avadd {
-    text-align: center;
-    display: none;
-}
-
-form#loeschen {
-    text-align: center;
-    display: none;
-}
-
+form#hinzu,
+form#avadd,
+form#loeschen,
 form#teilen {
     text-align: center;
-    display: none;
-}
-
-form#modify {
     display: none;
 }
 

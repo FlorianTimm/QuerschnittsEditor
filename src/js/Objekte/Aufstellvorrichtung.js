@@ -289,17 +289,23 @@ class Aufstellvorrichtung extends Feature {
 
     getZeichen(callback, ...args) {
         if (this._zeichen == null && this.hasSekObj > 0) {
-            PublicWFS.doQuery('Otvzeichlp', '<Filter>\n' +
-                '  <PropertyIsEqualTo>\n' +
-                '    <PropertyName>parent/@xlink:href</PropertyName>\n' +
-                '    <Literal>' + this.fid + '</Literal>\n' +
-                '  </PropertyIsEqualTo>\n' +
-                '</Filter>', this._parseZeichen, undefined, this, callback, ...args);
+            this.reloadZeichen(callback, ...args);
         } else if (this.hasSekObj > 0) {
             if (callback != undefined) {
                 callback(this._zeichen, ...args);
+            } else {
+                return this._zeichen;
             }
         }
+    }
+
+    reloadZeichen(callback, ...args) {
+        PublicWFS.doQuery('Otvzeichlp', '<Filter>\n' +
+            '  <PropertyIsEqualTo>\n' +
+            '    <PropertyName>parent/@xlink:href</PropertyName>\n' +
+            '    <Literal>' + this.fid + '</Literal>\n' +
+            '  </PropertyIsEqualTo>\n' +
+            '</Filter>', this._parseZeichen, undefined, this, callback, ...args);
     }
 
     _parseZeichen(xml, _this, callback, ...args) {
