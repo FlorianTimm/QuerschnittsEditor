@@ -129,7 +129,6 @@ class Daten {
                         })
                     })
                 } else {
-                    console.log(feature);
                     return new Style({
                         stroke: new Stroke({
                             color: '#333',

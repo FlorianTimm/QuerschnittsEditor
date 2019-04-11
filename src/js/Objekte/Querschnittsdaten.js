@@ -10,10 +10,10 @@ class Querschnitt {
         this.daten = daten;
         //console.log(daten);
 
-        this.flaeche = new Feature({ geom: null, objekt: this });
+        this.flaeche = new Feature({ geom: new Polygon([[0,0],[0,0],[0,0]]), objekt: this });
         this.daten.v_quer.addFeature(this.flaeche)
 
-        this.trenn = new Feature({ geom: null, objekt: this });
+        this.trenn = new Feature({ geom: new MultiLineString([[0,0],[0,0],[0,0]]), objekt: this });
         this.daten.v_trenn.addFeature(this.trenn);
 
         this._aufbaudaten = null;
@@ -106,7 +106,6 @@ class Querschnitt {
         if (!(abschnitt.existsStation(r.vst))) {
             let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.data.split(' ');
             let geo = [];
-
             for (let i = 0; i < koords.length; i++) {
                 let k = koords[i].split(',')
                 let x = Number(k[0]);
@@ -117,9 +116,7 @@ class Querschnitt {
         } else {
             r.station = abschnitt.getStation(r.vst);
         }
-
         r.station.addQuerschnitt(r);
-
         r.createGeom();
         return r;
     }
@@ -167,12 +164,20 @@ class Querschnitt {
 
         for (let j = 0; j < anzahl; j++) {
             let coord = Vektor.sum(this.station.geo[j], Vektor.multi(this.station.vector[j], this.station.seg[j] * diff2 + abst2));
+            if (isNaN(coord[0]) || isNaN(coord[1])) {
+                console.log("Fehler: keine Koordinaten");
+                continue;
+            }
             g.push(coord);
-            l.push(coord);
+            l.push(coord); 
         }
 
         for (let j = anzahl - 1; j >= 0; j--) {
             let coord = Vektor.sum(this.station.geo[j], Vektor.multi(this.station.vector[j], this.station.seg[j] * diff1 + abst1));
+            if (isNaN(coord[0]) || isNaN(coord[1])) {
+                console.log("Fehler: keine Koordinaten");
+                continue;
+            }
             g.push(coord);
             r.unshift(coord);
         }
@@ -183,8 +188,6 @@ class Querschnitt {
 
         g.push(g[0])
         this.flaeche.setGeometry(new Polygon([g])) //setCoordinates([g])
-
-
     }
 
     createInsertXML() {
