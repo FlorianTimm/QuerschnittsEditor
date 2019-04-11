@@ -108,7 +108,7 @@ class ModifyTool {
         if (edit == null) return;
         querschnitt.editBreite(edit, diff, document.getElementById('modify_fit').checked);
         //breiteNachfAnpassen(absid, station, streifen, nr, edit, diff);
-        this.modify.info.logAuswahl(this.modify.select);
+        this.info.logAuswahl(this.select);
     }
 
     _createLinienSelect() {
