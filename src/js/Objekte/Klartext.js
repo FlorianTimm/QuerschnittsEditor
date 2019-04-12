@@ -37,6 +37,7 @@ class Klartext {
     }
 
     get(klartext, bezeichnung) {
+        if (bezeichnung == null) return null;
         let bez = bezeichnung.substr(-32);
         if (!(klartext in this._klartexte)) {
             this.load(klartext);
