@@ -83,6 +83,10 @@ class ModifyTool {
                         if (max_diff_bst !== null && ((streifen == 'L') ? (-diff) : (diff)) > max_diff_bst) {
                             diff = ((streifen == 'L') ? (-max_diff_bst) : (max_diff_bst));
                         }
+                        // negative Breiten verhindern
+                        if (((streifen == 'L') ? (diff) : (-diff)) * 100 > querschnitt['bisBreite']) {
+                            diff = ((streifen == 'L') ? (querschnitt['bisBreite']) : (-querschnitt['bisBreite'])) / 100;
+                        }
                         edit = 'Bst';
                         querschnitt['XBst' + streifen] += diff;
                         querschnitt['bisBreite'] =
@@ -95,6 +99,10 @@ class ModifyTool {
 
                         if (max_diff_vst !== null && ((streifen == 'L') ? (-diff) : (diff)) > max_diff_vst) {
                             diff = ((streifen == 'L') ? (-max_diff_vst) : (max_diff_vst));
+                        }
+                        // negative Breiten verhindern
+                        if (((streifen == 'L') ? (diff) : (-diff)) * 100 > querschnitt['breite']) {
+                            diff = ((streifen == 'L') ? (querschnitt['breite']) : (-querschnitt['breite'])) / 100;
                         }
                         querschnitt['XVst' + streifen] += diff;
                         querschnitt['breite'] =
