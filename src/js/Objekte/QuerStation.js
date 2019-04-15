@@ -46,6 +46,27 @@ export class Station {
             return null;
         return this._querschnitte[streifen];
     }
+
+    getQuerschnittByBstAbstand(XBstL, XBstR) {
+        for (let streifen in this._querschnitte) {
+            for (let querschnitt in this._querschnitte[streifen]) {
+                if (XBstL < 0 && this._querschnitte[streifen][querschnitt].XBstL == XBstL) return this._querschnitte[streifen][querschnitt];
+                if (XBstR > 0 && this._querschnitte[streifen][querschnitt].XBstR == XBstR) return this._querschnitte[streifen][querschnitt];
+            }
+        }
+        return null;
+    }
+
+    getQuerschnittByVstAbstand(XVstL, XVstR) {
+        for (let streifen in this._querschnitte) {
+            for (let querschnitt in this._querschnitte[streifen]) {
+                if (XVstL < 0 && this._querschnitte[streifen][querschnitt].XVstL == XVstL) return this._querschnitte[streifen][querschnitt];
+                if (XVstR > 0 && this._querschnitte[streifen][querschnitt].XVstR == XVstR) return this._querschnitte[streifen][querschnitt];
+            }
+        }
+        return null;
+    }
+
     calcVector() {
         let anzahl = this.geo.length;
         if (anzahl >= 2) {
@@ -86,7 +107,7 @@ export class Station {
     }
 
     static teilen_callback(_this, station) {
-        
+
         _this.abschnitt.writeQuerAufbau();
     }
 }

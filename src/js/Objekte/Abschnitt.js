@@ -130,6 +130,20 @@ class Abschnitt extends Feature {
         return r;
     }
 
+    getStationByVST(vst) {
+        for (let a in this._station) {
+            if (this._station[a].vst == vst) return this._station[a];
+        }
+        return null;
+    }
+
+    getStationByBST(bst) {
+        for (let a in this._station) {
+            if (this._station[a].bst == bst) return this._station[a];
+        }
+        return null;
+    }
+
     getAufbauDaten(callbackSuccess, callbackError, ...args) {
         console.log(callbackSuccess);
         if (this._aufbaudaten == null) {

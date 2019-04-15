@@ -104,8 +104,11 @@
 
         <form id="modify" name="modify">
             Nachfolgende Querschnitte:<br />
-            <input type="radio" name="typ" id="modify_move" value="move" checked="checked" />&nbsp;...verschieben<br />
-            <input type="radio" name="typ" id="modify_fit" value="fit" />&nbsp;...anpassem<br />
+            <input type="radio" name="typ" id="modify_move" value="move" checked="checked" /><label for="modify_move">&nbsp;...verschieben</label><br />
+            <input type="radio" name="typ" id="modify_fit" value="fit" /><label for="modify_fit">&nbsp;...anpassen</label><br />
+            <br />
+            <input type="checkbox" name="modify_glue" id="modify_glue" />
+            <label for="modify_glue">&nbsp;angrenzende Querschnitte mitziehen</label><br />
         </form>
 
         <form id="info" name="info">

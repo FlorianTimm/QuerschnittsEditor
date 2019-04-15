@@ -121,7 +121,12 @@ window.addEventListener('load', function () {
 
     document.getElementById("zoomToExtent").addEventListener('click', function () {
         let minX = null, maxX = null, minY = null, maxY = null;
-        for (let f of daten.l_achse.getSource().getFeatures()) {
+        let features = daten.l_achse.getSource().getFeatures();
+        if (features.length == 0) {
+            PublicWFS.showMessage("(noch) keine Geometrien geladen", true);
+            return;
+        }
+        for (let f of features) {
             let p = f.getGeometry().getExtent();
 
             if (minX == null || minX > p[0]) minX = p[0];

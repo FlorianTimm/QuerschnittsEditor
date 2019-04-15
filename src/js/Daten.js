@@ -118,9 +118,6 @@ class Daten {
         });
         let achsen_style = function (feature, resolution) {
             let styles = [];
-
-            console.log(feature)
-
             // Linienfarbe - rot, wenn in ER
             let color = '#222';
             if (feature.daten.modus in feature.inER) color = '#d00';

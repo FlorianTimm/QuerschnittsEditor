@@ -2,6 +2,7 @@ import { Modify as ModifyInteraction, Select as SelectInteraction, Snap } from '
 import { Fill, Stroke, Style } from 'ol/style';
 import Vektor from '../Vektor.js';
 import { platformModifierKeyOnly, never } from 'ol/events/condition';
+import { _checkTransacktionSuccess } from '../PublicWFS.js';
 
 class ModifyTool {
     constructor(map, daten, info) {
@@ -58,65 +59,93 @@ class ModifyTool {
         let nachher = auswahl.getGeometry().getCoordinates();
         let vorher = event.target.geo_vorher.getCoordinates();
 
-        let streifen = querschnitt.streifen;
-        let nr = querschnitt.streifennr;
 
-        let diff = 0, edit = null;
-        let max_diff_vst = null, max_diff_bst = null;
 
-        if (document.getElementById('modify_fit').checked && querschnitt.station.getQuerschnitt(streifen, nr + 1) != null) {
-            max_diff_vst = querschnitt.station.getQuerschnitt(streifen, nr + 1).breite / 100;
-            max_diff_bst = querschnitt.station.getQuerschnitt(streifen, nr + 1).bisBreite / 100;
-        }
+
 
         for (let i = 0; i < vorher.length; i++) {
             for (let j = 0; j < vorher[i].length; j += vorher[i].length - 1) {
                 if (nachher[i][j][0] != vorher[i][j][0] || nachher[i][j][1] != vorher[i][j][1]) {
+                    // alte Daten speichern für Vergleich, wenn angrenzender Querschnitt mitbewegt werden soll
+                    let alt_XBstR = querschnitt['XBstR']
+                    let alt_XBstL = querschnitt['XBstL']
+                    let alt_XVstR = querschnitt['XVstR']
+                    let alt_XVstL = querschnitt['XVstL']
+
+                    // Variablen, je nach dem ob BST oder VST verändert wird
+                    // VST
+                    let vst = true;
+                    let edit = "Vst";
+                    let edit_breite = "breite";
+                    // BST
+                    if (j > 0) {
+                        vst = false;
+                        edit = "Bst";
+                        edit_breite = "bisBreite";
+                    }
+
+                    // Berechnen des Abstandes des neuen Punktes
                     let pos = Vektor.get_pos(querschnitt.station.geo, nachher[i][j]);
                     let dist = Math.round(pos[4] * 100) / 100;
+
+                    // Streifen und Nr
+                    let streifen = querschnitt.streifen;
+
                     if (streifen == 'L')
                         dist *= -1;
 
-                    if (j > 0) {
-                        diff = dist - querschnitt['XBst' + streifen];
+                    let diff = dist - querschnitt['X' + edit + streifen];
 
-                        if (max_diff_bst !== null && ((streifen == 'L') ? (-diff) : (diff)) > max_diff_bst) {
-                            diff = ((streifen == 'L') ? (-max_diff_bst) : (max_diff_bst));
-                        }
-                        // negative Breiten verhindern
-                        if (((streifen == 'L') ? (diff) : (-diff)) * 100 > querschnitt['bisBreite']) {
-                            diff = ((streifen == 'L') ? (querschnitt['bisBreite']) : (-querschnitt['bisBreite'])) / 100;
-                        }
-                        edit = 'Bst';
-                        querschnitt['XBst' + streifen] += diff;
-                        querschnitt['bisBreite'] =
-                            Math.round(100 * (querschnitt['XBstR'] -
-                                querschnitt['XBstL']));
-                    }
-                    else {
-                        diff = dist - querschnitt['XVst' + streifen];
-                        edit = 'Vst';
+                    diff = this._check_and_edit_querschnitt(querschnitt, diff, edit, edit_breite);
 
-                        if (max_diff_vst !== null && ((streifen == 'L') ? (-diff) : (diff)) > max_diff_vst) {
-                            diff = ((streifen == 'L') ? (-max_diff_vst) : (max_diff_vst));
+                    // Nachbar-Querschnitt mitziehen?
+                    console.log(querschnitt);
+                    if (document.forms.modify.modify_glue.checked) {
+                        // VST, BST suchen und ändern
+                        if (vst) {
+                            let station = querschnitt.station.abschnitt.getStationByBST(querschnitt.vst);
+                            if (station == null) break;
+                            let querschnitt_nachbar = station.getQuerschnittByBstAbstand(alt_XVstL, alt_XVstR);
+                            if (querschnitt_nachbar == null) break;
+                            this._check_and_edit_querschnitt(querschnitt_nachbar, diff, 'Bst', 'bisBreite')
                         }
-                        // negative Breiten verhindern
-                        if (((streifen == 'L') ? (diff) : (-diff)) * 100 > querschnitt['breite']) {
-                            diff = ((streifen == 'L') ? (querschnitt['breite']) : (-querschnitt['breite'])) / 100;
+                        //BST, VST suchen und ändern
+                        else {
+                            let station = querschnitt.station.abschnitt.getStationByVST(querschnitt.bst);
+                            if (station == null) break;
+                            let querschnitt_nachbar = station.getQuerschnittByVstAbstand(alt_XBstL, alt_XBstR);
+                            if (querschnitt_nachbar == null) break;
+                            this._check_and_edit_querschnitt(querschnitt_nachbar, diff, 'Vst', 'breite')
                         }
-                        querschnitt['XVst' + streifen] += diff;
-                        querschnitt['breite'] =
-                            Math.round(100 * (querschnitt['XVstR'] -
-                                querschnitt['XVstL']));
                     }
                     break;
                 }
             }
         }
-        if (edit == null) return;
-        querschnitt.editBreite(edit, diff, document.getElementById('modify_fit').checked);
         //breiteNachfAnpassen(absid, station, streifen, nr, edit, diff);
         this.info.logAuswahl(this.select);
+    }
+
+    _check_and_edit_querschnitt(querschnitt, diff, Vst_or_Bst, breite_or_bisBreite) {
+        let streifen = querschnitt.streifen;
+        let nr = querschnitt.streifennr;
+
+        // Überschneidung mit nächsten 
+        let next_quer = querschnitt.station.getQuerschnitt(streifen, nr + 1)
+        if (document.getElementById('modify_fit').checked && next_quer != undefined) {
+            let max_diff = next_quer[breite_or_bisBreite] / 100;
+            if (((streifen == 'L') ? (-diff) : (diff)) > max_diff) {
+                diff = ((streifen == 'L') ? (-max_diff) : (max_diff));
+            }
+        }
+        // negative Breiten verhindern
+        if (((streifen == 'L') ? (diff) : (-diff)) * 100 > querschnitt[breite_or_bisBreite]) {
+            diff = ((streifen == 'L') ? (querschnitt[breite_or_bisBreite]) : (-querschnitt[breite_or_bisBreite])) / 100;
+        }
+        querschnitt['X' + Vst_or_Bst + streifen] += diff;
+        querschnitt[breite_or_bisBreite] = Math.round(100 * (querschnitt['X' + Vst_or_Bst + 'R'] - querschnitt['X' + Vst_or_Bst + 'L']));
+        querschnitt.editBreite(Vst_or_Bst, diff, document.getElementById('modify_fit').checked);
+        return diff;
     }
 
     _createLinienSelect() {
