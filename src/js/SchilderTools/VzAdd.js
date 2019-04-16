@@ -309,8 +309,9 @@ class VzAdd {
 
         let update = ""
         let anzDelete = 0, anzUpdate = 0;
-
-        for (let oldZeichen of this._auswahl.getZeichen()) {
+        let zeichen = this._auswahl.getZeichen();
+        for (let oldZeichen_i in zeichen) {
+            let oldZeichen = zeichen[oldZeichen_i];
             if (oldZeichen.objektId in alt) {
                 let modiZeichen = alt[oldZeichen.objektId];
                 let upd = "";
@@ -322,6 +323,7 @@ class VzAdd {
                     upd += '<wfs:Property>\n<wfs:Name>stvoznr/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.stvonr + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update stvoznr");
                 }
+                if (modiZeichen.text == null) modiZeichen.text = "";
                 if (oldZeichen.vztext != modiZeichen.text) {
                     upd += '<wfs:Property>\n<wfs:Name>vztext</wfs:Name>\n<wfs:Value>' + modiZeichen.text + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update text");
@@ -382,6 +384,7 @@ class VzAdd {
         }
         for (let zeichen of neu) {
             console.log("neu");
+            if (zeichen.text == null) zeichen.text = "";
             update += '<wfs:Insert>\n<Otvzeichlp>\n' +
                 '<projekt typeName="Projekt" xlink:href="#' + this._daten.ereignisraum + '"/>\n' +
                 '<sort>' + zeichen.sort + '</sort>\n' +
@@ -416,7 +419,10 @@ class VzAdd {
                         $(event.target.parentElement.parentElement).remove();
                         console.log("bestätigt")
                         console.log(this)
-                        PublicWFS.addSekInER(this._auswahl, "Otaufstvor", "Otvzeichlp", this._daten.ereignisraum_nr, this._erCallback, undefined, this, update, this._auswahl);
+                        if (this._auswahl.projekt.substr(-32) == this._daten.ereignisraum.substr(-32))
+                            PublicWFS.doTransaction(update, this._updateCallback, undefined, this, this._auswahl);
+                        else
+                            PublicWFS.addSekInER(this._auswahl, "Otaufstvor", "Otvzeichlp", this._daten.ereignisraum_nr, this._erCallback, undefined, this, update, this._auswahl);
                         //this._closePopup(event);
                         $("#dialog-confirm").dialog("close");
                     }.bind(this),
@@ -436,8 +442,10 @@ class VzAdd {
     }
 
     _updateCallback(__, _this, _auswahl) {
+        PublicWFS.showMessage("erfolgreich", false);
         console.log("reload");
         _auswahl.reloadZeichen();
+        _this._select.getFeatures().clear();
     }
 
     _closePopup(event) {
