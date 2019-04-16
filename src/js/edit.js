@@ -2,7 +2,7 @@ import 'ol/ol.css';
 import '../css/edit.css';
 import { Map, View } from 'ol';
 import { defaults as defaultInteractions } from 'ol/interaction.js';
-import { defaults as defaultControls } from 'ol/control.js';
+import { defaults as defaultControls, ScaleLine, ZoomSlider} from 'ol/control.js';
 import { Tile as TileLayer } from 'ol/layer';
 import { TileWMS as TileWMS } from 'ol/source';
 import { register } from 'ol/proj/proj4.js';
@@ -314,7 +314,7 @@ function createMap() {
         interactions: defaultInteractions({
             pinchRotate: false
         }),
-        controls: defaultControls().extend([new LayerSwitch()]),
+        controls: defaultControls().extend([new LayerSwitch(), new ScaleLine(), new ZoomSlider()]),
         view: new View({
             projection: CONFIG.EPSG_CODE,
             center: fromLonLat([10.0045, 53.4975], CONFIG.EPSG_CODE),

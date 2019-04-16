@@ -158,7 +158,7 @@ class Daten {
                         styles.push(new Style({
                             geometry: point,
                             image: new Icon({
-                                src: 'arrow_klein.png',
+                                src: './img/arrow_klein.png',
                                 anchor: [0.75, 0.5],
                                 rotateWithView: false,
                                 rotation: -rotation
