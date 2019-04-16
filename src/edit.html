@@ -23,8 +23,8 @@
     <sidebar id="sidebar">
         <form id="steuerung" name="steuerung">
             <div class="tab">
-                <button type="button" class="tablinks" data-tab="tab_Querschnitt">Querschnitt</button>
-                <button type="button" class="tablinks" data-tab="tab_Otaufstvor" id="defaultOpen">Aufstellv.</button>
+                <button type="button" class="tablinks bt_Querschnitt" data-tab="tab_Querschnitt">Querschnitt</button>
+                <button type="button" class="tablinks bt_Aufstell" data-tab="tab_Otaufstvor" id="defaultOpen">Aufstellv.</button>
             </div>
 
             <div id="tab_Querschnitt" class="tabcontent">
@@ -46,6 +46,9 @@
                 <input type="radio" name="befehl" id="befehl_vzadd" value="vzadd" /><label for="befehl_vzadd">&nbsp;Schild
                     hinzuf&uuml;gen</label><br />
                 <input type="radio" name="befehl" id="befehl_avmove" value="avmove" /><label for="befehl_avmove">&nbsp;Verschieben</label><br />
+            </div>
+            <div id="steuerung_sonstige">
+                <input type="radio" name="befehl" id="befehl_messen" value="messen" /><label for="befehl_messen">&nbsp;Messen</label><br />
             </div>
             <button type="button" id="zoomToExtent">Auf Ausdehnung zoomen</button>
             <button type="button" id="loadExtent">Abschnitte laden</button>

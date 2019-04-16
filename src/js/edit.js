@@ -22,6 +22,7 @@ import VzAdd from './SchilderTools/VzAdd.js';
 import AvMove from './SchilderTools/AvMove.js';
 import AvAdd2ER from './SchilderTools/AvAdd2ER.js';
 import QsAdd2ER from './QuerTools/QsAdd2ER.js';
+import Measure from './Measure.js';
 import LayerSwitch from './LayerSwitch.js';
 import OSM from 'ol/source/OSM.js';
 
@@ -41,7 +42,7 @@ var er = decodeURI(urlParamER[1])
 var ernr = decodeURI(urlParamERNR[1])
 console.log("Ereignisraum: " + ernr);
 
-let daten, infoTool, editTool, delTool, partTool, addTool, vsInfoTool, avAdd, avAdd2ER, qsAdd2ER, avMove, vzAdd;
+let daten, infoTool, editTool, delTool, partTool, addTool, vsInfoTool, avAdd, avAdd2ER, qsAdd2ER, avMove, vzAdd, measure;
 
 window.addEventListener('load', function () {
 
@@ -105,6 +106,7 @@ window.addEventListener('load', function () {
     avMove = new AvMove(map, daten, vsInfoTool);
     avAdd2ER = new AvAdd2ER(map, daten);
     qsAdd2ER = new QsAdd2ER(map, daten);
+    measure = new Measure(map);
 
     document.getElementById("befehl_info").addEventListener('change', befehl_changed);
     document.getElementById("befehl_vsinfo").addEventListener('change', befehl_changed);
@@ -117,6 +119,7 @@ window.addEventListener('load', function () {
     document.getElementById("befehl_avadd2er").addEventListener('change', befehl_changed);
     document.getElementById("befehl_avmove").addEventListener('change', befehl_changed);
     document.getElementById("befehl_qsadd2er").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_messen").addEventListener('change', befehl_changed);
 
 
     document.getElementById("zoomToExtent").addEventListener('click', function () {
@@ -199,6 +202,7 @@ function befehl_changed() {
     qsAdd2ER.stop();
     avMove.stop();
     vzAdd.stop();
+    measure.stop();
 
     if (document.getElementById("befehl_info").checked)
         infoTool.start();
@@ -222,6 +226,8 @@ function befehl_changed() {
         partTool.start();
     else if (document.getElementById("befehl_add").checked)
         addTool.start();
+    else if (document.getElementById("befehl_messen").checked)
+        measure.start();
 }
 
 function createMap() {
@@ -232,7 +238,7 @@ function createMap() {
                 visible: false,
                 switchable: true,
                 source: new OSM()
-              }),
+            }),
             new TileLayer({
                 name: 'ALKIS',
                 visible: false,
@@ -281,11 +287,11 @@ function createMap() {
                 visible: false,
                 switchable: true,
                 source: new Static({
-                  attributions: ['Freie und Hansestadt Hamburg, LGV 2019'],
-                  url: 'http://gv-srv-w00118:8080/dop5rgb_3256650_592800_hh_2018.jpg',
-                  imageExtent: transform([566500,5928000, 566750,5928250], 'EPSG:25832', CONFIG.EPSG_CODE)
+                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019'],
+                    url: 'http://gv-srv-w00118:8080/dop5rgb_3256650_592800_hh_2018.jpg',
+                    imageExtent: transform([566500, 5928000, 566750, 5928250], 'EPSG:25832', CONFIG.EPSG_CODE)
                 })
-              }),
+            }),
 
             new TileLayer({
                 name: "Querschnitte gruppiert",

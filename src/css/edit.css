@@ -88,16 +88,17 @@ form#teilen {
 
 .tab {
     overflow: hidden;
-    border: 1px solid #ccc;
+    /*border: 1px solid #ccc;*/
     background-color: #f1f1f1;
 }
 
 /* Style the buttons that are used to open the tab content */
 
 .tab button {
-    background-color: inherit;
+    /*background-color: inherit;*/
     float: left;
-    border: none;
+    border: 1px solid #ccc;
+    /*border-top: none;*/
     outline: none;
     cursor: pointer;
     padding: 10px;
@@ -131,8 +132,9 @@ input[type="radio"]:checked+label {
 /* Create an active/current tablink class */
 
 .tab button.active {
-    background-color: #ccc;
+    /*background-color: #ccc;*/
     font-weight: 600;
+    border-bottom: 1px solid rgba(0, 0, 0, 0);
 }
 
 /* Style the tab content */
@@ -154,10 +156,28 @@ input[type="radio"]:checked+label {
 
 /* Go from zero to full opacity */
 
+#tab_Querschnitt,
+.bt_Querschnitt {
+    background-color: rgba(255, 243, 188, 0.8);
+}
+
+#tab_Otaufstvor,
+.bt_Aufstell {
+    background-color: rgba(212, 255, 214, 0.8);
+}
+
+#steuerung_sonstige {
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+    line-height: 1.6;
+}
+
 @keyframes fadeEffect {
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
@@ -199,4 +219,45 @@ form#avadd label {
 
 .ui-dialog {
     z-index: 1100 !important;
+}
+
+
+
+/* Tooltip fürs Messen */
+
+.tooltip {
+    position: relative;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 4px;
+    color: white;
+    padding: 4px 8px;
+    opacity: 0.7;
+    white-space: nowrap;
+}
+
+.tooltip-measure {
+    opacity: 1;
+    font-weight: bold;
+}
+
+.tooltip-static {
+    background-color: #ffcc33;
+    color: black;
+    border: 1px solid white;
+}
+
+.tooltip-measure:before,
+.tooltip-static:before {
+    border-top: 6px solid rgba(0, 0, 0, 0.5);
+    border-right: 6px solid transparent;
+    border-left: 6px solid transparent;
+    content: "";
+    position: absolute;
+    bottom: -6px;
+    margin-left: -7px;
+    left: 50%;
+}
+
+.tooltip-static:before {
+    border-top-color: #ffcc33;
 }
