@@ -37,7 +37,9 @@ class VzAdd {
         this._popup.id = "vz_popup";
         this._popup.style.textAlign = "right";
 
-        let closeButton = document.createElement("button");
+        this._popup.innerHTML += '<div style="color: #f00; width: 100%; text-align: center;">ACHTUNG: Änderungen im aktuellen ER werden nicht angezeigt!<br/>Der Fehler wurde bereits an NOVASIB gemeldet.</div>'
+
+        /*let closeButton = document.createElement("button");
         closeButton.innerHTML = "x";
         closeButton.style.backgroundColor = "#d00";
         closeButton.style.color = "#fff";
@@ -45,8 +47,7 @@ class VzAdd {
         closeButton.style.fontWeight = "700";
         closeButton.style.marginBottom = "5px";
         closeButton.addEventListener("click", this._closePopup.bind(this));
-        this._popup.appendChild(closeButton);
-        this._popup.innerHTML += '<div style="color: #f00; width: 100%; text-align: center;">ACHTUNG: Änderungen im aktuellen ER werden nicht angezeigt!<br/>Der Fehler wurde bereits an NOVASIB gemeldet.</div>'
+        this._popup.appendChild(closeButton);*/
 
         this._ausblenden.appendChild(this._popup);
 
@@ -215,6 +216,59 @@ class VzAdd {
         }
         text.appendChild(art);
 
+        // Größe des Schilder
+        let groesse = document.createElement("select");
+        groesse.classList.add("small");
+        groesse.id = "groesse[" + eintrag.objektId + "]";
+        groesse.name = "groesse"
+        for (let groesseKt of this._daten.klartexte.getAllSorted("Itvzgroesse")) {
+            let ele = document.createElement("option");
+            ele.value = groesseKt['objektId'];
+            ele.innerHTML = groesseKt['beschreib'];
+            if (eintrag.groesse != null && eintrag.groesse.substr(-32) == groesseKt['objektId']) {
+                ele.setAttribute("selected", "selected");
+            }
+            groesse.appendChild(ele);
+        }
+        text.appendChild(groesse);
+
+        // Externe Objektnr
+        text.innerHTML += '<br /><label>Externe Objektnummer</label><br />';
+        text.innerHTML += '&nbsp;<input type="text" name="objektnr" style="width: 120px;" value="' + ((eintrag.objektnr != null) ? (eintrag.objektnr) : ('')) + '" />';
+
+
+        // Erfassungsart
+        let erfart = document.createElement("select");
+        erfart.classList.add("small");
+        erfart.id = "erfart[" + eintrag.objektId + "]";
+        erfart.name = "erfart"
+        for (let erfartKt of this._daten.klartexte.getAllSorted("Iterfart")) {
+            let ele = document.createElement("option");
+            ele.value = erfartKt['objektId'];
+            ele.innerHTML = erfartKt['beschreib'];
+            if (eintrag.erfart != null && eintrag.erfart.substr(-32) == erfartKt['objektId']) {
+                ele.setAttribute("selected", "selected");
+            }
+            erfart.appendChild(ele);
+        }
+        text.appendChild(erfart);
+
+        // Quelle
+        let quelle = document.createElement("select");
+        quelle.classList.add("small");
+        quelle.id = "quelle[" + eintrag.objektId + "]";
+        quelle.name = "quelle"
+        for (let quelleKt of this._daten.klartexte.getAllSorted("Itquelle")) {
+            let ele = document.createElement("option");
+            ele.value = quelleKt['objektId'];
+            ele.innerHTML = quelleKt['beschreib'];
+            if (eintrag.quelle != null && eintrag.quelle.substr(-32) == quelleKt['objektId']) {
+                ele.setAttribute("selected", "selected");
+            }
+            quelle.appendChild(ele);
+        }
+        text.appendChild(quelle);
+
         // Löschen
         let buttonLoeschen = document.createElement('button');
         buttonLoeschen.addEventListener("click", function (event) {
@@ -271,10 +325,12 @@ class VzAdd {
     static loadKlartexte(daten) {
         daten.klartexte.load('Itvzstvoznr');
         daten.klartexte.load('Itquelle');
+        daten.klartexte.load('Iterfart');
         daten.klartexte.load('Itvzlagefb');
         daten.klartexte.load('Itvzlesbarkeit');
         daten.klartexte.load("Itvzart");
         daten.klartexte.load("Itvzbeleucht");
+        daten.klartexte.load("Itvzgroesse");
     }
 
     _save(event) {
@@ -296,6 +352,11 @@ class VzAdd {
             schild.lesbar = $(eintrag).children("select[name='lesbar']")[0].value;
             schild.beleucht = $(eintrag).children("select[name='beleucht']")[0].value;
             schild.art = $(eintrag).children("select[name='art']")[0].value;
+            schild.groesse = $(eintrag).children("select[name='groesse']")[0].value;
+            schild.erfart = $(eintrag).children("select[name='erfart']")[0].value;
+            schild.quelle = $(eintrag).children("select[name='quelle']")[0].value;
+            schild.objektnr = $(eintrag).children("input[name='text']")[0].value;
+            if (schild.objektnr == "") schild.objektnr = null;
 
             if (schild.oid.length < 10) { // undefined
                 neu.push(schild);
@@ -343,6 +404,27 @@ class VzAdd {
                 if (oldZeichen.art != "#" + modiZeichen.art) {
                     upd += '<wfs:Property>\n<wfs:Name>art/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.art + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update art");
+                }
+
+                if (oldZeichen.groesse != "#" + modiZeichen.groesse) {
+                    upd += '<wfs:Property>\n<wfs:Name>groesse/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.groesse + '</wfs:Value>\n</wfs:Property>\n';
+                    console.log("update groesse");
+                }
+
+                if (oldZeichen.erfart != "#" + modiZeichen.erfart) {
+                    upd += '<wfs:Property>\n<wfs:Name>erfart/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.erfart + '</wfs:Value>\n</wfs:Property>\n';
+                    console.log("update erfart");
+                }
+
+                if (oldZeichen.quelle != "#" + modiZeichen.quelle) {
+                    upd += '<wfs:Property>\n<wfs:Name>quellet/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.quelle + '</wfs:Value>\n</wfs:Property>\n';
+                    console.log("update quelle");
+                }
+
+                if (modiZeichen.objektnr == null) modiZeichen.objektnr = "";
+                if (oldZeichen.objektnr != modiZeichen.objektnr) {
+                    upd += '<wfs:Property>\n<wfs:Name>objektnr</wfs:Name>\n<wfs:Value>' + modiZeichen.objektnr + '</wfs:Value>\n</wfs:Property>\n';
+                    console.log("update objektnr");
                 }
 
                 if (upd != "") {
@@ -395,10 +477,10 @@ class VzAdd {
                 '<beleucht xlink:href="#S' + zeichen.beleucht + '" typeName="Itvzbeleucht" />\n' +
                 '<art xlink:href="#' + zeichen.art + '" typeName="Itvzart" />\n' +
                 '<parent typeName="Otaufstvor" xlink:href="#' + this._auswahl.fid + '"/>\n' +
-                //<erfart luk="10" typeName="Iterfart" xlink: href="#S8ac892a124b8e9f20124c3756edc03f5"/>     
-                //<quelle luk="61" typeName="Itquelle" xlink: href="#S8ac892a13bab6edb013bad6854560461"/>     
-                //<ADatum>2019-02-21</ADatum>
-                '</Otvzeichlp>\n</wfs:Insert>';
+                '<erfart xlink:href="#' + zeichen.erfart + '" typeName="Iterfart"/>\n' +
+                '<quelle xlink:href="#' + zeichen.quelle + '" typeName="Itquelle"/>\n' +
+                '<ADatum>' + new Date().toISOString().slice(0, 10) + '</ADatum>\n'
+            '</Otvzeichlp>\n</wfs:Insert>';
 
         }
 
