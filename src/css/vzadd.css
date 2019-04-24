@@ -46,6 +46,12 @@
     width: 450px;
 }
 
+.schildText:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
 .schildText .chosen-container {
     font-size: 9pt;
 }
@@ -67,5 +73,20 @@
 }
 
 .chosen-drop {
-    width:  auto !important;
+    width: auto !important;
+}
+
+div.form_group {
+    display: block;
+    float: left;
+    width: 225px;
+    height: 50px;
+}
+
+div.form_group input[type='text'] {
+    width: 220px;
+}
+
+.ui-dialog-content {
+    overflow: visible !important;
 }
