@@ -346,7 +346,7 @@ class VzAdd {
                 }
 
                 if (oldZeichen.quelle.substr(-32) != modiZeichen.quelle) {
-                    upd += '<wfs:Property>\n<wfs:Name>quellet/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.quelle + '</wfs:Value>\n</wfs:Property>\n';
+                    upd += '<wfs:Property>\n<wfs:Name>quelle/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.quelle + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update quelle");
                 }
 
@@ -429,10 +429,13 @@ class VzAdd {
                         $(event.target.parentElement.parentElement).remove();
                         console.log("bestätigt")
                         console.log(this)
-                        if (this._auswahl.projekt.substr(-32) == this._daten.ereignisraum.substr(-32))
+                        // Unterscheidung zwischen neuer Aufstellvorrichtung und alter, leider nicht möglich
+                        /*if (this._auswahl.hasSekObj == 0)
                             PublicWFS.doTransaction(update, this._updateCallback, undefined, this, this._auswahl);
                         else
                             PublicWFS.addSekInER(this._auswahl, "Otaufstvor", "Otvzeichlp", this._daten.ereignisraum_nr, this._erCallback, undefined, this, update, this._auswahl);
+                        */
+                        PublicWFS.addSekInER(this._auswahl, "Otaufstvor", "Otvzeichlp", this._daten.ereignisraum_nr, this._erCallback, this._erCallback, this, update, this._auswahl);
                         //this._closePopup(event);
                         $("#dialog-confirm").dialog("close");
                     }.bind(this),

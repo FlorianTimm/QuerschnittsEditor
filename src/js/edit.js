@@ -2,7 +2,7 @@ import 'ol/ol.css';
 import '../css/edit.css';
 import { Map, View } from 'ol';
 import { defaults as defaultInteractions } from 'ol/interaction.js';
-import { defaults as defaultControls, ScaleLine, ZoomSlider} from 'ol/control.js';
+import { defaults as defaultControls, ScaleLine, ZoomSlider } from 'ol/control.js';
 import { Tile as TileLayer } from 'ol/layer';
 import { TileWMS as TileWMS } from 'ol/source';
 import { register } from 'ol/proj/proj4.js';
@@ -18,6 +18,7 @@ import AddTool from './QuerTools/AddTool.js';
 import DelTool from './QuerTools/DelTool.js';
 import VsInfoTool from './SchilderTools/VsInfoTool.js';
 import AvAdd from './SchilderTools/AvAdd.js';
+import AvDelete from './SchilderTools/AvDelete.js';
 import VzAdd from './SchilderTools/VzAdd.js';
 import AvMove from './SchilderTools/AvMove.js';
 import AvAdd2ER from './SchilderTools/AvAdd2ER.js';
@@ -42,7 +43,7 @@ var er = decodeURI(urlParamER[1])
 var ernr = decodeURI(urlParamERNR[1])
 console.log("Ereignisraum: " + ernr);
 
-let daten, infoTool, editTool, delTool, partTool, addTool, vsInfoTool, avAdd, avAdd2ER, qsAdd2ER, avMove, vzAdd, measure;
+let daten, infoTool, editTool, delTool, partTool, addTool, vsInfoTool, avAdd, avAdd2ER, qsAdd2ER, avMove, vzAdd, measure, avDel;
 
 window.addEventListener('load', function () {
 
@@ -101,16 +102,18 @@ window.addEventListener('load', function () {
     addTool = new AddTool(map, daten, infoTool);
     partTool = new PartTool(map, daten, infoTool);
     vsInfoTool = new VsInfoTool(map, [daten.l_aufstell], "sidebar");
-    avAdd = new AvAdd(map, daten); //map, daten.l_aufstell, er, "sidebar");
+    avAdd = new AvAdd(map, daten);
     vzAdd = new VzAdd(map, daten);
     avMove = new AvMove(map, daten, vsInfoTool);
     avAdd2ER = new AvAdd2ER(map, daten);
     qsAdd2ER = new QsAdd2ER(map, daten);
     measure = new Measure(map);
+    avDel = new AvDelete(map, daten, daten.l_aufstell, "sidebar");
 
     document.getElementById("befehl_info").addEventListener('change', befehl_changed);
     document.getElementById("befehl_vsinfo").addEventListener('change', befehl_changed);
     document.getElementById("befehl_avadd").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_avdel").addEventListener('change', befehl_changed);
     document.getElementById("befehl_vzadd").addEventListener('change', befehl_changed);
     document.getElementById("befehl_modify").addEventListener('change', befehl_changed);
     document.getElementById("befehl_delete").addEventListener('change', befehl_changed);
@@ -203,6 +206,7 @@ function befehl_changed() {
     avMove.stop();
     vzAdd.stop();
     measure.stop();
+    avDel.stop();
 
     if (document.getElementById("befehl_info").checked)
         infoTool.start();
@@ -210,6 +214,8 @@ function befehl_changed() {
         vsInfoTool.start();
     else if (document.getElementById("befehl_avadd").checked)
         avAdd.start();
+    else if (document.getElementById("befehl_avdel").checked)
+        avDel.start();
     else if (document.getElementById("befehl_vzadd").checked)
         vzAdd.start();
     else if (document.getElementById("befehl_avadd2er").checked)

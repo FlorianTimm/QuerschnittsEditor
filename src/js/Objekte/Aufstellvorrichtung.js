@@ -286,7 +286,6 @@ class Aufstellvorrichtung extends Feature {
         PublicWFS.doTransaction(xml);
     }
 
-
     getZeichen(callback, ...args) {
         if (this._zeichen == null && this.hasSekObj > 0) {
             this.reloadZeichen(callback, ...args);
