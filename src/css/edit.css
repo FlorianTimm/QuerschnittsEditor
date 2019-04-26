@@ -261,3 +261,30 @@ form#avadd label {
 .tooltip-static:before {
     border-top-color: #ffcc33;
 }
+
+div#zurueck {
+    position: absolute;
+    bottom: 2.5em;
+    left: .5em;
+    display: block;
+    background: rgba(255, 255, 255, 0.4);
+    padding: 2px;
+    overflow-x: hidden;
+    border-radius: 4px;
+}
+
+div#zurueck a {
+    text-decoration: none;
+    display: block;
+    padding: 3px;
+    background-color: rgba(0,60,136,0.5);
+    color:white;
+    border: none;
+    margin: 1px;
+    border-radius: 2px;
+    text-align: center;
+}
+
+div#zurueck a:hover {
+    background-color: rgba(0,60,136,0.7);
+}
