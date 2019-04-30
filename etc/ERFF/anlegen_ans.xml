@@ -1,9 +1,0 @@
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-	<soap:Body>
-		<ns3:createProjektResponse xmlns:ns3="http://ttsib.novasib.de/PublicServices" xmlns:ns2="http://interfaceTypes.ttsib5.novasib.de/">
-			<projekt>
-				<ns2:ProjektNr>201902000000073</ns2:ProjektNr>
-			</projekt>
-		</ns3:createProjektResponse>
-	</soap:Body>
-</soap:Envelope>

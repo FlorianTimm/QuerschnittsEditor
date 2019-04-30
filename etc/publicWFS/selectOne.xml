@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<wfs:GetFeature service="WFS" version="1.0.0"
+			xmlns="http://xml.novasib.de"
+			xmlns:wfs="http://www.opengis.net/wfs" 
+			xmlns:gml="http://www.opengis.net/gml" 
+			xmlns:ogc="http://www.opengis.net/ogc" 
+			xmlns:xlink="http://www.w3.org/1999/xlink" 
+			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+			xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-transaction.xsd">
+	<wfs:Query typeName="VI_STRASSENNETZ">
+	<MPP>0</MPP>
+		<ogc:Filter>
+			<ogc:And>
+				<ogc:PropertyIsEqualTo>
+					<ogc:PropertyName>ABSCHNITT_ID</ogc:PropertyName>
+					<ogc:Literal>8ac892a13ccfe5dd013d49c57cb50b9d</ogc:Literal>
+				</ogc:PropertyIsEqualTo>
+			</ogc:And>
+		</ogc:Filter>
+	</wfs:Query>
+</wfs:GetFeature>

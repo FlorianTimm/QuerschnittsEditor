@@ -1,0 +1,20 @@
+<soapenv:Envelope 
+	xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+	xmlns:pub="http://ttsib.novasib.de/PublicServices" 
+	xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">
+	<soapenv:Header/>
+	<soapenv:Body>
+		<pub:expandProjektPrimObj>
+			<projekt>
+				<int:ProjektNr>201902000000073</int:ProjektNr>
+			</projekt>
+			<primObjekte>
+				<int:objektId>4276428B77248DE9D3F42D1884EE62C</int:objektId>
+				<int:objektKlasse>Otaufstvor</int:objektKlasse>
+			</primObjekte>
+			<objektKlassen>
+				<int:objektKlasse>Otvzeichlp</int:objektKlasse>
+			</objektKlassen>
+		</pub:expandProjektPrimObj>
+	</soapenv:Body>
+</soapenv:Envelope>
