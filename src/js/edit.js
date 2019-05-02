@@ -8,7 +8,7 @@ import { TileWMS as TileWMS } from 'ol/source';
 import { register } from 'ol/proj/proj4.js';
 import proj4 from 'proj4';
 import { transform, fromLonLat } from 'ol/proj.js';
-import '@babel/polyfill';
+import 'babel-polyfill';
 import ModifyTool from './QuerTools/ModifyTool.js';
 import Daten from './Daten.js';
 import PublicWFS from './PublicWFS.js';

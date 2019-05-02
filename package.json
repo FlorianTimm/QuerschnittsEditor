@@ -2,10 +2,12 @@
   "name": "QuerschnittsEditor",
   "version": "1.0.0",
   "description": "Ermöglicht das Editieren von Querschnitte im WebEditor. Als Datenquelle \r wird hierfür der PublicWFS der TTSIB5 von NOVASIB verwendet. Der \r Editor ist nur in Zusammenhang mit dieser Software einsetzbar.",
-  "main": "js/edit.js",
+  "main": "src/js/edit.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "parcel --out-dir \"//gv-srv-w00118/GlassFish Docroot/querOO\" --hmr-hostname localhost --public-url . src/*.html",
+    "startServer": "parcel watch --out-dir \"//gv-srv-w00118/GlassFish Docroot/querOO\" --hmr-hostname localhost --public-url . src/*.html",
+	"buildServer": "parcel build --out-dir \"//gv-srv-w00118/GlassFish Docroot/querschnitt\" --public-url . src/*.html",
+	"start": "parcel src/*.html",
     "build": "parcel build --public-url . src/*.html"
   },
   "repository": {
@@ -18,23 +20,23 @@
   "bugs": {
     "url": "https://github.com/FlorianTimm/QuerschnittsEditor/issues"
   },
-  "homepage": "https://github.com/FlorianTimm/QuerschnittsEditor#readme",
   "browserslist": [
     "> 1%",
     "last 3 versions"
   ],
-  "devDependencies": {
-    "@babel/core": "^7.4.4",
-    "@babel/preset-env": "^7.4.4",
-    "core-js": "^2.6.5",
-    "cssnano": "^4.1.10",
-    "proj4": "^2.5.0"
-  },
+  "homepage": "https://github.com/FlorianTimm/QuerschnittsEditor#readme",
   "dependencies": {
+    "babel-polyfill": "^6.26.0",
     "chosen-js": "^1.8.7",
-    "jquery": "^3.4.0",
+    "core-js": "^3.0.1",
+    "jquery": "^3.4.1",
+    "jquery-ui": "^1.12.1",
     "jquery-ui-bundle": "^1.12.1-migrate",
     "ol": "^5.3.2",
+    "proj4": "^2.5.0",
     "regenerator-runtime": "^0.13.2"
+  },
+  "devDependencies": {
+    "cssnano": "^4.1.10"
   }
 }
