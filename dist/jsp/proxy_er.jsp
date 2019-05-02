@@ -34,14 +34,12 @@ try {
 	}
 	
 	urlStr += reqUrl;
-	
 	URL url = new URL(urlStr);
 	urlConnection = (HttpURLConnection) url.openConnection();
 
 	if (basicAuth != null) {
 		urlConnection.setRequestProperty("Authorization", basicAuth);
 	}
-	
 	
 	urlConnection.setDoOutput(true);
 	urlConnection.setRequestMethod(request.getMethod());
@@ -68,14 +66,22 @@ try {
 			urlConnection.getOutputStream().write(contents, 0, bytesRead);				
 		}
 	}
-	//out.print(strFileContents);
 	
+	int statusCode = urlConnection.getResponseCode();
+	response.setStatus(statusCode);
 
-	InputStream inputStream = urlConnection.getInputStream();
+	InputStream inputStream = null;
+	try {
+		inputStream = urlConnection.getInputStream();
+	} catch (IOException ioe) {
+		if (statusCode != 200) {
+			inputStream = urlConnection.getErrorStream();
+		}
+	}
 
 	response.setContentType("text/xml");
 	response.setCharacterEncoding("ISO-8859-1");
-	//response.setCharacterEncoding("UTF-8");
+	
 	BufferedReader rd = new BufferedReader(new InputStreamReader(inputStream));
 	String line;
 	int i = 0;

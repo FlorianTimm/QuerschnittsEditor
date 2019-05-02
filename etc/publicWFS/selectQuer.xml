@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<wfs:GetFeature service="WFS" version="1.0.0"
+			xmlns="http://xml.novasib.de"
+			xmlns:wfs="http://www.opengis.net/wfs" 
+			xmlns:gml="http://www.opengis.net/gml" 
+			xmlns:ogc="http://www.opengis.net/ogc" 
+			xmlns:xlink="http://www.w3.org/1999/xlink" 
+			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+			xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-transaction.xsd">
+	<wfs:Query typeName="Dotquer">
+		<ogc:Filter>
+			<ogc:And>
+				<ogc:PropertyIsEqualTo>
+					<ogc:PropertyName>objektId</ogc:PropertyName>
+					<ogc:Literal>760bef483c05431e98efdee1b96ffc01</ogc:Literal>
+				</ogc:PropertyIsEqualTo>
+				<ogc:PropertyIsEqualTo>
+					<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>
+					<ogc:Literal>S8abeaa946870ce7d01687ffe3ee83adb</ogc:Literal>
+				</ogc:PropertyIsEqualTo>
+			</ogc:And>
+		</ogc:Filter>
+	</wfs:Query>
+</wfs:GetFeature>

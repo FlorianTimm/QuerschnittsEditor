@@ -149,7 +149,9 @@ class Vektor {
     }
     
     static einheit(v) {
-        return Vektor.multi(v, 1/Vektor.len(v))
+        let len = Vektor.len(v);
+        if (len == 0) return v;
+        return Vektor.multi(v, 1/len)
     }
     
     static line_len(line) {

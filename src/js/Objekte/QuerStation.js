@@ -46,7 +46,28 @@ export class Station {
             return null;
         return this._querschnitte[streifen];
     }
-    calcVector(absId) {
+
+    getQuerschnittByBstAbstand(XBstL, XBstR) {
+        for (let streifen in this._querschnitte) {
+            for (let querschnitt in this._querschnitte[streifen]) {
+                if (XBstL < 0 && this._querschnitte[streifen][querschnitt].XBstL == XBstL) return this._querschnitte[streifen][querschnitt];
+                if (XBstR > 0 && this._querschnitte[streifen][querschnitt].XBstR == XBstR) return this._querschnitte[streifen][querschnitt];
+            }
+        }
+        return null;
+    }
+
+    getQuerschnittByVstAbstand(XVstL, XVstR) {
+        for (let streifen in this._querschnitte) {
+            for (let querschnitt in this._querschnitte[streifen]) {
+                if (XVstL < 0 && this._querschnitte[streifen][querschnitt].XVstL == XVstL) return this._querschnitte[streifen][querschnitt];
+                if (XVstR > 0 && this._querschnitte[streifen][querschnitt].XVstR == XVstR) return this._querschnitte[streifen][querschnitt];
+            }
+        }
+        return null;
+    }
+
+    calcVector() {
         let anzahl = this.geo.length;
         if (anzahl >= 2) {
             let first = Vektor.einheit(Vektor.lot(Vektor.diff(this.geo[0], this.geo[1])));
@@ -56,7 +77,8 @@ export class Station {
                 this.vector.push(Vektor.einheit(Vektor.lot(Vektor.sum(Vektor.einheit(Vektor.diff(this.geo[i - 1], this.geo[i])), Vektor.einheit(Vektor.diff(this.geo[i], this.geo[i + 1]))))));
             }
             //this.vector.push(Vektor.azi2vec(Vektor.azi(this.geo[anzahl-2], this.geo[anzahl-1]) - 0.5 * Math.PI ) )
-            let last = Vektor.einheit(Vektor.lot(Vektor.diff(this.geo[anzahl - 2], this.geo[anzahl - 1])));
+            let lot = Vektor.lot(Vektor.diff(this.geo[anzahl - 2], this.geo[anzahl - 1]))
+            let last = Vektor.einheit(lot);
             this.vector.push(last);
             let statTrenn = [];
             statTrenn.push([Vektor.sum(this.geo[anzahl - 1], Vektor.multi(last, 30)), Vektor.sum(this.geo[anzahl - 1], Vektor.multi(last, -30))]);
@@ -85,7 +107,7 @@ export class Station {
     }
 
     static teilen_callback(_this, station) {
-        
+
         _this.abschnitt.writeQuerAufbau();
     }
 }

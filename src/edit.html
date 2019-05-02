@@ -15,6 +15,9 @@
     <div id="map" class="map">
     </div>
 
+    <!-- Kompilierfehler, wenn als normaler Link definiert-->
+    <div id="zurueck"><a onclick="location.href='./ereignisraum.html'">Zurück zur<br />ER-Auswahl</a></div>
+
     <form id="suche" name="suche">
         <input type="textfield" name="suche" placeholder="Suche" />
         <input type="button" id="sucheButton" value="Laden" />
@@ -23,8 +26,8 @@
     <sidebar id="sidebar">
         <form id="steuerung" name="steuerung">
             <div class="tab">
-                <button type="button" class="tablinks" data-tab="tab_Querschnitt">Querschnitt</button>
-                <button type="button" class="tablinks" data-tab="tab_Otaufstvor" id="defaultOpen">Aufstellv.</button>
+                <button type="button" class="tablinks bt_Querschnitt" data-tab="tab_Querschnitt">Querschnitt</button>
+                <button type="button" class="tablinks bt_Aufstell" data-tab="tab_Otaufstvor" id="defaultOpen">Aufstellv.</button>
             </div>
 
             <div id="tab_Querschnitt" class="tabcontent">
@@ -43,9 +46,14 @@
                     ER hinzufügen</label><br />
                 <input type="radio" name="befehl" id="befehl_avadd" value="avadd" /><label for="befehl_avadd">&nbsp;Aufstellv.
                     hinzuf&uuml;gen</label><br />
+                <input type="radio" name="befehl" id="befehl_avdel" value="avdel" /><label for="befehl_avdel">&nbsp;Aufstellv.
+                    l&ouml;schen</label><br />
                 <input type="radio" name="befehl" id="befehl_vzadd" value="vzadd" /><label for="befehl_vzadd">&nbsp;Schild
                     hinzuf&uuml;gen</label><br />
                 <input type="radio" name="befehl" id="befehl_avmove" value="avmove" /><label for="befehl_avmove">&nbsp;Verschieben</label><br />
+            </div>
+            <div id="steuerung_sonstige">
+                <input type="radio" name="befehl" id="befehl_messen" value="messen" /><label for="befehl_messen">&nbsp;Messen</label><br />
             </div>
             <button type="button" id="zoomToExtent">Auf Ausdehnung zoomen</button>
             <button type="button" id="loadExtent">Abschnitte laden</button>
@@ -104,8 +112,11 @@
 
         <form id="modify" name="modify">
             Nachfolgende Querschnitte:<br />
-            <input type="radio" name="typ" id="modify_move" value="move" checked="checked" />&nbsp;...verschieben<br />
-            <input type="radio" name="typ" id="modify_fit" value="fit" />&nbsp;...anpassem<br />
+            <input type="radio" name="typ" id="modify_move" value="move" checked="checked" /><label for="modify_move">&nbsp;...verschieben</label><br />
+            <input type="radio" name="typ" id="modify_fit" value="fit" /><label for="modify_fit">&nbsp;...anpassen</label><br />
+            <br />
+            <input type="checkbox" name="modify_glue" id="modify_glue" />
+            <label for="modify_glue">&nbsp;angrenzende Querschnitte mitziehen</label><br />
         </form>
 
         <form id="info" name="info">
@@ -182,9 +193,10 @@
     <div id="dialog-confirm" style="display: none;">
         <p>
             <!--<span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>-->
-            <div id="text"></div></p>
+            <div id="text"></div>
+        </p>
     </div>
-    <script src="js/edit.js"></script>
+    <script src="./js/edit.js"></script>
 </body>
 
 </html>

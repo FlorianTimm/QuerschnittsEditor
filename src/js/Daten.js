@@ -1,6 +1,7 @@
 import VectorSource from 'ol/source/Vector';
 import { Vector as VectorLayer } from 'ol/layer';
-import { Style, Stroke, Fill, Text } from 'ol/style';
+import { Style, Stroke, Fill, Text, Icon, Circle } from 'ol/style';
+import Point from 'ol/geom/Point.js';
 import Abschnitt from './Objekte/Abschnitt.js';
 import PublicWFS from './PublicWFS.js';
 import AbschnittWFS from './AbschnittWFS.js';
@@ -8,7 +9,6 @@ import Querschnitt from './Objekte/Querschnittsdaten.js';
 import Klartext from './Objekte/Klartext.js';
 import Aufstellvorrichtung from './Objekte/Aufstellvorrichtung.js';
 import { isNullOrUndefined } from 'util';
-import ol_color from 'ol/color';
 
 var CONFIG = require('./config.json');
 
@@ -116,40 +116,90 @@ class Daten {
         this.v_achse = new VectorSource({
             features: []
         });
+        let achsen_style = function (feature, resolution) {
+            let styles = [];
+            // Linienfarbe - rot, wenn in ER
+            let color = '#222';
+            if (feature.daten.modus in feature.inER) color = '#d00';
+
+            // Linie + Beschriftung
+            styles.push(new Style({
+                stroke: new Stroke({
+                    color: color,
+                    width: 3
+                }),
+                // Beschriftung
+                text: new Text({
+                    font: '12px Calibri,sans-serif',
+                    fill: new Fill({ color: color }),
+                    stroke: new Stroke({
+                        color: '#fff', width: 2
+                    }),
+                    text: feature.vnk + ' - ' + feature.nnk,
+                    placement: 'line',
+                    offsetY: -7
+                })
+            }));
+
+            // Pfeile/Start/Endknoten ab bestimmten Maßstab
+            if (resolution < 0.15) {
+                // Pfeile
+                var geometry = feature.getGeometry();
+                let first = true;
+                geometry.forEachSegment(function (start, end) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        let point = new Point(start);
+                        var dx = end[0] - start[0];
+                        var dy = end[1] - start[1];
+                        var rotation = Math.atan2(dy, dx);
+                        // arrows
+                        styles.push(new Style({
+                            geometry: point,
+                            image: new Icon({
+                                src: './img/arrow_klein.png',
+                                anchor: [0.75, 0.5],
+                                rotateWithView: false,
+                                rotation: -rotation
+                            })
+                        }));
+                    }
+                });
+
+                // Startpunkt
+                styles.push(new Style({
+                    geometry: new Point(geometry.getFirstCoordinate()),
+                    image: new Circle({
+                        radius: 6,
+                        fill: new Fill({ color: 'green' }),
+                        stroke: new Stroke({
+                            color: [255, 255, 255],
+                            width: 1
+                        })
+                    })
+                }));
+
+                // Endpunkt
+                styles.push(new Style({
+                    geometry: new Point(geometry.getLastCoordinate()),
+                    image: new Circle({
+                        radius: 6,
+                        fill: new Fill({ color: 'red' }),
+                        stroke: new Stroke({
+                            color: [255, 255, 255],
+                            width: 1
+                        })
+                    })
+                }));
+            }
+            return styles;
+        };
         this.l_achse = new VectorLayer({
             daten: this,
             source: this.v_achse,
             opacity: 0.6,
-            style: function (feature, resolution) {
-                if (feature.daten.modus in feature.inER) {
-                    return new Style({
-                        stroke: new Stroke({
-                            color: '#dd0000',
-                            width: 3
-                        })
-                    })
-                } else {
-                    console.log(feature);
-                    return new Style({
-                        stroke: new Stroke({
-                            color: '#333',
-                            width: 3
-                        }),
-                        text: new Text({
-                            font: '12px Calibri,sans-serif',
-                            fill: new Fill({ color: '#000' }),
-                            stroke: new Stroke({
-                                color: '#fff', width: 2
-                            }),
-                            // get the text from the feature - `this` is ol.Feature
-                            // and show only under certain resolution
-                            text: feature.vnk + ' - ' + feature.nnk,
-                            placement: 'line',
-                            offsetY: -6
-                        })
-                    })
-                }
-            }
+            style: achsen_style
         });
         this.map.addLayer(this.l_achse);
     }
@@ -197,13 +247,20 @@ class Daten {
         let createStyle = function (feature, resolution) {
             let kt_art = feature.get('objekt').daten.klartexte.get('Itquerart', feature.get('objekt').art)
             let kt_ober = feature.get('objekt').daten.klartexte.get('Itquerober', feature.get('objekt').artober)
+
+            // leere Arten filtern
             let art = 0
             if (!isNullOrUndefined(kt_art))
                 art = Number(kt_art.kt);
 
-            let color = '#ffffff'
+            // leere Oberflächen filtern
+            let ober = 0
+            if (!isNullOrUndefined(kt_ober))
+                ober = Number(kt_ober.kt);
 
             // Farbe für Querschnittsfläche
+            let color = [255, 255, 255];
+
             if ((art >= 100 && art <= 110) || (art >= 113 && art <= 119) || (art >= 122 && art <= 161) || (art >= 163 && art <= 179) || art == 312)
                 color = [33, 33, 33];	// Fahrstreifen
             else if (art == 111)
@@ -260,7 +317,7 @@ class Daten {
                     }),
                     // get the text from the feature - `this` is ol.Feature
                     // and show only under certain resolution
-                    text: ((resolution < 0.05) ? (kt_art.kt + " - " + kt_ober.kt) : '')
+                    text: ((resolution < 0.05) ? (art + " - " + ober) : '')
                 })
             })
         }

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<wfs:GetFeature xmlns="http://xml.novasib.de" xmlns:wfs="http://www.opengis.net/wfs" xmlns:gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net/ogc" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" service="WFS" version="1.0.0" xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-transaction.xsd">
+	<wfs:Query typeName="Dotquer" MPP="0">
+		<Filter>
+			<And>
+				<PropertyIsEqualTo>
+				<PropertyName>abschnittId</PropertyName>
+				<Literal>3A34EEB7B0624F14B02FC73CC1EADD52</Literal>
+				</PropertyIsEqualTo>
+				<PropertyIsEqualTo>
+				<PropertyName>objektId</PropertyName>
+				<Literal>fbbc43a9de894950950acbc4bc481e8d</Literal>
+				</PropertyIsEqualTo>
+				<PropertyIsEqualTo>
+				<PropertyName>vst</PropertyName>
+				<Literal>150</Literal>
+				</PropertyIsEqualTo>
+			</And>
+		</Filter>
+	</wfs:Query>
+</wfs:GetFeature>

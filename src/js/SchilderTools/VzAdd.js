@@ -6,6 +6,7 @@ import 'chosen-js/chosen.css';
 import 'jquery-ui-bundle';
 import 'jquery-ui-bundle/jquery-ui.css'
 import PublicWFS from '../PublicWFS.js';
+var CONFIG = require('../config.json');
 
 class VzAdd {
     constructor(map, daten) {
@@ -37,7 +38,9 @@ class VzAdd {
         this._popup.id = "vz_popup";
         this._popup.style.textAlign = "right";
 
-        let closeButton = document.createElement("button");
+        this._popup.innerHTML += '<div style="color: #f00; width: 100%; text-align: center;">ACHTUNG: Änderungen im aktuellen ER werden nicht angezeigt!<br/>Der Fehler wurde bereits an NOVASIB gemeldet.</div>'
+
+        /*let closeButton = document.createElement("button");
         closeButton.innerHTML = "x";
         closeButton.style.backgroundColor = "#d00";
         closeButton.style.color = "#fff";
@@ -45,8 +48,7 @@ class VzAdd {
         closeButton.style.fontWeight = "700";
         closeButton.style.marginBottom = "5px";
         closeButton.addEventListener("click", this._closePopup.bind(this));
-        this._popup.appendChild(closeButton);
-        this._popup.innerHTML += '<div style="color: #f00; width: 100%; text-align: center;">ACHTUNG: Änderungen im aktuellen ER werden nicht angezeigt!<br/>Der Fehler wurde bereits an NOVASIB gemeldet.</div>'
+        this._popup.appendChild(closeButton);*/
 
         this._ausblenden.appendChild(this._popup);
 
@@ -59,20 +61,20 @@ class VzAdd {
         this._popup.appendChild(this._liste);
 
 
-        let stvoNrNeu = document.createElement("select");
-        stvoNrNeu.id = "schilder";
-        stvoNrNeu.appendChild(document.createElement("option"));
+        let stvoZNrNeu = document.createElement("select");
+        stvoZNrNeu.id = "schilder";
+        stvoZNrNeu.appendChild(document.createElement("option"));
         for (let stvoznr of this._daten.klartexte.getAllSorted("Itvzstvoznr")) {
             let ele = document.createElement("option");
             ele.value = stvoznr['objektId'];
             ele.innerHTML = stvoznr['beschreib'];
-            stvoNrNeu.appendChild(ele);
+            stvoZNrNeu.appendChild(ele);
         }
-        this._popup.appendChild(stvoNrNeu);
+        this._popup.appendChild(stvoZNrNeu);
 
-        $(stvoNrNeu).on("change", this.newSchild.bind(this));
+        $(stvoZNrNeu).on("change", this.newSchild.bind(this));
 
-        $(stvoNrNeu).chosen({
+        $(stvoZNrNeu).chosen({
             search_contains: true,
             placeholder_text_single: "Schild hinzufügen...",
             no_results_text: "Nichts gefunden!"
@@ -88,6 +90,7 @@ class VzAdd {
         let buttonAbbrechen = document.createElement('button');
         buttonAbbrechen.addEventListener("click", this._closePopup.bind(this));
         buttonAbbrechen.innerHTML = "Abbrechen";
+        buttonAbbrechen.style.marginBottom = "250px";
         this._popup.appendChild(buttonAbbrechen);
 
         this._auswahl.getZeichen(VzAdd._zeichenGeladen, this)
@@ -128,94 +131,58 @@ class VzAdd {
         text.classList.add('schildText');
 
 
-        // StVONR
-        text.innerHTML += '<label>Verkehrszeichen</label><label style="margin-left: 230px;">Text</label><br />';
-        let stvonr = document.createElement("select");
-        stvonr.classList.add("big")
-        stvonr.classList.add("stvonr");
-        stvonr.name = "stvonr";
-        stvonr.id = "stvonr[" + eintrag.objektId + "]";
-
-        for (let stvoznr of this._daten.klartexte.getAllSorted("Itvzstvoznr")) {
-            let ele = document.createElement("option");
-            ele.value = stvoznr['objektId'];
-            ele.innerHTML = stvoznr['beschreib'];
-            if (eintrag.stvoznr != null && eintrag.stvoznr.substr(-32) == stvoznr['objektId']) {
-                ele.setAttribute("selected", "selected");
-            }
-            stvonr.appendChild(ele);
-        }
-        text.appendChild(stvonr);
+        // StVOZNR
+        text.appendChild(this._createSelect(eintrag, 'Verkehrszeichen', 'stvoznr', 'Itvzstvoznr'));
 
         // Text
-        text.innerHTML += '&nbsp;<input type="text" name="text" style="width: 120px;" value="' + ((eintrag.vztext != null) ? (eintrag.vztext) : ('')) + '" />';
+        let text_group = document.createElement("div");
+        text_group.className = "form_group";
+        let text_label = document.createElement("label");
+        text_label.innerHTML = 'Text';
+        text_group.appendChild(text_label);
+        text_group.appendChild(document.createElement("br"));
+        text_group.innerHTML += '<input type="text" name="vztext" value="' + ((eintrag.vztext != null) ? (eintrag.vztext) : ('')) + '" />';
+        text.appendChild(text_group);
+
         // Lage FB
-        text.innerHTML += '<br /><label>Lage</label><br />';
-        let lage = document.createElement("select");
-        lage.classList.add("big");
-        lage.name = "lage";
-        lage.id = "lage[" + eintrag.objektId + "]";
-        for (let lageKt of this._daten.klartexte.getAllSorted("Itvzlagefb")) {
-            let ele = document.createElement("option");
-            ele.value = lageKt['objektId'];
-            ele.innerHTML = lageKt['beschreib'];
-            if (eintrag.lageFb != null && eintrag.lageFb.substr(-32) == lageKt['objektId']) {
-                ele.setAttribute("selected", "selected");
-            }
-            lage.appendChild(ele);
-        }
-        text.appendChild(lage);
+        if (eintrag.lageFb == undefined) eintrag.lageFb = CONFIG.LAGEFB;
+        text.appendChild(this._createSelect(eintrag, 'Lage', 'lageFb', 'Itvzlagefb'));
+
         // Lesbarkeit
-        text.innerHTML += '<br /><label>Lesbarkeit</label><br />';
-        let lesbar = document.createElement("select");
-        lesbar.name = "lesbar";
-        lesbar.classList.add("big");
-        lesbar.id = "lesbar[" + eintrag.objektId + "]";
-        for (let lesbarKt of this._daten.klartexte.getAllSorted("Itvzlesbarkeit")) {
-            let ele = document.createElement("option");
-            ele.value = lesbarKt['objektId'];
-            ele.innerHTML = lesbarKt['beschreib'];
-            if (eintrag.lesbarkeit != null && eintrag.lesbarkeit.substr(-32) == lesbarKt['objektId']) {
-                ele.setAttribute("selected", "selected");
-            }
-            lesbar.appendChild(ele);
-        }
-        text.appendChild(lesbar);
-        text.innerHTML += '<br /><label>Sonstiges</label><br />';
+        text.appendChild(this._createSelect(eintrag, 'Lesbarkeit', 'lesbarkeit', 'Itvzlesbarkeit'));
+
         // Beleuchtet
-        //text.innerHTML += '<br /><label>Einzelschild</label><br />';
-        let beleucht = document.createElement("select");
-        beleucht.classList.add("small");
-        beleucht.id = "art[" + eintrag.objektId + "]";
-        for (let beleuchtKt of this._daten.klartexte.getAllSorted("Itvzbeleucht")) {
-            let ele = document.createElement("option");
-            ele.value = beleuchtKt['objektId'];
-            ele.innerHTML = beleuchtKt['beschreib'];
-            if (eintrag.beleucht != null && eintrag.beleucht.substr(-32) == beleuchtKt['objektId']) {
-                ele.setAttribute("selected", "selected");
-            }
-            beleucht.appendChild(ele);
-        }
-        beleucht.name = "beleucht";
-        text.appendChild(beleucht);
-        // Einzelschild
-        //text.innerHTML += '<br /><label>Einzelschild</label><br />';
-        let art = document.createElement("select");
-        art.classList.add("small");
-        art.id = "art[" + eintrag.objektId + "]";
-        art.name = "art"
-        for (let artKt of this._daten.klartexte.getAllSorted("Itvzart")) {
-            let ele = document.createElement("option");
-            ele.value = artKt['objektId'];
-            ele.innerHTML = artKt['beschreib'];
-            if (eintrag.art != null && eintrag.art.substr(-32) == artKt['objektId']) {
-                ele.setAttribute("selected", "selected");
-            }
-            art.appendChild(ele);
-        }
-        text.appendChild(art);
+        if (eintrag.beleucht == undefined) eintrag.beleucht = CONFIG.BELEUCHTET;
+        text.appendChild(this._createSelect(eintrag, 'Beleuchtung', 'beleucht', 'Itvzbeleucht'));
+
+        //Einzelschild
+        if (eintrag.art == undefined) eintrag.art = CONFIG.EINZELSCHILD;
+        text.appendChild(this._createSelect(eintrag, 'Einzelschild', 'art', 'Itvzart'));
+
+        // Größe des Schilder
+        if (eintrag.groesse == undefined) eintrag.groesse = CONFIG.GROESSE;
+        text.appendChild(this._createSelect(eintrag, 'Gr&ouml;&szlig;e', 'groesse', 'Itvzgroesse'));
+
+        // Externe Objektnr
+        let extnr_group = document.createElement("div");
+        extnr_group.className = "form_group";
+        let extnr_label = document.createElement("label");
+        extnr_label.innerHTML = 'Externe Objektnummer';
+        extnr_group.appendChild(extnr_label);
+        extnr_group.appendChild(document.createElement("br"));
+        extnr_group.innerHTML += '<input type="text" name="objektnr" value="' + ((eintrag.objektnr != null) ? (eintrag.objektnr) : ('')) + '" />';
+        text.appendChild(extnr_group);
+
+        // Erfassungsart
+        if (eintrag.erfart == undefined) eintrag.erfart = CONFIG.ERFASSUNG;
+        text.appendChild(this._createSelect(eintrag, 'Erfassung', 'erfart', 'Iterfart'));
+
+        // Quelle
+        text.appendChild(this._createSelect(eintrag, 'Quelle', 'quelle', 'Itquelle'));
 
         // Löschen
+        let del_group = document.createElement("div");
+        del_group.className = "form_group";
         let buttonLoeschen = document.createElement('button');
         buttonLoeschen.addEventListener("click", function (event) {
             event.preventDefault();
@@ -228,7 +195,7 @@ class VzAdd {
                 modal: true,
                 buttons: {
                     "Schild löschen": function () {
-                        $(event.target.parentElement.parentElement).remove();
+                        $(event.target.parentElement.parentElement.parentElement).remove();
                         $(this).dialog("close");
                     },
                     Cancel: function () {
@@ -240,41 +207,61 @@ class VzAdd {
         });
         buttonLoeschen.innerHTML = "Löschen";
         buttonLoeschen.style.backgroundColor = "#f99";
-        $(buttonLoeschen).button()
-        text.appendChild(buttonLoeschen);
+        $(buttonLoeschen).button();
+        del_group.appendChild(buttonLoeschen);
+        text.appendChild(del_group);
 
         $(function () {
-            $(text).children("select.stvonr").chosen({
-                width: "250px",
+            let alle = $(text).children('div')
+            alle.first().children("select").chosen({
+                width: "220px",
                 search_contains: true,
             }).change(function (event, data) {
                 img.src = "http://gv-srv-w00118:8080/schilder/" + this._daten.klartexte.get("Itvzstvoznr", data.selected)['kt'] + ".svg";
             }.bind(this));
 
-            $(text).children("select.big").chosen({
-                width: "350px",
-                search_contains: true,
-            })
-
-            $(text).children("select.small").chosen({
-                //width: "150px",
+            alle.first().nextAll().children('select').chosen({
+                width: "220px",
                 search_contains: true,
             });
-
-            $(text).children("input[type=checkbox]").checkboxradio({
-                //icon: false
-            })
         }.bind(this));
 
+    }
+
+    _createSelect(eintrag, label, id, klartext) {
+        let group = document.createElement("div");
+        group.className = "form_group";
+        let label_ele = document.createElement("label");
+        label_ele.innerHTML = label;
+        group.appendChild(label_ele);
+        group.appendChild(document.createElement("br"));
+        let select = document.createElement("select");
+        select.classList.add("big");
+        select.classList.add(id);
+        select.name = id;
+        select.id = id + "[" + eintrag.objektId + "]";
+        for (let kt of this._daten.klartexte.getAllSorted(klartext)) {
+            let option = document.createElement("option");
+            option.value = kt['objektId'];
+            option.innerHTML = kt['beschreib'];
+            if (eintrag[id] != null && eintrag[id].substr(-32) == kt['objektId']) {
+                option.setAttribute("selected", "selected");
+            }
+            select.appendChild(option);
+        }
+        group.appendChild(select);
+        return group;
     }
 
     static loadKlartexte(daten) {
         daten.klartexte.load('Itvzstvoznr');
         daten.klartexte.load('Itquelle');
+        daten.klartexte.load('Iterfart');
         daten.klartexte.load('Itvzlagefb');
         daten.klartexte.load('Itvzlesbarkeit');
         daten.klartexte.load("Itvzart");
         daten.klartexte.load("Itvzbeleucht");
+        daten.klartexte.load("Itvzgroesse");
     }
 
     _save(event) {
@@ -289,14 +276,18 @@ class VzAdd {
             let schild = {}
             schild.oid = forms[i].dataset.oid;
             schild.sort = i + 1;
-            schild.stvonr = $(eintrag).children("select[name='stvonr']")[0].value;
-            schild.text = $(eintrag).children("input[name='text']")[0].value;
+            schild.stvoznr = $(eintrag).children().children("select[name='stvoznr']")[0].value;
+            schild.text = $(eintrag).children().children("input[name='vztext']")[0].value;
             if (schild.text == "") schild.text = null;
-            schild.lage = $(eintrag).children("select[name='lage']")[0].value;
-            schild.lesbar = $(eintrag).children("select[name='lesbar']")[0].value;
-            schild.beleucht = $(eintrag).children("select[name='beleucht']")[0].value;
-            schild.art = $(eintrag).children("select[name='art']")[0].value;
-
+            schild.lageFb = $(eintrag).children().children("select[name='lageFb']")[0].value;
+            schild.lesbarkeit = $(eintrag).children().children("select[name='lesbarkeit']")[0].value;
+            schild.beleucht = $(eintrag).children().children("select[name='beleucht']")[0].value;
+            schild.art = $(eintrag).children().children("select[name='art']")[0].value;
+            schild.groesse = $(eintrag).children().children("select[name='groesse']")[0].value;
+            schild.erfart = $(eintrag).children().children("select[name='erfart']")[0].value;
+            schild.quelle = $(eintrag).children().children("select[name='quelle']")[0].value;
+            schild.objektnr = $(eintrag).children().children("input[name='objektnr']")[0].value;
+            if (schild.objektnr == "") schild.objektnr = null;
             if (schild.oid.length < 10) { // undefined
                 neu.push(schild);
             } else {
@@ -309,8 +300,9 @@ class VzAdd {
 
         let update = ""
         let anzDelete = 0, anzUpdate = 0;
-
-        for (let oldZeichen of this._auswahl.getZeichen()) {
+        let zeichen = this._auswahl.getZeichen();
+        for (let oldZeichen_i in zeichen) {
+            let oldZeichen = zeichen[oldZeichen_i];
             if (oldZeichen.objektId in alt) {
                 let modiZeichen = alt[oldZeichen.objektId];
                 let upd = "";
@@ -318,29 +310,49 @@ class VzAdd {
                     upd += '<wfs:Property>\n<wfs:Name>sort</wfs:Name>\n<wfs:Value>' + modiZeichen.sort + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update sort");
                 }
-                if (oldZeichen.stvoznr != "#" + modiZeichen.stvonr) {
-                    upd += '<wfs:Property>\n<wfs:Name>stvoznr/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.stvonr + '</wfs:Value>\n</wfs:Property>\n';
+                if (oldZeichen.stvoznr.substr(-32) != modiZeichen.stvoznr) {
+                    upd += '<wfs:Property>\n<wfs:Name>stvoznr/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.stvoznr + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update stvoznr");
                 }
                 if (oldZeichen.vztext != modiZeichen.text) {
                     upd += '<wfs:Property>\n<wfs:Name>vztext</wfs:Name>\n<wfs:Value>' + modiZeichen.text + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update text");
                 }
-                if (oldZeichen.lageFb != "#S" + modiZeichen.lage) {
-                    upd += '<wfs:Property>\n<wfs:Name>lageFb/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.lage + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update lage");
+                if (oldZeichen.lageFb.substr(-32) != modiZeichen.lageFb) {
+                    upd += '<wfs:Property>\n<wfs:Name>lageFb/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.lageFb + '</wfs:Value>\n</wfs:Property>\n';
+                    console.log("update lageFb");
                 }
-                if (oldZeichen.lesbarkeit != "#S" + modiZeichen.lesbar) {
-                    upd += '<wfs:Property>\n<wfs:Name>lesbarkeit/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.lesbar + '</wfs:Value>\n</wfs:Property>\n';
+                if (oldZeichen.lesbarkeit.substr(-32) != modiZeichen.lesbarkeit) {
+                    upd += '<wfs:Property>\n<wfs:Name>lesbarkeit/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.lesbarkeit + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update text");
                 }
-                if (oldZeichen.beleucht != "#S" + modiZeichen.beleucht) {
+                if (oldZeichen.beleucht.substr(-32) != modiZeichen.beleucht) {
                     upd += '<wfs:Property>\n<wfs:Name>beleucht/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.beleucht + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update beleucht");
                 }
-                if (oldZeichen.art != "#" + modiZeichen.art) {
+                if (oldZeichen.art.substr(-32) != modiZeichen.art) {
                     upd += '<wfs:Property>\n<wfs:Name>art/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.art + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update art");
+                }
+
+                if (oldZeichen.groesse.substr(-32) != modiZeichen.groesse) {
+                    upd += '<wfs:Property>\n<wfs:Name>groesse/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.groesse + '</wfs:Value>\n</wfs:Property>\n';
+                    console.log("update groesse");
+                }
+
+                if (oldZeichen.erfart.substr(-32) != modiZeichen.erfart) {
+                    upd += '<wfs:Property>\n<wfs:Name>erfart/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.erfart + '</wfs:Value>\n</wfs:Property>\n';
+                    console.log("update erfart");
+                }
+
+                if (oldZeichen.quelle.substr(-32) != modiZeichen.quelle) {
+                    upd += '<wfs:Property>\n<wfs:Name>quelle/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.quelle + '</wfs:Value>\n</wfs:Property>\n';
+                    console.log("update quelle");
+                }
+
+                if (oldZeichen.objektnr != modiZeichen.objektnr) {
+                    upd += '<wfs:Property>\n<wfs:Name>objektnr</wfs:Name>\n<wfs:Value>' + modiZeichen.objektnr + '</wfs:Value>\n</wfs:Property>\n';
+                    console.log("update objektnr");
                 }
 
                 if (upd != "") {
@@ -382,19 +394,20 @@ class VzAdd {
         }
         for (let zeichen of neu) {
             console.log("neu");
+            if (zeichen.text == null) zeichen.text = "";
             update += '<wfs:Insert>\n<Otvzeichlp>\n' +
                 '<projekt typeName="Projekt" xlink:href="#' + this._daten.ereignisraum + '"/>\n' +
                 '<sort>' + zeichen.sort + '</sort>\n' +
-                '<stvoznr xlink:href="#S' + zeichen.stvonr + '" typeName="Itvzstvoznr" />\n' +
+                '<stvoznr xlink:href="#S' + zeichen.stvoznr + '" typeName="Itvzstvoznr" />\n' +
                 '<vztext>' + zeichen.text + '</vztext>\n' +
-                '<lageFb xlink:href="#S' + zeichen.lage + '" typeName="Itvzlagefb" />\n' +
-                '<lesbarkeit xlink:href="#S' + zeichen.lesbar + '" typeName="Itvzlesbarkeit" />\n' +
+                '<lageFb xlink:href="#S' + zeichen.lageFb + '" typeName="Itvzlagefb" />\n' +
+                '<lesbarkeit xlink:href="#S' + zeichen.lesbarkeit + '" typeName="Itvzlesbarkeit" />\n' +
                 '<beleucht xlink:href="#S' + zeichen.beleucht + '" typeName="Itvzbeleucht" />\n' +
                 '<art xlink:href="#' + zeichen.art + '" typeName="Itvzart" />\n' +
                 '<parent typeName="Otaufstvor" xlink:href="#' + this._auswahl.fid + '"/>\n' +
-                //<erfart luk="10" typeName="Iterfart" xlink: href="#S8ac892a124b8e9f20124c3756edc03f5"/>     
-                //<quelle luk="61" typeName="Itquelle" xlink: href="#S8ac892a13bab6edb013bad6854560461"/>     
-                //<ADatum>2019-02-21</ADatum>
+                '<erfart xlink:href="#' + zeichen.erfart + '" typeName="Iterfart"/>\n' +
+                '<quelle xlink:href="#' + zeichen.quelle + '" typeName="Itquelle"/>\n' +
+                '<ADatum>' + new Date().toISOString().slice(0, 10) + '</ADatum>\n' +
                 '</Otvzeichlp>\n</wfs:Insert>';
 
         }
@@ -416,7 +429,13 @@ class VzAdd {
                         $(event.target.parentElement.parentElement).remove();
                         console.log("bestätigt")
                         console.log(this)
-                        PublicWFS.addSekInER(this._auswahl, "Otaufstvor", "Otvzeichlp", this._daten.ereignisraum_nr, this._erCallback, undefined, this, update, this._auswahl);
+                        // Unterscheidung zwischen neuer Aufstellvorrichtung und alter, leider nicht möglich
+                        /*if (this._auswahl.hasSekObj == 0)
+                            PublicWFS.doTransaction(update, this._updateCallback, undefined, this, this._auswahl);
+                        else
+                            PublicWFS.addSekInER(this._auswahl, "Otaufstvor", "Otvzeichlp", this._daten.ereignisraum_nr, this._erCallback, undefined, this, update, this._auswahl);
+                        */
+                        PublicWFS.addSekInER(this._auswahl, "Otaufstvor", "Otvzeichlp", this._daten.ereignisraum_nr, this._erCallback, this._erCallback, this, update, this._auswahl);
                         //this._closePopup(event);
                         $("#dialog-confirm").dialog("close");
                     }.bind(this),
@@ -436,8 +455,10 @@ class VzAdd {
     }
 
     _updateCallback(__, _this, _auswahl) {
+        PublicWFS.showMessage("erfolgreich", false);
         console.log("reload");
         _auswahl.reloadZeichen();
+        _this._select.getFeatures().clear();
     }
 
     _closePopup(event) {

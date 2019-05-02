@@ -2,13 +2,13 @@ import 'ol/ol.css';
 import '../css/edit.css';
 import { Map, View } from 'ol';
 import { defaults as defaultInteractions } from 'ol/interaction.js';
-import { defaults as defaultControls } from 'ol/control.js';
+import { defaults as defaultControls, ScaleLine, ZoomSlider } from 'ol/control.js';
 import { Tile as TileLayer } from 'ol/layer';
 import { TileWMS as TileWMS } from 'ol/source';
 import { register } from 'ol/proj/proj4.js';
 import proj4 from 'proj4';
 import { transform, fromLonLat } from 'ol/proj.js';
-import '@babel/polyfill';
+import 'babel-polyfill';
 import ModifyTool from './QuerTools/ModifyTool.js';
 import Daten from './Daten.js';
 import PublicWFS from './PublicWFS.js';
@@ -18,10 +18,12 @@ import AddTool from './QuerTools/AddTool.js';
 import DelTool from './QuerTools/DelTool.js';
 import VsInfoTool from './SchilderTools/VsInfoTool.js';
 import AvAdd from './SchilderTools/AvAdd.js';
+import AvDelete from './SchilderTools/AvDelete.js';
 import VzAdd from './SchilderTools/VzAdd.js';
 import AvMove from './SchilderTools/AvMove.js';
 import AvAdd2ER from './SchilderTools/AvAdd2ER.js';
 import QsAdd2ER from './QuerTools/QsAdd2ER.js';
+import Measure from './Measure.js';
 import LayerSwitch from './LayerSwitch.js';
 import OSM from 'ol/source/OSM.js';
 
@@ -41,7 +43,7 @@ var er = decodeURI(urlParamER[1])
 var ernr = decodeURI(urlParamERNR[1])
 console.log("Ereignisraum: " + ernr);
 
-let daten, infoTool, editTool, delTool, partTool, addTool, vsInfoTool, avAdd, avAdd2ER, qsAdd2ER, avMove, vzAdd;
+let daten, infoTool, editTool, delTool, partTool, addTool, vsInfoTool, avAdd, avAdd2ER, qsAdd2ER, avMove, vzAdd, measure, avDel;
 
 window.addEventListener('load', function () {
 
@@ -100,15 +102,18 @@ window.addEventListener('load', function () {
     addTool = new AddTool(map, daten, infoTool);
     partTool = new PartTool(map, daten, infoTool);
     vsInfoTool = new VsInfoTool(map, [daten.l_aufstell], "sidebar");
-    avAdd = new AvAdd(map, daten); //map, daten.l_aufstell, er, "sidebar");
+    avAdd = new AvAdd(map, daten);
     vzAdd = new VzAdd(map, daten);
     avMove = new AvMove(map, daten, vsInfoTool);
     avAdd2ER = new AvAdd2ER(map, daten);
     qsAdd2ER = new QsAdd2ER(map, daten);
+    measure = new Measure(map);
+    avDel = new AvDelete(map, daten, daten.l_aufstell, "sidebar");
 
     document.getElementById("befehl_info").addEventListener('change', befehl_changed);
     document.getElementById("befehl_vsinfo").addEventListener('change', befehl_changed);
     document.getElementById("befehl_avadd").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_avdel").addEventListener('change', befehl_changed);
     document.getElementById("befehl_vzadd").addEventListener('change', befehl_changed);
     document.getElementById("befehl_modify").addEventListener('change', befehl_changed);
     document.getElementById("befehl_delete").addEventListener('change', befehl_changed);
@@ -117,11 +122,17 @@ window.addEventListener('load', function () {
     document.getElementById("befehl_avadd2er").addEventListener('change', befehl_changed);
     document.getElementById("befehl_avmove").addEventListener('change', befehl_changed);
     document.getElementById("befehl_qsadd2er").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_messen").addEventListener('change', befehl_changed);
 
 
     document.getElementById("zoomToExtent").addEventListener('click', function () {
         let minX = null, maxX = null, minY = null, maxY = null;
-        for (let f of daten.l_achse.getSource().getFeatures()) {
+        let features = daten.l_achse.getSource().getFeatures();
+        if (features.length == 0) {
+            PublicWFS.showMessage("(noch) keine Geometrien geladen", true);
+            return;
+        }
+        for (let f of features) {
             let p = f.getGeometry().getExtent();
 
             if (minX == null || minX > p[0]) minX = p[0];
@@ -194,6 +205,8 @@ function befehl_changed() {
     qsAdd2ER.stop();
     avMove.stop();
     vzAdd.stop();
+    measure.stop();
+    avDel.stop();
 
     if (document.getElementById("befehl_info").checked)
         infoTool.start();
@@ -201,6 +214,8 @@ function befehl_changed() {
         vsInfoTool.start();
     else if (document.getElementById("befehl_avadd").checked)
         avAdd.start();
+    else if (document.getElementById("befehl_avdel").checked)
+        avDel.start();
     else if (document.getElementById("befehl_vzadd").checked)
         vzAdd.start();
     else if (document.getElementById("befehl_avadd2er").checked)
@@ -217,6 +232,8 @@ function befehl_changed() {
         partTool.start();
     else if (document.getElementById("befehl_add").checked)
         addTool.start();
+    else if (document.getElementById("befehl_messen").checked)
+        measure.start();
 }
 
 function createMap() {
@@ -227,7 +244,7 @@ function createMap() {
                 visible: false,
                 switchable: true,
                 source: new OSM()
-              }),
+            }),
             new TileLayer({
                 name: 'ALKIS',
                 visible: false,
@@ -276,11 +293,11 @@ function createMap() {
                 visible: false,
                 switchable: true,
                 source: new Static({
-                  attributions: ['Freie und Hansestadt Hamburg, LGV 2019'],
-                  url: 'http://gv-srv-w00118:8080/dop5rgb_3256650_592800_hh_2018.jpg',
-                  imageExtent: transform([566500,5928000, 566750,5928250], 'EPSG:25832', CONFIG.EPSG_CODE)
+                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019'],
+                    url: 'http://gv-srv-w00118:8080/dop5rgb_3256650_592800_hh_2018.jpg',
+                    imageExtent: transform([566500, 5928000, 566750, 5928250], 'EPSG:25832', CONFIG.EPSG_CODE)
                 })
-              }),
+            }),
 
             new TileLayer({
                 name: "Querschnitte gruppiert",
@@ -303,7 +320,7 @@ function createMap() {
         interactions: defaultInteractions({
             pinchRotate: false
         }),
-        controls: defaultControls().extend([new LayerSwitch()]),
+        controls: defaultControls().extend([new LayerSwitch(), new ScaleLine(), new ZoomSlider()]),
         view: new View({
             projection: CONFIG.EPSG_CODE,
             center: fromLonLat([10.0045, 53.4975], CONFIG.EPSG_CODE),
