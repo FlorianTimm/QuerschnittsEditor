@@ -405,8 +405,9 @@ class VzAdd {
                 '<beleucht xlink:href="#S' + zeichen.beleucht + '" typeName="Itvzbeleucht" />\n' +
                 '<art xlink:href="#' + zeichen.art + '" typeName="Itvzart" />\n' +
                 '<parent typeName="Otaufstvor" xlink:href="#' + this._auswahl.fid + '"/>\n' +
-                '<erfart xlink:href="#' + zeichen.erfart + '" typeName="Iterfart"/>\n' +
-                '<quelle xlink:href="#' + zeichen.quelle + '" typeName="Itquelle"/>\n' +
+                '<groesse xlink:href="#' + zeichen.groesse + '" typeName="Itvzgroesse" />\n' +
+                '<erfart xlink:href="#' + zeichen.erfart + '" typeName="Iterfart" />\n' +
+                '<quelle xlink:href="#' + zeichen.quelle + '" typeName="Itquelle" />\n' +
                 '<ADatum>' + new Date().toISOString().slice(0, 10) + '</ADatum>\n' +
                 '</Otvzeichlp>\n</wfs:Insert>';
 
