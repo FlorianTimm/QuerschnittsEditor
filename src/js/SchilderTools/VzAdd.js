@@ -8,7 +8,19 @@ import 'jquery-ui-bundle/jquery-ui.css'
 import PublicWFS from '../PublicWFS.js';
 var CONFIG = require('../config.json');
 
+/**
+ * Funktion zum Hinzufügen von Verkehrsschildern
+ * @author Florian Timm, LGV HH 
+ * @version 2019.05.20
+ * @copyright MIT
+ */
+
 class VzAdd {
+    /**
+     * Konstruktor
+     * @param {import("ol/Map.js")} map Kartenobjekt
+     * @param {import("../Daten.js")} daten Datenobjekt
+     */
     constructor(map, daten) {
         this._map = map;
         this._daten = daten;
@@ -25,12 +37,19 @@ class VzAdd {
         VzAdd.loadKlartexte(this._daten);
     }
 
+
+    /**
+     * Wird ausgelöst, wenn sich die Auswahl der Aufstellvorrichtungen ändert
+     * @param {import("ol/interaction/Select.js").SelectEvent} event Event-Objekt
+     */
     _selected(event) {
+        // Filtern, wenn nichts ausgewählt wurde
         if (event.selected.length == 0) {
             return;
         }
         this._auswahl = event.selected[0];
 
+        // Popup erzeugen
         this._ausblenden = document.createElement("div");
         this._ausblenden.id = "vzadd_ausblenden";
         document.body.appendChild(this._ausblenden);
@@ -114,6 +133,10 @@ class VzAdd {
         }
     }
 
+    /**
+     * Erzeugt pro Schild ein Änderungsformular
+     * @param {Zeichen} eintrag Schild, für welches das Formular erzeugt werden soll
+     */
     _createSchildForm(eintrag) {
         let div = document.createElement("form");
         this._liste.appendChild(div);
@@ -253,6 +276,10 @@ class VzAdd {
         return group;
     }
 
+    /**
+     * Lädt die benötigen Klartexte (sofern nciht schon vorhanden)
+     * @param {Daten} daten 
+     */
     static loadKlartexte(daten) {
         daten.klartexte.load('Itvzstvoznr');
         daten.klartexte.load('Itquelle');
@@ -264,9 +291,15 @@ class VzAdd {
         daten.klartexte.load("Itvzgroesse");
     }
 
+    /**
+     * Wird durch Klick auf "Speichern" ausgelöst, prüft Änderungen und listet diese auf
+     * @param {Event} event 
+     */
     _save(event) {
         let neu = [];
         let alt = {};
+
+        // Alle Schilder-Formulare auf Änderungen prüfen
         let forms = this._popup.getElementsByTagName("form");
         for (let i = 0; i < forms.length; i++) {
             //form of this._popup.getElementsByTagName("form")) {
@@ -450,11 +483,25 @@ class VzAdd {
         }
     }
 
+    /**
+     * Wird aufgerufen, nachdem erfolgreich oder erfolglos versucht wurde, die Aufstellvorrichtung in den Ereignisraum zu laden
+     * @param {*} __ 
+     * @param {VzAdd} _this 
+     * @param {string} update Transaktion als Text
+     * @param {*} _auswahl 
+     */
     _erCallback(__, _this, update, _auswahl) {
         console.log("Update: " + update)
         PublicWFS.doTransaction(update, _this._updateCallback, undefined, _this, _auswahl);
     }
 
+
+    /**
+     * wird nach der Ausführung des Updates ausgeführt
+     * @param {*} __ 
+     * @param {VzAdd} _this 
+     * @param {*} _auswahl 
+     */
     _updateCallback(__, _this, _auswahl) {
         PublicWFS.showMessage("erfolgreich", false);
         console.log("reload");
@@ -462,6 +509,10 @@ class VzAdd {
         _this._select.getFeatures().clear();
     }
 
+    /**
+     * Schließt das Popup mit den Schildern
+     * @param {*} event 
+     */
     _closePopup(event) {
         //this._ausblenden.remove();
         document.body.removeChild(this._ausblenden);

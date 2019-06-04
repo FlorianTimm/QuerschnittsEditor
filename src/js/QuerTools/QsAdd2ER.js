@@ -4,10 +4,13 @@ import PublicWFS from '../PublicWFS.js';
 import Querschnittsdaten from '../Objekte/Querschnittsdaten.js';
 
 class QsAdd2ER {
+    /**
+     * @param {import("ol/Map.js").Map} map Karte
+     * @param {import("../Daten.js").Daten} daten Datenobjekt
+     */
     constructor(map, daten) {
         this.daten = daten;
         this.map = map;
-
         this.select = new SelectInteraction({
             layers: [this.daten.l_achse],
             hitTolerance: 10,
@@ -21,6 +24,10 @@ class QsAdd2ER {
         this.select.on('select', this.onSelect.bind(this))
     }
 
+    /**
+     * 
+     * @param {*} event 
+     */
     onSelect(event) {
         //console.log("Auswahl");
         if (this.select.getFeatures().getArray().length == 0) return;

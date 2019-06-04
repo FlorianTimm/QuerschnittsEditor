@@ -1,6 +1,19 @@
 import { Select as SelectInteraction } from 'ol/interaction';
 
+/**
+ * Funktion zum Anzeigen von Informationen zu Aufstellvorrichtungen und Schildern
+ * @author Florian Timm, LGV HH 
+ * @version 2019.05.20
+ * @copyright MIT
+ */
 class VsInfoTool {
+
+    /**
+     * Konstruktor
+     * @param {Map} map 
+     * @param {*} layer 
+     * @param {*} sidebar 
+     */
     constructor(map, layer, sidebar) {
         this._map = map;
         this._layer = layer;
@@ -17,6 +30,10 @@ class VsInfoTool {
         this._select.on('select', this.featureSelected.bind(this))
     }
 
+    /**
+     * Wird ausgelöst beim Auswählen einer Aufstellvorrichtung
+     * @param {SelectEvent} event 
+     */
     featureSelected(event) {
         if (event.selected.length == 0) {
             this._infoField.style.display = "none";

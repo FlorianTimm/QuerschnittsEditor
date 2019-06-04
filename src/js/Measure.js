@@ -5,6 +5,7 @@ import { Vector as VectorLayer } from 'ol/layer.js';
 import Overlay from 'ol/Overlay.js';
 import { getLength } from 'ol/sphere.js';
 import { unByKey } from 'ol/Observable.js';
+var CONFIG = require('./config.json');
 
 class Measure {
 
@@ -57,7 +58,7 @@ class Measure {
         });
 
         var formatLength = function (line) {
-            var length = getLength(line);
+            var length = getLength(line, { projection: CONFIG.EPSG_CODE });
             var output;
             if (length > 100) {
                 output = (Math.round(length / 1000 * 100) / 100) +
