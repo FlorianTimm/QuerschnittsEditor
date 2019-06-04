@@ -1,5 +1,4 @@
-import '../css/index.css';
-import PublicWFS from './PublicWFS.js';
+import PublicWFS from './PublicWFS';
 
 window.addEventListener('load', loadER());
 

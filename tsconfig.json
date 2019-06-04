@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+      "baseUrl": "./",
+      "typeRoots": [
+        "node_modules/@types",
+        "node_modules/@hanreev/types-ol"
+      ],
+      "types": [
+        "ol",
+        "node",
+        "jquery"
+      ]
+    }
+  }
