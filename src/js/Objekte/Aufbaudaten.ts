@@ -1,4 +1,4 @@
-var CONFIG_WFS = require('../config_wfs.json');
+var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
 
 class Aufbau {
 	abschnittOderAst: string = null;
@@ -69,15 +69,15 @@ class Aufbau {
 	createXML() {
 		let r = '<Otschicht>\n';
 
-		for (let tag in CONFIG_WFS.AUFBAUDATEN) {
+		for (let tag in CONFIG_WFS["AUFBAUDATEN"]) {
 			//console.log(tag);
 			if (this[tag] === null) continue;
-			if (CONFIG_WFS.AUFBAUDATEN[tag].art == 0 || CONFIG_WFS.AUFBAUDATEN[tag] == 1) {
+			if (CONFIG_WFS["AUFBAUDATEN"][tag].art == 0 || CONFIG_WFS["AUFBAUDATEN"][tag].art == 1) {
 				// Kein Klartext
 				r += '<' + tag + '>' + this[tag] + '</' + tag + '>\n';
-			} else if (CONFIG_WFS.AUFBAUDATEN[tag].art == 2) {
+			} else if (CONFIG_WFS["AUFBAUDATEN"][tag].art == 2) {
 				// Klartext
-				r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS.AUFBAUDATEN[tag].kt + '" />' + this[tag];
+				r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS["AUFBAUDATEN"][tag].kt + '" />' + this[tag];
 			}
 		}
 

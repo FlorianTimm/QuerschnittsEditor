@@ -1,9 +1,17 @@
 import { Style, Stroke, Fill } from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
-import never from 'ol/events/condition';
+import { never } from 'ol/events/condition';
+import Tool from '../Tool';
+import { Map } from 'ol';
+import Daten from '../Daten';
 
 class InfoTool implements Tool {
-    constructor(map, daten) {
+    map: Map;
+    daten: Daten;
+    select: SelectInteraction;
+    select_fl: SelectInteraction;
+    
+    constructor(map: Map, daten: Daten) {
         this.map = map;
         this.daten = daten;
 
@@ -34,7 +42,7 @@ class InfoTool implements Tool {
             })
         });
 
-        this.select_fl.on('select', function (e) {
+        this.select_fl.on('select', function (e: { selected: any[]; }) {
             this.select.getFeatures().clear()
             if (e.selected.length > 0) {
                 let auswahl = e.selected[0];
@@ -45,13 +53,13 @@ class InfoTool implements Tool {
         }.bind(this));
     }
 
-    logAuswahl(selectBefehl) {
+    logAuswahl(selectBefehl: SelectInteraction) {
         var selection = selectBefehl.getFeatures();
         if (selection.getLength() <= 0) {
-            document.forms.info.style.display = "none";
+            document.forms.namedItem("info").style.display = "none";
             return;
         }
-        document.forms.info.style.display = "block";
+        document.forms.namedItem("info").style.display = "block";
         var querschnitt = selection.item(0).get('objekt');
 
         document.getElementById("info_vnk").innerHTML = querschnitt.station.abschnitt.vnk;
@@ -59,11 +67,11 @@ class InfoTool implements Tool {
         document.getElementById("info_station").innerHTML = querschnitt.vst + " - " + querschnitt.bst;
         document.getElementById("info_streifen").innerHTML = querschnitt.streifen + " " + querschnitt.streifennr;
 
-        document.getElementById("info_art").value = (querschnitt.art == null) ? '' : querschnitt.art.substr(-32);
-        document.getElementById("info_ober").value = (querschnitt.artober == null) ? '' : querschnitt.artober.substr(-32);
+        (document.getElementById("info_art") as HTMLInputElement).value = (querschnitt.art == null) ? '' : querschnitt.art.substr(-32);
+        (document.getElementById("info_ober") as HTMLInputElement).value = (querschnitt.artober == null) ? '' : querschnitt.artober.substr(-32);
 
-        document.getElementById("info_breite").value = querschnitt.breite;
-        document.getElementById("info_bisbreite").value = querschnitt.bisBreite;
+        (document.getElementById("info_breite") as HTMLInputElement).value = querschnitt.breite;
+        (document.getElementById("info_bisbreite") as HTMLInputElement).value = querschnitt.bisBreite;
     }
 
 
@@ -75,7 +83,7 @@ class InfoTool implements Tool {
     stop() {
         this.map.removeInteraction(this.select);
         this.map.removeInteraction(this.select_fl);
-        document.forms.info.style.display = "none";
+        document.forms.namedItem("info").style.display = "none";
     }
 
 }

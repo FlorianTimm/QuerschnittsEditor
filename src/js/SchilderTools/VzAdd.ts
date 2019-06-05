@@ -1,6 +1,6 @@
 import { Select as SelectInteraction } from 'ol/interaction';
 import '../../css/vzadd.css';
-import "../import_jquery";
+import "../import_jquery.js";
 import 'chosen-js';
 import 'chosen-js/chosen.css';
 import 'jquery-ui-bundle';
@@ -20,15 +20,15 @@ var CONFIG = require('../config.json');
  */
 
 class VzAdd implements Tool {
-    _map: Map;
-    _daten: Daten;
-    _ausblenden: any = null;
-    _liste: any = null;
-    _auswahl: any = null;
-    _select: SelectInteraction;
-    _popup: HTMLDivElement;
+    private _map: Map;
+    private _daten: Daten;
+    private _ausblenden: any = null;
+    private _liste: any = null;
+    private _auswahl: any = null;
+    private _select: SelectInteraction;
+    private _popup: HTMLDivElement;
 
-    constructor(map:Map, daten:Daten) {
+    constructor(map: Map, daten: Daten) {
         this._map = map;
         this._daten = daten;
 
@@ -208,7 +208,7 @@ class VzAdd implements Tool {
                 modal: true,
                 buttons: {
                     "Schild löschen": function () {
-                        $(event.target.parentElement.parentElement.parentElement).remove();
+                        $((event.target as HTMLUnknownElement).parentElement.parentElement.parentElement).remove();
                         $(this).dialog("close");
                     },
                     Cancel: function () {
@@ -286,7 +286,7 @@ class VzAdd implements Tool {
      * @param {Event} event 
      */
     _save(event) {
-        let neu:Zeichen[] = [];
+        let neu: Zeichen[] = [];
         let alt = {};
 
         // Alle Schilder-Formulare auf Änderungen prüfen

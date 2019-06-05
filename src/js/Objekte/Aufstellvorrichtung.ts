@@ -5,31 +5,36 @@ import VectorSource from 'ol/source/Vector';
 import { Vector as VectorLayer } from 'ol/layer';
 import { Style, Stroke, Fill, Circle, Text } from 'ol/style';
 import Zeichen from './Zeichen';
-import "../import_jquery";
+import "../import_jquery.js";
 import 'chosen-js';
 import 'chosen-js/chosen.css';
 import Daten from "../Daten";
 import Klartext from './Klartext';
+import Abschnitt from './Abschnitt';
+import { InfoToolSelectable } from '../SchilderTools/VsInfoTool';
+import { Map } from 'ol';
 
-var CONFIG_WFS = require('../config_wfs.json');
+var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
 
 
-class Aufstellvorrichtung extends Feature {
+class Aufstellvorrichtung extends Feature implements InfoToolSelectable {
     _daten: Daten;
     _zeichen: Zeichen = null;
     fid: string = null;
     inER: {} = {};
-    abschnitt: any;
-    vst: string;
-    labstbaVst: any;
+    abschnitt: Abschnitt;
+    vst: number;
+    bst: number;
+    labstbaVst: number;
     rabstbaVst: number;
     hasSekObj: number;
     quelle: string;
     vabstVst: number;
     vabstBst: number;
-    bst: number;
     objektId: string;
     projekt: string;
+    art: string;
+    rlageVst: string;
 
     constructor(daten: Daten) {
         super({ geom: null });
@@ -37,7 +42,7 @@ class Aufstellvorrichtung extends Feature {
         Aufstellvorrichtung.loadKlartexte(this._daten.klartexte);
     }
 
-    static loadKlartexte(klartexte) {
+    static loadKlartexte(klartexte: Klartext) {
         klartexte.load('Itaufstvorart', Aufstellvorrichtung._ktArtLoaded, klartexte);
         klartexte.load('Itallglage', Aufstellvorrichtung._ktLageLoaded, klartexte);
         klartexte.load('Itquelle', Aufstellvorrichtung._ktQuelleLoaded, klartexte);
@@ -50,7 +55,7 @@ class Aufstellvorrichtung extends Feature {
             let t = document.createTextNode(a.beschreib);
             option.appendChild(t);
             option.setAttribute('value', a.objektId);
-            document.forms.avadd.avadd_art.appendChild(option);
+            document.forms.namedItem("avadd").avadd_art.appendChild(option);
         }
         $("select#avadd_art").chosen({ width: "95%", search_contains: true });
     }
@@ -62,7 +67,7 @@ class Aufstellvorrichtung extends Feature {
             let t = document.createTextNode(a.beschreib);
             option.appendChild(t);
             option.setAttribute('value', a.objektId);
-            document.forms.avadd.avadd_lage.appendChild(option);
+            document.forms.namedItem("avadd").avadd_lage.appendChild(option);
         }
         $("select#avadd_lage").chosen({ width: "95%", search_contains: true });
     }
@@ -74,12 +79,12 @@ class Aufstellvorrichtung extends Feature {
             let t = document.createTextNode(a.beschreib);
             option.appendChild(t);
             option.setAttribute('value', a.objektId);
-            document.forms.avadd.avadd_quelle.appendChild(option);
+            document.forms.namedItem("avadd").avadd_quelle.appendChild(option);
         }
         $("select#avadd_quelle").chosen({ width: "95%", search_contains: true });
     }
 
-    getHTMLInfo(ziel) {
+    getHTMLInfo(ziel: HTMLElement) {
         let kt = this._daten.klartexte;
         let r = "<table>";
         /*for (var tag in CONFIG_WFS.AUFSTELL) {
@@ -129,14 +134,8 @@ class Aufstellvorrichtung extends Feature {
 
         return r;
     }
-    art(arg0: string, art: any) {
-        throw new Error("Method not implemented.");
-    }
-    rlageVst(arg0: string, rlageVst: any) {
-        throw new Error("Method not implemented.");
-    }
 
-    static _vz_addHTML(zeichen, _this, ziel) {
+    static _vz_addHTML(zeichen: any, _this: Aufstellvorrichtung, ziel: HTMLElement) {
         let div = document.createElement('div');
         div.style.marginTop = '5px';
         for (let eintrag of zeichen) {
@@ -155,7 +154,7 @@ class Aufstellvorrichtung extends Feature {
      * @param {*} ereignisraum 
      * @param {*} daten 
      */
-    static loadER(daten) {
+    static loadER(daten: Daten) {
         Aufstellvorrichtung.loadKlartexte(daten.klartexte);
         PublicWFS.doQuery('Otaufstvor', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
@@ -163,10 +162,10 @@ class Aufstellvorrichtung extends Feature {
 
     }
 
-    static _loadER_Callback(xml, daten) {
+    static _loadER_Callback(xml: XMLDocument, daten: Daten) {
         let aufstell = xml.getElementsByTagName("Otaufstvor");
-        for (let auf of aufstell) {
-            let f = Aufstellvorrichtung.fromXML(auf, daten);
+        for (let i = 0; i < aufstell.length; i++) {
+            let f = Aufstellvorrichtung.fromXML(aufstell[i], daten);
             daten.l_aufstell.getSource().addFeature(f);
         }
     }
@@ -176,7 +175,7 @@ class Aufstellvorrichtung extends Feature {
      * @param {Daten} daten 
      * @param {Abschnitt} abschnitt 
      */
-    static loadAbschnittER(daten, abschnitt, callback, ...args) {
+    static loadAbschnittER(daten: Daten, abschnitt: Abschnitt, callback: () => void, ...args: any[]) {
         //console.log(daten);
         document.body.style.cursor = 'wait';
         PublicWFS.doQuery('Otaufstvor', '<Filter>' +
@@ -185,37 +184,37 @@ class Aufstellvorrichtung extends Feature {
             '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>', Aufstellvorrichtung._loadAbschnittER_Callback, undefined, daten, callback, ...args);
     }
 
-    static _loadAbschnittER_Callback(xml, daten, callback, ...args) {
+    static _loadAbschnittER_Callback(xml: XMLDocument, daten: Daten, callback: (...args: any[]) => void, ...args: any[]) {
         //console.log(daten);
         let aufstell = xml.getElementsByTagName("Otaufstvor");
-        for (let auf of aufstell) {
-            let f = Aufstellvorrichtung.fromXML(auf, daten);
+        for (let i = 0; i < aufstell.length; i++) {
+            let f = Aufstellvorrichtung.fromXML(aufstell[i], daten);
             daten.l_aufstell.getSource().addFeature(f);
         }
-        callback(...args)
-        document.body.style.cursor = ''
+        callback(...args);
+        document.body.style.cursor = '';
     }
 
-    static fromXML(xml, daten) {
+    static fromXML(xml: Element, daten: Daten) {
         //console.log(daten);
         let r = new Aufstellvorrichtung(daten);
         r.fid = xml.getAttribute('fid');
-        for (var tag in CONFIG_WFS.AUFSTELL) {
+        for (var tag in CONFIG_WFS["AUFSTELL"]) {
             if (xml.getElementsByTagName(tag).length <= 0) continue;
-            if (CONFIG_WFS.AUFSTELL[tag].art == 0) {
+            if (CONFIG_WFS["AUFSTELL"][tag].art == 0) {
                 // Kein Klartext
-                r[tag] = xml.getElementsByTagName(tag)[0].firstChild.data;
+                r[tag] = xml.getElementsByTagName(tag)[0].firstChild.textContent;
             } else if (CONFIG_WFS.AUFSTELL[tag].art == 1) {
                 // Kein Klartext
-                r[tag] = Number(xml.getElementsByTagName(tag)[0].firstChild.data);
+                r[tag] = Number(xml.getElementsByTagName(tag)[0].firstChild.textContent);
             } else if (CONFIG_WFS.AUFSTELL[tag].art == 2) {
                 // Klartext, xlink wird gespeichert
                 r[tag] = xml.getElementsByTagName(tag)[0].getAttribute('xlink:href');
             }
         }
 
-        let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.data.split(',');
-        r.setGeometry(new Point(koords));
+        let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(',');
+        r.setGeometry(new Point([parseFloat(koords[0]), parseFloat(koords[1])]));
         r.abschnitt = daten.getAbschnitt(r.abschnittId);
         r.abschnitt.inER['Otaufstvor'] = true;
         daten.l_achse.changed();
@@ -225,7 +224,7 @@ class Aufstellvorrichtung extends Feature {
         throw new Error("Method not implemented.");
     }
 
-    static createLayer(map) {
+    static createLayer(map: Map) {
         let source = new VectorSource({
             features: []
         });
@@ -233,7 +232,7 @@ class Aufstellvorrichtung extends Feature {
             source: source,
             opacity: 0.7,
         });
-        layer.setStyle(function (feature, zoom) {
+        layer.setStyle(function (feature: Aufstellvorrichtung, zoom) {
             return new Style({
                 image: new Circle({
                     radius: 3,
@@ -337,7 +336,7 @@ class Aufstellvorrichtung extends Feature {
 
         for (let eintrag of zeichenXML) {
             console.log(eintrag);
-            if (!eintrag.getElementsByTagName("enr").length > 0) {
+            if (!(eintrag.getElementsByTagName("enr").length > 0)) {
                 zeichen.push(Zeichen.fromXML(eintrag, _this._daten));
             }
         }

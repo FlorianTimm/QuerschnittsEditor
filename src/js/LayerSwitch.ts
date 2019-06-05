@@ -3,7 +3,7 @@ import Control from 'ol/control/Control.js';
 import '../css/layerswitch.css';
 
 class LayerSwitch extends Control {
-	constructor(opt_options) {
+	constructor(opt_options?) {
 		var options = opt_options || {};
 		var element = document.createElement('div');
 		super({

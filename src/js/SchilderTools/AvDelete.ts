@@ -1,11 +1,23 @@
 import { Select as SelectInteraction } from 'ol/interaction';
 import PublicWFS from '../PublicWFS';
-import "../import_jquery";
 import 'jquery-ui-bundle';
 import 'jquery-ui-bundle/jquery-ui.css'
+import Tool from '../Tool';
+import { Map } from 'ol';
+import Daten from '../Daten';
+import { Layer } from 'ol/layer';
+import Aufstellvorrichtung from '../Objekte/Aufstellvorrichtung';
 
 class AvDelete implements Tool {
-    constructor(map, daten, layer, sidebar) {
+    private _map: Map;
+    private _daten: Daten;
+    private _layer: Layer;
+    private _sidebar: HTMLElement;
+    private _delField: HTMLFormElement;
+    private _infoField: HTMLDivElement;
+    private _select: SelectInteraction;
+
+    constructor(map: Map, daten: Daten, layer: Layer, sidebar: string) {
         this._map = map;
         this._daten = daten;
         this._layer = layer;
@@ -46,7 +58,7 @@ class AvDelete implements Tool {
     }
 
     _featureDelete() {
-        let feature = this._select.getFeatures().getArray()[0];
+        let feature = this._select.getFeatures().getArray()[0] as Aufstellvorrichtung;
         console.log(feature);
         let update = '<wfs:Delete typeName="Otaufstvor">\n' +
             '	<ogc:Filter>\n' +

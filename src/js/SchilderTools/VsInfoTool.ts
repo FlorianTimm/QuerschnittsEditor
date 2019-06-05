@@ -1,4 +1,9 @@
 import { Select as SelectInteraction } from 'ol/interaction';
+import Map from '../openLayers/Map';
+import { Layer } from 'ol/layer';
+import Tool from '../Tool';
+import { SelectEvent } from 'ol/interaction/Select';
+import { Feature } from 'ol';
 
 /**
  * Funktion zum Anzeigen von Informationen zu Aufstellvorrichtungen und Schildern
@@ -7,6 +12,11 @@ import { Select as SelectInteraction } from 'ol/interaction';
  * @copyright MIT
  */
 class VsInfoTool implements Tool {
+    _map: Map;
+    _layer: Layer;
+    _sidebar: HTMLElement;
+    _infoField: HTMLFormElement;
+    _select: SelectInteraction;
 
     /**
      * Konstruktor
@@ -14,7 +24,7 @@ class VsInfoTool implements Tool {
      * @param {*} layer 
      * @param {*} sidebar 
      */
-    constructor(map, layer, sidebar) {
+    constructor(map: Map, layer: Layer, sidebar: string) {
         this._map = map;
         this._layer = layer;
         this._sidebar = document.getElementById(sidebar);
@@ -24,7 +34,7 @@ class VsInfoTool implements Tool {
         this._infoField.style.display = "none";
 
         this._select = new SelectInteraction({
-            layers: this._layer,
+            layers: [this._layer],
             hitTolerance: 10
         });
         this._select.on('select', this.featureSelected.bind(this))
@@ -34,7 +44,7 @@ class VsInfoTool implements Tool {
      * Wird ausgelöst beim Auswählen einer Aufstellvorrichtung
      * @param {SelectEvent} event 
      */
-    featureSelected(event) {
+    featureSelected(event: SelectEvent) {
         if (event.selected.length == 0) {
             this._infoField.style.display = "none";
             return;
@@ -42,7 +52,7 @@ class VsInfoTool implements Tool {
         this._infoField.style.display = "block";
         let auswahl = event.selected[0];
 
-        auswahl.getHTMLInfo(this._infoField);
+        (auswahl as InfoToolSelectable).getHTMLInfo(this._infoField);
     }
 
 
@@ -55,6 +65,10 @@ class VsInfoTool implements Tool {
         this._infoField.style.display = "none";
     }
 
+}
+
+export interface InfoToolSelectable extends Feature {
+    getHTMLInfo: (sidebar: HTMLElement) => void;
 }
 
 export default VsInfoTool;

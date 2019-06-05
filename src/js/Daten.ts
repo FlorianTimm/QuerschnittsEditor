@@ -1,5 +1,4 @@
 import { Vector as VectorSource } from 'ol/source';
-import { Vector as VectorLayer } from 'ol/layer';
 import { Style, Stroke, Fill, Text, Icon, Circle } from 'ol/style';
 import Point from 'ol/geom/Point';
 import Abschnitt from './Objekte/Abschnitt';
@@ -10,6 +9,8 @@ import Klartext from './Objekte/Klartext';
 import Aufstellvorrichtung from './Objekte/Aufstellvorrichtung';
 import { isNullOrUndefined } from 'util';
 import { Map } from 'ol';
+import Event from 'ol/events/Event';
+import { VectorLayer } from './openLayers/Layer';
 
 var CONFIG = require('./config.json');
 
@@ -348,7 +349,7 @@ class Daten {
         this.map.addLayer(this.l_quer);
     }
 
-    searchForStreet(event) {
+    searchForStreet(event?: Event) {
         console.log(document.forms.namedItem("suche").suche.value);
         let wert = document.forms.namedItem("suche").suche.value;
         if (wert == "") return;

@@ -1,7 +1,7 @@
 import Abschnitt from './Objekte/Abschnitt'
 var CONFIG = require('./config.json');
 
-class PublicWFS {
+export default class PublicWFS {
 
     static doSoapRequest(
         xml: string,
@@ -166,8 +166,8 @@ class PublicWFS {
     }
 
     static _checkTransacktionSuccess(xml: Document,
-        callbackSuccess?: (xml: Document, ...args: any[]) => void,
-        callbackFailed?: (xml: Document, ...args: any[]) => void,
+        callbackSuccess?: (xml: XMLDocument, ...args: any[]) => void,
+        callbackFailed?: (xml: XMLDocument, ...args: any[]) => void,
         ...args: any[]) {
 
         if (xml.getElementsByTagName('SUCCESS').length > 0) {
@@ -183,17 +183,17 @@ class PublicWFS {
         }
     }
 
-    static _checkTransacktionFailed(xml,
-        callbackSuccess?: (xml: Document, ...args: any[]) => void,
-        callbackFailed?: (xml: Document, ...args: any[]) => void,
+    static _checkTransacktionFailed(xml: XMLDocument,
+        callbackSuccess?: (xml: XMLDocument, ...args: any[]) => void,
+        callbackFailed?: (xml: XMLDocument, ...args: any[]) => void,
         ...args: any[]) {
 
         callbackFailed(xml, ...args);
     }
 
     static doQuery(klasse: string, filter: string,
-        callbackSuccess?: (xml: Document, ...args: any[]) => void,
-        callbackFailed?: (xml: Document, ...args: any[]) => void,
+        callbackSuccess?: (xml: XMLDocument, ...args: any[]) => void,
+        callbackFailed?: (xml: XMLDocument, ...args: any[]) => void,
         ...args: any[]) {
 
         /*var xml = '<?xml version="1.0" encoding="ISO-8859-1"?>' +
@@ -237,5 +237,3 @@ class PublicWFS {
         m.style.display = 'block';
     }
 }
-
-export default PublicWFS;

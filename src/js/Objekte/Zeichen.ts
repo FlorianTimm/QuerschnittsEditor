@@ -1,6 +1,6 @@
 import Daten from "../Daten";
 
-var CONFIG_WFS = require('../config_wfs.json');
+var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
 
 class Zeichen {
     _daten: Daten;
@@ -49,8 +49,8 @@ class Zeichen {
         this._daten = daten;
     }
 
-    static fromXML (xml: Document, daten) {
-		//console.log(xml);
+    static fromXML(xml: Document, daten) {
+        //console.log(xml);
         let r = new Zeichen(daten);
         for (var tag in CONFIG_WFS.ZEICHEN) {
             if (xml.getElementsByTagName(tag).length <= 0) continue;
@@ -63,23 +63,23 @@ class Zeichen {
             } else if (CONFIG_WFS.ZEICHEN[tag].art == 2) {
                 // Klartext, xlink wird gespeichert
                 r[tag] = xml.getElementsByTagName(tag)[0].getAttribute('xlink:href');
-            } 
-		}
+            }
+        }
         return r;
-	}
-	
-	createXML() {
+    }
+
+    createXML() {
         let r = '<Otvzeichlp>\n';
 
-        for (let tag in CONFIG_WFS.ZEICHEN) {
+        for (let tag in CONFIG_WFS["ZEICHEN"]) {
             //console.log(tag);
             if (this[tag] === null) continue;
-            if (CONFIG_WFS.ZEICHEN[tag].art == 0 || CONFIG_WFS.ZEICHEN[tag] == 1) {
+            if (CONFIG_WFS["ZEICHEN"][tag].art == 0 || CONFIG_WFS["ZEICHEN"][tag].art == 1) {
                 // Kein Klartext
                 r += '<' + tag + '>' + this[tag] + '</' + tag + '>\n';
-            } else if (CONFIG_WFS.ZEICHEN[tag].art == 2) {
+            } else if (CONFIG_WFS["ZEICHEN"][tag].art == 2) {
                 // Klartext
-                r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS.ZEICHEN[tag].kt + '" />' + this[tag];
+                r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS["ZEICHEN"][tag].kt + '" />' + this[tag];
             }
         }
 

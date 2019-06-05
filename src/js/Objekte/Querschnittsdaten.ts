@@ -1,7 +1,7 @@
-var CONFIG_WFS = require('../config_wfs.json');
+var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
 import PublicWFS from '../PublicWFS';
 import { Polygon, MultiLineString } from 'ol/geom';
-import {Feature} from 'ol';
+import { Feature } from 'ol';
 import Station from './QuerStation';
 import Vektor from '../Vektor';
 import Daten from '../Daten';
@@ -51,10 +51,10 @@ class Querschnitt {
         this._daten = daten;
         //console.log(daten);
 
-        this.flaeche = new Feature({ geom: new Polygon([[[0,0],[0,0],[0,0]]]), objekt: this });
+        this.flaeche = new Feature({ geom: new Polygon([[[0, 0], [0, 0], [0, 0]]]), objekt: this });
         this._daten.v_quer.addFeature(this.flaeche)
 
-        this.trenn = new Feature({ geom: new MultiLineString([[0,0],[0,0],[0,0]]), objekt: this });
+        this.trenn = new Feature({ geom: new MultiLineString([[0, 0], [0, 0], [0, 0]]), objekt: this });
         this._daten.v_trenn.addFeature(this.trenn);
     }
 
@@ -177,7 +177,7 @@ class Querschnitt {
                 continue;
             }
             g.push(coord);
-            l.push(coord); 
+            l.push(coord);
         }
 
         for (let j = anzahl - 1; j >= 0; j--) {

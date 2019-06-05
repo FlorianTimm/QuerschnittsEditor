@@ -1,17 +1,18 @@
 import { Circle, Style, Stroke, Fill } from 'ol/style';
-import { Modify as ModifyInteraction, Select as SelectInteraction } from 'ol/interaction';
+import { Select as SelectInteraction } from 'ol/interaction';
 import Vektor from '../Vektor';
 import { Vector as VectorSource } from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
 import { LineString, Point } from 'ol/geom';
 import Feature from 'ol/Feature';
-import neverCondition from 'ol/events/condition';
+import {never as neverCondition} from 'ol/events/condition';
 import { Map } from 'ol';
 import Daten from '../Daten';
 import VsInfoTool from './VsInfoTool';
 import Tool from '../Tool';
 import Abschnitt from '../Objekte/Abschnitt';
 import Aufstellvorrichtung from '../Objekte/Aufstellvorrichtung';
+import { ModifyInteraction } from '../openLayers/Interaction';
 
 class AvMove implements Tool {
     _map: Map;
@@ -62,7 +63,7 @@ class AvMove implements Tool {
                 }),
             })
         });
-        this._feat_station_line = new Feature({ geometry: new LineString([[0, 0][0, 0]]) });
+        this._feat_station_line = new Feature({ geometry: new LineString([[0, 0], [0, 0]]) });
         this._feat_station_line.setStyle(new Style({
             stroke: new Stroke({
                 color: 'rgba(0, 0, 255, 0.5)',

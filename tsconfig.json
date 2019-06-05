@@ -8,7 +8,9 @@
       "types": [
         "ol",
         "node",
-        "jquery"
+        "jquery",
+        "proj4",
+        "jqueryui"
       ]
     }
   }

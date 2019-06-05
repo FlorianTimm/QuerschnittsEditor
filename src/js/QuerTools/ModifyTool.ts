@@ -1,4 +1,4 @@
-import { Modify as ModifyInteraction, Select as SelectInteraction, Snap } from 'ol/interaction';
+import { Snap } from 'ol/interaction';
 import { Fill, Stroke, Style } from 'ol/style';
 import Vektor from '../Vektor';
 import { platformModifierKeyOnly, never } from 'ol/events/condition';
@@ -6,17 +6,18 @@ import InfoTool from './InfoTool';
 import Daten from '../Daten';
 import { Map } from 'ol';
 import Tool from '../Tool';
+import { SelectInteraction, ModifyInteraction } from '../openLayers/Interaction'
 
 class ModifyTool implements Tool {
-    map: Map;
-    daten: Daten;
-    info: InfoTool;
-    modify: ModifyInteraction;
-    select: SelectInteraction;
-    select_fl: SelectInteraction;
-    snap_trenn: Snap;
-    snap_station: Snap;
-    streifennr: number;
+    private map: Map;
+    private daten: Daten;
+    private info: InfoTool;
+    private modify: ModifyInteraction;
+    private select: SelectInteraction;
+    private select_fl: SelectInteraction;
+    private snap_trenn: Snap;
+    private snap_station: Snap;
+    private streifennr: number;
 
     constructor(map: Map, daten: Daten, info: InfoTool) {
         this.map = map;
