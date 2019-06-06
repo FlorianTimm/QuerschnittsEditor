@@ -5,17 +5,32 @@ import { Vector as VectorLayer } from 'ol/layer';
 import Overlay from 'ol/Overlay';
 import { getLength } from 'ol/sphere';
 import { unByKey } from 'ol/Observable';
+import Map from './openLayers/Map';
+import GeometryType from 'ol/geom/GeometryType';
+import OverlayPositioning from 'ol/OverlayPositioning';
+import Tool from './interfaces/Tool';
 var CONFIG = require('./config.json');
 
-class Measure {
+/**
+ * Messfunktion
+ * @author Florian Timm, LGV HH 
+ * @version 2019.06.06
+ * @copyright MIT
+ */
+class Measure implements Tool{
+    private map: Map;
+    private source: VectorSource;
+    private vector: VectorLayer;
+    private draw: Draw;
+    private measureTooltip: Overlay;
 
-    constructor(map) {
-        this._map = map;
+    constructor(map: Map) {
+        this.map = map;
 
         // Layer erzeugen
-        this._source = new VectorSource();
-        this._vector = new VectorLayer({
-            source: this._source,
+        this.source = new VectorSource();
+        this.vector = new VectorLayer({
+            source: this.source,
             style: new Style({
                 stroke: new Stroke({
                     color: '#ffcc33',
@@ -25,9 +40,9 @@ class Measure {
         });
 
         // Interaktion erzeugen
-        this._draw = new Draw({
-            source: this._source,
-            type: 'LineString',
+        this.draw = new Draw({
+            source: this.source,
+            type: GeometryType.LINE_STRING,
             style: new Style({
                 stroke: new Stroke({
                     color: 'rgba(0, 0, 0, 0.5)',
@@ -54,7 +69,7 @@ class Measure {
         this.measureTooltip = new Overlay({
             element: measureTooltipElement,
             offset: [0, -15],
-            positioning: 'bottom-center'
+            positioning: OverlayPositioning.BOTTOM_CENTER
         });
 
         var formatLength = function (line) {
@@ -70,7 +85,7 @@ class Measure {
             return output;
         };
 
-        this._draw.on('drawstart',
+        this.draw.on('drawstart',
             function (evt) {
                 // set sketch
                 this._source.clear();
@@ -86,25 +101,25 @@ class Measure {
                     measureTooltipElement.innerHTML = output;
                     this.measureTooltip.setPosition(tooltipCoord);
                 }.bind(this));
-            }.bind(this), this);
+            }.bind(this));
 
-        this._draw.on('drawend',
+        this.draw.on('drawend',
             function () {
                 measureTooltipElement.className = 'tooltip tooltip-static';
                 this.measureTooltip.setOffset([0, -7]);
                 unByKey(listener);
-            }.bind(this), this);
+            }.bind(this));
     }
 
     start() {
-        this._map.addInteraction(this._draw);
-        this._map.addLayer(this._vector)
-        this._map.addOverlay(this.measureTooltip);
+        this.map.addInteraction(this.draw);
+        this.map.addLayer(this.vector)
+        this.map.addOverlay(this.measureTooltip);
     }
     stop() {
-        this._map.removeInteraction(this._draw);
-        this._map.removeLayer(this._vector)
-        this._map.removeOverlay(this.measureTooltip);
+        this.map.removeInteraction(this.draw);
+        this.map.removeLayer(this.vector)
+        this.map.removeOverlay(this.measureTooltip);
     }
 }
 

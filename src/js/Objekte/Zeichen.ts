@@ -1,9 +1,18 @@
 import Daten from "../Daten";
+import Objekt from "./Objekt";
 
 var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
 
-class Zeichen {
+ /**
+ * Zeichen
+ * @author Florian Timm, LGV HH 
+ * @version 2019.06.06
+ * @copyright MIT
+ */
+
+class Zeichen implements Objekt{
     _daten: Daten;
+    abschnittOderAst: string = null;
     projekt: string = null;
     hasSekObj: string = null;
     vst: number = null;
@@ -49,18 +58,18 @@ class Zeichen {
         this._daten = daten;
     }
 
-    static fromXML(xml: Document, daten) {
+    static fromXML(xml: Document, daten: Daten) {
         //console.log(xml);
         let r = new Zeichen(daten);
-        for (var tag in CONFIG_WFS.ZEICHEN) {
+        for (var tag in CONFIG_WFS["ZEICHEN"]) {
             if (xml.getElementsByTagName(tag).length <= 0) continue;
-            if (CONFIG_WFS.ZEICHEN[tag].art == 0) {
+            if (CONFIG_WFS["ZEICHEN"][tag].art == 0) {
                 // Kein Klartext
                 r[tag] = xml.getElementsByTagName(tag)[0].firstChild.textContent;
-            } else if (CONFIG_WFS.ZEICHEN[tag].art == 1) {
+            } else if (CONFIG_WFS["ZEICHEN"][tag].art == 1) {
                 // Kein Klartext
                 r[tag] = Number(xml.getElementsByTagName(tag)[0].firstChild.textContent);
-            } else if (CONFIG_WFS.ZEICHEN[tag].art == 2) {
+            } else if (CONFIG_WFS["ZEICHEN"][tag].art == 2) {
                 // Klartext, xlink wird gespeichert
                 r[tag] = xml.getElementsByTagName(tag)[0].getAttribute('xlink:href');
             }

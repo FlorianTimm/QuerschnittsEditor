@@ -1,3 +1,10 @@
+/**
+ * Startscript ereignisraum.html
+ * @author Florian Timm, LGV HH 
+ * @version 2019.06.06
+ * @copyright MIT
+ */
+
 import PublicWFS from './PublicWFS';
 
 window.addEventListener('load', loadER);

@@ -6,8 +6,14 @@ import Daten from '../Daten';
 import Abschnitt from './Abschnitt';
 import Querschnitt from './Querschnittsdaten';
 
+ /**
+ * Querschnitts-Station
+ * @author Florian Timm, LGV HH 
+ * @version 2019.06.06
+ * @copyright MIT
+ */
 
-export class Station {
+export class QuerStation {
     daten: Daten;
     abschnitt: Abschnitt;
     vst: number;
@@ -113,7 +119,7 @@ export class Station {
     }
     teilen(station: number) {
         PublicWFS.showMessage("noch nicht möglich", true);
-        this.abschnitt.getAufbauDaten(Station.teilen_callback, undefined, this, station);
+        this.abschnitt.getAufbauDaten(QuerStation.teilen_callback, undefined, this, station);
     }
 
     static teilen_callback(_this, station) {
@@ -122,4 +128,4 @@ export class Station {
     }
 }
 
-export default Station;
+export default QuerStation;

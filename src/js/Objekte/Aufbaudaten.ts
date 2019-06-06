@@ -1,6 +1,14 @@
+import Objekt from "./Objekt";
+
 var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
 
-class Aufbau {
+/**
+* Aufbaudaten
+* @author Florian Timm, LGV HH 
+* @version 2019.06.06
+* @copyright MIT
+*/
+export default class Aufbau implements Objekt {
 	abschnittOderAst: string = null;
 	schichtnr: number = null;
 	parent: string = null;
@@ -84,5 +92,3 @@ class Aufbau {
 		r += '</Otschicht>\n';
 	}
 }
-
-export default Aufbau;

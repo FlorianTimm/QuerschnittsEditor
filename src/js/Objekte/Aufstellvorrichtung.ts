@@ -1,3 +1,10 @@
+/**
+ * Aufstellvorrichtung
+ * @author Florian Timm, LGV HH 
+ * @version 2019.06.06
+ * @copyright MIT
+ */
+
 import PublicWFS from '../PublicWFS';
 import { Point } from 'ol/geom';
 import Feature from 'ol/Feature';
@@ -11,7 +18,7 @@ import 'chosen-js/chosen.css';
 import Daten from "../Daten";
 import Klartext from './Klartext';
 import Abschnitt from './Abschnitt';
-import { InfoToolSelectable } from '../SchilderTools/VsInfoTool';
+import { InfoToolSelectable } from '../Tools/Aufstellvorrichtung/AvInfoTool';
 import { Map } from 'ol';
 
 var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
@@ -35,6 +42,7 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable {
     projekt: string;
     art: string;
     rlageVst: string;
+    abschnittId: string;
 
     constructor(daten: Daten) {
         super({ geom: null });
@@ -175,7 +183,7 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable {
      * @param {Daten} daten 
      * @param {Abschnitt} abschnitt 
      */
-    static loadAbschnittER(daten: Daten, abschnitt: Abschnitt, callback: () => void, ...args: any[]) {
+    static loadAbschnittER(daten: Daten, abschnitt: Abschnitt, callback: (...args: any[]) => void, ...args: any[]) {
         //console.log(daten);
         document.body.style.cursor = 'wait';
         PublicWFS.doQuery('Otaufstvor', '<Filter>' +
@@ -219,9 +227,6 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable {
         r.abschnitt.inER['Otaufstvor'] = true;
         daten.l_achse.changed();
         return r;
-    }
-    abschnittId(abschnittId: any): any {
-        throw new Error("Method not implemented.");
     }
 
     static createLayer(map: Map) {

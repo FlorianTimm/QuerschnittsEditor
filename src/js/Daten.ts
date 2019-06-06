@@ -1,3 +1,10 @@
+/**
+ * Daten
+ * @author Florian Timm, LGV HH 
+ * @version 2019.06.06
+ * @copyright MIT
+ */
+
 import { Vector as VectorSource } from 'ol/source';
 import { Style, Stroke, Fill, Text, Icon, Circle } from 'ol/style';
 import Point from 'ol/geom/Point';
@@ -42,7 +49,7 @@ class Daten {
         this.ereignisraum_nr = ereignisraum_nr;
         this.querschnitteFID = {};
 
-        this.klartexte = new Klartext();
+        this.klartexte = Klartext.getInstanz();
         this.klartexte.load("Itquerart", this._showArt, this);
         this.klartexte.load("Itquerober", this._showArtOber, this);
 
@@ -58,11 +65,11 @@ class Daten {
         Aufstellvorrichtung.loadER(this);
     }
 
-    static get() {
+    static getInstanz() {
         return Daten.daten;
     }
 
-    _showArt(art, _this) {
+    private _showArt(art, _this: Daten) {
         let arten = _this.klartexte.getAllSorted("Itquerart");
         for (let a of arten) {
             let option = document.createElement('option');
@@ -76,7 +83,7 @@ class Daten {
         }
     }
 
-    _showArtOber(artober, _this) {
+    private _showArtOber(artober, _this: Daten) {
         let arten = _this.klartexte.getAllSorted("Itquerober");
         for (let a of arten) {
             let option = document.createElement('option');
@@ -90,7 +97,7 @@ class Daten {
         }
     }
 
-    getAbschnitt(absId) {
+    getAbschnitt(absId: string) {
         if (!(absId in this.abschnitte)) {
             this.abschnitte[absId] = Abschnitt.load(this, absId);
             this.v_achse.addFeature(this.abschnitte[absId]);
@@ -118,11 +125,10 @@ class Daten {
         }
     }
 
-    _loadExtent_Callback(xml, _this) {
+    private _loadExtent_Callback(xml: XMLDocument, _this: Daten) {
         let netz = xml.getElementsByTagName("VI_STRASSENNETZ");
-        for (let abschnittXML of netz) {
-            //console.log(abschnittXML)
-            let abschnitt = Abschnitt.fromXML(_this, abschnittXML);
+        for (let i = 0; i < netz.length; i++) {
+            let abschnitt = Abschnitt.fromXML(_this, netz[i]);
             if (!(abschnitt.abschnittid in _this.abschnitte)) {
                 _this.abschnitte[abschnitt.abschnittid] = abschnitt;
                 _this.v_achse.addFeature(_this.abschnitte[abschnitt.abschnittid]);
@@ -131,7 +137,7 @@ class Daten {
         document.body.style.cursor = '';
     }
 
-    _createLayerAchsen() {
+    private _createLayerAchsen() {
         this.v_achse = new VectorSource({
             features: []
         });
@@ -223,7 +229,7 @@ class Daten {
         this.map.addLayer(this.l_achse);
     }
 
-    _createLayerStationen() {
+    private _createLayerStationen() {
         this.v_station = new VectorSource({
             features: []
         });
@@ -240,7 +246,7 @@ class Daten {
         this.map.addLayer(this.l_station);
     }
 
-    _createLayerTrennLinien() {
+    private _createLayerTrennLinien() {
         this.v_trenn = new VectorSource({
             features: []
         });
@@ -257,7 +263,7 @@ class Daten {
         this.map.addLayer(this.l_trenn);
     }
 
-    _createLayerFlaechen() {
+    private _createLayerFlaechen() {
         // Layer mit Querschnittsflächen
         this.v_quer = new VectorSource({
             features: []
@@ -384,7 +390,7 @@ class Daten {
         }
     }
 
-    _loadSearch_Callback(xml, _this) {
+    private _loadSearch_Callback(xml, _this) {
         let netz = xml.getElementsByTagName("VI_STRASSENNETZ");
         let geladen = [];
         for (let abschnittXML of netz) {

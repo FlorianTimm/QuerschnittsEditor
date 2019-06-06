@@ -5,12 +5,19 @@ import AbschnittWFS from '../AbschnittWFS';
 import Vektor from '../Vektor';
 import Aufbaudaten from './Aufbaudaten';
 import Daten from '../Daten';
-import Station from './QuerStation';
+import QuerStation from './QuerStation';
 import { MultiLineString } from 'ol/geom';
+import Objekt from './Objekt';
 
-var CONFIG = require('../config.json');
+var CONFIG: { [index: string]: string } = require('../config.json');
 
-class Abschnitt extends Feature {
+/**
+ * Straßenabschnitt
+ * @author Florian Timm, LGV HH 
+ * @version 2019.06.06
+ * @copyright MIT
+ */
+export default class Abschnitt extends Feature {
     daten: Daten;
     fid: string = null;
     abschnittid: string = null;
@@ -123,7 +130,7 @@ class Abschnitt extends Feature {
         return this._feature;
     }
 
-    addStation(station: Station) {
+    addStation(station: QuerStation) {
         this._station[station.vst] = station;
     }
 
@@ -222,5 +229,3 @@ class Abschnitt extends Feature {
         console.log(xml);
     }
 }
-
-export default Abschnitt;

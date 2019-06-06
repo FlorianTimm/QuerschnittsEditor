@@ -2,18 +2,19 @@ var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number
 import PublicWFS from '../PublicWFS';
 import { Polygon, MultiLineString } from 'ol/geom';
 import { Feature } from 'ol';
-import Station from './QuerStation';
+import QuerStation from './QuerStation';
 import Vektor from '../Vektor';
 import Daten from '../Daten';
 import Aufbau from '../Objekte/Aufbaudaten';
 import Abschnitt from '../Objekte/Abschnitt';
+import Objekt from './Objekt';
 
-class Querschnitt {
+class Querschnitt implements Objekt {
     private _daten: Daten;
     flaeche: Feature;
     trenn: Feature;
     private _aufbaudaten: {} = null;
-    station: Station = null;
+    station: QuerStation = null;
     vst: number = null;
     bst: number = null;
     fid: string = null;
@@ -120,7 +121,7 @@ class Querschnitt {
                 let y = Number(k[1]);
                 geo.push([x, y]);
             }
-            r.station = new Station(r._daten, abschnitt, r.vst, r.bst, geo);
+            r.station = new QuerStation(r._daten, abschnitt, r.vst, r.bst, geo);
         } else {
             r.station = abschnitt.getStation(r.vst);
         }

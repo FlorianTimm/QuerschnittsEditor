@@ -1,6 +1,13 @@
 import Abschnitt from './Objekte/Abschnitt'
 var CONFIG = require('./config.json');
 
+
+/**
+ * Schnittstelle zum PublicWFS
+ * @author Florian Timm, LGV HH 
+ * @version 2019.06.06
+ * @copyright MIT
+ */
 export default class PublicWFS {
 
     static doSoapRequest(

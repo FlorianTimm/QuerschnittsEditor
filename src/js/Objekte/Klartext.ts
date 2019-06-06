@@ -1,10 +1,24 @@
+/**
+ * Klartexte (Singleton)
+ * @author Florian Timm, LGV HH 
+ * @version 2019.06.06
+ * @copyright MIT
+ */
+
 import PublicWFS from '../PublicWFS';
 
 class Klartext {
-    _klartexte: {};
+    private static instance: Klartext;
+    private _klartexte: { [klartextBezeichnung: string]: { [luk: string]: { kt: string, beschreib: string, objektId: string } } };
 
-    constructor() {
+    private constructor() {
         this._klartexte = {};
+    }
+
+    public static getInstanz() {
+        if (!Klartext.instance)
+            this.instance = new Klartext();
+        return this.instance;
     }
 
     load(klartext: string, whenReady?: (klartext: {}, ...args: any[]) => void, ...args: any[]) {

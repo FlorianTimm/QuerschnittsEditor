@@ -1,4 +1,11 @@
-import { View, MapEvent } from 'ol';
+/**
+ * Startscript edit.html
+ * @author Florian Timm, LGV HH 
+ * @version 2019.06.06
+ * @copyright MIT
+ */
+
+ import { View, MapEvent } from 'ol';
 import { defaults as defaultInteractions } from 'ol/interaction';
 import { defaults as defaultControls, ScaleLine, ZoomSlider } from 'ol/control';
 import { Layer } from 'ol/layer';
@@ -6,20 +13,24 @@ import { TileWMS as TileWMS } from 'ol/source';
 import { register } from 'ol/proj/proj4';
 import { transform, fromLonLat } from 'ol/proj';
 import 'babel-polyfill';
-import ModifyTool from './QuerTools/ModifyTool';
+
 import Daten from './Daten';
 import PublicWFS from './PublicWFS';
-import InfoTool from './QuerTools/InfoTool';
-import PartTool from './QuerTools/PartTool';
-import AddTool from './QuerTools/AddTool';
-import DelTool from './QuerTools/DelTool';
-import VsInfoTool from './SchilderTools/VsInfoTool';
-import AvAdd from './SchilderTools/AvAdd';
-import AvDelete from './SchilderTools/AvDelete';
-import VzAdd from './SchilderTools/VzAdd';
-import AvMove from './SchilderTools/AvMove';
-import AvAdd2ER from './SchilderTools/AvAdd2ER';
-import QsAdd2ER from './QuerTools/QsAdd2ER';
+
+import QuerModifyTool from './Tools/Querschnitt/QuerModifyTool';
+import QuerInfoTool from './Tools/Querschnitt/QuerInfoTool';
+import QuerPartTool from './Tools/Querschnitt/QuerPartTool';
+import QuerAddTool from './Tools/Querschnitt/QuerAddTool';
+import QuerDelTool from './Tools/Querschnitt/QuerDelTool';
+import QuerAdd2ER from './Tools/Querschnitt/QuerAdd2ER';
+
+import AvInfoTool from './Tools/Aufstellvorrichtung/AvInfoTool';
+import AvAdd from './Tools/Aufstellvorrichtung/AvAdd';
+import AvDelete from './Tools/Aufstellvorrichtung/AvDelete';
+import AvVzAdd from './Tools/Aufstellvorrichtung/AvVzAdd';
+import AvMove from './Tools/Aufstellvorrichtung/AvMove';
+import AvAdd2ER from './Tools/Aufstellvorrichtung/AvAdd2ER';
+
 import Measure from './Measure';
 import LayerSwitch from './LayerSwitch';
 import OSM from 'ol/source/OSM';
@@ -40,7 +51,7 @@ var er = decodeURI(urlParamER[1])
 var ernr = decodeURI(urlParamERNR[1])
 console.log("Ereignisraum: " + ernr);
 
-let daten: Daten, infoTool: InfoTool, editTool: ModifyTool, delTool: DelTool, partTool: PartTool, addTool: AddTool, vsInfoTool: VsInfoTool, avAdd: AvAdd, avAdd2ER: AvAdd2ER, qsAdd2ER: QsAdd2ER, avMove: AvMove, vzAdd: VzAdd, measure: Measure, avDel: AvDelete;
+let daten: Daten, infoTool: QuerInfoTool, editTool: QuerModifyTool, delTool: QuerDelTool, partTool: QuerPartTool, addTool: QuerAddTool, vsInfoTool: AvInfoTool, avAdd: AvAdd, avAdd2ER: AvAdd2ER, qsAdd2ER: QuerAdd2ER, avMove: AvMove, vzAdd: AvVzAdd, measure: Measure, avDel: AvDelete;
 
 window.addEventListener('load', function () {
     proj4.defs("EPSG:31467", "+proj=tmerc +lat_0=0 +lon_0=9 +k=1 +x_0=3500000 +y_0=0 +ellps=bessel +towgs84=598.1,73.7,418.2,0.202,0.045,-2.455,6.7 +units=m +no_defs");
@@ -105,18 +116,18 @@ window.addEventListener('load', function () {
     map.on("moveend", recreateHash);
 
     daten = new Daten(map, er, ernr);
-    infoTool = new InfoTool(map, daten);
+    infoTool = new QuerInfoTool(map, daten);
     infoTool.start();
-    editTool = new ModifyTool(map, daten, infoTool);
-    delTool = new DelTool(map, daten, infoTool);
-    addTool = new AddTool(map, daten, infoTool);
-    partTool = new PartTool(map, daten, infoTool);
-    vsInfoTool = new VsInfoTool(map, daten.l_aufstell, "sidebar");
+    editTool = new QuerModifyTool(map, daten, infoTool);
+    delTool = new QuerDelTool(map, daten, infoTool);
+    addTool = new QuerAddTool(map, daten, infoTool);
+    partTool = new QuerPartTool(map, daten, infoTool);
+    vsInfoTool = new AvInfoTool(map, daten.l_aufstell, "sidebar");
     avAdd = new AvAdd(map, daten);
-    vzAdd = new VzAdd(map, daten);
+    vzAdd = new AvVzAdd(map, daten);
     avMove = new AvMove(map, daten, vsInfoTool);
     avAdd2ER = new AvAdd2ER(map, daten);
-    qsAdd2ER = new QsAdd2ER(map, daten);
+    qsAdd2ER = new QuerAdd2ER(map, daten);
     measure = new Measure(map);
     avDel = new AvDelete(map, daten, daten.l_aufstell, "sidebar");
 
