@@ -9,8 +9,8 @@ import PublicWFS from './PublicWFS';
 
 window.addEventListener('load', loadER);
 
-var er = {}
-var select:HTMLSelectElement = document.getElementById("er_select") as HTMLSelectElement;
+var er = []
+var select: HTMLSelectElement = document.getElementById("er_select") as HTMLSelectElement;
 select.addEventListener("change", aenderung);
 
 //?Service=WFS&Request=GetFeature&TypeName=Projekt&Filter=<Filter><PropertyIsEqualTo><PropertyName>status</PropertyName><Literal>1</Literal></PropertyIsEqualTo></Filter>
@@ -32,38 +32,52 @@ function readER(xml: Document) {
     select.innerHTML = ""
 
     for (var i = 0; i < proj.length; i++) {
+        let projekt: {
+            fid: string,
+            nr: number,
+            kurzbez: string,
+            langbez: string,
+            ownerName: string,
+            anlagedat: string
+        } = {
+            fid: null,
+            nr: null,
+            kurzbez: "",
+            langbez: "",
+            ownerName: "",
+            anlagedat: null
+        };
 
-        let projekt = proj[i].getAttribute("fid")
-
-        er[projekt] = {}
-
-        er[projekt].nr = proj[i].getElementsByTagName("projekt")[0].firstChild.textContent
+        projekt.fid = proj[i].getAttribute("fid")
+        projekt.nr = parseInt(proj[i].getElementsByTagName("projekt")[0].firstChild.textContent);
         let kurzbez = proj[i].getElementsByTagName("kurzbez")
         if (kurzbez.length > 0)
-            er[projekt].kurzbez = proj[i].getElementsByTagName("kurzbez")[0].firstChild.textContent
+            projekt.kurzbez = proj[i].getElementsByTagName("kurzbez")[0].firstChild.textContent
         else
-            er[projekt].kurzbez = ""
+            projekt.kurzbez = ""
         let langbez = proj[i].getElementsByTagName("langbez")
         if (langbez.length > 0)
-            er[projekt].langbez = proj[i].getElementsByTagName("langbez")[0].firstChild.textContent
+            projekt.langbez = proj[i].getElementsByTagName("langbez")[0].firstChild.textContent
         else
-            er[projekt].langbez = ""
-        er[projekt].ownerName = proj[i].getElementsByTagName("ownerName")[0].firstChild.textContent
-        er[projekt].anlagedat = proj[i].getElementsByTagName("anlagedat")[0].firstChild.textContent
+            projekt.langbez = ""
+        projekt.ownerName = proj[i].getElementsByTagName("ownerName")[0].firstChild.textContent
+        projekt.anlagedat = proj[i].getElementsByTagName("anlagedat")[0].firstChild.textContent
+
+        er.push(projekt);
     }
 
-    /*console.log(er);
+    console.log(er);
     er.sort(function (a, b) {
         return Number(a.nr) - Number(b.nr);
     });
-    console.log(er);*/
+    console.log(er);
 
-    for (let pid in er) {
+    for (let projekt of er) {
         let o = document.createElement('option')
         let v = document.createAttribute("value")
-        v.value = pid
+        v.value = projekt.fid
         o.setAttributeNode(v);
-        let t = document.createTextNode(er[pid]['nr'].substr(11) + " - " + er[pid]['kurzbez']);
+        let t = document.createTextNode(String(projekt.nr).substr(11) + " - " + projekt.kurzbez);
         o.appendChild(t)
         select.appendChild(o)
     }
@@ -73,17 +87,19 @@ function readER(xml: Document) {
         select.disabled = false;
         (document.getElementById("submit") as HTMLInputElement).disabled = false;
     } else {
-        select.innerHTML  = '<option id="platzhalter">Keine Ereignisr&auml;ume vorhanden!</option>'
+        select.innerHTML = '<option id="platzhalter">Keine Ereignisr&auml;ume vorhanden!</option>'
     }
 }
 
 function aenderung() {
-    let p = er[select.value];
-    console.log(select.value);
-    (document.getElementById("ernr") as HTMLInputElement).value = p['nr'];
-    document.getElementById("nummer").innerHTML = p['nr'];
-    document.getElementById("kurzbez").innerHTML = p['kurzbez'];
-    document.getElementById("langbez").innerHTML = p['langbez'];
-    document.getElementById("bearbeiter").innerHTML = p['ownerName'];
-    document.getElementById("datum").innerHTML = p['anlagedat'];
+    for (let projekt of er) {
+        if (projekt.fid != select.value) continue;
+        (document.getElementById("ernr") as HTMLInputElement).value = projekt.nr;
+        document.getElementById("nummer").innerHTML = projekt.nr;
+        document.getElementById("kurzbez").innerHTML = projekt.kurzbez;
+        document.getElementById("langbez").innerHTML = projekt.langbez;
+        document.getElementById("bearbeiter").innerHTML = projekt.ownerName;
+        document.getElementById("datum").innerHTML = projekt.anlagedat;
+        break;
+    }
 }

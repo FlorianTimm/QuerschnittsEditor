@@ -11,9 +11,13 @@ import Objekt from './Objekt';
 
 class Querschnitt implements Objekt {
     private _daten: Daten;
+    private _aufbaudaten: {} = null;
+
     flaeche: Feature;
     trenn: Feature;
-    private _aufbaudaten: {} = null;
+
+    // SIB-Attribute
+    abschnittOderAst: string = null;
     station: QuerStation = null;
     vst: number = null;
     bst: number = null;
@@ -31,7 +35,7 @@ class Querschnitt implements Objekt {
     XVstR: number = null;
     XBstL: number = null;
     XBstR: number = null;
-    kherk: number = null;
+    kherk: string = null;
     baujahrGew: any = null;
     abnahmeGew: any = null;
     dauerGew: any = null;
@@ -76,16 +80,70 @@ class Querschnitt implements Objekt {
 
     static _loadER_Callback(xml: Document, daten: Daten, callback: (...args: any[]) => void, ...args: any[]) {
         let dotquer = xml.getElementsByTagName("Dotquer");
+        let liste: Querschnitt[] = [];
         for (let i = 0; i < dotquer.length; i++) {
             //console.log(quer);
-            Querschnitt.fromXML(daten, dotquer[i]);
+            liste.push(Querschnitt.fromXML(daten, dotquer[i]));
         }
+
+        Querschnitt.checkQuerschnitte(liste);
+
         if (callback != undefined) {
             callback(...args);
         }
         document.body.style.cursor = ''
     }
 
+    static checkQuerschnitte(liste: Querschnitt[]) {
+        liste.forEach(function (querschnitt: Querschnitt) {
+            querschnitt.check()
+        })
+
+    }
+
+    check() {
+        if (this.XVstL != null && this.XVstR != null && this.XBstL != null && this.XBstR != null) return;
+        console.log(this);
+        let m = this.station.getStreifen("M")
+        let seite = this.station.getStreifen(this.streifen);
+
+        if (this.streifen == "M") {
+            this.XVstL = 0.005 * this.breite;
+            this.XVstR = 0.005 * this.breite;
+            this.XBstL = 0.005 * this.bisBreite;
+            this.XBstR = 0.005 * this.bisBreite;
+            this.createGeom();
+            return;
+        }
+
+        let abstandVST = 0;
+        let abstandBST = 0;
+        for (let nr in m) {
+            abstandVST += 0.005 * m[nr].breite;
+            abstandBST += 0.005 * m[nr].bisBreite;
+        }
+        for (let nr in seite) {
+            if (nr < this.streifennr) {
+                abstandVST += 0.01 * seite[nr].breite;
+                abstandBST += 0.01 * seite[nr].bisBreite;
+            }
+        }
+
+        if (this.streifen == "L") {
+            this.XVstL = -abstandVST - this.breite * 0.01;
+            this.XVstR = -abstandVST;
+            this.XBstL = -abstandBST - this.bisBreite * 0.01;
+            this.XBstR = -abstandBST;
+        } else {
+            this.XVstL = abstandVST;
+            this.XVstR = abstandVST + this.breite * 0.01;
+            this.XBstL = abstandBST;
+            this.XBstR = abstandBST + this.bisBreite * 0.01;
+        }
+        this.createGeom();
+        return;
+
+    }
 
     static fromXML(daten: Daten, xml: Element) {
         let r = new Querschnitt(daten);
@@ -109,9 +167,10 @@ class Querschnitt implements Objekt {
         }
         //console.log(r)
 
-        let abschnitt = r._daten.getAbschnitt(r.abschnittId);
+        let abschnitt: Abschnitt = r._daten.getAbschnitt(r.abschnittId);
         abschnitt.inER['Querschnitt'] = true;
 
+        //console.log(abschnitt);
         if (!(abschnitt.existsStation(r.vst))) {
             let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(' ');
             let geo = [];
@@ -323,12 +382,68 @@ class Querschnitt implements Objekt {
     }
 
 
+    createUpdateArtEinzelnXML() {
+        return '<wfs:Update typeName="Dotquer">\n' +
+            '	<wfs:Property>\n' +
+            '		<wfs:Name>art/@xlink:href</wfs:Name>\n' +
+            '		<wfs:Value>' + this.art + '</wfs:Value>\n' +
+            '	</wfs:Property>\n' +
+            '	<ogc:Filter>\n' +
+            '		<ogc:And>\n' +
+            '			<ogc:PropertyIsEqualTo>\n' +
+            '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
+            '				<ogc:Literal>' + this.objektId + '</ogc:Literal>\n' +
+            '			</ogc:PropertyIsEqualTo>\n' +
+            '			<ogc:PropertyIsEqualTo>\n' +
+            '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
+            '				<ogc:Literal>' + this.projekt + '</ogc:Literal>\n' +
+            '			</ogc:PropertyIsEqualTo>\n' +
+            '		</ogc:And>\n' +
+            '	</ogc:Filter>\n' +
+            '</wfs:Update>';
+    }
+
+    createUpdateOberEinzelnXML() {
+        return '<wfs:Update typeName="Dotquer">\n' +
+            '	<wfs:Property>\n' +
+            '		<wfs:Name>artober/@xlink:href</wfs:Name>\n' +
+            '		<wfs:Value>' + this.artober + '</wfs:Value>\n' +
+            '	</wfs:Property>\n' +
+            '	<ogc:Filter>\n' +
+            '		<ogc:And>\n' +
+            '			<ogc:PropertyIsEqualTo>\n' +
+            '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
+            '				<ogc:Literal>' + this.objektId + '</ogc:Literal>\n' +
+            '			</ogc:PropertyIsEqualTo>\n' +
+            '			<ogc:PropertyIsEqualTo>\n' +
+            '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
+            '				<ogc:Literal>' + this.projekt + '</ogc:Literal>\n' +
+            '			</ogc:PropertyIsEqualTo>\n' +
+            '		</ogc:And>\n' +
+            '	</ogc:Filter>\n' +
+            '</wfs:Update>';
+    }
+
     updateArt(art: string, artober: string) {
         this.art = art;
         this.artober = artober;
         this._daten.v_quer.changed();
 
         PublicWFS.doTransaction(this.createUpdateArtXML(), undefined, undefined);
+    }
+
+    updateArtEinzeln(art: string) {
+        this.art = art;
+        this._daten.v_quer.changed();
+
+        PublicWFS.doTransaction(this.createUpdateArtEinzelnXML(), undefined, undefined);
+    }
+
+    updateOberEinzeln(artober: string) {
+        this.artober = artober;
+        this._daten.v_quer.changed();
+
+        PublicWFS.doTransaction(this.createUpdateOberEinzelnXML(), undefined, undefined);
     }
 
 

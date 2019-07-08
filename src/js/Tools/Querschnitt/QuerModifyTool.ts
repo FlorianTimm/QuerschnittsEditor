@@ -42,8 +42,8 @@ class QuerModifyTool implements Tool {
 
         document.getElementById('befehl_modify').addEventListener('change', this._switch.bind(this));
 
-        document.getElementById('qsmm_art').addEventListener('change', this.updateMulti.bind(this));
-        document.getElementById('qsmm_ober').addEventListener('change', this.updateMulti.bind(this));
+        document.getElementById('qsmm_art').addEventListener('change', this.updateMultiArt.bind(this));
+        document.getElementById('qsmm_ober').addEventListener('change', this.updateMultiOber.bind(this));
     };
 
     _switch() {
@@ -207,13 +207,19 @@ class QuerModifyTool implements Tool {
                 this.select.getFeatures().push(a);
             } else if (selection.length > 1) {
                 // MultiSelect
-                let art = selection[0].get('objekt').art.substr(-32)
-                let ober = selection[0].get('objekt').artober.substr(-32)
+                let art = 'diff';
+                let ober = 'diff';
+                if (selection[0].get('objekt').art != null)
+                    art = selection[0].get('objekt').art.substr(-32)
+                if (selection[0].get('objekt').artober != null)
+                    ober = selection[0].get('objekt').artober.substr(-32)
+
                 for (let i = 1; i < selection.length; i++) {
                     let feat = selection[i].get('objekt');
-                    if (art != feat.art.substr(-32)) art = 'diff';
-                    if (ober != feat.artober.substr(-32)) ober = 'diff';
+                    if (feat.art != null || art != feat.art.substr(-32)) art = 'diff';
+                    if (feat.art != null || ober != feat.artober.substr(-32)) ober = 'diff';
                 }
+
                 document.forms.namedItem("qsMultiMod").qsmm_anzahl.value = selection.length;
                 document.forms.namedItem("qsMultiMod").qsmm_art.value = (art == 'diff') ? '' : art;
                 document.forms.namedItem("qsMultiMod").qsmm_ober.value = (ober == 'diff') ? '' : ober;
@@ -251,13 +257,22 @@ class QuerModifyTool implements Tool {
         querschnitt.updateArt(art, artober);
     }
 
-    updateMulti() {
+    updateMultiArt() {
         let querschnitte = this.select_fl.getFeatures().getArray();
         let art = (document.getElementById('qsmm_art') as HTMLInputElement).value;
+
+        for (let querschnitt of querschnitte) {
+            querschnitt.get('objekt').updateArtEinzeln(art);
+        }
+    }
+
+    
+    updateMultiOber() {
+        let querschnitte = this.select_fl.getFeatures().getArray();
         let artober = (document.getElementById('qsmm_ober') as HTMLInputElement).value;
 
         for (let querschnitt of querschnitte) {
-            querschnitt.get('objekt').updateArt(art, artober);
+            querschnitt.get('objekt').updateOberEinzeln(artober);
         }
     }
 

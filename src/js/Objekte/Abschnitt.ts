@@ -130,21 +130,19 @@ export default class Abschnitt extends Feature {
         return this._feature;
     }
 
-    addStation(station: QuerStation) {
+    addStation(station: QuerStation): void {
         this._station[station.vst] = station;
     }
 
-    /*
-    getStation(station: number) {
+    getStation(station: number): QuerStation {
         return this._station[station];
     }
 
-    existsStation(station: number) {
+    existsStation(station: number): boolean {
         return station in this._station;
     }
-    */
 
-    getStationByStation(station: number) {
+    getStationByStation(station: number): QuerStation {
         let r = null;
         for (var a in this._station) {
             if (parseInt(a) > station) break;
@@ -153,16 +151,18 @@ export default class Abschnitt extends Feature {
         return r;
     }
 
-    getStationByVST(vst: number) {
+    getStationByVST(vst: number): QuerStation {
         for (let a in this._station) {
-            if (this._station[a].vst == vst) return this._station[a];
+            if (this._station[a].vst == vst)
+                return this._station[a];
         }
         return null;
     }
 
-    getStationByBST(bst: number) {
+    getStationByBST(bst: number): QuerStation {
         for (let a in this._station) {
-            if (this._station[a].bst == bst) return this._station[a];
+            if (this._station[a].bst == bst)
+                return this._station[a];
         }
         return null;
     }

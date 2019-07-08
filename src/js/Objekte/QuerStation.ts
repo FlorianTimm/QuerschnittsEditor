@@ -6,12 +6,12 @@ import Daten from '../Daten';
 import Abschnitt from './Abschnitt';
 import Querschnitt from './Querschnittsdaten';
 
- /**
- * Querschnitts-Station
- * @author Florian Timm, LGV HH 
- * @version 2019.06.06
- * @copyright MIT
- */
+/**
+* Querschnitts-Station
+* @author Florian Timm, LGV HH 
+* @version 2019.06.06
+* @copyright MIT
+*/
 
 export class QuerStation {
     daten: Daten;
@@ -22,7 +22,7 @@ export class QuerStation {
     seg: number[] = [];
     vector: number[][] = [];
     linie: MultiLineString = null;
-    private _querschnitte: {} = {};
+    private _querschnitte: { [streifen: string]: { [streifennr: number]: Querschnitt } } = {};
 
     constructor(daten: Daten, abschnitt: Abschnitt, vst: number, bst: number, geo: number[]) {
         this.daten = daten;
@@ -41,14 +41,14 @@ export class QuerStation {
         }
         this._querschnitte[streifen][nr] = querschnitt;
     }
-    getQuerschnitt(streifen: string, streifennr: number) {
+    getQuerschnitt(streifen: string, streifennr: number): Querschnitt {
         if (!(streifen in this._querschnitte))
             return null;
         if (!(streifennr in this._querschnitte[streifen]))
             return null;
         return this._querschnitte[streifen][streifennr];
     }
-    getAllQuerschnitte() {
+    getAllQuerschnitte(): Querschnitt[] {
         let r = [];
         for (let streifen in this._querschnitte) {
             for (let querschnitt in this._querschnitte[streifen]) {
@@ -57,13 +57,13 @@ export class QuerStation {
         }
         return r;
     }
-    getStreifen(streifen: string) {
+    getStreifen(streifen: string): { [streifennr: number]: Querschnitt } {
         if (!(streifen in this._querschnitte))
             return null;
         return this._querschnitte[streifen];
     }
 
-    getQuerschnittByBstAbstand(XBstL: number, XBstR: number) {
+    getQuerschnittByBstAbstand(XBstL: number, XBstR: number): Querschnitt {
         for (let streifen in this._querschnitte) {
             for (let querschnitt in this._querschnitte[streifen]) {
                 if (XBstL < 0 && this._querschnitte[streifen][querschnitt].XBstL == XBstL) return this._querschnitte[streifen][querschnitt];
@@ -73,7 +73,7 @@ export class QuerStation {
         return null;
     }
 
-    getQuerschnittByVstAbstand(XVstL: number, XVstR: number) {
+    getQuerschnittByVstAbstand(XVstL: number, XVstR: number): Querschnitt {
         for (let streifen in this._querschnitte) {
             for (let querschnitt in this._querschnitte[streifen]) {
                 if (XVstL < 0 && this._querschnitte[streifen][querschnitt].XVstL == XVstL) return this._querschnitte[streifen][querschnitt];
@@ -122,8 +122,7 @@ export class QuerStation {
         this.abschnitt.getAufbauDaten(QuerStation.teilen_callback, undefined, this, station);
     }
 
-    static teilen_callback(_this, station) {
-
+    static teilen_callback(_this: QuerStation, station: number) {
         _this.abschnitt.writeQuerAufbau();
     }
 }

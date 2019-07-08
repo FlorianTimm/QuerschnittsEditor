@@ -15,7 +15,7 @@ import Querschnitt from './Objekte/Querschnittsdaten';
 import Klartext from './Objekte/Klartext';
 import Aufstellvorrichtung from './Objekte/Aufstellvorrichtung';
 import { isNullOrUndefined } from 'util';
-import { Map } from 'ol';
+import { Map, Feature } from 'ol';
 import Event from 'ol/events/Event';
 import { VectorLayer } from './openLayers/Layer';
 
@@ -40,7 +40,7 @@ class Daten {
     l_trenn: VectorLayer;
     v_quer: VectorSource;
     l_quer: VectorLayer;
-    
+
 
     constructor(map: Map, ereignisraum: string, ereignisraum_nr: string) {
         Daten.daten = this;
@@ -97,7 +97,7 @@ class Daten {
         }
     }
 
-    getAbschnitt(absId: string) {
+    getAbschnitt(absId: string): Abschnitt {
         if (!(absId in this.abschnitte)) {
             this.abschnitte[absId] = Abschnitt.load(this, absId);
             this.v_achse.addFeature(this.abschnitte[absId]);
@@ -269,83 +269,84 @@ class Daten {
             features: []
         });
 
-        let createStyle = function (feature, resolution) {
-            let kt_art = feature.get('objekt').daten.klartexte.get('Itquerart', feature.get('objekt').art)
-            let kt_ober = feature.get('objekt').daten.klartexte.get('Itquerober', feature.get('objekt').artober)
+        let createStyle: (feature: Feature, resolution: number) => Style =
+            function (feature: Feature, resolution: number) {
+                let kt_art = Daten.getInstanz().klartexte.get('Itquerart', feature.get('objekt').art)
+                let kt_ober = Daten.getInstanz().klartexte.get('Itquerober', feature.get('objekt').artober)
 
-            // leere Arten filtern
-            let art = 0
-            if (!isNullOrUndefined(kt_art))
-                art = Number(kt_art.kt);
+                // leere Arten filtern
+                let art = 0
+                if (!isNullOrUndefined(kt_art))
+                    art = Number(kt_art.kt);
 
-            // leere Oberflächen filtern
-            let ober = 0
-            if (!isNullOrUndefined(kt_ober))
-                ober = Number(kt_ober.kt);
+                // leere Oberflächen filtern
+                let ober = 0
+                if (!isNullOrUndefined(kt_ober))
+                    ober = Number(kt_ober.kt);
 
-            // Farbe für Querschnittsfläche
-            let color = [255, 255, 255];
+                // Farbe für Querschnittsfläche
+                let color = [255, 255, 255];
 
-            if ((art >= 100 && art <= 110) || (art >= 113 && art <= 119) || (art >= 122 && art <= 161) || (art >= 163 && art <= 179) || art == 312)
-                color = [33, 33, 33];	// Fahrstreifen
-            else if (art == 111)
-                color = [66, 66, 66]; // 1. Überholfahrstreifen
-            else if (art == 112)
-                color = [100, 100, 100]; // 2. Überholfahrstreifen
-            else if (art >= 180 && art <= 183)
-                color = [50, 50, 100];	// Parkstreifen
-            else if (art >= 940 && art <= 942)
-                color = [0xF9, 0x14, 0xB8]; // Busanlagen
-            else if (art == 210) color = [0x22, 0x22, 0xff];	// Gehweg
-            else if ((art >= 240 && art <= 243) || art == 162)
-                color = [0x33, 0x33, 0x66];	// Radweg
-            else if (art == 250 || art == 251)
-                color = [0xcc, 0x22, 0xcc];	// Fuß-Rad-Weg
-            else if (art == 220)
-                color = [0xff, 0xdd, 0x00];	// paralleler Wirtschaftsweg
-            else if (art == 420 || art == 430 || art == 900)
-                color = [0xff, 0xff, 0xff];	// Markierungen
-            else if (art == 310 || art == 311 || art == 313 || art == 320 || art == 330 || (art >= 910 && art <= 916))
-                color = [0xee, 0xee, 0xee];	// Trenn-, Schutzstreifen und Schwellen
-            else if (art == 120 || art == 121)
-                color = [0x1F, 0x22, 0x97];	// Rinne
-            else if (art == 301)
-                color = [0x75, 0x9F, 0x1E];	// Banket
-            else if (art == 510 || art == 511 || art == 520)
-                color = [0x12, 0x0a, 0x8f];	// Gräben und Mulden
-            else if (art == 700 || art == 710)
-                color = [0x00, 0x44, 0x00];	// Böschungen
-            else if (art == 314 || art == 315)
-                color = [0x8A, 0x60, 0xD8];	// Inseln
-            else if (art == 400 || art == 410 || art == 715)
-                color = [0x8A, 0x60, 0xD8];	// Randstreifen und Sichtflächen
-            else if (art == 600 || art == 610 || art == 620 || art == 630 || art == 640)
-                color = [0xC1, 0xBA, 0xC8];	// Borde und Kantsteine
-            else if (art == 340)
-                color = [0, 0, 0];	// Gleiskörper
-            else if (art == 999)
-                color = [0x88, 0x88, 0x88];	// Bestandsachse
-            else if (art == 990 || art == 720)
-                color = [0xFC, 0x8A, 0x57];	// sonstige Streifenart
+                if ((art >= 100 && art <= 110) || (art >= 113 && art <= 119) || (art >= 122 && art <= 161) || (art >= 163 && art <= 179) || art == 312)
+                    color = [33, 33, 33];	// Fahrstreifen
+                else if (art == 111)
+                    color = [66, 66, 66]; // 1. Überholfahrstreifen
+                else if (art == 112)
+                    color = [100, 100, 100]; // 2. Überholfahrstreifen
+                else if (art >= 180 && art <= 183)
+                    color = [50, 50, 100];	// Parkstreifen
+                else if (art >= 940 && art <= 942)
+                    color = [0xF9, 0x14, 0xB8]; // Busanlagen
+                else if (art == 210) color = [0x22, 0x22, 0xff];	// Gehweg
+                else if ((art >= 240 && art <= 243) || art == 162)
+                    color = [0x33, 0x33, 0x66];	// Radweg
+                else if (art == 250 || art == 251)
+                    color = [0xcc, 0x22, 0xcc];	// Fuß-Rad-Weg
+                else if (art == 220)
+                    color = [0xff, 0xdd, 0x00];	// paralleler Wirtschaftsweg
+                else if (art == 420 || art == 430 || art == 900)
+                    color = [0xff, 0xff, 0xff];	// Markierungen
+                else if (art == 310 || art == 311 || art == 313 || art == 320 || art == 330 || (art >= 910 && art <= 916))
+                    color = [0xee, 0xee, 0xee];	// Trenn-, Schutzstreifen und Schwellen
+                else if (art == 120 || art == 121)
+                    color = [0x1F, 0x22, 0x97];	// Rinne
+                else if (art == 301)
+                    color = [0x75, 0x9F, 0x1E];	// Banket
+                else if (art == 510 || art == 511 || art == 520)
+                    color = [0x12, 0x0a, 0x8f];	// Gräben und Mulden
+                else if (art == 700 || art == 710)
+                    color = [0x00, 0x44, 0x00];	// Böschungen
+                else if (art == 314 || art == 315)
+                    color = [0x8A, 0x60, 0xD8];	// Inseln
+                else if (art == 400 || art == 410 || art == 715)
+                    color = [0x8A, 0x60, 0xD8];	// Randstreifen und Sichtflächen
+                else if (art == 600 || art == 610 || art == 620 || art == 630 || art == 640)
+                    color = [0xC1, 0xBA, 0xC8];	// Borde und Kantsteine
+                else if (art == 340)
+                    color = [0, 0, 0];	// Gleiskörper
+                else if (art == 999)
+                    color = [0x88, 0x88, 0x88];	// Bestandsachse
+                else if (art == 990 || art == 720)
+                    color = [0xFC, 0x8A, 0x57];	// sonstige Streifenart
 
-            color.push(0.4);
+                color.push(0.4);
 
-            return new Style({
-                fill: new Fill({
-                    color: color
-                }),
-                text: new Text({
-                    font: '12px Calibri,sans-serif',
-                    fill: new Fill({ color: '#000' }),
-                    stroke: new Stroke({
-                        color: '#fff', width: 2
+                return new Style({
+                    fill: new Fill({
+                        color: color
                     }),
-                    // get the text from the feature - `this` is ol.Feature
-                    // and show only under certain resolution
-                    text: ((resolution < 0.05) ? (art + " - " + ober) : '')
+                    text: new Text({
+                        font: '12px Calibri,sans-serif',
+                        fill: new Fill({ color: '#000' }),
+                        stroke: new Stroke({
+                            color: '#fff', width: 2
+                        }),
+                        // get the text from the feature - `this` is ol.Feature
+                        // and show only under certain resolution
+                        text: ((resolution < 0.05) ? (art + " - " + ober) : '')
+                    })
                 })
-            })
-        }
+            }
 
         this.l_quer = new VectorLayer({
             source: this.v_quer,

@@ -63,7 +63,7 @@ class AvVzAdd implements Tool {
         document.body.appendChild(this._ausblenden);
         this._popup = document.createElement("div");
         this._popup.id = "vz_popup";
-        this._popup.style.textAlign = "right";
+        this._popup.style.textAlign = "left";
 
         this._popup.innerHTML += '<div style="color: #f00; width: 100%; text-align: center;">ACHTUNG: Änderungen im aktuellen ER werden nicht angezeigt!<br/>Der Fehler wurde bereits an NOVASIB gemeldet.</div>'
 
@@ -94,7 +94,8 @@ class AvVzAdd implements Tool {
         $(stvoZNrNeu).chosen({
             search_contains: true,
             placeholder_text_single: "Schild hinzufügen...",
-            no_results_text: "Nichts gefunden!"
+            no_results_text: "Nichts gefunden!",
+            width: "600px"
         });
 
         this._popup.appendChild(document.createElement("br"));
@@ -124,7 +125,6 @@ class AvVzAdd implements Tool {
     }
 
     static _zeichenGeladen(zeichen: Zeichen[], _this: AvVzAdd) {
-        console.log(_this);
         zeichen.sort(function (a: Zeichen, b: Zeichen) {
             if (a.sort != null && b.sort != null) {
                 return Number(a.sort) - Number(b.sort);
@@ -187,6 +187,49 @@ class AvVzAdd implements Tool {
         // Größe des Schilder
         if (eintrag.groesse == undefined) eintrag.groesse = CONFIG.GROESSE;
         text.appendChild(this._createSelect(eintrag, 'Gr&ouml;&szlig;e', 'groesse', 'Itvzgroesse'));
+
+        // Straßenbezug
+        if (eintrag.strbezug == undefined) eintrag.strbezug = CONFIG.STRASSENBEZUG;
+        text.appendChild(this._createSelect(eintrag, 'Stra&szlig;enbezug', 'strbezug', 'Itbesstrbezug'));
+
+        // Aufstelldatum
+        let aufstellGroup = document.createElement("div");
+        aufstellGroup.className = "form_group";
+        let aufstell_label = document.createElement("label");
+        aufstell_label.innerHTML = 'Aufstelldatum';
+        aufstellGroup.appendChild(aufstell_label);
+        aufstellGroup.appendChild(document.createElement("br"));
+        let aufstellField = document.createElement("input");
+        aufstellField.autocomplete = "off";
+        aufstellField.name = "aufstelldat";
+        aufstellField.value = ((eintrag.aufstelldat != null) ? (eintrag.aufstelldat) : (''));
+        aufstellGroup.appendChild(aufstellField);
+
+        $.datepicker.regional['de'] = {
+            closeText: 'Done',
+            prevText: 'Prev',
+            nextText: 'Next',
+            currentText: 'heute',
+            monthNames: ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
+                'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
+            monthNamesShort: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun',
+                'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
+            dayNames: ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'],
+            dayNamesShort: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
+            dayNamesMin: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
+            weekHeader: 'KW',
+            dateFormat: 'dd.mm.yy',
+            firstDay: 0,
+            isRTL: false,
+            showMonthAfterYear: false,
+            yearSuffix: ''
+        };
+        $(aufstellField).datepicker($.datepicker.regional["de"]);
+        $(aufstellField).datepicker('option', 'dateFormat', 'yy-mm-dd');
+        $(aufstellField).datepicker('option', 'changeMonth', true);
+        $(aufstellField).datepicker('option', 'changeYear', true);
+
+        text.appendChild(aufstellGroup);
 
         // Externe Objektnr
         let extnr_group = document.createElement("div");
@@ -272,7 +315,8 @@ class AvVzAdd implements Tool {
         select.classList.add(id);
         select.name = id;
         select.id = id + "[" + eintrag.objektId + "]";
-        for (let kt of this._daten.klartexte.getAllSorted(klartext)) {
+
+        for (let kt of Daten.getInstanz().klartexte.getAllSorted(klartext)) {
             let option = document.createElement("option");
             option.value = kt['objektId'];
             option.innerHTML = kt['beschreib'];
@@ -298,6 +342,7 @@ class AvVzAdd implements Tool {
         daten.klartexte.load("Itvzart");
         daten.klartexte.load("Itvzbeleucht");
         daten.klartexte.load("Itvzgroesse");
+        daten.klartexte.load("Itbesstrbezug");
     }
 
     /**
@@ -326,6 +371,8 @@ class AvVzAdd implements Tool {
             schild.beleucht = ($(eintrag).children().children("select[name='beleucht']")[0] as HTMLInputElement).value;
             schild.art = ($(eintrag).children().children("select[name='art']")[0] as HTMLInputElement).value;
             schild.groesse = ($(eintrag).children().children("select[name='groesse']")[0] as HTMLInputElement).value;
+            schild.strbezug = ($(eintrag).children().children("select[name='strbezug']")[0] as HTMLInputElement).value;
+            schild.aufstelldat = ($(eintrag).children().children("input[name='aufstelldat']")[0] as HTMLInputElement).value;
             schild.erfart = ($(eintrag).children().children("select[name='erfart']")[0] as HTMLInputElement).value;
             schild.quelle = ($(eintrag).children().children("select[name='quelle']")[0] as HTMLInputElement).value;
             schild.objektnr = ($(eintrag).children().children("input[name='objektnr']")[0] as HTMLInputElement).value;
@@ -380,6 +427,16 @@ class AvVzAdd implements Tool {
                 if (oldZeichen.groesse.substr(-32) != modiZeichen.groesse) {
                     upd += '<wfs:Property>\n<wfs:Name>groesse/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.groesse + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update groesse");
+                }
+
+                if (oldZeichen.strbezug.substr(-32) != modiZeichen.strbezug) {
+                    upd += '<wfs:Property>\n<wfs:Name>strbezug/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.strbezug + '</wfs:Value>\n</wfs:Property>\n';
+                    console.log("update strbezug");
+                }
+
+                if (oldZeichen.aufstelldat != modiZeichen.aufstelldat) {
+                    upd += '<wfs:Property>\n<wfs:Name>aufstelldat</wfs:Name>\n<wfs:Value>' + modiZeichen.aufstelldat + '</wfs:Value>\n</wfs:Property>\n';
+                    console.log("update aufstelldat");
                 }
 
                 if (oldZeichen.erfart.substr(-32) != modiZeichen.erfart) {
@@ -448,6 +505,9 @@ class AvVzAdd implements Tool {
                 '<art xlink:href="#' + zeichen.art + '" typeName="Itvzart" />\n' +
                 '<parent typeName="Otaufstvor" xlink:href="#' + this._auswahl.fid + '"/>\n' +
                 '<groesse xlink:href="#' + zeichen.groesse + '" typeName="Itvzgroesse" />\n' +
+                '<strbezug xlink:href="#' + zeichen.strbezug + '" typeName="Itbesstrbezug" />\n' +
+                '<aufstelldat>' + zeichen.aufstelldat + '</aufstelldat>\n' +
+                '<objektnr>' + zeichen.objektnr + '</objektnr>\n' +
                 '<erfart xlink:href="#' + zeichen.erfart + '" typeName="Iterfart" />\n' +
                 '<quelle xlink:href="#' + zeichen.quelle + '" typeName="Itquelle" />\n' +
                 '<ADatum>' + new Date().toISOString().slice(0, 10) + '</ADatum>\n' +

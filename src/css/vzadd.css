@@ -60,7 +60,7 @@
     font-size: 8pt;
 }
 
-.ui-state-highlight {
+form.ui-state-highlight {
     height: 180px;
     line-height: 1.2em;
     background-color: #ff4;

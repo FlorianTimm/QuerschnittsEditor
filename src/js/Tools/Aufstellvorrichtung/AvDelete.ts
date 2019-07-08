@@ -3,10 +3,12 @@ import PublicWFS from '../../PublicWFS';
 import 'jquery-ui-bundle';
 import 'jquery-ui-bundle/jquery-ui.css'
 import Tool from '../Tool';
-import { Map } from 'ol';
+import { Map, MapBrowserEvent } from 'ol';
 import Daten from '../../Daten';
 import { Layer } from 'ol/layer';
 import Aufstellvorrichtung from '../../Objekte/Aufstellvorrichtung';
+import { SelectEvent } from 'ol/interaction/Select';
+import VectorSource from 'ol/source/Vector';
 
 /**
  * Funktion zum Löschen von Aufstellvorrichtungen
@@ -37,7 +39,7 @@ class AvDelete implements Tool {
 
 
         let button = document.createElement("button");
-        button.addEventListener("click", function (evt) {
+        button.addEventListener("click", function (evt: { preventDefault: () => void; }) {
             evt.preventDefault();
             this._featureDelete()
         }.bind(this))
@@ -51,13 +53,13 @@ class AvDelete implements Tool {
         this._select.on('select', this._featureSelected.bind(this))
     }
 
-    _featureSelected(event) {
+    _featureSelected(event: SelectEvent) {
         if (event.selected.length == 0) {
             this._delField.style.display = "none";
             return;
         }
         this._delField.style.display = "block";
-        let auswahl = event.selected[0];
+        let auswahl = <Aufstellvorrichtung>event.selected[0];
 
         this._delField;
         auswahl.getHTMLInfo(this._infoField);
@@ -83,9 +85,9 @@ class AvDelete implements Tool {
         PublicWFS.doTransaction(update, this._deleteCallback, undefined, this);
     }
 
-    _deleteCallback(_this) {
+    _deleteCallback(_xml: any, _this: AvDelete) {
         let feature = _this._select.getFeatures().getArray()[0];
-        _this._layer.getSource().removeFeature(feature);
+        (<VectorSource>_this._layer.getSource()).removeFeature(feature);
         _this._select.getFeatures().clear();
         PublicWFS.showMessage("Aufstellvorichtung gelöscht!")
     }

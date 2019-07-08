@@ -30,7 +30,7 @@ export default class PublicWFS {
                     PublicWFS.showMessage("Kommunikationsfehler", true);
             }
         }
-        xmlhttp.setRequestHeader('Content-Type', 'text/xml');
+        xmlhttp.setRequestHeader('Content-Type', 'text/xml; charset=ISO-8859-1');
         xmlhttp.send(xml);
     }
 
