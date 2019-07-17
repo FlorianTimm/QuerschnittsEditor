@@ -11,7 +11,7 @@ import Objekt from './Objekt';
 
 class Querschnitt implements Objekt {
     private _daten: Daten;
-    private _aufbaudaten: {} = null;
+    private _aufbaudaten: { [schicht: number]: Aufbau } = null;
 
     flaeche: Feature;
     trenn: Feature;
@@ -50,10 +50,10 @@ class Querschnitt implements Objekt {
     behoerde: any = null;
     streifen: string = null;
     projekt: string = null;
-    streifennr: string = null;
+    streifennr: number = null;
 
-    constructor(daten: Daten) {
-        this._daten = daten;
+    constructor() {
+        this._daten = Daten.getInstanz();
         //console.log(daten);
 
         this.flaeche = new Feature({ geom: new Polygon([[[0, 0], [0, 0], [0, 0]]]), objekt: this });
@@ -83,7 +83,7 @@ class Querschnitt implements Objekt {
         let liste: Querschnitt[] = [];
         for (let i = 0; i < dotquer.length; i++) {
             //console.log(quer);
-            liste.push(Querschnitt.fromXML(daten, dotquer[i]));
+            liste.push(Querschnitt.fromXML(dotquer[i]));
         }
 
         Querschnitt.checkQuerschnitte(liste);
@@ -102,8 +102,8 @@ class Querschnitt implements Objekt {
     }
 
     check() {
-        if (this.XVstL != null && this.XVstR != null && this.XBstL != null && this.XBstR != null) return;
-        console.log(this);
+        //if (this.XVstL != null && this.XVstR != null && this.XBstL != null && this.XBstR != null) return;
+        //console.log(this);
         let m = this.station.getStreifen("M")
         let seite = this.station.getStreifen(this.streifen);
 
@@ -123,7 +123,7 @@ class Querschnitt implements Objekt {
             abstandBST += 0.005 * m[nr].bisBreite;
         }
         for (let nr in seite) {
-            if (nr < this.streifennr) {
+            if (Number(nr) < this.streifennr) {
                 abstandVST += 0.01 * seite[nr].breite;
                 abstandBST += 0.01 * seite[nr].bisBreite;
             }
@@ -145,8 +145,9 @@ class Querschnitt implements Objekt {
 
     }
 
-    static fromXML(daten: Daten, xml: Element) {
-        let r = new Querschnitt(daten);
+    static fromXML(xml: Element) {
+        let daten = Daten.getInstanz();
+        let r = new Querschnitt();
 
         r.fid = xml.getAttribute('fid');
         daten.querschnitteFID[r.fid] = r;
@@ -273,7 +274,16 @@ class Querschnitt implements Objekt {
             }
         }
 
-        r += '</Dotquer>\n</wfs:Insert>\n';
+        r += '</Dotquer>\n';
+
+        if (this._aufbaudaten != null) {
+
+            for (let s in this._aufbaudaten) {
+                //console.log(this._aufbaudaten[s]);
+                r += this._aufbaudaten[s].createXML();
+            }
+        }
+        r += '</wfs:Insert>\n';
         return r;
     }
 
@@ -470,7 +480,7 @@ class Querschnitt implements Objekt {
         } else {
             // Verschieben
             for (var nnr in gesStreifen) {
-                if (nnr <= nr)
+                if (Number(nnr) <= nr)
                     continue;
                 gesStreifen[nnr]['X' + edit + 'L'] += diff;
                 gesStreifen[nnr]['X' + edit + 'R'] += diff;
@@ -483,6 +493,11 @@ class Querschnitt implements Objekt {
         //console.log(soap);
 
         PublicWFS.doTransaction(soap, undefined, undefined);
+    }
+
+    delete() {
+        this._daten.v_quer.removeFeature(this.flaeche)
+        this._daten.v_trenn.removeFeature(this.trenn)
     }
 }
 

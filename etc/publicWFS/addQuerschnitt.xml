@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wfs:Transaction service="WFS" version="1.0.0"
+		xmlns="http://xml.novasib.de"
+		xmlns:wfs="http://www.opengis.net/wfs"
+ 		xmlns:gml="http://www.opengis.net/gml"
+ 		xmlns:ogc="http://www.opengis.net/ogc"
+ 		xmlns:xlink="http://www.w3.org/1999/xlink"
+ 		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ 		xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-transaction.xsd">
+<wfs:Delete typeName="Dotquer">
+<ogc:Filter>
+  <ogc:And>
+    <ogc:PropertyIsEqualTo>
+       <ogc:PropertyName>abschnittId</ogc:PropertyName>
+      <ogc:Literal>A919CD44288143EAB5E6A21AA6F9443D</ogc:Literal>
+    </ogc:PropertyIsEqualTo>
+    <ogc:PropertyIsEqualTo>
+       <ogc:PropertyName>vst</ogc:PropertyName>
+      <ogc:Literal>0</ogc:Literal>
+    </ogc:PropertyIsEqualTo>
+    <ogc:PropertyIsEqualTo>
+       <ogc:PropertyName>bst</ogc:PropertyName>
+      <ogc:Literal>2</ogc:Literal>
+    </ogc:PropertyIsEqualTo>
+    <ogc:PropertyIsEqualTo>
+      <ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>
+      <ogc:Literal>S8abeaa946bd837d6016bfb2f0ec05ada</ogc:Literal>
+    </ogc:PropertyIsEqualTo>
+  </ogc:And>
+</ogc:Filter>
+</wfs:Delete>
+<wfs:Insert>
+<Dotquer>
+<projekt xlink:href="#S8abeaa946bd837d6016bfb2f0ec05ada" typeName="Projekt" />
+<hasSekObj>0</hasSekObj>
+<abschnittId>A919CD44288143EAB5E6A21AA6F9443D</abschnittId>
+<vst>0</vst>
+<bst>2</bst>
+<streifen>R</streifen>
+<streifennr>1</streifennr>
+<art xlink:href="#S8ac892a124b8e9f20124c3697e2902ba" typeName="Itquerart" />
+<artober xlink:href="#D0B32918ED84483B9EE77056145E2EF8" typeName="Itquerober" />
+<breite>302</breite>
+<bisBreite>274</bisBreite>
+<XVstL>0</XVstL>
+<XVstR>3.02</XVstR>
+<XBstL>0</XBstL>
+<XBstR>2.74</XBstR>
+<objektId>d6003a7c7a34427ba075dd5d85c59ae1</objektId>
+</Dotquer>
+</wfs:Insert>
+<wfs:Insert>
+<Dotquer>
+<projekt xlink:href="#S8abeaa946bd837d6016bfb2f0ec05ada" typeName="Projekt" />
+<hasSekObj>0</hasSekObj>
+<abschnittId>A919CD44288143EAB5E6A21AA6F9443D</abschnittId>
+<vst>0</vst>
+<bst>2</bst>
+<streifen>R</streifen>
+<streifennr>2</streifennr>
+<art xlink:href="#C6C820D0B1604C4087F3402E5FBF6FE5" typeName="Itquerart" />
+<artober xlink:href="#D0B32918ED84483B9EE77056145E2EF8" typeName="Itquerober" />
+<breite>30</breite>
+<bisBreite>30</bisBreite>
+<XVstL>3.02</XVstL>
+<XVstR>3.32</XVstR>
+<XBstL>2.74</XBstL>
+<XBstR>3.04</XBstR>
+<objektId>7badd68249fb40d69cc0d795f4b1ade1</objektId>
+</Dotquer>
+</wfs:Insert>
+<wfs:Insert>
+<Dotquer>
+<projekt xlink:href="#S8abeaa946bd837d6016bfb2f0ec05ada" typeName="Projekt" />
+<hasSekObj>0</hasSekObj>
+<abschnittId>A919CD44288143EAB5E6A21AA6F9443D</abschnittId>
+<vst>0</vst>
+<bst>2</bst>
+<streifen>R</streifen>
+<streifennr>3</streifennr>
+<art xlink:href="#S8ac892a124b8e9f20124c3697e2902b4" typeName="Itquerart" />
+<artober xlink:href="#D0B32918ED84483B9EE77056145E2EF8" typeName="Itquerober" />
+<breite>330</breite>
+<bisBreite>325</bisBreite>
+<XVstL>3.32</XVstL>
+<XVstR>6.62</XVstR>
+<XBstL>3.04</XBstL>
+<XBstR>6.29</XBstR>
+<objektId>37e46fdc44ad4079ab51a3a486550897</objektId>
+</Dotquer>
+</wfs:Insert>
+<wfs:Insert>
+<Dotquer>
+<projekt xlink:href="#S8abeaa946bd837d6016bfb2f0ec05ada" typeName="Projekt" />
+<hasSekObj>0</hasSekObj>
+<abschnittId>A919CD44288143EAB5E6A21AA6F9443D</abschnittId>
+<vst>0</vst>
+<bst>2</bst>
+<streifen>R</streifen>
+<streifennr>4</streifennr>
+<art xlink:href="#S9BAAC075BBFF48D28CE99BC3EB20856F" typeName="Itquerart" />
+<artober xlink:href="#D0B32918ED84483B9EE77056145E2EF8" typeName="Itquerober" />
+<breite>330</breite>
+<bisBreite>335</bisBreite>
+<XVstL>6.62</XVstL>
+<XVstR>9.92</XVstR>
+<XBstL>6.29</XBstL>
+<XBstR>9.64</XBstR>
+<objektId>c0d783b07a174c0bbc9f8d3b95d17098</objektId>
+</Dotquer>
+</wfs:Insert>
+<wfs:Insert>
+<Dotquer>
+<projekt xlink:href="#S8abeaa946bd837d6016bfb2f0ec05ada" typeName="Projekt" />
+<hasSekObj>0</hasSekObj>
+<abschnittId>A919CD44288143EAB5E6A21AA6F9443D</abschnittId>
+<vst>0</vst>
+<bst>2</bst>
+<streifen>R</streifen>
+<streifennr>5</streifennr>
+<art xlink:href="#C6C820D0B1604C4087F3402E5FBF6FE5" typeName="Itquerart" />
+<artober xlink:href="#D0B32918ED84483B9EE77056145E2EF8" typeName="Itquerober" />
+<breite>30</breite>
+<bisBreite>30</bisBreite>
+<XVstL>9.92</XVstL>
+<XVstR>10.22</XVstR>
+<XBstL>9.64</XBstL>
+<XBstR>9.940000000000001</XBstR>
+<objektId>b0292502d43843219ff6ccfddba46164</objektId>
+</Dotquer>
+</wfs:Insert>
+<wfs:Insert>
+<Dotquer>
+<projekt xlink:href="#S8abeaa946bd837d6016bfb2f0ec05ada" typeName="Projekt" />
+<hasSekObj>0</hasSekObj>
+<abschnittId>A919CD44288143EAB5E6A21AA6F9443D</abschnittId>
+<vst>0</vst>
+<bst>2</bst>
+<streifen>R</streifen>
+<streifennr>6</streifennr>
+<art xlink:href="#S8ac892a124b8e9f20124c3697e2902ba" typeName="Itquerart" />
+<artober xlink:href="#D0B32918ED84483B9EE77056145E2EF8" typeName="Itquerober" />
+<breite>590</breite>
+<bisBreite>570</bisBreite>
+<XVstL>10.22</XVstL>
+<XVstR>16.12</XVstR>
+<XBstL>9.940000000000001</XBstL>
+<XBstR>15.64</XBstR>
+<objektId>30abbe73d8ff4e8baed95777aa683cb8</objektId>
+</Dotquer>
+</wfs:Insert>
+<wfs:Insert>
+<Dotquer>
+<projekt xlink:href="#S8abeaa946bd837d6016bfb2f0ec05ada" typeName="Projekt" />
+<hasSekObj>0</hasSekObj>
+<abschnittId>A919CD44288143EAB5E6A21AA6F9443D</abschnittId>
+<vst>0</vst>
+<bst>2</bst>
+<streifen>R</streifen>
+<streifennr>7</streifennr>
+<art xlink:href="#C6C820D0B1604C4087F3402E5FBF6FE5" typeName="Itquerart" />
+<artober xlink:href="#D0B32918ED84483B9EE77056145E2EF8" typeName="Itquerober" />
+<breite>30</breite>
+<bisBreite>30</bisBreite>
+<XVstL>16.12</XVstL>
+<XVstR>16.42</XVstR>
+<XBstL>15.64</XBstL>
+<XBstR>15.940000000000001</XBstR>
+<objektId>f7eb7e6e3ad64c56a078b5cabf041287</objektId>
+</Dotquer>
+</wfs:Insert>
+<wfs:Insert>
+<Dotquer>
+<projekt xlink:href="#S8abeaa946bd837d6016bfb2f0ec05ada" typeName="Projekt" />
+<hasSekObj>0</hasSekObj>
+<abschnittId>A919CD44288143EAB5E6A21AA6F9443D</abschnittId>
+<vst>0</vst>
+<bst>2</bst>
+<streifen>R</streifen>
+<streifennr>8</streifennr>
+<art xlink:href="#S8ac892a124b8e9f20124c3697e2a02bf" typeName="Itquerart" />
+<artober xlink:href="#D0B32918ED84483B9EE77056145E2EF8" typeName="Itquerober" />
+<breite>200</breite>
+<bisBreite>205</bisBreite>
+<XVstL>16.42</XVstL>
+<XVstR>18.42</XVstR>
+<XBstL>15.940000000000001</XBstL>
+<XBstR>17.990000000000002</XBstR>
+<objektId>25f9a33a86224ed0ab4abfb99f12a757</objektId>
+</Dotquer>
+</wfs:Insert>
+<wfs:Insert>
+<Dotquer>
+<projekt xlink:href="#S8abeaa946bd837d6016bfb2f0ec05ada" typeName="Projekt" />
+<hasSekObj>0</hasSekObj>
+<abschnittId>A919CD44288143EAB5E6A21AA6F9443D</abschnittId>
+<vst>0</vst>
+<bst>2</bst>
+<streifen>R</streifen>
+<streifennr>9</streifennr>
+<art xlink:href="#C6C820D0B1604C4087F3402E5FBF6FE5" typeName="Itquerart" />
+<artober xlink:href="#D0B32918ED84483B9EE77056145E2EF8" typeName="Itquerober" />
+<breite>30</breite>
+<bisBreite>30</bisBreite>
+<XVstL>18.42</XVstL>
+<XVstR>18.720000000000002</XVstR>
+<XBstL>17.990000000000002</XBstL>
+<XBstR>18.290000000000003</XBstR>
+<objektId>14f480f3cd9943d4892dafa818e8a501</objektId>
+</Dotquer>
+</wfs:Insert>
+<wfs:Insert>
+<Dotquer>
+<projekt xlink:href="#S8abeaa946bd837d6016bfb2f0ec05ada" typeName="Projekt" />
+<hasSekObj>0</hasSekObj>
+<abschnittId>A919CD44288143EAB5E6A21AA6F9443D</abschnittId>
+<vst>0</vst>
+<bst>2</bst>
+<streifen>L</streifen>
+<streifennr>1</streifennr>
+<art xlink:href="#S8ac892a124b8e9f20124c3697e2902ba" typeName="Itquerart" />
+<artober xlink:href="#D0B32918ED84483B9EE77056145E2EF8" typeName="Itquerober" />
+<breite>278</breite>
+<bisBreite>301</bisBreite>
+<XVstL>-2.7800000000000002</XVstL>
+<XVstR>0</XVstR>
+<XBstL>-3.0100000000000002</XBstL>
+<XBstR>0</XBstR>
+<objektId>2840ba930b4648bb89c9a82bc54ca080</objektId>
+</Dotquer>
+</wfs:Insert>
+<wfs:Insert>
+<Dotquer>
+<projekt xlink:href="#S8abeaa946bd837d6016bfb2f0ec05ada" typeName="Projekt" />
+<hasSekObj>0</hasSekObj>
+<abschnittId>A919CD44288143EAB5E6A21AA6F9443D</abschnittId>
+<vst>0</vst>
+<bst>2</bst>
+<streifen>L</streifen>
+<streifennr>2</streifennr>
+<art xlink:href="#C6C820D0B1604C4087F3402E5FBF6FE5" typeName="Itquerart" />
+<artober xlink:href="#D0B32918ED84483B9EE77056145E2EF8" typeName="Itquerober" />
+<breite>30</breite>
+<bisBreite>30</bisBreite>
+<XVstL>-3.08</XVstL>
+<XVstR>-2.7800000000000002</XVstR>
+<XBstL>-3.31</XBstL>
+<XBstR>-3.0100000000000002</XBstR>
+<objektId>c8e8530b5dd04b8ebc4e8698d06dcd56</objektId>
+</Dotquer>
+</wfs:Insert>
+<wfs:Insert>
+<Dotquer>
+<projekt xlink:href="#S8abeaa946bd837d6016bfb2f0ec05ada" typeName="Projekt" />
+<abschnittId>A919CD44288143EAB5E6A21AA6F9443D</abschnittId>
+<vst>0</vst>
+<bst>2</bst>
+<streifen>L</streifen>
+<streifennr>3</streifennr>
+<art xlink:href="#C6C820D0B1604C4087F3402E5FBF6FE5" typeName="Itquerart" />
+<artober xlink:href="#D0B32918ED84483B9EE77056145E2EF8" typeName="Itquerober" />
+<breite>275</breite>
+<bisBreite>275</bisBreite>
+<XVstL>-5.83</XVstL>
+<XVstR>-3.08</XVstR>
+<XBstL>-6.0600000000000005</XBstL>
+<XBstR>-3.31</XBstR>
+</Dotquer>
+</wfs:Insert>
+<wfs:Insert>
+<Dotquer>
+<projekt xlink:href="#S8abeaa946bd837d6016bfb2f0ec05ada" typeName="Projekt" />
+<hasSekObj>0</hasSekObj>
+<abschnittId>A919CD44288143EAB5E6A21AA6F9443D</abschnittId>
+<vst>0</vst>
+<bst>2</bst>
+<streifen>L</streifen>
+<streifennr>4</streifennr>
+<art xlink:href="#S8ac892a124b8e9f20124c3697e2902b4" typeName="Itquerart" />
+<artober xlink:href="#D0B32918ED84483B9EE77056145E2EF8" typeName="Itquerober" />
+<breite>335</breite>
+<bisBreite>332</bisBreite>
+<XVstL>-9.18</XVstL>
+<XVstR>-5.83</XVstR>
+<XBstL>-9.38</XBstL>
+<XBstR>-6.0600000000000005</XBstR>
+<objektId>00cae7832f5741c2843ceb465963cd27</objektId>
+</Dotquer>
+</wfs:Insert>
+<wfs:Insert>
+<Dotquer>
+<projekt xlink:href="#S8abeaa946bd837d6016bfb2f0ec05ada" typeName="Projekt" />
+<hasSekObj>0</hasSekObj>
+<abschnittId>A919CD44288143EAB5E6A21AA6F9443D</abschnittId>
+<vst>0</vst>
+<bst>2</bst>
+<streifen>L</streifen>
+<streifennr>5</streifennr>
+<art xlink:href="#S9BAAC075BBFF48D28CE99BC3EB20856F" typeName="Itquerart" />
+<artober xlink:href="#D0B32918ED84483B9EE77056145E2EF8" typeName="Itquerober" />
+<breite>350</breite>
+<bisBreite>340</bisBreite>
+<XVstL>-12.68</XVstL>
+<XVstR>-9.18</XVstR>
+<XBstL>-12.780000000000001</XBstL>
+<XBstR>-9.38</XBstR>
+<objektId>6ac6cbbcf45441fb86e61018ee5d3e8f</objektId>
+</Dotquer>
+</wfs:Insert>
+<wfs:Insert>
+<Dotquer>
+<projekt xlink:href="#S8abeaa946bd837d6016bfb2f0ec05ada" typeName="Projekt" />
+<hasSekObj>0</hasSekObj>
+<abschnittId>A919CD44288143EAB5E6A21AA6F9443D</abschnittId>
+<vst>0</vst>
+<bst>2</bst>
+<streifen>L</streifen>
+<streifennr>6</streifennr>
+<art xlink:href="#C6C820D0B1604C4087F3402E5FBF6FE5" typeName="Itquerart" />
+<artober xlink:href="#D0B32918ED84483B9EE77056145E2EF8" typeName="Itquerober" />
+<breite>30</breite>
+<bisBreite>30</bisBreite>
+<XVstL>-12.98</XVstL>
+<XVstR>-12.68</XVstR>
+<XBstL>-13.080000000000002</XBstL>
+<XBstR>-12.780000000000001</XBstR>
+<objektId>0bff0ddbef1946dc923314d9eb190e26</objektId>
+</Dotquer>
+</wfs:Insert>
+<wfs:Insert>
+<Dotquer>
+<projekt xlink:href="#S8abeaa946bd837d6016bfb2f0ec05ada" typeName="Projekt" />
+<hasSekObj>4</hasSekObj>
+<abschnittId>A919CD44288143EAB5E6A21AA6F9443D</abschnittId>
+<vst>0</vst>
+<bst>2</bst>
+<streifen>L</streifen>
+<streifennr>7</streifennr>
+<art xlink:href="#S8ac892a124b8e9f20124c3697e2a02bf" typeName="Itquerart" />
+<artober xlink:href="#D0B32918ED84483B9EE77056145E2EF8" typeName="Itquerober" />
+<breite>200</breite>
+<bisBreite>200</bisBreite>
+<XVstL>-14.98</XVstL>
+<XVstR>-12.98</XVstR>
+<XBstL>-15.080000000000002</XBstL>
+<XBstR>-13.080000000000002</XBstR>
+<objektId>52707ba0e79f43568157ef535f3704a7</objektId>
+</Dotquer>
+<Otschicht>
+<projekt xlink:href="#S8abeaa946bd837d6016bfb2f0ec05ada" typeName="Projekt" />
+<parent xlink:href="#S8D4EB59492EB2020E053152A3E0A6EF8" typeName="Dotquer" />
+<abschnittOderAst xlink:href="#A919CD44288143EAB5E6A21AA6F9443D" typeName="AsbAbschn" />
+<schichtnr>1</schichtnr>
+<vst>0</vst>
+<bst>2</bst>
+<teilnr>1</teilnr>
+<teilbreite>100</teilbreite>
+<decksch>1</decksch>
+<dicke>35</dicke>
+<unscharf>0</unscharf>
+<artneu xlink:href="#S0216B203766F4F5D8048BC9A5005E5EE" typeName="Itschiartneu" />
+<material1 xlink:href="#S3F3A8EC2F600478F8B10ABDFA3646E5B" typeName="Itschimat1" />
+<material2 xlink:href="#S3FFEF27FE6DA49C3B55087951C0CEF16" typeName="Itschimat2" />
+<material3 xlink:href="#S605ECA407B654706946FB24427194704" typeName="Itschimat3" />
+<bindemit1 xlink:href="#A80D1F7129D647BFA10F43C96BDC0A41" typeName="Itschibind1" />
+<bindemit2 xlink:href="#S9A455E6E5B5F45F0BF12761D1245A92F" typeName="Itschibind2" />
+<objektId>c51bdff0589741c1a6bf156d3f600997</objektId>
+<bearbeiter>TIMM</bearbeiter>
+<behoerde>020000</behoerde>
+</Otschicht>
+</wfs:Insert>
+<wfs:Insert>
+<Dotquer>
+<projekt xlink:href="#S8abeaa946bd837d6016bfb2f0ec05ada" typeName="Projekt" />
+<hasSekObj>0</hasSekObj>
+<abschnittId>A919CD44288143EAB5E6A21AA6F9443D</abschnittId>
+<vst>0</vst>
+<bst>2</bst>
+<streifen>L</streifen>
+<streifennr>8</streifennr>
+<art xlink:href="#C6C820D0B1604C4087F3402E5FBF6FE5" typeName="Itquerart" />
+<artober xlink:href="#D0B32918ED84483B9EE77056145E2EF8" typeName="Itquerober" />
+<breite>30</breite>
+<bisBreite>30</bisBreite>
+<XVstL>-15.280000000000001</XVstL>
+<XVstR>-14.98</XVstR>
+<XBstL>-15.380000000000003</XBstL>
+<XBstR>-15.080000000000002</XBstR>
+<objektId>435c682460b84369bd0a0ad30c52c078</objektId>
+</Dotquer>
+</wfs:Insert>
+<wfs:Insert>
+<Dotquer>
+<projekt xlink:href="#S8abeaa946bd837d6016bfb2f0ec05ada" typeName="Projekt" />
+<hasSekObj>0</hasSekObj>
+<abschnittId>A919CD44288143EAB5E6A21AA6F9443D</abschnittId>
+<vst>0</vst>
+<bst>2</bst>
+<streifen>M</streifen>
+<streifennr>0</streifennr>
+<art xlink:href="#S8ac892a121c9f5cf0121e3aa55f77bff" typeName="Itquerart" />
+<artober xlink:href="#D0B32918ED84483B9EE77056145E2EF8" typeName="Itquerober" />
+<breite>0</breite>
+<bisBreite>0</bisBreite>
+<XVstL>0</XVstL>
+<XVstR>0</XVstR>
+<XBstL>0</XBstL>
+<XBstR>0</XBstR>
+<objektId>d7e133c4d0224260baf9f32b8da78f7c</objektId>
+<erfart xlink:href="#S8ac892a124b8e9f20124c3756edc03f5" typeName="Iterfart" />
+<quelle xlink:href="#S8ac892a13bab6edb013bad6854560461" typeName="Itquelle" />
+<ADatum>2016-07-14</ADatum>
+<bearbeiter>LEHMKUHL</bearbeiter>
+<behoerde>0200</behoerde>
+</Dotquer>
+</wfs:Insert>
+
+
+</wfs:Transaction>

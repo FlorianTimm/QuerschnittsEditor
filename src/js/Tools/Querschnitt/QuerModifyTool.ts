@@ -25,15 +25,15 @@ class QuerModifyTool implements Tool {
     private snap_station: Snap;
     private streifennr: number;
 
-    constructor(map: Map, daten: Daten, info: QuerInfoTool) {
+    constructor(map: Map, info: QuerInfoTool) {
         this.map = map;
-        this.daten = daten;
+        this.daten = Daten.getInstanz();
         this.info = info;
 
-        this._createLinienSelect();
-        this._createFlaechenSelect();
-        this._createModify();
-        this._createSnap();
+        this.createLinienSelect();
+        this.createFlaechenSelect();
+        this.createModify();
+        this.createSnap();
 
         document.getElementById('info_art').addEventListener('change', this.updateInfo.bind(this));
         document.getElementById('info_ober').addEventListener('change', this.updateInfo.bind(this));
@@ -54,7 +54,7 @@ class QuerModifyTool implements Tool {
         }
     }
 
-    _createModify() {
+    private createModify() {
         this.modify = new ModifyInteraction({
             deleteCondition: never,
             insertVertexCondition: never,
@@ -168,7 +168,7 @@ class QuerModifyTool implements Tool {
         return diff;
     }
 
-    _createLinienSelect() {
+    createLinienSelect() {
         this.select = new SelectInteraction({
             layers: [this.daten.l_trenn],
             toggleCondition: never,
@@ -186,7 +186,7 @@ class QuerModifyTool implements Tool {
         });
     }
 
-    _createFlaechenSelect() {
+    createFlaechenSelect() {
         this.select_fl = new SelectInteraction({
             layers: [this.daten.l_quer],
             toggleCondition: platformModifierKeyOnly,
@@ -229,7 +229,7 @@ class QuerModifyTool implements Tool {
         }.bind(this));
     }
 
-    _createSnap() {
+    createSnap() {
         this.snap_trenn = new Snap({
             source: this.daten.v_trenn,
             edge: false

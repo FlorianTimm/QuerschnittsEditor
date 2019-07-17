@@ -4,6 +4,7 @@ import { never } from 'ol/events/condition';
 import Tool from '../Tool';
 import { Map } from 'ol';
 import Daten from '../../Daten';
+import { SelectEvent } from 'ol/interaction/Select';
 
 /**
  * Funktion zum Anzeigen von Informationen über Aufstellvorrichtungen
@@ -48,7 +49,7 @@ class QuerInfoTool implements Tool {
             })
         });
 
-        this.select_fl.on('select', function (e: { selected: any[]; }) {
+        this.select_fl.on('select', function (e: SelectEvent) {
             this.select.getFeatures().clear()
             if (e.selected.length > 0) {
                 let auswahl = e.selected[0];

@@ -46,14 +46,14 @@ class QuerAdd2ER implements Tool {
         let abschnitt = this.select.getFeatures().getArray()[0] as Abschnitt;
         if ("Querschnitt" in abschnitt.inER && abschnitt.inER["Querschnitt"]) return;
         document.body.style.cursor = 'wait'
-        PublicWFS.addInER(abschnitt as Abschnitt, "Querschnitt", this.daten.ereignisraum_nr, QuerAdd2ER._onSelect_Callback, undefined, this, abschnitt);
+        PublicWFS.addInER(abschnitt as Abschnitt, "Querschnitt", this.daten.ereignisraum_nr, this._onSelect_Callback.bind(this), undefined, abschnitt);
     }
 
-    static _onSelect_Callback(xml, _this, abschnitt) {
+    _onSelect_Callback(xml: Document, abschnitt: Abschnitt) {
         abschnitt.inER["Querschnitt"] = true;
-        Querschnittsdaten.loadAbschnittER(_this.daten, abschnitt, PublicWFS.showMessage, "Erfolgreich in ER kopiert");
-        _this.select.getFeatures().clear();
-        _this.daten.l_achse.changed();
+        Querschnittsdaten.loadAbschnittER(this.daten, abschnitt, PublicWFS.showMessage, "Erfolgreich in ER kopiert");
+        this.select.getFeatures().clear();
+        this.daten.l_achse.changed();
     }
 
     start() {

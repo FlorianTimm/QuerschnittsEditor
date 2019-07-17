@@ -23,14 +23,14 @@ export default class Aufbau implements Objekt {
 	korngr: string = null;
 	unscharf: string = null;
 	kennz: string = null;
-	artnull: string = null;
+	art1: string = null;
 	art2: string = null;
 	art3: string = null;
 	artneu: string = null;
-	materialnull: string = null;
+	material1: string = null;
 	material2: string = null;
 	material3: string = null;
-	bindemitnull: string = null;
+	bindemit1: string = null;
 	bindemit2: string = null;
 	detaila: string = null;
 	detailb: string = null;
@@ -51,11 +51,11 @@ export default class Aufbau implements Objekt {
 	bearbeiter: string = null;
 	behoerde: string = null;
 
-	constructor() {
+	private constructor() {
 
 	}
 
-	static fromXML(xml: Element) {
+	static fromXML(xml: Element): Aufbau {
 		//console.log(xml);
 		let r = new Aufbau();
 		for (var tag in CONFIG_WFS.AUFBAUDATEN) {
@@ -74,7 +74,7 @@ export default class Aufbau implements Objekt {
 		return r;
 	}
 
-	createXML() {
+	public createXML(): string {
 		let r = '<Otschicht>\n';
 
 		for (let tag in CONFIG_WFS["AUFBAUDATEN"]) {
@@ -85,10 +85,12 @@ export default class Aufbau implements Objekt {
 				r += '<' + tag + '>' + this[tag] + '</' + tag + '>\n';
 			} else if (CONFIG_WFS["AUFBAUDATEN"][tag].art == 2) {
 				// Klartext
-				r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS["AUFBAUDATEN"][tag].kt + '" />' + this[tag];
+				r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS["AUFBAUDATEN"][tag].kt + '" />\n';
 			}
 		}
 
 		r += '</Otschicht>\n';
+		console.log (r);
+		return r;
 	}
 }

@@ -77,12 +77,20 @@ form#qsMultiMod {
 }
 
 form#hinzu,
+form#quer_del,
 form#avadd,
 form#loeschen,
 form#teilen {
     text-align: center;
     display: none;
 }
+
+form#quer_del input[type="button"] {
+    background-color: red;
+    color: white;
+    font-weight: 600;
+}
+
 
 /* Style the tab */
 
@@ -91,6 +99,7 @@ form#teilen {
     /*border: 1px solid #ccc;*/
     background-color: #f1f1f1;
 }
+
 
 /* Style the buttons that are used to open the tab content */
 
@@ -123,11 +132,13 @@ input[type="radio"]:checked+label {
     text-shadow: 0px 0px 5px rgb(2, 105, 189);
 }
 
+
 /* Change background color of buttons on hover */
 
 .tab button:hover {
     background-color: #ddd;
 }
+
 
 /* Create an active/current tablink class */
 
@@ -136,6 +147,7 @@ input[type="radio"]:checked+label {
     font-weight: 600;
     border-bottom: 1px solid rgba(0, 0, 0, 0);
 }
+
 
 /* Style the tab content */
 
@@ -153,6 +165,7 @@ input[type="radio"]:checked+label {
     animation: fadeEffect 1s;
     /* Fading effect takes 1 second */
 }
+
 
 /* Go from zero to full opacity */
 
@@ -177,7 +190,6 @@ input[type="radio"]:checked+label {
     from {
         opacity: 0;
     }
-
     to {
         opacity: 1;
     }
@@ -220,7 +232,6 @@ form#avadd label {
 .ui-dialog {
     z-index: 1100 !important;
 }
-
 
 
 /* Tooltip fürs Messen */
@@ -277,8 +288,8 @@ div#zurueck a {
     text-decoration: none;
     display: block;
     padding: 3px;
-    background-color: rgba(0,60,136,0.5);
-    color:white;
+    background-color: rgba(0, 60, 136, 0.5);
+    color: white;
     border: none;
     margin: 1px;
     border-radius: 2px;
@@ -286,5 +297,5 @@ div#zurueck a {
 }
 
 div#zurueck a:hover {
-    background-color: rgba(0,60,136,0.7);
+    background-color: rgba(0, 60, 136, 0.7);
 }

@@ -8,7 +8,7 @@ import Feature from 'ol/Feature';
 import Tool from '../Tool';
 import QuerInfoTool from './QuerInfoTool';
 import Daten from '../../Daten';
-import { Map } from 'ol';
+import { Map, MapBrowserPointerEvent } from 'ol';
 
 /**
  * Funktion zum Teilen von Querschnittsflächen
@@ -109,7 +109,7 @@ class QuerPartTool implements Tool {
         document.getElementById('teilen_button').addEventListener('click', this.partQuerschnittButton.bind(this))
     }
 
-    part_get_station(event) {
+    part_get_station(event: MapBrowserPointerEvent) {
         let achse = null;
         if (this.select.getFeatures().getArray().length > 0) {
             achse = this.select.getFeatures().item(0);
@@ -127,7 +127,7 @@ class QuerPartTool implements Tool {
     }
 
 
-    part_click(event) {
+    part_click(event: MapBrowserPointerEvent) {
         if (!this.feat_teilung.get('isset')) {
             this.feat_teilung.set('isset', true);
             let daten = this.part_get_station(event);
@@ -152,9 +152,10 @@ class QuerPartTool implements Tool {
         }
     }
 
-    part_move(event) {
-        let daten = this.part_get_station(event);
+    part_move(event: MapBrowserPointerEvent) {
 
+        let daten = this.part_get_station(event);
+        //console.log(daten)
         if (daten['pos'] == null) return;
 
         (this.feat_station.getGeometry() as LineString).setCoordinates(daten['pos'][6]);

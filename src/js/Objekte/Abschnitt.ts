@@ -168,7 +168,7 @@ export default class Abschnitt extends Feature {
     }
 
     getAufbauDaten(callbackSuccess: (...args: any[]) => void, callbackError: (...args: any[]) => void, ...args: any[]) {
-        console.log(callbackSuccess);
+        //console.log(callbackSuccess);
         if (this._aufbaudaten == null) {
             let xml = PublicWFS.doQuery('Otschicht', '<Filter><And>' +
                 '<PropertyIsEqualTo>' +
@@ -186,6 +186,7 @@ export default class Abschnitt extends Feature {
         let aufbau = xml.getElementsByTagName('Otschicht');
         for (let i = 0; i < aufbau.length; i++) {
             let a = Aufbaudaten.fromXML(aufbau[i]);
+            if (a.parent == null) continue;
             let quer = _this.daten.querschnitteFID[a.parent.replace('#', '')];
             if (quer._aufbaudaten == null) {
                 quer._aufbaudaten = {};

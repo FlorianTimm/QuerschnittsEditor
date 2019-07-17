@@ -1,3 +1,12 @@
+
+Auch mittlere Punkte von Querschnitten können verschoben werden
+Keine Anzeige bei Multiselect und gleichen Attributen (Art/ArtOber)
+Absturz bei großen Daten
+
+
+
+
+
 x Suchfeld sortieren, nach erster Zahl sortieren
 x Suchfeld maximale Breite festlegen
 x neue Querschnitte ohn VstL usw anzeigen

@@ -118,9 +118,9 @@ window.addEventListener('load', function () {
     daten = new Daten(map, er, ernr);
     infoTool = new QuerInfoTool(map, daten);
     infoTool.start();
-    editTool = new QuerModifyTool(map, daten, infoTool);
-    delTool = new QuerDelTool(map, daten, infoTool);
-    addTool = new QuerAddTool(map, daten, infoTool);
+    editTool = new QuerModifyTool(map, infoTool);
+    delTool = new QuerDelTool(map, infoTool);
+    addTool = new QuerAddTool(map, infoTool);
     partTool = new QuerPartTool(map, daten, infoTool);
     vsInfoTool = new AvInfoTool(map, daten.l_aufstell, "sidebar");
     avAdd = new AvAdd(map, daten);
