@@ -159,6 +159,28 @@ export class QuerStation {
             '    </ogc:PropertyIsEqualTo>\n' +
             '  </ogc:And>\n' +
             '</ogc:Filter>\n' +
+            '</wfs:Delete>\n' +
+            '<wfs:Delete typeName="Otschicht">\n' +
+            '<ogc:Filter>\n' +
+            '  <ogc:And>\n' +
+            '    <ogc:PropertyIsEqualTo>\n' +
+            '       <ogc:PropertyName>abschnittId</ogc:PropertyName>\n' +
+            '      <ogc:Literal>' + this.abschnitt.abschnittid + '</ogc:Literal>\n' +
+            '    </ogc:PropertyIsEqualTo>\n' +
+            '    <ogc:PropertyIsEqualTo>\n' +
+            '       <ogc:PropertyName>vst</ogc:PropertyName>\n' +
+            '      <ogc:Literal>' + this.vst + '</ogc:Literal>\n' +
+            '    </ogc:PropertyIsEqualTo>\n' +
+            '    <ogc:PropertyIsEqualTo>\n' +
+            '       <ogc:PropertyName>bst</ogc:PropertyName>\n' +
+            '      <ogc:Literal>' + this.bst + '</ogc:Literal>\n' +
+            '    </ogc:PropertyIsEqualTo>\n' +
+            '    <ogc:PropertyIsEqualTo>\n' +
+            '      <ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
+            '      <ogc:Literal>' + this.daten.ereignisraum + '</ogc:Literal>\n' +
+            '    </ogc:PropertyIsEqualTo>\n' +
+            '  </ogc:And>\n' +
+            '</ogc:Filter>\n' +
             '</wfs:Delete>\n';
         for (let qs of this.getAllQuerschnitte()) {
             //console.log(qs);

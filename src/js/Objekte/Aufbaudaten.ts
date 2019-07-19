@@ -74,11 +74,11 @@ export default class Aufbau implements Objekt {
 		return r;
 	}
 
-	public createXML(): string {
+	public createXML(deleteParentId?: boolean): string {
 		let r = '<Otschicht>\n';
 
 		for (let tag in CONFIG_WFS["AUFBAUDATEN"]) {
-			//console.log(tag);
+			console.log(tag);
 			if (this[tag] === null) continue;
 			if (CONFIG_WFS["AUFBAUDATEN"][tag].art == 0 || CONFIG_WFS["AUFBAUDATEN"][tag].art == 1) {
 				// Kein Klartext
