@@ -20,13 +20,26 @@ import Klartext from './Klartext';
 import Abschnitt from './Abschnitt';
 import { InfoToolSelectable } from '../Tools/Aufstellvorrichtung/AvInfoTool';
 import { Map } from 'ol';
+import Objekt from './Objekt';
 
 var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
 
 
-class Aufstellvorrichtung extends Feature implements InfoToolSelectable {
-    _daten: Daten;
-    _zeichen: Zeichen = null;
+class Aufstellvorrichtung extends Feature implements InfoToolSelectable, Objekt {
+    abschnittOderAst: string;
+    kherk: string;
+    baujahrGew: string;
+    abnahmeGew: string;
+    dauerGew: string;
+    ablaufGew: string;
+    objektnr: string;
+    erfart: string;
+    ADatum: string;
+    bemerkung: string;
+    bearbeiter: string;
+    behoerde: string;
+    private _daten: Daten;
+    private _zeichen: Zeichen = null;
     fid: string = null;
     inER: {} = {};
     abschnitt: Abschnitt;
@@ -44,9 +57,9 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable {
     rlageVst: string;
     abschnittId: string;
 
-    constructor(daten: Daten) {
+    constructor() {
         super({ geom: null });
-        this._daten = daten;
+        this._daten = Daten.getInstanz();
         Aufstellvorrichtung.loadKlartexte(this._daten.klartexte);
     }
 
@@ -68,7 +81,7 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable {
         $("select#avadd_art").chosen({ width: "95%", search_contains: true });
     }
 
-    static _ktLageLoaded(__: any, klartexte: Klartext) {
+    private static _ktLageLoaded(__: any, klartexte: Klartext) {
         let arten = klartexte.getAllSorted('Itallglage');
         for (let a of arten) {
             let option = document.createElement('option');
@@ -80,7 +93,7 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable {
         $("select#avadd_lage").chosen({ width: "95%", search_contains: true });
     }
 
-    static _ktQuelleLoaded(__: any, klartexte: Klartext) {
+    private static _ktQuelleLoaded(__: any, klartexte: Klartext) {
         let arten = klartexte.getAllSorted('Itquelle');
         for (let a of arten) {
             let option = document.createElement('option');
@@ -143,7 +156,7 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable {
         return r;
     }
 
-    static _vz_addHTML(zeichen: any, _this: Aufstellvorrichtung, ziel: HTMLElement) {
+    private static _vz_addHTML(zeichen: any, _this: Aufstellvorrichtung, ziel: HTMLElement) {
         let div = document.createElement('div');
         div.style.marginTop = '5px';
         for (let eintrag of zeichen) {
@@ -170,7 +183,7 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable {
 
     }
 
-    static _loadER_Callback(xml: XMLDocument, daten: Daten) {
+    private static _loadER_Callback(xml: XMLDocument, daten: Daten) {
         let aufstell = xml.getElementsByTagName("Otaufstvor");
         for (let i = 0; i < aufstell.length; i++) {
             let f = Aufstellvorrichtung.fromXML(aufstell[i], daten);
@@ -192,7 +205,7 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable {
             '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>', Aufstellvorrichtung._loadAbschnittER_Callback, undefined, daten, callback, ...args);
     }
 
-    static _loadAbschnittER_Callback(xml: XMLDocument, daten: Daten, callback: (...args: any[]) => void, ...args: any[]) {
+    private static _loadAbschnittER_Callback(xml: XMLDocument, daten: Daten, callback: (...args: any[]) => void, ...args: any[]) {
         //console.log(daten);
         let aufstell = xml.getElementsByTagName("Otaufstvor");
         for (let i = 0; i < aufstell.length; i++) {
@@ -205,7 +218,7 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable {
 
     static fromXML(xml: Element, daten: Daten) {
         //console.log(daten);
-        let r = new Aufstellvorrichtung(daten);
+        let r = new Aufstellvorrichtung();
         r.fid = xml.getAttribute('fid');
         for (var tag in CONFIG_WFS["AUFSTELL"]) {
             if (xml.getElementsByTagName(tag).length <= 0) continue;
@@ -266,11 +279,11 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable {
         return layer;
     }
 
-    _getText() {
+    private _getText() {
         return "test";
     }
 
-    updateStation(station, abstand) {
+    updateStation(station: number, abstand: number) {
         this.vabstVst = Math.round(abstand * 10) / 10;
         this.vabstBst = this.vabstVst;
         this.rabstbaVst = this.vabstVst;
@@ -334,7 +347,7 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable {
             '</Filter>', this._parseZeichen, undefined, this, callback, ...args);
     }
 
-    _parseZeichen(xml, _this, callback, ...args) {
+    private _parseZeichen(xml, _this, callback, ...args) {
         let zeichen = [];
         console.log(xml);
         let zeichenXML = xml.getElementsByTagName('Otvzeichlp');

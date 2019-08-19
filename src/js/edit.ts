@@ -5,7 +5,7 @@
  * @copyright MIT
  */
 
- import { View, MapEvent } from 'ol';
+import { View, MapEvent } from 'ol';
 import { defaults as defaultInteractions } from 'ol/interaction';
 import { defaults as defaultControls, ScaleLine, ZoomSlider } from 'ol/control';
 import { Layer } from 'ol/layer';
@@ -38,6 +38,11 @@ import Map from './openLayers/Map';
 import { TileLayer, ImageLayer } from './openLayers/Layer';
 import StaticImage from 'ol/source/ImageStatic';
 import proj4 from 'proj4';
+import SAPInfoTool from './Tools/StrassenAusPunkt/SAPInfoTool';
+import SAPAdd from './Tools/StrassenAusPunkt/SAPAdd';
+import SAPMove from './Tools/StrassenAusPunkt/SAPMove';
+import SAPAdd2ER from './Tools/StrassenAusPunkt/SAPAdd2ER';
+import SAPDelete from './Tools/StrassenAusPunkt/SAPDelete';
 
 var CONFIG: [string, string] = require('./config.json');
 
@@ -52,6 +57,7 @@ var ernr = decodeURI(urlParamERNR[1])
 console.log("Ereignisraum: " + ernr);
 
 let daten: Daten, infoTool: QuerInfoTool, editTool: QuerModifyTool, delTool: QuerDelTool, partTool: QuerPartTool, addTool: QuerAddTool, vsInfoTool: AvInfoTool, avAdd: AvAdd, avAdd2ER: AvAdd2ER, qsAdd2ER: QuerAdd2ER, avMove: AvMove, vzAdd: AvVzAdd, measure: Measure, avDel: AvDelete;
+let sapInfoTool: SAPInfoTool, sapAdd: SAPAdd, sapMove: SAPMove, sapAdd2ER: SAPAdd2ER, sapDel: SAPDelete;
 
 window.addEventListener('load', function () {
     proj4.defs("EPSG:31467", "+proj=tmerc +lat_0=0 +lon_0=9 +k=1 +x_0=3500000 +y_0=0 +ellps=bessel +towgs84=598.1,73.7,418.2,0.202,0.045,-2.455,6.7 +units=m +no_defs");
@@ -116,35 +122,53 @@ window.addEventListener('load', function () {
     map.on("moveend", recreateHash);
 
     daten = new Daten(map, er, ernr);
+    
     infoTool = new QuerInfoTool(map, daten);
     infoTool.start();
     editTool = new QuerModifyTool(map, infoTool);
     delTool = new QuerDelTool(map, infoTool);
     addTool = new QuerAddTool(map, infoTool);
     partTool = new QuerPartTool(map, daten, infoTool);
+    qsAdd2ER = new QuerAdd2ER(map, daten);
+
     vsInfoTool = new AvInfoTool(map, daten.l_aufstell, "sidebar");
     avAdd = new AvAdd(map, daten);
     vzAdd = new AvVzAdd(map, daten);
     avMove = new AvMove(map, daten, vsInfoTool);
     avAdd2ER = new AvAdd2ER(map, daten);
-    qsAdd2ER = new QuerAdd2ER(map, daten);
-    measure = new Measure(map);
     avDel = new AvDelete(map, daten, daten.l_aufstell, "sidebar");
 
-    document.getElementById("befehl_info").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_vsinfo").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_avadd").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_avdel").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_vzadd").addEventListener('change', befehl_changed);
+    sapInfoTool = new SAPInfoTool(map, daten.l_aufstell, "sidebar");
+    sapAdd = new SAPAdd(map);
+    sapMove = new SAPMove(map, vsInfoTool);
+    sapAdd2ER = new SAPAdd2ER(map);
+    sapDel = new SAPDelete(map, daten.l_aufstell, "sidebar");
+
+    measure = new Measure(map);
+
+
     document.getElementById("befehl_modify").addEventListener('change', befehl_changed);
     document.getElementById("befehl_delete").addEventListener('change', befehl_changed);
     document.getElementById("befehl_part").addEventListener('change', befehl_changed);
     document.getElementById("befehl_add").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_qsadd2er").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_info").addEventListener('change', befehl_changed);
+
+    document.getElementById("befehl_vsinfo").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_avadd").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_avdel").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_vzadd").addEventListener('change', befehl_changed);
     document.getElementById("befehl_avadd2er").addEventListener('change', befehl_changed);
     document.getElementById("befehl_avmove").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_qsadd2er").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_messen").addEventListener('change', befehl_changed);
 
+    document.getElementById("befehl_sapinfo").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_sapadd").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_sapdel").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_sapadd").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_sapadd2er").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_sapmove").addEventListener('change', befehl_changed);
+
+    document.getElementById("befehl_messen").addEventListener('change', befehl_changed);
 
     document.getElementById("zoomToExtent").addEventListener('click', function () {
         let minX = null, maxX = null, minY = null, maxY = null;
@@ -215,22 +239,45 @@ function recreateHash(event: MapEvent) {
 }
 
 function befehl_changed() {
+    // Querschnitt
     infoTool.stop();
     editTool.stop();
     delTool.stop();
     partTool.stop();
     addTool.stop();
+    qsAdd2ER.stop();
+
+    // Aufstellvorrichtung / Schild
     vsInfoTool.stop();
     avAdd.stop();
     avAdd2ER.stop();
-    qsAdd2ER.stop();
     avMove.stop();
     vzAdd.stop();
-    measure.stop();
     avDel.stop();
+
+    // Straßenausstattung punktuell
+    sapAdd.stop();
+    sapAdd2ER.stop();
+    sapDel.stop();
+    sapInfoTool.stop();
+    sapMove.stop();
+
+    // Sonstige
+    measure.stop();
 
     if ((document.getElementById("befehl_info") as HTMLInputElement).checked)
         infoTool.start();
+    else if ((document.getElementById("befehl_qsadd2er") as HTMLInputElement).checked)
+        qsAdd2ER.start();
+    else if ((document.getElementById("befehl_modify") as HTMLInputElement).checked)
+        editTool.start();
+    else if ((document.getElementById("befehl_delete") as HTMLInputElement).checked)
+        delTool.start();
+    else if ((document.getElementById("befehl_part") as HTMLInputElement).checked)
+        partTool.start();
+    else if ((document.getElementById("befehl_add") as HTMLInputElement).checked)
+        addTool.start();
+
     else if ((document.getElementById("befehl_vsinfo") as HTMLInputElement).checked)
         vsInfoTool.start();
     else if ((document.getElementById("befehl_avadd") as HTMLInputElement).checked)
@@ -243,16 +290,18 @@ function befehl_changed() {
         avAdd2ER.start();
     else if ((document.getElementById("befehl_avmove") as HTMLInputElement).checked)
         avMove.start();
-    else if ((document.getElementById("befehl_qsadd2er") as HTMLInputElement).checked)
-        qsAdd2ER.start();
-    else if ((document.getElementById("befehl_modify") as HTMLInputElement).checked)
-        editTool.start();
-    else if ((document.getElementById("befehl_delete") as HTMLInputElement).checked)
-        delTool.start();
-    else if ((document.getElementById("befehl_part") as HTMLInputElement).checked)
-        partTool.start();
-    else if ((document.getElementById("befehl_add") as HTMLInputElement).checked)
-        addTool.start();
+
+    else if ((document.getElementById("befehl_sapinfo") as HTMLInputElement).checked)
+        sapInfoTool.start();
+    else if ((document.getElementById("befehl_sapadd") as HTMLInputElement).checked)
+        sapAdd.start();
+    else if ((document.getElementById("befehl_sapdel") as HTMLInputElement).checked)
+        sapDel.start();
+    else if ((document.getElementById("befehl_sapadd2er") as HTMLInputElement).checked)
+        sapAdd2ER.start();
+    else if ((document.getElementById("befehl_sapmove") as HTMLInputElement).checked)
+        sapMove.start();
+
     else if ((document.getElementById("befehl_messen") as HTMLInputElement).checked)
         measure.start();
 }

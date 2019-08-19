@@ -79,6 +79,7 @@ form#qsMultiMod {
 form#hinzu,
 form#quer_del,
 form#avadd,
+form#sapadd,
 form#loeschen,
 form#teilen {
     text-align: center;
@@ -112,7 +113,7 @@ form#quer_del input[type="button"] {
     cursor: pointer;
     padding: 10px;
     transition: 0.3s;
-    width: 50%;
+    width: 33%;
 }
 
 button#zoomToExtent,
@@ -177,6 +178,11 @@ input[type="radio"]:checked+label {
 #tab_Otaufstvor,
 .bt_Aufstell {
     background-color: rgba(212, 255, 214, 0.8);
+}
+
+#tab_Otstrauspkt,
+.bt_Strassenaus {
+    background-color: rgba(250, 182, 182, 0.8);
 }
 
 #steuerung_sonstige {

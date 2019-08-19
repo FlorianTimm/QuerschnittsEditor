@@ -28,8 +28,9 @@
     <sidebar id="sidebar">
         <form id="steuerung" name="steuerung">
             <div class="tab">
-                <button type="button" class="tablinks bt_Querschnitt" data-tab="tab_Querschnitt">Querschnitt</button>
-                <button type="button" class="tablinks bt_Aufstell" data-tab="tab_Otaufstvor" id="defaultOpen">Aufstellv.</button>
+                <button type="button" class="tablinks bt_Querschnitt" data-tab="tab_Querschnitt">Quer.</button>
+                <button type="button" class="tablinks bt_Aufstell" data-tab="tab_Otaufstvor" id="defaultOpen">Aufstell.</button>
+                <button type="button" class="tablinks bt_Strassenaus" data-tab="tab_Otstrauspkt">Aussta.</button>
             </div>
 
             <div id="tab_Querschnitt" class="tabcontent">
@@ -42,7 +43,6 @@
                 <input type="radio" name="befehl" id="befehl_add" value="add" /><label for="befehl_add">&nbsp;Hinzufügen</label><br />
             </div>
             <div id="tab_Otaufstvor" class="tabcontent">
-
                 <input type="radio" name="befehl" id="befehl_vsinfo" value="vsinfo" /><label for="befehl_vsinfo">&nbsp;Info</label><br />
                 <input type="radio" name="befehl" id="befehl_avadd2er" value="avadd2er" /><label for="befehl_avadd2er">&nbsp;zum
                     ER hinzufügen</label><br />
@@ -53,6 +53,16 @@
                 <input type="radio" name="befehl" id="befehl_vzadd" value="vzadd" /><label for="befehl_vzadd">&nbsp;Schild
                     hinzuf&uuml;gen</label><br />
                 <input type="radio" name="befehl" id="befehl_avmove" value="avmove" /><label for="befehl_avmove">&nbsp;Verschieben</label><br />
+            </div>
+            <div id="tab_Otstrauspkt" class="tabcontent">
+                <input type="radio" name="befehl" id="befehl_sapinfo" value="sapinfo" /><label for="befehl_sapinfo">&nbsp;Info</label><br />
+                <input type="radio" name="befehl" id="befehl_sapadd2er" value="sapadd2er" /><label for="befehl_sapadd2er">&nbsp;zum
+                    ER hinzufügen</label><br />
+                <input type="radio" name="befehl" id="befehl_sapadd" value="sapadd" /><label for="befehl_sapadd">&nbsp;Ausstatt.
+                    hinzuf&uuml;gen</label><br />
+                <input type="radio" name="befehl" id="befehl_sapdel" value="sapdel" /><label for="befehl_sapdel">&nbsp;Ausstatt.
+                    l&ouml;schen</label><br />
+                <input type="radio" name="befehl" id="befehl_sapmove" value="sapmove" /><label for="befehl_sapmove">&nbsp;Verschieben</label><br />
             </div>
             <div id="steuerung_sonstige">
                 <input type="radio" name="befehl" id="befehl_messen" value="messen" /><label for="befehl_messen">&nbsp;Messen</label><br />
@@ -114,6 +124,31 @@
             <select id="avadd_art"></select>
             <br />
             <input type="button" id="avadd_button" value="Aufstellvor. hinzu." disabled="disabled" />
+        </form>
+
+        <form id="sapadd" name="sapadd">
+            <label for="sapadd_quelle">Quelle</label><br />
+            <select id="sapadd_quelle"></select>
+            <br />
+            <label for="sapadd_vnk">VNK</label><br />
+            <input type="text" id="sapadd_vnk" disabled="disabled" />
+            <br />
+            <label for="sapadd_nnk">NNK</label><br />
+            <input type="text" id="sapadd_nnk" disabled="disabled" />
+            <br />
+            <label for="sapadd_station">Station</label><br />
+            <input type="text" id="sapadd_station" disabled="disabled" />
+            <br />
+            <label for="sapadd_abstand">Abstand</label><br />
+            <input type="text" id="sapadd_abstand" disabled="disabled" />
+            <br />
+            <label for="sapadd_lage">Lage</label><br />
+            <select id="sapadd_lage"></select>
+            <br />
+            <label for="sapadd_art">Art</label><br />
+            <select id="sapadd_art"></select>
+            <br />
+            <input type="button" id="sapadd_button" value="Aufstellvor. hinzu." disabled="disabled" />
         </form>
 
         <form id="modify" name="modify">
