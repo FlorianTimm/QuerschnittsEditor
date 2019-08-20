@@ -8,7 +8,7 @@ import Feature from 'ol/Feature';
 import {never as neverCondition} from 'ol/events/condition';
 import { Map } from 'ol';
 import Daten from '../../Daten';
-import SAPInfoTool from './SAPInfoTool';
+import InfoTool from '../InfoTool';
 import Tool from '../Tool';
 import Abschnitt from '../../Objekte/Abschnitt';
 import StrassenAusPunkt from '../../Objekte/StrassenAusPunkt';
@@ -23,7 +23,7 @@ import { ModifyInteraction } from '../../openLayers/Interaction';
 export default class SAPMove implements Tool {
     private _map: Map;
     private _daten: Daten;
-    private _avInfoTool: SAPInfoTool;
+    private _infoTool: InfoTool;
     abschnitt: Abschnitt = null;
     station: number = null;
     abstand: number = null;
@@ -34,13 +34,13 @@ export default class SAPMove implements Tool {
     private _feat_station_line: Feature;
     private _modify: ModifyInteraction;
 
-    constructor(map: Map, avInfoTool: SAPInfoTool) {
+    constructor(map: Map, infoTool: InfoTool) {
         this._map = map;
         this._daten = Daten.getInstanz();
-        this._avInfoTool = avInfoTool;
+        this._infoTool = infoTool;
 
         this._select = new SelectInteraction({
-            layers: [this._daten.l_aufstell],
+            layers: [this._daten.l_straus],
         });
 
         this._createLayer();
@@ -108,7 +108,7 @@ export default class SAPMove implements Tool {
             this._map.unset("pointermove", this._move.bind(this));
             (this._feat_station_line.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
         }
-        this._avInfoTool.featureSelected(event);
+        this._infoTool.featureSelected(event);
     }
 
     _modifyStart(event) {

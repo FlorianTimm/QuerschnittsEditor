@@ -114,7 +114,7 @@ export default class SAPAdd implements Tool {
         );
         this.v_overlay.addFeature(this.feat_station_line);
 
-        document.getElementById('avadd_button').addEventListener('click', this.addAufstellButton.bind(this));
+        document.getElementById('sapadd_button').addEventListener('click', this.addAufstellButton.bind(this));
     }
 
     part_get_station(event) {
@@ -149,12 +149,12 @@ export default class SAPAdd implements Tool {
         if (this.seite == 'M') this.abstand = 0;
         if (this.seite == 'L') this.abstand = -this.abstand;
 
-        (document.getElementById("avadd_vnk") as HTMLInputElement).value = daten['achse'].vnk;
-        (document.getElementById("avadd_nnk") as HTMLInputElement).value = daten['achse'].nnk;
-        (document.getElementById("avadd_station") as HTMLInputElement).value = String(this.station);
-        (document.getElementById("avadd_abstand") as HTMLInputElement).value = daten['pos'][3] + ' ' + daten['pos'][4].toFixed(1);
+        (document.getElementById("sapadd_vnk") as HTMLInputElement).value = daten['achse'].vnk;
+        (document.getElementById("sapadd_nnk") as HTMLInputElement).value = daten['achse'].nnk;
+        (document.getElementById("sapadd_station") as HTMLInputElement).value = String(this.station);
+        (document.getElementById("sapadd_abstand") as HTMLInputElement).value = daten['pos'][3] + ' ' + daten['pos'][4].toFixed(1);
 
-        (document.getElementById("avadd_button") as HTMLInputElement).disabled = false;
+        (document.getElementById("sapadd_button") as HTMLInputElement).disabled = false;
 
     }
 
@@ -167,17 +167,17 @@ export default class SAPAdd implements Tool {
         (this.feat_station_line.getGeometry() as LineString).setCoordinates([daten['pos'][6], daten['pos'][5]]);
 
         if (this.abschnitt == null) {
-            (document.getElementById("avadd_vnk") as HTMLInputElement).value = daten['achse'].vnk;
-            (document.getElementById("avadd_nnk") as HTMLInputElement).value = daten['achse'].nnk;
-            (document.getElementById("avadd_station") as HTMLInputElement).value = String(Math.round(daten['pos'][2] * daten['achse'].getFaktor()));
-            (document.getElementById("avadd_abstand") as HTMLInputElement).value = daten['pos'][3] + ' ' + daten['pos'][4].toFixed(1)
+            (document.getElementById("sapadd_vnk") as HTMLInputElement).value = daten['achse'].vnk;
+            (document.getElementById("sapadd_nnk") as HTMLInputElement).value = daten['achse'].nnk;
+            (document.getElementById("sapadd_station") as HTMLInputElement).value = String(Math.round(daten['pos'][2] * daten['achse'].getFaktor()));
+            (document.getElementById("sapadd_abstand") as HTMLInputElement).value = daten['pos'][3] + ' ' + daten['pos'][4].toFixed(1)
         }
     }
 
     addAufstellButton() {
         // im ER?
-        if (!("Otaufstvor" in this.abschnitt.inER)) {
-            PublicWFS.addInER(this.abschnitt, "Otaufstvor", this.daten.ereignisraum_nr, SAPAdd._addInER_Callback, undefined, this);
+        if (!("Otstrauspkt" in this.abschnitt.inER)) {
+            PublicWFS.addInER(this.abschnitt, "Otstrauspkt", this.daten.ereignisraum_nr, SAPAdd._addInER_Callback, undefined, this);
         } else {
             SAPAdd._wfsAddAufstell(this)
         }
@@ -185,12 +185,12 @@ export default class SAPAdd implements Tool {
 
     static _addInER_Callback(xml, _this) {
         //console.log(_this.daten)
-        StrassenAusPunkt.loadAbschnittER(_this.daten, _this.abschnitt, SAPAdd._wfsAddAufstell, _this)
+        StrassenAusPunkt.loadAbschnittER(_this.abschnitt, SAPAdd._wfsAddAufstell, _this)
     }
 
     static _wfsAddAufstell(_this) {
         let soap = '<wfs:Insert>\n' +
-            '<Otaufstvor>\n' +
+            '<Otstrauspkt>\n' +
             '<projekt xlink:href="#' + _this.daten.ereignisraum + '" typeName="Projekt" />\n' +
             '<abschnittId>' + _this.abschnitt.abschnittid + '</abschnittId>\n' +
             '<vst>' + _this.station + '</vst>\n' +
@@ -202,10 +202,10 @@ export default class SAPAdd implements Tool {
             '<detailgrad xlink:href="' + CONFIG.DETAIL_HOCH + '" typeName="Itobjdetailgrad" />\n' +
             '<erfart xlink:href="' + CONFIG.ERFASSUNG + '" typeName="Iterfart" />\n' +
             '<ADatum>' + (new Date()).toISOString().substring(0, 10) + '</ADatum>\n' +
-            '<rlageVst xlink:href="#S' + document.forms.namedItem("avadd").avadd_lage.value + '" typeName="Itallglage" />\n' +
-            '<art xlink:href="#S' + document.forms.namedItem("avadd").avadd_art.value + '" typeName="Itaufstvorart" />\n' +
-            '<quelle xlink:href="#S' + document.forms.namedItem("avadd").avadd_quelle.value + '" typeName="Itquelle" />\n' +
-            '</Otaufstvor> </wfs:Insert>';
+            '<rlageVst xlink:href="#S' + document.forms.namedItem("sapadd").sapadd_lage.value + '" typeName="Itallglage" />\n' +
+            '<art xlink:href="#S' + document.forms.namedItem("sapadd").sapadd_art.value + '" typeName="Itstrauspktart" />\n' +
+            '<quelle xlink:href="#S' + document.forms.namedItem("sapadd").sapadd_quelle.value + '" typeName="Itquelle" />\n' +
+            '</Otstrauspkt> </wfs:Insert>';
         //console.log(soap)
         PublicWFS.doTransaction(soap, _this._getInsertResults, undefined, _this);
     }
@@ -223,12 +223,12 @@ export default class SAPAdd implements Tool {
             filter += '<FeatureId fid="' + f.getAttribute('fid') + '"/>';
         }
         filter += '</Filter>';
-        PublicWFS.doQuery('Otaufstvor', filter, StrassenAusPunkt._loadER_Callback, undefined, _this.daten);
+        PublicWFS.doQuery('Otstrauspkt', filter, StrassenAusPunkt._loadER_Callback, undefined, _this.daten);
     }
 
     start() {
         this.map.addInteraction(this.select);
-        document.forms.namedItem("avadd").style.display = 'block';
+        document.forms.namedItem("sapadd").style.display = 'block';
         this.map.on("pointermove", this.part_move.bind(this));
         this.map.on("singleclick", this.part_click.bind(this));
         this.map.addLayer(this.l_overlay);
@@ -236,7 +236,7 @@ export default class SAPAdd implements Tool {
 
     stop() {
         this.map.removeInteraction(this.select);
-        document.forms.namedItem("avadd").style.display = 'none';
+        document.forms.namedItem("sapadd").style.display = 'none';
         this.map.un("pointermove", this.part_move);
         this.map.un("singleclick", this.part_click);
         this.map.removeLayer(this.l_overlay);

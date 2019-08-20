@@ -36,8 +36,8 @@ export default class PublicWFS {
 
     static doGetRequest(
         url_param: string,
-        callbackSuccess: (xml: Document, ...args: any[]) => void,
-        callbackFailed: (xml: Document, ...args: any[]) => void,
+        callbackSuccess?: (xml: Document, ...args: any[]) => void,
+        callbackFailed?: (xml: Document, ...args: any[]) => void,
         ...args: any[]) {
 
         var xmlhttp = new XMLHttpRequest();
@@ -46,9 +46,9 @@ export default class PublicWFS {
 
         xmlhttp.onreadystatechange = function () {
             if (xmlhttp.readyState != 4) return;
-            if (xmlhttp.status == 200) {
+            if (xmlhttp.status == 200 && callbackSuccess != undefined) {
                 callbackSuccess(xmlhttp.responseXML, ...args)
-            } else {
+            } else if (xmlhttp.status != 200) {
                 if (callbackFailed != undefined)
                     callbackFailed(xmlhttp.responseXML, ...args)
                 else

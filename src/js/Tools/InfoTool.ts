@@ -1,7 +1,7 @@
 import { Select as SelectInteraction } from 'ol/interaction';
-import Map from '../../openLayers/Map';
+import Map from '../openLayers/Map';
 import { Layer } from 'ol/layer';
-import Tool from '../Tool';
+import Tool from './Tool';
 import { SelectEvent } from 'ol/interaction/Select';
 import { Feature } from 'ol';
 
@@ -11,7 +11,7 @@ import { Feature } from 'ol';
  * @version 2019.05.20
  * @copyright MIT
  */
-export default class SAPInfoTool implements Tool {
+export default class InfoTool implements Tool {
     _map: Map;
     _layer: Layer;
     _sidebar: HTMLElement;

@@ -17,7 +17,7 @@ import 'chosen-js/chosen.css';
 import Daten from "../Daten";
 import Klartext from './Klartext';
 import Abschnitt from './Abschnitt';
-import { InfoToolSelectable } from '../Tools/Aufstellvorrichtung/AvInfoTool';
+import { InfoToolSelectable } from '../Tools/InfoTool';
 import { Map } from 'ol';
 import Objekt from './Objekt';
 
@@ -64,15 +64,52 @@ export default class StrassenAusPunkt extends Feature implements InfoToolSelecta
     }
 
     private static loadKlartexte() {
-        Klartext.getInstanz().load('Itstrauspktart');
-        Klartext.getInstanz().load('Itallglage');
-        Klartext.getInstanz().load('Itquelle');
+        Klartext.getInstanz().load('Itstrauspktart', StrassenAusPunkt._ktArtLoaded);
+        Klartext.getInstanz().load('Itallglage', StrassenAusPunkt._ktLageLoaded);
+        Klartext.getInstanz().load('Itquelle', StrassenAusPunkt._ktQuelleLoaded);
+    }
+
+    private static _ktArtLoaded() {
+        let arten = Klartext.getInstanz().getAllSorted('Itstrauspktart');
+        for (let a of arten) {
+            let option = document.createElement('option');
+            let t = document.createTextNode(a.beschreib);
+            option.appendChild(t);
+            option.setAttribute('value', a.objektId);
+            document.forms.namedItem("sapadd").sapadd_art.appendChild(option);
+        }
+        $("select#sapadd_art").chosen({ width: "95%", search_contains: true });
+    }
+
+    private static _ktLageLoaded() {
+        let arten = Klartext.getInstanz().getAllSorted('Itallglage');
+        for (let a of arten) {
+            let option = document.createElement('option');
+            let t = document.createTextNode(a.beschreib);
+            option.appendChild(t);
+            option.setAttribute('value', a.objektId);
+            document.forms.namedItem("sapadd").sapadd_lage.appendChild(option);
+        }
+        $("select#sapadd_lage").chosen({ width: "95%", search_contains: true });
+    }
+
+    private static _ktQuelleLoaded() {
+        let arten = Klartext.getInstanz().getAllSorted('Itquelle');
+        for (let a of arten) {
+            let option = document.createElement('option');
+            let t = document.createTextNode(a.beschreib);
+            option.appendChild(t);
+            option.setAttribute('value', a.objektId);
+            document.forms.namedItem("sapadd").sapadd_quelle.appendChild(option);
+        }
+        $("select#sapadd_quelle").chosen({ width: "95%", search_contains: true });
     }
 
     getHTMLInfo(ziel: HTMLElement) {
+        console.log(ziel);
         let kt = Daten.getInstanz().klartexte;
         let r = "<table>";
-        /*for (var tag in CONFIG_WFS.AUFSTELL) {
+        /*for (var tag in CONFIG_WFS.straus) {
             if (this[tag] == null || this[tag] == undefined) continue;
 
             r += "<tr><td>" + tag + "</td><td>";
@@ -97,7 +134,6 @@ export default class StrassenAusPunkt extends Feature implements InfoToolSelecta
         else if (this.rabstbaVst <= 0.01) r += "L";
         else r += "M";
         r += " " + Math.abs(this.rabstbaVst) + '</td></tr>';
-        console.log(this.labstbaVst);
         if (this.labstbaVst != null) {
             r += "<tr><td>Abst.&nbsp;li.</td><td>"
             if (this.labstbaVst >= 0.01) r += "R";
@@ -106,9 +142,8 @@ export default class StrassenAusPunkt extends Feature implements InfoToolSelecta
             r += " " + Math.abs(this.labstbaVst) + '</td></tr>';
         }
 
-        r += "<tr><td>Art</td><td>" + kt.get('Itaufstvorart', this.art).beschreib + "</td></tr>";
+        r += "<tr><td>Art</td><td>" + kt.get('Itstrauspktart', this.art).beschreib + "</td></tr>";
         r += "<tr><td>Lage</td><td>" + kt.get('Itallglage', this.rlageVst).beschreib + "</td></tr>";
-        r += "<tr><td>Schilder</td><td>" + this.hasSekObj + "</td></tr>";
         r += "<tr><td>Quelle</td><td>" + ((this.quelle != null) ? (kt.get("Itquelle", this.quelle).beschreib) : '') + "</td></tr>";
         r += "</table>"
 
@@ -125,60 +160,62 @@ export default class StrassenAusPunkt extends Feature implements InfoToolSelecta
  * @param {*} daten 
  */
 
-    static loadER(daten: Daten) {
+    static loadER() {
         StrassenAusPunkt.loadKlartexte();
-        PublicWFS.doQuery('Otaufstvor', '<Filter>' +
+        let daten = Daten.getInstanz();
+        PublicWFS.doQuery('Otstrauspkt', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', StrassenAusPunkt._loadER_Callback, undefined, daten);
+            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', StrassenAusPunkt._loadER_Callback);
 
     }
 
-    static _loadER_Callback(xml: XMLDocument, daten: Daten) {
-        let aufstell = xml.getElementsByTagName("Otaufstvor");
-        for (let i = 0; i < aufstell.length; i++) {
-            let f = StrassenAusPunkt.fromXML(aufstell[i]);
-            daten.l_aufstell.getSource().addFeature(f);
+    static _loadER_Callback(xml: XMLDocument) {
+        let straus = xml.getElementsByTagName("Otstrauspkt");
+        for (let i = 0; i < straus.length; i++) {
+            let f = StrassenAusPunkt.fromXML(straus[i]);
+            Daten.getInstanz().l_straus.getSource().addFeature(f);
         }
     }
 
     /**
      * Lädt einen Abschnitt nach
-     * @param {Daten} daten 
      * @param {Abschnitt} abschnitt 
      */
-    static loadAbschnittER(abschnitt: Abschnitt, callback: (...args: any[]) => void, ...args: any[]) {
+    static loadAbschnittER(abschnitt: Abschnitt, callback?: (...args: any[]) => void, ...args: any[]) {
         //console.log(daten);
         document.body.style.cursor = 'wait';
-        PublicWFS.doQuery('Otaufstvor', '<Filter>' +
+        PublicWFS.doQuery('Otstrauspkt', '<Filter>' +
             '<And><PropertyIsEqualTo><PropertyName>abschnittId</PropertyName>' +
             '<Literal>' + abschnitt.abschnittid + '</Literal></PropertyIsEqualTo><PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
             '<Literal>' + Daten.getInstanz().ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>', StrassenAusPunkt._loadAbschnittER_Callback, undefined, callback, ...args);
     }
 
-    static _loadAbschnittER_Callback(xml: XMLDocument, callback: (...args: any[]) => void, ...args: any[]) {
-        //console.log(daten);
-        let aufstell = xml.getElementsByTagName("Otaufstvor");
-        for (let i = 0; i < aufstell.length; i++) {
-            let f = StrassenAusPunkt.fromXML(aufstell[i]);
-            Daten.getInstanz().l_aufstell.getSource().addFeature(f);
+    static _loadAbschnittER_Callback(xml: XMLDocument, callback?: (...args: any[]) => void, ...args: any[]) {
+        console.log(callback);
+        let straus = xml.getElementsByTagName("Otstrauspkt");
+        for (let i = 0; i < straus.length; i++) {
+            let f = StrassenAusPunkt.fromXML(straus[i]);
+            Daten.getInstanz().l_straus.getSource().addFeature(f);
         }
-        callback(...args);
         document.body.style.cursor = '';
+        if (callback != undefined) {
+            callback(...args);
+        }
     }
 
     static fromXML(xml: Element) {
         //console.log(daten);
         let r = new StrassenAusPunkt();
         r.fid = xml.getAttribute('fid');
-        for (var tag in CONFIG_WFS["AUFSTELL"]) {
+        for (var tag in CONFIG_WFS["STAUSPKT"]) {
             if (xml.getElementsByTagName(tag).length <= 0) continue;
-            if (CONFIG_WFS["AUFSTELL"][tag].art == 0) {
+            if (CONFIG_WFS["STAUSPKT"][tag].art == 0) {
                 // Kein Klartext
                 r[tag] = xml.getElementsByTagName(tag)[0].firstChild.textContent;
-            } else if (CONFIG_WFS.AUFSTELL[tag].art == 1) {
+            } else if (CONFIG_WFS.STAUSPKT[tag].art == 1) {
                 // Kein Klartext
                 r[tag] = Number(xml.getElementsByTagName(tag)[0].firstChild.textContent);
-            } else if (CONFIG_WFS.AUFSTELL[tag].art == 2) {
+            } else if (CONFIG_WFS.STAUSPKT[tag].art == 2) {
                 // Klartext, xlink wird gespeichert
                 r[tag] = xml.getElementsByTagName(tag)[0].getAttribute('xlink:href');
             }
@@ -187,8 +224,9 @@ export default class StrassenAusPunkt extends Feature implements InfoToolSelecta
         let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(',');
         r.setGeometry(new Point([parseFloat(koords[0]), parseFloat(koords[1])]));
         r.abschnitt = Daten.getInstanz().getAbschnitt(r.abschnittId);
-        r.abschnitt.inER['Otaufstvor'] = true;
+        r.abschnitt.inER['Otstrauspkt'] = true;
         Daten.getInstanz().l_achse.changed();
+        //console.log(r);
         return r;
     }
 
@@ -206,7 +244,7 @@ export default class StrassenAusPunkt extends Feature implements InfoToolSelecta
                     radius: 3,
                     fill: new Fill({ color: 'black' }),
                     stroke: new Stroke({
-                        color: (feature.hasSekObj > 0) ? ('rgba(250,120,0,0.8)') : ('rgba(255,0,0,0.8)'),
+                        color: 'rgba(0,120,0,0.8)',
                         width: 3
                     })
                 }),
@@ -239,7 +277,7 @@ export default class StrassenAusPunkt extends Feature implements InfoToolSelecta
         this.rabstbaVst = this.vabstVst;
         this.vst = Math.round(station);
         this.bst = this.vst;
-        let xml = '<wfs:Update typeName="Otaufstvor">\n' +
+        let xml = '<wfs:Update typeName="Otstrauspkt">\n' +
             '	<wfs:Property>\n' +
             '		<wfs:Name>vabstVst</wfs:Name>\n' +
             '		<wfs:Value>' + this.vabstVst + '</wfs:Value>\n' +

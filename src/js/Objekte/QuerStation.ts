@@ -121,11 +121,11 @@ export class QuerStation {
     }
     teilen(station: number) {
         PublicWFS.showMessage("noch nicht möglich", true);
-        this.abschnitt.getAufbauDaten(QuerStation.teilen_callback, undefined, this, station);
+        this.abschnitt.getAufbauDaten(this.teilen_callback.bind(this), undefined, station);
     }
 
-    static teilen_callback(_this: QuerStation, station: number) {
-        _this.abschnitt.writeQuerAufbau();
+    teilen_callback(station: number) {
+        this.abschnitt.writeQuerAufbau();
     }
 
     deleteAll() {

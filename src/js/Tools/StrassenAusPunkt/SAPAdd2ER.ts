@@ -43,14 +43,14 @@ export default class SAPAdd2ER implements Tool {
         let abschnitt = this.select.getFeatures().getArray()[0] as Abschnitt;
         if ("Otstrauspkt" in abschnitt.inER && abschnitt.inER["Otstrauspkt"]) return;
         document.body.style.cursor = 'wait'
-        PublicWFS.addInER(abschnitt, "Otstrauspkt", this.daten.ereignisraum_nr, SAPAdd2ER._onSelect_Callback, undefined, this, abschnitt);
+        PublicWFS.addInER(abschnitt, "Otstrauspkt", this.daten.ereignisraum_nr, this._onSelect_Callback.bind(this), undefined, abschnitt);
     }
 
-    static _onSelect_Callback(xml, _this, abschnitt) {
+    _onSelect_Callback(xml: XMLDocument,  abschnitt: Abschnitt) {
         abschnitt.inER["Otstrauspkt"] = true;
-        StrassenAusPunkt.loadAbschnittER(_this.daten, abschnitt, PublicWFS.showMessage, "Erfolgreich in ER kopiert");
-        _this.select.getFeatures().clear();
-        _this.daten.l_achse.changed();
+        StrassenAusPunkt.loadAbschnittER(abschnitt, PublicWFS.showMessage, "Erfolgreich in ER kopiert");
+        this.select.getFeatures().clear();
+        Daten.getInstanz().l_achse.changed();
     }
 
     start() {

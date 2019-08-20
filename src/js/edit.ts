@@ -24,13 +24,13 @@ import QuerAddTool from './Tools/Querschnitt/QuerAddTool';
 import QuerDelTool from './Tools/Querschnitt/QuerDelTool';
 import QuerAdd2ER from './Tools/Querschnitt/QuerAdd2ER';
 
-import AvInfoTool from './Tools/Aufstellvorrichtung/AvInfoTool';
 import AvAdd from './Tools/Aufstellvorrichtung/AvAdd';
 import AvDelete from './Tools/Aufstellvorrichtung/AvDelete';
 import AvVzAdd from './Tools/Aufstellvorrichtung/AvVzAdd';
 import AvMove from './Tools/Aufstellvorrichtung/AvMove';
 import AvAdd2ER from './Tools/Aufstellvorrichtung/AvAdd2ER';
 
+import InfoTool from './Tools/InfoTool';
 import Measure from './Measure';
 import LayerSwitch from './LayerSwitch';
 import OSM from 'ol/source/OSM';
@@ -38,7 +38,6 @@ import Map from './openLayers/Map';
 import { TileLayer, ImageLayer } from './openLayers/Layer';
 import StaticImage from 'ol/source/ImageStatic';
 import proj4 from 'proj4';
-import SAPInfoTool from './Tools/StrassenAusPunkt/SAPInfoTool';
 import SAPAdd from './Tools/StrassenAusPunkt/SAPAdd';
 import SAPMove from './Tools/StrassenAusPunkt/SAPMove';
 import SAPAdd2ER from './Tools/StrassenAusPunkt/SAPAdd2ER';
@@ -56,8 +55,8 @@ var er = decodeURI(urlParamER[1])
 var ernr = decodeURI(urlParamERNR[1])
 console.log("Ereignisraum: " + ernr);
 
-let daten: Daten, infoTool: QuerInfoTool, editTool: QuerModifyTool, delTool: QuerDelTool, partTool: QuerPartTool, addTool: QuerAddTool, vsInfoTool: AvInfoTool, avAdd: AvAdd, avAdd2ER: AvAdd2ER, qsAdd2ER: QuerAdd2ER, avMove: AvMove, vzAdd: AvVzAdd, measure: Measure, avDel: AvDelete;
-let sapInfoTool: SAPInfoTool, sapAdd: SAPAdd, sapMove: SAPMove, sapAdd2ER: SAPAdd2ER, sapDel: SAPDelete;
+let daten: Daten, infoTool: QuerInfoTool, editTool: QuerModifyTool, delTool: QuerDelTool, partTool: QuerPartTool, addTool: QuerAddTool, vsInfoTool: InfoTool, avAdd: AvAdd, avAdd2ER: AvAdd2ER, qsAdd2ER: QuerAdd2ER, avMove: AvMove, vzAdd: AvVzAdd, measure: Measure, avDel: AvDelete;
+let sapInfoTool: InfoTool, sapAdd: SAPAdd, sapMove: SAPMove, sapAdd2ER: SAPAdd2ER, sapDel: SAPDelete;
 
 window.addEventListener('load', function () {
     proj4.defs("EPSG:31467", "+proj=tmerc +lat_0=0 +lon_0=9 +k=1 +x_0=3500000 +y_0=0 +ellps=bessel +towgs84=598.1,73.7,418.2,0.202,0.045,-2.455,6.7 +units=m +no_defs");
@@ -122,7 +121,7 @@ window.addEventListener('load', function () {
     map.on("moveend", recreateHash);
 
     daten = new Daten(map, er, ernr);
-    
+
     infoTool = new QuerInfoTool(map, daten);
     infoTool.start();
     editTool = new QuerModifyTool(map, infoTool);
@@ -131,18 +130,18 @@ window.addEventListener('load', function () {
     partTool = new QuerPartTool(map, daten, infoTool);
     qsAdd2ER = new QuerAdd2ER(map, daten);
 
-    vsInfoTool = new AvInfoTool(map, daten.l_aufstell, "sidebar");
+    vsInfoTool = new InfoTool(map, daten.l_aufstell, "sidebar");
     avAdd = new AvAdd(map, daten);
     vzAdd = new AvVzAdd(map, daten);
-    avMove = new AvMove(map, daten, vsInfoTool);
+    avMove = new AvMove(map, vsInfoTool);
     avAdd2ER = new AvAdd2ER(map, daten);
     avDel = new AvDelete(map, daten, daten.l_aufstell, "sidebar");
 
-    sapInfoTool = new SAPInfoTool(map, daten.l_aufstell, "sidebar");
+    sapInfoTool = new InfoTool(map, daten.l_straus, "sidebar");
     sapAdd = new SAPAdd(map);
     sapMove = new SAPMove(map, vsInfoTool);
     sapAdd2ER = new SAPAdd2ER(map);
-    sapDel = new SAPDelete(map, daten.l_aufstell, "sidebar");
+    sapDel = new SAPDelete(map, daten.l_straus, "sidebar");
 
     measure = new Measure(map);
 
@@ -423,9 +422,8 @@ function openTab(evt: MouseEvent) {
     document.getElementById(tabName).style.display = "block";
     (evt.currentTarget as HTMLElement).className += " active";
     document.getElementById(tabName).getElementsByTagName('input')[0].click();
-
-    daten.modus = (evt.currentTarget as HTMLElement).dataset.tab.replace("tab_", "")
-    daten.l_achse.changed();
+    Daten.getInstanz().modus = (evt.currentTarget as HTMLElement).dataset.tab.replace("tab_", "")
+    Daten.getInstanz().l_achse.changed();
 }
 
 window.addEventListener('load', function () {

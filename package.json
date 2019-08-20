@@ -40,7 +40,8 @@
     "jquery-ui-bundle": "^1.12.1-migrate",
     "ol": "^5.3.3",
     "proj4": "^2.5.0",
-    "regenerator-runtime": "^0.13.2"
+    "regenerator-runtime": "^0.13.2",
+    "src": "^1.1.2"
   },
   "devDependencies": {
     "cssnano": "^4.1.10",

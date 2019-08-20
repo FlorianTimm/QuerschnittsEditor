@@ -1,6 +1,4 @@
-html,
-body,
-#map {
+html, body, #map {
     height: 100%;
     width: 100%;
     margin: 0;
@@ -37,11 +35,7 @@ sidebar>* {
     max-width: 200px;
 }
 
-#qsMultiMod select,
-#qsMultiMod input,
-#info input,
-#info select,
-#avadd select {
+#qsMultiMod select, #qsMultiMod input, #info input, #info select, #avadd select {
     width: 100%;
 }
 
@@ -51,9 +45,7 @@ form table {
     border-collapse: collapse;
 }
 
-form table,
-th,
-td {
+form table, th, td {
     border: 1px solid black;
 }
 
@@ -70,18 +62,11 @@ td {
     font-family: sans-serif;
 }
 
-form#info,
-form#modify,
-form#qsMultiMod {
+form#info, form#modify, form#qsMultiMod {
     display: none;
 }
 
-form#hinzu,
-form#quer_del,
-form#avadd,
-form#sapadd,
-form#loeschen,
-form#teilen {
+form#hinzu, form#quer_del, form#avadd, form#sapadd, form#loeschen, form#teilen {
     text-align: center;
     display: none;
 }
@@ -92,7 +77,6 @@ form#quer_del input[type="button"] {
     font-weight: 600;
 }
 
-
 /* Style the tab */
 
 .tab {
@@ -100,7 +84,6 @@ form#quer_del input[type="button"] {
     /*border: 1px solid #ccc;*/
     background-color: #f1f1f1;
 }
-
 
 /* Style the buttons that are used to open the tab content */
 
@@ -116,8 +99,7 @@ form#quer_del input[type="button"] {
     width: 33%;
 }
 
-button#zoomToExtent,
-button#loadExtent {
+button#zoomToExtent, button#loadExtent {
     background-color: #ccc;
     float: left;
     border: 1px solid #999;
@@ -133,13 +115,11 @@ input[type="radio"]:checked+label {
     text-shadow: 0px 0px 5px rgb(2, 105, 189);
 }
 
-
 /* Change background color of buttons on hover */
 
 .tab button:hover {
     background-color: #ddd;
 }
-
 
 /* Create an active/current tablink class */
 
@@ -148,7 +128,6 @@ input[type="radio"]:checked+label {
     font-weight: 600;
     border-bottom: 1px solid rgba(0, 0, 0, 0);
 }
-
 
 /* Style the tab content */
 
@@ -167,22 +146,18 @@ input[type="radio"]:checked+label {
     /* Fading effect takes 1 second */
 }
 
-
 /* Go from zero to full opacity */
 
-#tab_Querschnitt,
-.bt_Querschnitt {
+#tab_Querschnitt, .bt_Querschnitt {
     background-color: rgba(255, 243, 188, 0.8);
 }
 
-#tab_Otaufstvor,
-.bt_Aufstell {
-    background-color: rgba(212, 255, 214, 0.8);
+#tab_Otaufstvor, .bt_Aufstell {
+    background-color: rgba(250, 182, 182, 0.8);
 }
 
-#tab_Otstrauspkt,
-.bt_Strassenaus {
-    background-color: rgba(250, 182, 182, 0.8);
+#tab_Otstrauspkt, .bt_Strassenaus {
+    background-color: rgba(212, 255, 214, 0.8);
 }
 
 #steuerung_sonstige {
@@ -211,23 +186,22 @@ form#suche {
     overflow-x: hidden;
 }
 
-form#avadd {
+form#avadd , form#sapadd {
     overflow-x: inherit;
     text-align: left;
 }
 
-form#avadd input,
-form#avadd select,
-form#avadd .chosen-container {
+form#avadd input, form#avadd select, form#avadd .chosen-container,
+form#sapadd input, form#sapadd select, form#sapadd .chosen-container {
     margin-bottom: 4px;
     width: 95%;
 }
 
-form#avadd .chosen-container {
+form#avadd .chosen-container, form#sapadd .chosen-container {
     font-size: 9pt;
 }
 
-form#avadd label {
+form#avadd label, form#sapadd label {
     font-size: 8pt;
 }
 
@@ -238,7 +212,6 @@ form#avadd label {
 .ui-dialog {
     z-index: 1100 !important;
 }
-
 
 /* Tooltip fürs Messen */
 
@@ -263,8 +236,7 @@ form#avadd label {
     border: 1px solid white;
 }
 
-.tooltip-measure:before,
-.tooltip-static:before {
+.tooltip-measure:before, .tooltip-static:before {
     border-top: 6px solid rgba(0, 0, 0, 0.5);
     border-right: 6px solid transparent;
     border-left: 6px solid transparent;

@@ -18,7 +18,7 @@ import 'chosen-js/chosen.css';
 import Daten from "../Daten";
 import Klartext from './Klartext';
 import Abschnitt from './Abschnitt';
-import { InfoToolSelectable } from '../Tools/Aufstellvorrichtung/AvInfoTool';
+import { InfoToolSelectable } from '../Tools/InfoTool';
 import { Map } from 'ol';
 import Objekt from './Objekt';
 
@@ -39,7 +39,7 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable, Objekt 
     bearbeiter: string;
     behoerde: string;
     private _daten: Daten;
-    private _zeichen: Zeichen = null;
+    private _zeichen: Zeichen[] = null;
     fid: string = null;
     inER: {} = {};
     abschnitt: Abschnitt;
@@ -60,17 +60,17 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable, Objekt 
     constructor() {
         super({ geom: null });
         this._daten = Daten.getInstanz();
-        Aufstellvorrichtung.loadKlartexte(this._daten.klartexte);
+        Aufstellvorrichtung.loadKlartexte();
     }
 
-    static loadKlartexte(klartexte: Klartext) {
-        klartexte.load('Itaufstvorart', Aufstellvorrichtung._ktArtLoaded, klartexte);
-        klartexte.load('Itallglage', Aufstellvorrichtung._ktLageLoaded, klartexte);
-        klartexte.load('Itquelle', Aufstellvorrichtung._ktQuelleLoaded, klartexte);
+    static loadKlartexte() {
+        Klartext.getInstanz().load('Itaufstvorart', Aufstellvorrichtung._ktArtLoaded);
+        Klartext.getInstanz().load('Itallglage', Aufstellvorrichtung._ktLageLoaded);
+        Klartext.getInstanz().load('Itquelle', Aufstellvorrichtung._ktQuelleLoaded);
     }
 
-    static _ktArtLoaded(__: any, klartexte: Klartext) {
-        let arten = klartexte.getAllSorted('Itaufstvorart');
+    static _ktArtLoaded() {
+        let arten = Klartext.getInstanz().getAllSorted('Itaufstvorart');
         for (let a of arten) {
             let option = document.createElement('option');
             let t = document.createTextNode(a.beschreib);
@@ -81,8 +81,8 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable, Objekt 
         $("select#avadd_art").chosen({ width: "95%", search_contains: true });
     }
 
-    private static _ktLageLoaded(__: any, klartexte: Klartext) {
-        let arten = klartexte.getAllSorted('Itallglage');
+    private static _ktLageLoaded() {
+        let arten = Klartext.getInstanz().getAllSorted('Itallglage');
         for (let a of arten) {
             let option = document.createElement('option');
             let t = document.createTextNode(a.beschreib);
@@ -93,8 +93,8 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable, Objekt 
         $("select#avadd_lage").chosen({ width: "95%", search_contains: true });
     }
 
-    private static _ktQuelleLoaded(__: any, klartexte: Klartext) {
-        let arten = klartexte.getAllSorted('Itquelle');
+    private static _ktQuelleLoaded() {
+        let arten = Klartext.getInstanz().getAllSorted('Itquelle');
         for (let a of arten) {
             let option = document.createElement('option');
             let t = document.createTextNode(a.beschreib);
@@ -106,7 +106,7 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable, Objekt 
     }
 
     getHTMLInfo(ziel: HTMLElement) {
-        let kt = this._daten.klartexte;
+        let kt = Klartext.getInstanz();
         let r = "<table>";
         /*for (var tag in CONFIG_WFS.AUFSTELL) {
             if (this[tag] == null || this[tag] == undefined) continue;
@@ -162,8 +162,8 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable, Objekt 
         for (let eintrag of zeichen) {
             let img = document.createElement("img");
             img.style.height = "30px";
-            img.src = "http://gv-srv-w00118:8080/schilder/" + _this._daten.klartexte.get("Itvzstvoznr", eintrag.stvoznr)['kt'] + ".svg";
-            img.title = _this._daten.klartexte.get("Itvzstvoznr", eintrag.stvoznr)['beschreib'] + ((eintrag.vztext != null) ? ("\n" + eintrag.vztext) : (''))
+            img.src = "http://gv-srv-w00118:8080/schilder/" + Klartext.getInstanz().get("Itvzstvoznr", eintrag.stvoznr)['kt'] + ".svg";
+            img.title = Klartext.getInstanz().get("Itvzstvoznr", eintrag.stvoznr)['beschreib'] + ((eintrag.vztext != null) ? ("\n" + eintrag.vztext) : (''))
             div.appendChild(img);
         }
         ziel.appendChild(div);
@@ -176,14 +176,14 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable, Objekt 
      * @param {*} daten 
      */
     static loadER(daten: Daten) {
-        Aufstellvorrichtung.loadKlartexte(daten.klartexte);
+        Aufstellvorrichtung.loadKlartexte();
         PublicWFS.doQuery('Otaufstvor', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
             '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Aufstellvorrichtung._loadER_Callback, undefined, daten);
 
     }
 
-    private static _loadER_Callback(xml: XMLDocument, daten: Daten) {
+    static _loadER_Callback(xml: XMLDocument, daten: Daten) {
         let aufstell = xml.getElementsByTagName("Otaufstvor");
         for (let i = 0; i < aufstell.length; i++) {
             let f = Aufstellvorrichtung.fromXML(aufstell[i], daten);
@@ -344,23 +344,23 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable, Objekt 
             '    <PropertyName>parent/@xlink:href</PropertyName>\n' +
             '    <Literal>' + this.fid + '</Literal>\n' +
             '  </PropertyIsEqualTo>\n' +
-            '</Filter>', this._parseZeichen, undefined, this, callback, ...args);
+            '</Filter>', this._parseZeichen.bind(this), undefined, callback, ...args);
     }
 
-    private _parseZeichen(xml, _this, callback, ...args) {
-        let zeichen = [];
+    private _parseZeichen(xml, callback, ...args) {
+        let zeichen: Zeichen[] = [];
         console.log(xml);
         let zeichenXML = xml.getElementsByTagName('Otvzeichlp');
 
         for (let eintrag of zeichenXML) {
             console.log(eintrag);
             if (!(eintrag.getElementsByTagName("enr").length > 0)) {
-                zeichen.push(Zeichen.fromXML(eintrag, _this._daten));
+                zeichen.push(Zeichen.fromXML(eintrag, this._daten));
             }
         }
-        _this._zeichen = zeichen;
+        this._zeichen = zeichen;
         if (callback != undefined) {
-            callback(_this._zeichen, ...args);
+            callback(this._zeichen, ...args);
         }
     }
 

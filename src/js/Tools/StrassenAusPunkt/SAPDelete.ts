@@ -82,14 +82,16 @@ export default class SAPDelete implements Tool {
             '		</ogc:And>\n' +
             '	</ogc:Filter>\n' +
             '</wfs:Delete>';
-        PublicWFS.doTransaction(update, this._deleteCallback, undefined, this);
+        PublicWFS.doTransaction(update, this._deleteCallback.bind(this));
     }
 
-    _deleteCallback(_xml: any, _this: SAPDelete) {
-        let feature = _this._select.getFeatures().getArray()[0];
-        (<VectorSource>_this._layer.getSource()).removeFeature(feature);
-        _this._select.getFeatures().clear();
+    _deleteCallback(_xml: any) {
+        let feature = this._select.getFeatures().getArray()[0];
+        (<VectorSource> this._layer.getSource()).removeFeature(feature);
+        this._select.getFeatures().clear();
         PublicWFS.showMessage("Stra&szlig;enausstattung gelöscht!")
+        this._infoField.innerHTML = "";
+        this._delField.style.display = "none";
     }
 
     start() {

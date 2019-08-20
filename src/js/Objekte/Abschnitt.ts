@@ -62,7 +62,7 @@ export default class Abschnitt extends Feature {
     static loadFromAbschnittWFS(abschnittid: string) {
         let r = new Abschnitt();
         r.abschnittid = abschnittid;
-        AbschnittWFS.getById(abschnittid, r._loadCallback, undefined, r);
+        AbschnittWFS.getById(abschnittid, r._loadCallback.bind(r));
         return r;
     }
 
@@ -73,16 +73,17 @@ export default class Abschnitt extends Feature {
         PublicWFS.doQuery('VI_STRASSENNETZ', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>ABSCHNITT_ID</PropertyName>' +
             '<Literal>' + r.abschnittid + '</Literal></PropertyIsEqualTo>' +
-            '</Filter>', r._loadCallback, undefined, r);
+            '</Filter>', r._loadCallback.bind(r));
 
         return r;
     }
 
-    _loadCallback(xml: Document, _this: Abschnitt) {
+    _loadCallback(xml: Document) {
+        console.log(this)
         let netz = xml.getElementsByTagName('VI_STRASSENNETZ');
 
         if (netz.length > 0) {
-            _this._fromXML(netz[0]);
+            this._fromXML(netz[0]);
         }
     }
 
@@ -180,16 +181,16 @@ export default class Abschnitt extends Feature {
                 '<PropertyName>abschnittOderAst/@xlink:href</PropertyName>' +
                 '<Literal>S' + this.abschnittid + '</Literal>' +
                 '</PropertyIsEqualTo>' +
-                '</And></Filter>', this._parseAufbaudaten, callbackError, this, callbackSuccess, ...args);
+                '</And></Filter>', this._parseAufbaudaten.bind(this), callbackError, callbackSuccess, ...args);
         }
     }
 
-    private _parseAufbaudaten(xml: Document, _this: Abschnitt, callbackSuccess: (...args: any[]) => void, ...args: any[]) {
+    private _parseAufbaudaten(xml: Document, callbackSuccess?: (...args: any[]) => void, ...args: any[]) {
         let aufbau = xml.getElementsByTagName('Otschicht');
         for (let i = 0; i < aufbau.length; i++) {
             let a = Aufbaudaten.fromXML(aufbau[i]);
             if (a.parent == null) continue;
-            let quer = _this.daten.querschnitteFID[a.parent.replace('#', '')];
+            let quer = this.daten.querschnitteFID[a.parent.replace('#', '')];
             if (quer._aufbaudaten == null) {
                 quer._aufbaudaten = {};
             }
