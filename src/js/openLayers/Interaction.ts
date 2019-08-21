@@ -3,6 +3,7 @@ import Geometry from 'ol/geom/Geometry';
 import QuerModifyTool from '../Tools/Querschnitt/QuerModifyTool';
 import QuerInfoTool from '../Tools/Querschnitt/QuerInfoTool';
 import AvMove from '../Tools/Aufstellvorrichtung/AvMove';
+import SAPMove from '../Tools/StrassenAusPunkt/SAPMove';
 
 /**
  * OpenLayers-ModifyInteraktion
@@ -12,7 +13,7 @@ import AvMove from '../Tools/Aufstellvorrichtung/AvMove';
  */
 export class ModifyInteraction extends Modify {
     geo_vorher?: Geometry = null;
-    modify?: QuerModifyTool | AvMove = null;
+    modify?: QuerModifyTool | AvMove | SAPMove = null;
 }
 
 /**

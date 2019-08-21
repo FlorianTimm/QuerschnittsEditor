@@ -23,21 +23,15 @@ class Klartext {
 
     load(klartext: string, whenReady?: (klartext: {}, ...args: any[]) => void, ...args: any[]) {
         if (!(klartext in this._klartexte)) {
-            PublicWFS.doQuery(klartext, '', this._read, undefined, klartext, this, whenReady, ...args);
-        } else {
+            PublicWFS.doQuery(klartext, '', this._read.bind(this), undefined, klartext, whenReady, ...args);
+        } else if (whenReady != undefined) {
             whenReady(this._klartexte[klartext], ...args);
         }
     }
 
-    _read(
-        xml: Document,
-        klartext: string,
-        _this: Klartext,
-        whenReady: (klartext: {}, ...args: any[]) => void,
-        ...args: any[]) {
-
-        if (!(klartext in _this._klartexte)) {
-            _this._klartexte[klartext] = {}
+    _read(xml: Document, klartext: string, whenReady?: (klartext: {}, ...args: any[]) => void, ...args: any[]) {
+        if (!(klartext in this._klartexte)) {
+            this._klartexte[klartext] = {}
 
             let quer = xml.getElementsByTagName(klartext)
             for (let i = 0; i < quer.length; i++) {
@@ -48,14 +42,14 @@ class Klartext {
                     beschreib = beschreibListe[0].firstChild.textContent;
                 }
                 var luk = quer[i].getAttribute("luk")
-                _this._klartexte[klartext][id] = {
+                this._klartexte[klartext][id] = {
                     'kt': luk,
                     'beschreib': luk + ' - ' + beschreib,
                     'objektId': id,
                 }
             }
         }
-        if (whenReady != undefined) whenReady(_this._klartexte[klartext], ...args);
+        if (whenReady != undefined) whenReady(this._klartexte[klartext], ...args);
     }
 
     get(klartext: string, bezeichnung: string) {

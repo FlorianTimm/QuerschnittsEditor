@@ -11,6 +11,7 @@ import Daten from '../../Daten';
 import { Map } from 'ol';
 import Zeichen from '../../Objekte/Zeichen';
 import { SelectEvent } from 'ol/interaction/Select';
+import Klartext from '../../Objekte/Klartext';
 var CONFIG = require('../../config.json');
 
 /**
@@ -43,7 +44,7 @@ class AvVzAdd implements Tool {
         });
 
         this._select.on("select", this._selected.bind(this));
-        AvVzAdd.loadKlartexte(this._daten);
+        AvVzAdd.loadKlartexte();
     }
 
     /**
@@ -81,7 +82,7 @@ class AvVzAdd implements Tool {
         let stvoZNrNeu = document.createElement("select");
         stvoZNrNeu.id = "schilder";
         stvoZNrNeu.appendChild(document.createElement("option"));
-        for (let stvoznr of this._daten.klartexte.getAllSorted("Itvzstvoznr")) {
+        for (let stvoznr of Klartext.getInstanz().getAllSorted("Itvzstvoznr")) {
             let ele = document.createElement("option");
             ele.value = stvoznr['objektId'];
             ele.innerHTML = stvoznr['beschreib'];
@@ -148,8 +149,8 @@ class AvVzAdd implements Tool {
         let img = document.createElement("img");
         img.classList.add('schildBild');
         img.style.height = "50px";
-        img.src = "http://gv-srv-w00118:8080/schilder/" + this._daten.klartexte.get("Itvzstvoznr", eintrag.stvoznr)['kt'] + ".svg";
-        img.title = this._daten.klartexte.get("Itvzstvoznr", eintrag.stvoznr)['beschreib'] + (eintrag.vztext != null) ? ("\n" + eintrag.vztext) : ('');
+        img.src = "http://gv-srv-w00118:8080/schilder/" + Klartext.getInstanz().get("Itvzstvoznr", eintrag.stvoznr)['kt'] + ".svg";
+        img.title = Klartext.getInstanz().get("Itvzstvoznr", eintrag.stvoznr)['beschreib'] + (eintrag.vztext != null) ? ("\n" + eintrag.vztext) : ('');
         div.appendChild(img);
         let text = document.createElement("div");
         div.appendChild(text);
@@ -285,7 +286,7 @@ class AvVzAdd implements Tool {
                 width: "220px",
                 search_contains: true,
             }).change(function (event: any, data: { selected: any; }) {
-                img.src = "http://gv-srv-w00118:8080/schilder/" + this._daten.klartexte.get("Itvzstvoznr", data.selected)['kt'] + ".svg";
+                img.src = "http://gv-srv-w00118:8080/schilder/" + this._Klartext.getInstanz().get("Itvzstvoznr", data.selected)['kt'] + ".svg";
             }.bind(this));
 
             alle.first().nextAll().children('select').chosen({
@@ -331,18 +332,17 @@ class AvVzAdd implements Tool {
 
     /**
      * Lädt die benötigen Klartexte (sofern nciht schon vorhanden)
-     * @param {Daten} daten 
      */
-    static loadKlartexte(daten: Daten) {
-        daten.klartexte.load('Itvzstvoznr');
-        daten.klartexte.load('Itquelle');
-        daten.klartexte.load('Iterfart');
-        daten.klartexte.load('Itvzlagefb');
-        daten.klartexte.load('Itvzlesbarkeit');
-        daten.klartexte.load("Itvzart");
-        daten.klartexte.load("Itvzbeleucht");
-        daten.klartexte.load("Itvzgroesse");
-        daten.klartexte.load("Itbesstrbezug");
+    static loadKlartexte() {
+        Klartext.getInstanz().load('Itvzstvoznr');
+        Klartext.getInstanz().load('Itquelle');
+        Klartext.getInstanz().load('Iterfart');
+        Klartext.getInstanz().load('Itvzlagefb');
+        Klartext.getInstanz().load('Itvzlesbarkeit');
+        Klartext.getInstanz().load("Itvzart");
+        Klartext.getInstanz().load("Itvzbeleucht");
+        Klartext.getInstanz().load("Itvzgroesse");
+        Klartext.getInstanz().load("Itbesstrbezug");
     }
 
     /**
@@ -538,7 +538,7 @@ class AvVzAdd implements Tool {
                         else
                             PublicWFS.addSekInER(this._auswahl, "Otaufstvor", "Otvzeichlp", this._daten.ereignisraum_nr, this._erCallback, undefined, this, update, this._auswahl);
                         */
-                        PublicWFS.addSekInER(this._auswahl, "Otaufstvor", "Otvzeichlp", this._daten.ereignisraum_nr, this._erCallback, this._erCallback, this, update, this._auswahl);
+                        PublicWFS.addSekInER(this._auswahl, "Otaufstvor", "Otvzeichlp", this._daten.ereignisraum_nr, this._erCallback.bind(this), this._erCallback.bind(this), update, this._auswahl);
                         //this._closePopup(event);
                         $("#dialog-confirm").dialog("close");
                     }.bind(this),
@@ -555,13 +555,12 @@ class AvVzAdd implements Tool {
     /**
      * Wird aufgerufen, nachdem erfolgreich oder erfolglos versucht wurde, die Aufstellvorrichtung in den Ereignisraum zu laden
      * @param {*} __ 
-     * @param {AvVzAdd} _this 
      * @param {string} update Transaktion als Text
      * @param {*} _auswahl 
      */
-    _erCallback(__: any, _this: { _updateCallback: (xml: Document, ...args: any[]) => void; }, update: string, _auswahl: any) {
+    _erCallback(__: any, update: string, _auswahl: any) {
         console.log("Update: " + update)
-        PublicWFS.doTransaction(update, _this._updateCallback, undefined, _this, _auswahl);
+        PublicWFS.doTransaction(update, this._updateCallback.bind(this), undefined, _auswahl);
     }
 
 
@@ -571,11 +570,12 @@ class AvVzAdd implements Tool {
      * @param {AvVzAdd} _this 
      * @param {*} _auswahl 
      */
-    _updateCallback(__: any, _this: { _select: { getFeatures: () => { clear: () => void; }; }; }, _auswahl: { reloadZeichen: () => void; }) {
+    _updateCallback(__: any, _auswahl: { reloadZeichen: () => void; }) {
         PublicWFS.showMessage("erfolgreich", false);
         console.log("reload");
         _auswahl.reloadZeichen();
-        _this._select.getFeatures().clear();
+        Daten.getInstanz()
+        this._select.getFeatures().clear();
     }
 
     /**

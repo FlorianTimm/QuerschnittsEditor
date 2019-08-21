@@ -59,26 +59,29 @@ class Querschnitt implements Objekt {
         this.flaeche = new Feature({ geom: new Polygon([[[0, 0], [0, 0], [0, 0]]]), objekt: this });
         this._daten.v_quer.addFeature(this.flaeche)
 
-        this.trenn = new Feature({ geom: new MultiLineString([[0, 0], [0, 0], [0, 0]]), objekt: this });
+        this.trenn = new Feature({ geom: new MultiLineString([[[0, 0], [0, 0], [0, 0]]]), objekt: this });
         this._daten.v_trenn.addFeature(this.trenn);
     }
 
-    static loadER(daten: Daten, callback?: (xml: Document, ...args: any[]) => void, ...args: any[]) {
-        document.body.style.cursor = 'wait'
+    static loadER(callback?: (xml: Document, ...args: any[]) => void, ...args: any[]) {
+        document.body.style.cursor = 'wait';
+        let daten = Daten.getInstanz();
         PublicWFS.doQuery('Dotquer', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Querschnitt._loadER_Callback, undefined, daten, callback, ...args);
+            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Querschnitt._loadER_Callback, undefined, callback, ...args);
     }
 
-    static loadAbschnittER(daten: Daten, abschnitt: Abschnitt, callback: (...args: any[]) => void, ...args: any[]) {
-        document.body.style.cursor = 'wait'
+    static loadAbschnittER(abschnitt: Abschnitt, callback: (...args: any[]) => void, ...args: any[]) {
+        document.body.style.cursor = 'wait';
+        let daten = Daten.getInstanz();
         PublicWFS.doQuery('Dotquer', '<Filter>' +
             '<And><PropertyIsEqualTo><PropertyName>abschnittId</PropertyName>' +
             '<Literal>' + abschnitt.abschnittid + '</Literal></PropertyIsEqualTo><PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>', Querschnitt._loadER_Callback, undefined, daten, callback, ...args);
+            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>', Querschnitt._loadER_Callback, undefined, callback, ...args);
     }
 
-    static _loadER_Callback(xml: Document, daten: Daten, callback: (...args: any[]) => void, ...args: any[]) {
+    static _loadER_Callback(xml: Document, callback: (...args: any[]) => void, ...args: any[]) {
+        let daten = Daten.getInstanz();
         let dotquer = xml.getElementsByTagName("Dotquer");
         let liste: Querschnitt[] = [];
         for (let i = 0; i < dotquer.length; i++) {
@@ -203,20 +206,20 @@ class Querschnitt implements Objekt {
                 '    <ogc:Property>parent/@xlink:href</ogc:Property>\n' +
                 '    <ogc:Literal>' + this.fid + '</ogc:Literal>\n' +
                 '  </ogc:PropertyIsEqualTo>\n' +
-                '</ogc:And></ogc:Filter>', this._parseAufbaudaten, undefined, this);
+                '</ogc:And></ogc:Filter>', this._parseAufbaudaten.bind(this));
         }
     }
 
-    _parseAufbaudaten(xml: Document, _this: Querschnitt) {
+    _parseAufbaudaten(xml: Document) {
         let aufbaudaten = {};
         let aufbau = xml.getElementsByTagName('Otschicht');
 
         for (let i = 0; i < aufbau.length; i++) {
             let a = Aufbau.fromXML(aufbau[i]);
 
-            _this._aufbaudaten[a.schichtnr] = a;
+            this._aufbaudaten[a.schichtnr] = a;
         }
-        _this._aufbaudaten = aufbaudaten;
+        this._aufbaudaten = aufbaudaten;
     }
 
     createGeom() {

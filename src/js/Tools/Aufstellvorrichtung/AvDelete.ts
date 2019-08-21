@@ -90,6 +90,7 @@ class AvDelete implements Tool {
         (<VectorSource>_this._layer.getSource()).removeFeature(feature);
         _this._select.getFeatures().clear();
         PublicWFS.showMessage("Aufstellvorichtung gelöscht!")
+        this._delField.style.display = "none";
     }
 
     start() {

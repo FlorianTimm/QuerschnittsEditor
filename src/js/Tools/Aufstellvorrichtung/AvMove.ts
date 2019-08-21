@@ -8,11 +8,12 @@ import Feature from 'ol/Feature';
 import {never as neverCondition} from 'ol/events/condition';
 import { Map } from 'ol';
 import Daten from '../../Daten';
-import AvInfoTool from './AvInfoTool';
+import AvInfoTool from '../InfoTool';
 import Tool from '../Tool';
 import Abschnitt from '../../Objekte/Abschnitt';
 import Aufstellvorrichtung from '../../Objekte/Aufstellvorrichtung';
 import { ModifyInteraction } from '../../openLayers/Interaction';
+import { Coordinate } from 'ol/coordinate';
 
 /**
  * Funktion zum Verschieben von Aufstellvorrichtungen
@@ -34,9 +35,9 @@ class AvMove implements Tool {
     _feat_station_line: Feature;
     _modify: ModifyInteraction;
 
-    constructor(map, daten, avInfoTool) {
+    constructor(map, avInfoTool) {
         this._map = map;
-        this._daten = daten;
+        this._daten = Daten.getInstanz();
         this._avInfoTool = avInfoTool;
 
         this._select = new SelectInteraction({
@@ -137,7 +138,7 @@ class AvMove implements Tool {
         (feat as Aufstellvorrichtung).updateStation(station, abstand);
     }
 
-    _get_station(coordinates) {
+    _get_station(coordinates: Coordinate) {
         let achse = null;
         if (this._select.getFeatures().getLength() > 0) {
             achse = (this._select.getFeatures().item(0) as Aufstellvorrichtung).abschnitt;

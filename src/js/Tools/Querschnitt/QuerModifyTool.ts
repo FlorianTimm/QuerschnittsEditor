@@ -7,6 +7,7 @@ import Daten from '../../Daten';
 import { Map } from 'ol';
 import Tool from '../Tool';
 import { SelectInteraction, ModifyInteraction } from '../../openLayers/Interaction'
+import { ModifyEvent } from 'ol/interaction/Modify';
 
 /**
  * Funktion zum Verändern von Querschnittsflächen
@@ -266,7 +267,7 @@ class QuerModifyTool implements Tool {
         }
     }
 
-    
+
     updateMultiOber() {
         let querschnitte = this.select_fl.getFeatures().getArray();
         let artober = (document.getElementById('qsmm_ober') as HTMLInputElement).value;

@@ -43,14 +43,14 @@ class AvAdd2ER implements Tool {
         let abschnitt = this.select.getFeatures().getArray()[0] as Abschnitt;
         if ("Otaufstvor" in abschnitt.inER && abschnitt.inER["Otaufstvor"]) return;
         document.body.style.cursor = 'wait'
-        PublicWFS.addInER(abschnitt, "Otaufstvor", this.daten.ereignisraum_nr, AvAdd2ER._onSelect_Callback, undefined, this, abschnitt);
+        PublicWFS.addInER(abschnitt, "Otaufstvor", this.daten.ereignisraum_nr, this._onSelect_Callback.bind(this), undefined, abschnitt);
     }
 
-    static _onSelect_Callback(xml, _this, abschnitt) {
+    _onSelect_Callback(xml, abschnitt: Abschnitt) {
         abschnitt.inER["Otaufstvor"] = true;
-        Aufstellvorrichtung.loadAbschnittER(_this.daten, abschnitt, PublicWFS.showMessage, "Erfolgreich in ER kopiert");
-        _this.select.getFeatures().clear();
-        _this.daten.l_achse.changed();
+        Aufstellvorrichtung.loadAbschnittER(this.daten, abschnitt, PublicWFS.showMessage, "Erfolgreich in ER kopiert");
+        this.select.getFeatures().clear();
+        this.daten.l_achse.changed();
     }
 
     start() {

@@ -51,9 +51,9 @@ class QuerAdd2ER implements Tool {
 
     _onSelect_Callback(xml: Document, abschnitt: Abschnitt) {
         abschnitt.inER["Querschnitt"] = true;
-        Querschnittsdaten.loadAbschnittER(this.daten, abschnitt, PublicWFS.showMessage, "Erfolgreich in ER kopiert");
+        Querschnittsdaten.loadAbschnittER(abschnitt, PublicWFS.showMessage, "Erfolgreich in ER kopiert");
         this.select.getFeatures().clear();
-        this.daten.l_achse.changed();
+        Daten.getInstanz().l_achse.changed();
     }
 
     start() {

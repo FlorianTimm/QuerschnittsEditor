@@ -196,6 +196,7 @@ class AvAdd implements Tool {
             '<rabstbaVst>' + _this.abstand + '</rabstbaVst>\n' +
             '<vabstVst>' + _this.abstand + '</vabstVst>\n' +
             '<vabstBst>' + _this.abstand + '</vabstBst>\n' +
+            '<objektnr>' + document.forms.namedItem("avadd").avadd_extid.value + '</objektnr>\n' +
             '<bemerkung>mit QuerschnittsEditor erfasst</bemerkung>\n' +
             '<detailgrad xlink:href="' + CONFIG.DETAIL_HOCH + '" typeName="Itobjdetailgrad" />\n' +
             '<erfart xlink:href="' + CONFIG.ERFASSUNG + '" typeName="Iterfart" />\n' +

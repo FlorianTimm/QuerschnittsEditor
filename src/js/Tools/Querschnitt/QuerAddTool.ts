@@ -1,14 +1,11 @@
 import { Style, Stroke } from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
-import PublicWFS from '../../PublicWFS';
 import Querschnitt from '../../Objekte/Querschnittsdaten';
 import Map from 'ol/Map';
 import Daten from '../../Daten';
 import QuerInfoTool from './QuerInfoTool';
 import Tool from '../Tool';
 import { SelectEvent } from 'ol/interaction/Select';
-import { Feature } from 'ol';
-import QuerStation from 'src/js/Objekte/QuerStation';
 
 /**
  * Funktion zum Hinzufügen von Querschnittsflächen

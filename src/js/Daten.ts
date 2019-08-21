@@ -18,18 +18,20 @@ import { isNullOrUndefined } from 'util';
 import { Map, Feature } from 'ol';
 import Event from 'ol/events/Event';
 import { VectorLayer } from './openLayers/Layer';
+import { LineString } from 'ol/geom';
+import StrassenAusPunkt from './Objekte/StrassenAusPunkt';
 
 var CONFIG = require('./config.json');
 
 class Daten {
-    static daten = null;
+    private static daten = null;
 
     map: Map;
     modus: string = "Otaufstvor"
     ereignisraum: string;
     ereignisraum_nr: string;
     querschnitteFID: {};
-    klartexte: Klartext;
+    private klartexte: Klartext;
     abschnitte: {};
     l_aufstell: VectorLayer;
     v_achse: VectorSource;
@@ -40,6 +42,7 @@ class Daten {
     l_trenn: VectorLayer;
     v_quer: VectorSource;
     l_quer: VectorLayer;
+    l_straus: VectorLayer;
 
 
     constructor(map: Map, ereignisraum: string, ereignisraum_nr: string) {
@@ -50,8 +53,8 @@ class Daten {
         this.querschnitteFID = {};
 
         this.klartexte = Klartext.getInstanz();
-        this.klartexte.load("Itquerart", this._showArt, this);
-        this.klartexte.load("Itquerober", this._showArtOber, this);
+        this.klartexte.load("Itquerart", this._showArt.bind(this));
+        this.klartexte.load("Itquerober", this._showArtOber.bind(this));
 
         this._createLayerFlaechen();
         this._createLayerTrennLinien();
@@ -59,18 +62,20 @@ class Daten {
         this._createLayerAchsen();
 
         this.abschnitte = {};
-        Querschnitt.loadER(this);
 
+        Querschnitt.loadER();
         this.l_aufstell = Aufstellvorrichtung.createLayer(this.map);
+        this.l_straus = StrassenAusPunkt.createLayer(this.map);
         Aufstellvorrichtung.loadER(this);
+        StrassenAusPunkt.loadER();
     }
 
     static getInstanz() {
         return Daten.daten;
     }
 
-    private _showArt(art, _this: Daten) {
-        let arten = _this.klartexte.getAllSorted("Itquerart");
+    private _showArt(art) {
+        let arten = this.klartexte.getAllSorted("Itquerart");
         for (let a of arten) {
             let option = document.createElement('option');
             let t = document.createTextNode(a.beschreib);
@@ -83,8 +88,8 @@ class Daten {
         }
     }
 
-    private _showArtOber(artober, _this: Daten) {
-        let arten = _this.klartexte.getAllSorted("Itquerober");
+    private _showArtOber(artober) {
+        let arten = this.klartexte.getAllSorted("Itquerober");
         for (let a of arten) {
             let option = document.createElement('option');
             let t = document.createTextNode(a.beschreib);
@@ -99,7 +104,7 @@ class Daten {
 
     getAbschnitt(absId: string): Abschnitt {
         if (!(absId in this.abschnitte)) {
-            this.abschnitte[absId] = Abschnitt.load(this, absId);
+            this.abschnitte[absId] = Abschnitt.load(absId);
             this.v_achse.addFeature(this.abschnitte[absId]);
         }
         //console.log(this.abschnitte[absId]);
@@ -110,7 +115,7 @@ class Daten {
         document.body.style.cursor = 'wait'
         let extent = this.map.getView().calculateExtent();
         if ("ABSCHNITT_WFS_URL" in CONFIG) {
-            AbschnittWFS.getByExtent(extent, this._loadExtent_Callback, undefined, this);
+            AbschnittWFS.getByExtent(extent, this._loadExtent_Callback.bind(this));
         } else {
             let filter = '<Filter>\n' +
                 '	<BBOX>\n' +
@@ -121,17 +126,17 @@ class Daten {
                 '	</BBOX>\n' +
                 '</Filter>\n' +
                 '<maxFeatures>100</maxFeatures>\n';
-            PublicWFS.doQuery('VI_STRASSENNETZ', filter, this._loadExtent_Callback, undefined, this);
+            PublicWFS.doQuery('VI_STRASSENNETZ', filter, this._loadExtent_Callback.bind(this));
         }
     }
 
-    private _loadExtent_Callback(xml: XMLDocument, _this: Daten) {
+    private _loadExtent_Callback(xml: XMLDocument) {
         let netz = xml.getElementsByTagName("VI_STRASSENNETZ");
         for (let i = 0; i < netz.length; i++) {
-            let abschnitt = Abschnitt.fromXML(_this, netz[i]);
-            if (!(abschnitt.abschnittid in _this.abschnitte)) {
-                _this.abschnitte[abschnitt.abschnittid] = abschnitt;
-                _this.v_achse.addFeature(_this.abschnitte[abschnitt.abschnittid]);
+            let abschnitt = Abschnitt.fromXML(netz[i]);
+            if (!(abschnitt.abschnittid in this.abschnitte)) {
+                this.abschnitte[abschnitt.abschnittid] = abschnitt;
+                this.v_achse.addFeature(this.abschnitte[abschnitt.abschnittid]);
             }
         }
         document.body.style.cursor = '';
@@ -141,11 +146,11 @@ class Daten {
         this.v_achse = new VectorSource({
             features: []
         });
-        let achsen_style = function (feature, resolution) {
+        let achsen_style = function (feature: Abschnitt, resolution: number) {
             let styles = [];
             // Linienfarbe - rot, wenn in ER
             let color = '#222';
-            if (feature.daten.modus in feature.inER) color = '#d00';
+            if (Daten.getInstanz().modus in feature.inER) color = '#d00';
 
             // Linie + Beschriftung
             styles.push(new Style({
@@ -169,7 +174,7 @@ class Daten {
             // Pfeile/Start/Endknoten ab bestimmten Maßstab
             if (resolution < 0.15) {
                 // Pfeile
-                var geometry = feature.getGeometry();
+                var geometry = feature.getGeometry() as LineString;
                 let first = true;
                 geometry.forEachSegment(function (start, end) {
                     if (first) {
@@ -369,7 +374,7 @@ class Daten {
                 console.log(found1)
                 let vnk = found1[1];
                 let nnk = found1[2];
-                AbschnittWFS.getByVNKNNK(vnk, nnk, this._loadSearch_Callback, undefined, this);
+                AbschnittWFS.getByVNKNNK(vnk, nnk, this._loadSearch_Callback.bind(this));
                 return;
             }
 
@@ -380,10 +385,10 @@ class Daten {
                 let klasse = found2[1];
                 let nummer = found2[2];
                 let buchstabe = (found2.length > 2) ? found2[3] : '';
-                AbschnittWFS.getByWegenummer(klasse, nummer, buchstabe, this._loadSearch_Callback, undefined, this);
+                AbschnittWFS.getByWegenummer(klasse, nummer, buchstabe, this._loadSearch_Callback.bind(this));
                 return;
             }
-            AbschnittWFS.getByStrName(wert, this._loadSearch_Callback, undefined, this);
+            AbschnittWFS.getByStrName(wert, this._loadSearch_Callback.bind(this));
         } else {
             PublicWFS.showMessage("Straßennamen-Suche ist nur über den AbschnittWFS möglich");
             /*let filter = '<Filter><Like><PropertyName><PropertyName><Literal><Literal></Like></Filter>'
@@ -391,21 +396,21 @@ class Daten {
         }
     }
 
-    private _loadSearch_Callback(xml, _this) {
+    private _loadSearch_Callback(xml) {
         let netz = xml.getElementsByTagName("VI_STRASSENNETZ");
         let geladen = [];
         for (let abschnittXML of netz) {
             //console.log(abschnittXML)
-            let abschnitt = Abschnitt.fromXML(_this, abschnittXML);
+            let abschnitt = Abschnitt.fromXML(abschnittXML);
             geladen.push(abschnitt);
-            if (!(abschnitt.abschnittid in _this.abschnitte)) {
-                _this.abschnitte[abschnitt.abschnittid] = abschnitt;
-                _this.v_achse.addFeature(_this.abschnitte[abschnitt.abschnittid]);
+            if (!(abschnitt.abschnittid in this.abschnitte)) {
+                this.abschnitte[abschnitt.abschnittid] = abschnitt;
+                this.v_achse.addFeature(this.abschnitte[abschnitt.abschnittid]);
             }
         }
         if (geladen.length > 0) {
             let extent = Daten.calcAbschnitteExtent(geladen);
-            _this.map.getView().fit(extent, { padding: [20, 240, 20, 20] })
+            this.map.getView().fit(extent, { padding: [20, 240, 20, 20] })
         } else {
             PublicWFS.showMessage("Kein Abschnitt gefunden!", true);
         }
