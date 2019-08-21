@@ -10,7 +10,7 @@ import { Point } from 'ol/geom';
 import Feature from 'ol/Feature';
 import VectorSource from 'ol/source/Vector';
 import { Vector as VectorLayer } from 'ol/layer';
-import { Style, Stroke, Fill, Circle, Text } from 'ol/style';
+import { Style, Stroke, Fill, Circle, Text, RegularShape } from 'ol/style';
 import Zeichen from './Zeichen';
 import "../import_jquery.js";
 import 'chosen-js';
@@ -26,6 +26,7 @@ var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number
 
 
 class Aufstellvorrichtung extends Feature implements InfoToolSelectable, Objekt {
+    stand: string;
     abschnittOderAst: string;
     kherk: string;
     baujahrGew: string;
@@ -143,6 +144,8 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable, Objekt 
         }
 
         r += "<tr><td>Art</td><td>" + kt.get('Itaufstvorart', this.art).beschreib + "</td></tr>";
+        if (this.objektnr != null && this.objektnr != "")
+            r += "<tr><td>ext. Nr.</td><td>" + this.objektnr + "</td></tr>";
         r += "<tr><td>Lage</td><td>" + kt.get('Itallglage', this.rlageVst).beschreib + "</td></tr>";
         r += "<tr><td>Schilder</td><td>" + this.hasSekObj + "</td></tr>";
         r += "<tr><td>Quelle</td><td>" + ((this.quelle != null) ? (kt.get("Itquelle", this.quelle).beschreib) : '') + "</td></tr>";
@@ -251,29 +254,52 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable, Objekt 
             opacity: 0.7,
         });
         layer.setStyle(function (feature: Aufstellvorrichtung, zoom) {
-            return new Style({
-                image: new Circle({
-                    radius: 3,
-                    fill: new Fill({ color: 'black' }),
-                    stroke: new Stroke({
-                        color: (feature.hasSekObj > 0) ? ('rgba(250,120,0,0.8)') : ('rgba(255,0,0,0.8)'),
-                        width: 3
-                    })
+            let color1 = (feature.hasSekObj > 0 || (feature._zeichen != null && feature._zeichen.length > 0)) ? ('rgba(250,120,0,0.8)') : ('rgba(255,0,0,0.8)');
+            let color2 = 'black';
+
+            let text = new Text({
+                font: '13px Calibri,sans-serif',
+                fill: new Fill({ color: '#000' }),
+                stroke: new Stroke({
+                    color: '#fff', width: 2
                 }),
-                text: new Text({
-                    font: '13px Calibri,sans-serif',
-                    fill: new Fill({ color: '#000' }),
-                    stroke: new Stroke({
-                        color: '#fff', width: 2
-                    }),
-                    offsetX: 9,
-                    offsetY: -8,
-                    textAlign: 'left',
-                    // get the text from the feature - `this` is ol.Feature
-                    // and show only under certain resolution
-                    text: ((zoom < 0.2) ? ("" + feature.vst) : '')
-                }),
+                offsetX: 9,
+                offsetY: 8,
+                textAlign: 'left',
+                // get the text from the feature - `this` is ol.Feature
+                // and show only under certain resolution
+                text: ((zoom < 0.2) ? ("" + feature.vst) : '')
             });
+            
+            let datum = new Date(feature.stand);
+            //console.log(feature.stand);
+            if ((Date.now() - datum.getTime()) > 3600000 * 24) {
+                return new Style({
+                    image: new Circle({
+                        radius: 3,
+                        fill: new Fill({ color: color2 }),
+                        stroke: new Stroke({
+                            color: color1,
+                            width: 3
+                        })
+                    }),
+                    text: text
+                });
+            } else {
+                return new Style({
+                    image: new RegularShape({
+                        points: 4,
+                        radius: 5,
+                        angle: Math.PI / 4,
+                        fill: new Fill({ color: color1 }),
+                        stroke: new Stroke({
+                            color: color2,
+                            width: 2
+                        })
+                    }),
+                    text: text
+                });
+            }
         });
         map.addLayer(layer);
         return layer;

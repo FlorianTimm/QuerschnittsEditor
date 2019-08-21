@@ -22,4 +22,5 @@
 	bemerkung: string;
 	bearbeiter: string;
 	behoerde: string;
+	stand: string;
 }

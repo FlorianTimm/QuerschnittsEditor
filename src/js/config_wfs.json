@@ -365,6 +365,9 @@
         },
         "behoerde": {
             "art": 0
+        },
+        "stand": {
+            "art": 0
         }
     },
     "ZEICHEN": {

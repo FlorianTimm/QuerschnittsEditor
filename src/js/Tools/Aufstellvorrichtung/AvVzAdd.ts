@@ -538,7 +538,7 @@ class AvVzAdd implements Tool {
                         else
                             PublicWFS.addSekInER(this._auswahl, "Otaufstvor", "Otvzeichlp", this._daten.ereignisraum_nr, this._erCallback, undefined, this, update, this._auswahl);
                         */
-                        PublicWFS.addSekInER(this._auswahl, "Otaufstvor", "Otvzeichlp", this._daten.ereignisraum_nr, this._erCallback, this._erCallback, this, update, this._auswahl);
+                        PublicWFS.addSekInER(this._auswahl, "Otaufstvor", "Otvzeichlp", this._daten.ereignisraum_nr, this._erCallback.bind(this), this._erCallback.bind(this), update, this._auswahl);
                         //this._closePopup(event);
                         $("#dialog-confirm").dialog("close");
                     }.bind(this),
@@ -555,13 +555,12 @@ class AvVzAdd implements Tool {
     /**
      * Wird aufgerufen, nachdem erfolgreich oder erfolglos versucht wurde, die Aufstellvorrichtung in den Ereignisraum zu laden
      * @param {*} __ 
-     * @param {AvVzAdd} _this 
      * @param {string} update Transaktion als Text
      * @param {*} _auswahl 
      */
-    _erCallback(__: any, _this: { _updateCallback: (xml: Document, ...args: any[]) => void; }, update: string, _auswahl: any) {
+    _erCallback(__: any, update: string, _auswahl: any) {
         console.log("Update: " + update)
-        PublicWFS.doTransaction(update, _this._updateCallback, undefined, _this, _auswahl);
+        PublicWFS.doTransaction(update, this._updateCallback.bind(this), undefined, _auswahl);
     }
 
 
@@ -571,11 +570,12 @@ class AvVzAdd implements Tool {
      * @param {AvVzAdd} _this 
      * @param {*} _auswahl 
      */
-    _updateCallback(__: any, _this: { _select: { getFeatures: () => { clear: () => void; }; }; }, _auswahl: { reloadZeichen: () => void; }) {
+    _updateCallback(__: any, _auswahl: { reloadZeichen: () => void; }) {
         PublicWFS.showMessage("erfolgreich", false);
         console.log("reload");
         _auswahl.reloadZeichen();
-        _this._select.getFeatures().clear();
+        Daten.getInstanz()
+        this._select.getFeatures().clear();
     }
 
     /**
