@@ -1,16 +1,12 @@
 /**
  * Aufstellvorrichtung
  * @author Florian Timm, LGV HH 
- * @version 2019.06.06
+ * @version 2019.08.22
  * @copyright MIT
  */
 
 import PublicWFS from '../PublicWFS';
 import { Point } from 'ol/geom';
-import Feature from 'ol/Feature';
-import VectorSource from 'ol/source/Vector';
-import { Vector as VectorLayer } from 'ol/layer';
-import { Style, Stroke, Fill, Circle, Text, RegularShape } from 'ol/style';
 import Zeichen from './Zeichen';
 import "../import_jquery.js";
 import 'chosen-js';
@@ -19,108 +15,45 @@ import Daten from "../Daten";
 import Klartext from './Klartext';
 import Abschnitt from './Abschnitt';
 import { InfoToolSelectable } from '../Tools/InfoTool';
-import { Map } from 'ol';
 import Objekt from './Objekt';
+import PunktObjekt from './PunktObjekt';
 
-var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
-
-
-class Aufstellvorrichtung extends Feature implements InfoToolSelectable, Objekt {
-    stand: string;
-    abschnittOderAst: string;
-    kherk: string;
-    baujahrGew: string;
-    abnahmeGew: string;
-    dauerGew: string;
-    ablaufGew: string;
-    objektnr: string;
-    erfart: string;
-    ADatum: string;
-    bemerkung: string;
-    bearbeiter: string;
-    behoerde: string;
+class Aufstellvorrichtung extends PunktObjekt implements InfoToolSelectable, Objekt {
     private _daten: Daten;
     private _zeichen: Zeichen[] = null;
-    fid: string = null;
-    inER: {} = {};
-    abschnitt: Abschnitt;
-    vst: number;
-    bst: number;
+
     labstbaVst: number;
     rabstbaVst: number;
     hasSekObj: number;
-    quelle: string;
     vabstVst: number;
     vabstBst: number;
-    objektId: string;
-    projekt: string;
     art: string;
     rlageVst: string;
-    abschnittId: string;
 
     constructor() {
-        super({ geom: null });
+        super(function (feature: Aufstellvorrichtung) {
+            if (feature.hasSekObj > 0 || (feature._zeichen != null && feature._zeichen.length > 0)) {
+                return 'rgba(250,120,0,0.8)';
+            } else {
+                return 'rgba(255,0,0,0.8)';
+            }
+        }, function (feature: Aufstellvorrichtung) {
+            return 'black';
+        });
         this._daten = Daten.getInstanz();
         Aufstellvorrichtung.loadKlartexte();
     }
 
     static loadKlartexte() {
-        Klartext.getInstanz().load('Itaufstvorart', Aufstellvorrichtung._ktArtLoaded);
-        Klartext.getInstanz().load('Itallglage', Aufstellvorrichtung._ktLageLoaded);
-        Klartext.getInstanz().load('Itquelle', Aufstellvorrichtung._ktQuelleLoaded);
-    }
-
-    static _ktArtLoaded() {
-        let arten = Klartext.getInstanz().getAllSorted('Itaufstvorart');
-        for (let a of arten) {
-            let option = document.createElement('option');
-            let t = document.createTextNode(a.beschreib);
-            option.appendChild(t);
-            option.setAttribute('value', a.objektId);
-            document.forms.namedItem("avadd").avadd_art.appendChild(option);
-        }
-        $("select#avadd_art").chosen({ width: "95%", search_contains: true });
-    }
-
-    private static _ktLageLoaded() {
-        let arten = Klartext.getInstanz().getAllSorted('Itallglage');
-        for (let a of arten) {
-            let option = document.createElement('option');
-            let t = document.createTextNode(a.beschreib);
-            option.appendChild(t);
-            option.setAttribute('value', a.objektId);
-            document.forms.namedItem("avadd").avadd_lage.appendChild(option);
-        }
-        $("select#avadd_lage").chosen({ width: "95%", search_contains: true });
-    }
-
-    private static _ktQuelleLoaded() {
-        let arten = Klartext.getInstanz().getAllSorted('Itquelle');
-        for (let a of arten) {
-            let option = document.createElement('option');
-            let t = document.createTextNode(a.beschreib);
-            option.appendChild(t);
-            option.setAttribute('value', a.objektId);
-            document.forms.namedItem("avadd").avadd_quelle.appendChild(option);
-        }
-        $("select#avadd_quelle").chosen({ width: "95%", search_contains: true });
+        Klartext.getInstanz().load('Itaufstvorart', Aufstellvorrichtung.klartextLoaded, 'Itaufstvorart', 'avadd_art');
+        Klartext.getInstanz().load('Itallglage', Aufstellvorrichtung.klartextLoaded, 'Itallglage', 'avadd_lage');
+        Klartext.getInstanz().load('Itquelle', Aufstellvorrichtung.klartextLoaded, 'Itquelle', 'avadd_quelle');
     }
 
     getHTMLInfo(ziel: HTMLElement) {
         let kt = Klartext.getInstanz();
         let r = "<table>";
-        /*for (var tag in CONFIG_WFS.AUFSTELL) {
-            if (this[tag] == null || this[tag] == undefined) continue;
 
-            r += "<tr><td>" + tag + "</td><td>";
-            if (tag == 'art') {
-                r += art.get(this[tag]).beschreib
-            } else {
-                r += this[tag];
-            }
-            r += "</td></tr>";
-        }
-        */
         r += "<tr><td>VNK</td><td>" + this.abschnitt.vnk + "</td></tr>";
         r += "<tr><td>NNK</td><td>" + this.abschnitt.nnk + "</td></tr>";
         r += "<tr><td>VST</td><td>" + this.vst + "</td></tr>";
@@ -144,8 +77,9 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable, Objekt 
         }
 
         r += "<tr><td>Art</td><td>" + kt.get('Itaufstvorart', this.art).beschreib + "</td></tr>";
-        if (this.objektnr != null && this.objektnr != "")
+        if (this.objektnr != null && this.objektnr != "") {
             r += "<tr><td>ext. Nr.</td><td>" + this.objektnr + "</td></tr>";
+        }
         r += "<tr><td>Lage</td><td>" + kt.get('Itallglage', this.rlageVst).beschreib + "</td></tr>";
         r += "<tr><td>Schilder</td><td>" + this.hasSekObj + "</td></tr>";
         r += "<tr><td>Quelle</td><td>" + ((this.quelle != null) ? (kt.get("Itquelle", this.quelle).beschreib) : '') + "</td></tr>";
@@ -171,7 +105,6 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable, Objekt 
         }
         ziel.appendChild(div);
     }
-
 
     /**
      * 
@@ -222,20 +155,7 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable, Objekt 
     static fromXML(xml: Element, daten: Daten) {
         //console.log(daten);
         let r = new Aufstellvorrichtung();
-        r.fid = xml.getAttribute('fid');
-        for (var tag in CONFIG_WFS["AUFSTELL"]) {
-            if (xml.getElementsByTagName(tag).length <= 0) continue;
-            if (CONFIG_WFS["AUFSTELL"][tag].art == 0) {
-                // Kein Klartext
-                r[tag] = xml.getElementsByTagName(tag)[0].firstChild.textContent;
-            } else if (CONFIG_WFS.AUFSTELL[tag].art == 1) {
-                // Kein Klartext
-                r[tag] = Number(xml.getElementsByTagName(tag)[0].firstChild.textContent);
-            } else if (CONFIG_WFS.AUFSTELL[tag].art == 2) {
-                // Klartext, xlink wird gespeichert
-                r[tag] = xml.getElementsByTagName(tag)[0].getAttribute('xlink:href');
-            }
-        }
+        r.setDataFromXML("AUFSTELL", xml);
 
         let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(',');
         r.setGeometry(new Point([parseFloat(koords[0]), parseFloat(koords[1])]));
@@ -243,70 +163,6 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable, Objekt 
         r.abschnitt.inER['Otaufstvor'] = true;
         daten.l_achse.changed();
         return r;
-    }
-
-    static createLayer(map: Map) {
-        let source = new VectorSource({
-            features: []
-        });
-        let layer = new VectorLayer({
-            source: source,
-            opacity: 0.7,
-        });
-        layer.setStyle(function (feature: Aufstellvorrichtung, zoom) {
-            let color1 = (feature.hasSekObj > 0 || (feature._zeichen != null && feature._zeichen.length > 0)) ? ('rgba(250,120,0,0.8)') : ('rgba(255,0,0,0.8)');
-            let color2 = 'black';
-
-            let text = new Text({
-                font: '13px Calibri,sans-serif',
-                fill: new Fill({ color: '#000' }),
-                stroke: new Stroke({
-                    color: '#fff', width: 2
-                }),
-                offsetX: 9,
-                offsetY: 8,
-                textAlign: 'left',
-                // get the text from the feature - `this` is ol.Feature
-                // and show only under certain resolution
-                text: ((zoom < 0.2) ? ("" + feature.vst) : '')
-            });
-            
-            let datum = new Date(feature.stand);
-            //console.log(feature.stand);
-            if ((Date.now() - datum.getTime()) > 3600000 * 24) {
-                return new Style({
-                    image: new Circle({
-                        radius: 3,
-                        fill: new Fill({ color: color2 }),
-                        stroke: new Stroke({
-                            color: color1,
-                            width: 3
-                        })
-                    }),
-                    text: text
-                });
-            } else {
-                return new Style({
-                    image: new RegularShape({
-                        points: 4,
-                        radius: 5,
-                        angle: Math.PI / 4,
-                        fill: new Fill({ color: color1 }),
-                        stroke: new Stroke({
-                            color: color2,
-                            width: 2
-                        })
-                    }),
-                    text: text
-                });
-            }
-        });
-        map.addLayer(layer);
-        return layer;
-    }
-
-    private _getText() {
-        return "test";
     }
 
     updateStation(station: number, abstand: number) {

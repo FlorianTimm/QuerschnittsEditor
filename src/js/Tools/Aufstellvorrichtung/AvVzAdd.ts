@@ -507,7 +507,7 @@ class AvVzAdd implements Tool {
                 '<groesse xlink:href="#' + zeichen.groesse + '" typeName="Itvzgroesse" />\n' +
                 '<strbezug xlink:href="#' + zeichen.strbezug + '" typeName="Itbesstrbezug" />\n' +
                 '<aufstelldat>' + zeichen.aufstelldat + '</aufstelldat>\n' +
-                '<objektnr>' + zeichen.objektnr + '</objektnr>\n' +
+                ((zeichen.objektnr != null && zeichen.objektnr != '') ? ('<objektnr>' + zeichen.objektnr + '</objektnr>\n') : '') +
                 '<erfart xlink:href="#' + zeichen.erfart + '" typeName="Iterfart" />\n' +
                 '<quelle xlink:href="#' + zeichen.quelle + '" typeName="Itquelle" />\n' +
                 '<ADatum>' + new Date().toISOString().slice(0, 10) + '</ADatum>\n' +

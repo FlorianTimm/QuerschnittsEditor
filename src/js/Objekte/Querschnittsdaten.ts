@@ -9,7 +9,14 @@ import Aufbau from '../Objekte/Aufbaudaten';
 import Abschnitt from '../Objekte/Abschnitt';
 import Objekt from './Objekt';
 
-class Querschnitt implements Objekt {
+/**
+* @author Florian Timm, LGV HH 
+* @version 2019.08.22
+* @copyright MIT
+*/
+
+
+class Querschnitt extends Objekt {
     private _daten: Daten;
     private _aufbaudaten: { [schicht: number]: Aufbau } = null;
 
@@ -17,12 +24,7 @@ class Querschnitt implements Objekt {
     trenn: Feature;
 
     // SIB-Attribute
-    abschnittOderAst: string = null;
     station: QuerStation = null;
-    vst: number = null;
-    bst: number = null;
-    fid: string = null;
-    abschnittId: string = null;
     art: string = null;
     artober: string = null;
     breite: number = null;
@@ -35,24 +37,11 @@ class Querschnitt implements Objekt {
     XVstR: number = null;
     XBstL: number = null;
     XBstR: number = null;
-    kherk: string = null;
-    baujahrGew: any = null;
-    abnahmeGew: any = null;
-    dauerGew: any = null;
-    ablaufGew: any = null;
-    objektId: any = null;
-    objektnr: any = null;
-    erfart: string = null;
-    quelle: string = null;
-    ADatum: string = null;
-    bemerkung: string = null;
-    bearbeiter: string = null;
-    behoerde: any = null;
     streifen: string = null;
-    projekt: string = null;
     streifennr: number = null;
 
     constructor() {
+        super();
         this._daten = Daten.getInstanz();
         //console.log(daten);
 
@@ -149,27 +138,8 @@ class Querschnitt implements Objekt {
     }
 
     static fromXML(xml: Element) {
-        let daten = Daten.getInstanz();
         let r = new Querschnitt();
-
-        r.fid = xml.getAttribute('fid');
-        daten.querschnitteFID[r.fid] = r;
-
-        for (let tag in CONFIG_WFS.QUERSCHNITT) {
-            //console.log(tag);
-            if (xml.getElementsByTagName(tag).length <= 0) continue;
-            if (CONFIG_WFS.QUERSCHNITT[tag].art == 0) {
-                // Kein Klartext
-                r[tag] = xml.getElementsByTagName(tag)[0].firstChild.textContent;
-            } else if (CONFIG_WFS.QUERSCHNITT[tag].art == 1) {
-                // Kein Klartext
-                r[tag] = Number(xml.getElementsByTagName(tag)[0].firstChild.textContent);
-            } else if (CONFIG_WFS.QUERSCHNITT[tag].art == 2) {
-                // Klartext, xlink wird gespeichert
-                r[tag] = xml.getElementsByTagName(tag)[0].getAttribute('xlink:href');
-            }
-        }
-        //console.log(r)
+        r.setDataFromXML('QUERSCHNITT', xml)
 
         let abschnitt: Abschnitt = r._daten.getAbschnitt(r.abschnittId);
         abschnitt.inER['Querschnitt'] = true;
@@ -197,7 +167,7 @@ class Querschnitt implements Objekt {
 
     getAufbauDaten() {
         if (this._aufbaudaten == null) {
-            let xml = PublicWFS.doQuery('Otschicht', '<ogc:Filter><ogc:And>\n' +
+            PublicWFS.doQuery('Otschicht', '<ogc:Filter><ogc:And>\n' +
                 '<ogc:PropertyIsEqualTo>\n' +
                 '    <ogc:Property>projekt/@xlink:href</ogc:Property>\n' +
                 '    <ogc:Literal>' + this._daten.ereignisraum + '</ogc:Literal>\n' +

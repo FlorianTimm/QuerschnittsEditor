@@ -7,10 +7,6 @@
 
 import PublicWFS from '../PublicWFS';
 import { Point } from 'ol/geom';
-import Feature from 'ol/Feature';
-import VectorSource from 'ol/source/Vector';
-import { Vector as VectorLayer } from 'ol/layer';
-import { Style, Stroke, Fill, Circle, Text } from 'ol/style';
 import "../import_jquery.js";
 import 'chosen-js';
 import 'chosen-js/chosen.css';
@@ -18,109 +14,36 @@ import Daten from "../Daten";
 import Klartext from './Klartext';
 import Abschnitt from './Abschnitt';
 import { InfoToolSelectable } from '../Tools/InfoTool';
-import { Map } from 'ol';
-import Objekt from './Objekt';
+import PunktObjekt from './PunktObjekt';
 
 var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
 
 
-export default class StrassenAusPunkt extends Feature implements InfoToolSelectable, Objekt {
-    abschnittOderAst: string;
-    kherk: string;
-    baujahrGew: string;
-    abnahmeGew: string;
-    dauerGew: string;
-    ablaufGew: string;
-    objektnr: string;
-    ADatum: string;
-    bemerkung: string;
-    bearbeiter: string;
-    behoerde: string;
-    fid: string = null;
-    inER: {} = {};
-    abschnitt: Abschnitt;
-    private _daten: Daten;
-
-    projekt: string;
+export default class StrassenAusPunkt extends PunktObjekt implements InfoToolSelectable {
     hasSekObj: number;
     vabstVst: number;
     vabstBst: number;
-    vst: number;
-    bst: number;
     rlageVst: string;
     art: string;
     rabstbaVst: number;
     labstbaVst: number;
-    abschnittId: string;
-    objektId: string;
-    erfart: string;
-    quelle: string;
-
 
     constructor() {
-        super({ geom: null });
+        super(function () { return 'rgba(0,120,0,0.8)' }, function () { return 'black' });
         StrassenAusPunkt.loadKlartexte();
-        this._daten = Daten.getInstanz();
     }
 
     private static loadKlartexte() {
-        Klartext.getInstanz().load('Itstrauspktart', StrassenAusPunkt._ktArtLoaded);
-        Klartext.getInstanz().load('Itallglage', StrassenAusPunkt._ktLageLoaded);
-        Klartext.getInstanz().load('Itquelle', StrassenAusPunkt._ktQuelleLoaded);
-    }
-
-    private static _ktArtLoaded() {
-        let arten = Klartext.getInstanz().getAllSorted('Itstrauspktart');
-        for (let a of arten) {
-            let option = document.createElement('option');
-            let t = document.createTextNode(a.beschreib);
-            option.appendChild(t);
-            option.setAttribute('value', a.objektId);
-            document.forms.namedItem("sapadd").sapadd_art.appendChild(option);
-        }
-        $("select#sapadd_art").chosen({ width: "95%", search_contains: true });
-    }
-
-    private static _ktLageLoaded() {
-        let arten = Klartext.getInstanz().getAllSorted('Itallglage');
-        for (let a of arten) {
-            let option = document.createElement('option');
-            let t = document.createTextNode(a.beschreib);
-            option.appendChild(t);
-            option.setAttribute('value', a.objektId);
-            document.forms.namedItem("sapadd").sapadd_lage.appendChild(option);
-        }
-        $("select#sapadd_lage").chosen({ width: "95%", search_contains: true });
-    }
-
-    private static _ktQuelleLoaded() {
-        let arten = Klartext.getInstanz().getAllSorted('Itquelle');
-        for (let a of arten) {
-            let option = document.createElement('option');
-            let t = document.createTextNode(a.beschreib);
-            option.appendChild(t);
-            option.setAttribute('value', a.objektId);
-            document.forms.namedItem("sapadd").sapadd_quelle.appendChild(option);
-        }
-        $("select#sapadd_quelle").chosen({ width: "95%", search_contains: true });
+        Klartext.getInstanz().load('Itstrauspktart', StrassenAusPunkt.klartextLoaded, 'Itstrauspktart', 'sapadd_art');
+        Klartext.getInstanz().load('Itallglage', StrassenAusPunkt.klartextLoaded, 'Itallglage', 'sapadd_lage');
+        Klartext.getInstanz().load('Itquelle', StrassenAusPunkt.klartextLoaded, 'Itquelle', 'sapadd_quelle');
     }
 
     getHTMLInfo(ziel: HTMLElement) {
         console.log(ziel);
         let kt = Daten.getInstanz().klartexte;
         let r = "<table>";
-        /*for (var tag in CONFIG_WFS.straus) {
-            if (this[tag] == null || this[tag] == undefined) continue;
 
-            r += "<tr><td>" + tag + "</td><td>";
-            if (tag == 'art') {
-                r += art.get(this[tag]).beschreib
-            } else {
-                r += this[tag];
-            }
-            r += "</td></tr>";
-        }
-        */
         r += "<tr><td>VNK</td><td>" + this.abschnitt.vnk + "</td></tr>";
         r += "<tr><td>NNK</td><td>" + this.abschnitt.nnk + "</td></tr>";
         r += "<tr><td>VST</td><td>" + this.vst + "</td></tr>";
@@ -230,47 +153,6 @@ export default class StrassenAusPunkt extends Feature implements InfoToolSelecta
         return r;
     }
 
-    static createLayer(map: Map) {
-        let source = new VectorSource({
-            features: []
-        });
-        let layer = new VectorLayer({
-            source: source,
-            opacity: 0.7,
-        });
-        layer.setStyle(function (feature: StrassenAusPunkt, zoom) {
-            return new Style({
-                image: new Circle({
-                    radius: 3,
-                    fill: new Fill({ color: 'black' }),
-                    stroke: new Stroke({
-                        color: 'rgba(0,120,0,0.8)',
-                        width: 3
-                    })
-                }),
-                text: new Text({
-                    font: '13px Calibri,sans-serif',
-                    fill: new Fill({ color: '#000' }),
-                    stroke: new Stroke({
-                        color: '#fff', width: 2
-                    }),
-                    offsetX: 9,
-                    offsetY: -8,
-                    textAlign: 'left',
-                    // get the text from the feature - `this` is ol.Feature
-                    // and show only under certain resolution
-                    text: ((zoom < 0.2) ? ("" + feature.vst) : '')
-                }),
-            });
-        });
-        map.addLayer(layer);
-        return layer;
-    }
-
-    _getText() {
-        return "test";
-    }
-
     updateStation(station: number, abstand: number) {
         this.vabstVst = Math.round(abstand * 10) / 10;
         this.vabstBst = this.vabstVst;
@@ -313,5 +195,4 @@ export default class StrassenAusPunkt extends Feature implements InfoToolSelecta
             '</wfs:Update>';
         PublicWFS.doTransaction(xml);
     }
-
 }

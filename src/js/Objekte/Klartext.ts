@@ -1,7 +1,7 @@
 /**
  * Klartexte (Singleton)
  * @author Florian Timm, LGV HH 
- * @version 2019.06.06
+ * @version 2019.08.22
  * @copyright MIT
  */
 

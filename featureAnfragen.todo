@@ -1,10 +1,12 @@
 DONE: externe ObjektId an Aufstellvorrichtungen
+DONE: ext Nummer an Schildern wird "null"
+DONE: Andere Symbole für frische Aufstellvorrichtungen/StrausPkt
 
 TODO: Umfärben von Aufstellvorrichtungen nach Anfügen eines Schildes
-TODO: Andere Symbole für frische Aufstellvorrichtungen/StrausPkt
 
 TODO: Beschriftung von Punkten gemäß Objektfarbe (und andere Position)
 TODO: Dokumente an Aufstellvorrichtungen
-TODO: Zweibeinige Schilder
+TODO: Zweibeinige Schilder (Idee: zweibeinige AVs durch Haken setzen bei "AV hinzufügen" --> Menü für zweites Standbein) 
 TODO: Hindernisse? (1-2 Punkte)
 TODO: Bearbeiten von Aufstellvorrichtungen/StrausPkt
+TODO: Sortierung für VZ manuell ändern (für VZ gleicher Höhe bspw. Fußgängerüberweg)

@@ -5,15 +5,12 @@ var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number
 /**
 * Aufbaudaten
 * @author Florian Timm, LGV HH 
-* @version 2019.06.06
+* @version 2019.08.22
 * @copyright MIT
 */
-export default class Aufbau implements Objekt {
-	abschnittOderAst: string = null;
+export default class Aufbau extends Objekt {
 	schichtnr: number = null;
 	parent: string = null;
-	vst: number = null;
-	bst: number = null;
 	teilnr: number = null;
 	teilbreite: string = null;
 	decksch: string = null;
@@ -37,40 +34,15 @@ export default class Aufbau implements Objekt {
 	detailc: string = null;
 	detaild: string = null;
 	umweltr: string = null;
-	kherk: string = null;
-	baujahrGew: string = null;
-	abnahmeGew: string = null;
-	dauerGew: string = null;
-	ablaufGew: string = null;
-	objektId: string = null;
-	objektnr: string = null;
-	erfart: string = null;
-	quelle: string = null;
-	ADatum: string = null;
-	bemerkung: string = null;
-	bearbeiter: string = null;
-	behoerde: string = null;
 
 	private constructor() {
-
+		super();
 	}
 
 	static fromXML(xml: Element): Aufbau {
 		//console.log(xml);
 		let r = new Aufbau();
-		for (var tag in CONFIG_WFS.AUFBAUDATEN) {
-			if (xml.getElementsByTagName(tag).length <= 0) continue;
-			if (CONFIG_WFS.AUFBAUDATEN[tag].art == 0) {
-				// Kein Klartext
-				r[tag] = xml.getElementsByTagName(tag)[0].firstChild.textContent;
-			} else if (CONFIG_WFS.AUFBAUDATEN[tag].art == 1) {
-				// Kein Klartext
-				r[tag] = Number(xml.getElementsByTagName(tag)[0].firstChild.textContent);
-			} else if (CONFIG_WFS.AUFBAUDATEN[tag].art == 2) {
-				// Klartext, xlink wird gespeichert
-				r[tag] = xml.getElementsByTagName(tag)[0].getAttribute('xlink:href');
-			}
-		}
+		r.setDataFromXML("AUFBAUDATEN", xml)
 		return r;
 	}
 
@@ -88,9 +60,8 @@ export default class Aufbau implements Objekt {
 				r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS["AUFBAUDATEN"][tag].kt + '" />\n';
 			}
 		}
-
 		r += '</Otschicht>\n';
-		console.log (r);
+		console.log(r);
 		return r;
 	}
 }

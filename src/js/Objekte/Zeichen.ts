@@ -6,17 +6,13 @@ var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number
  /**
  * Zeichen
  * @author Florian Timm, LGV HH 
- * @version 2019.06.06
+ * @version 2019.08.22
  * @copyright MIT
  */
 
-class Zeichen implements Objekt{
+class Zeichen extends Objekt{
     _daten: Daten;
-    abschnittOderAst: string = null;
-    projekt: string = null;
     hasSekObj: string = null;
-    vst: number = null;
-    bst: number = null;
     stvoznr: string = null;
     sort: number = null;
     vztext: string = null;
@@ -40,21 +36,9 @@ class Zeichen implements Objekt{
     aufnahme: string = null;
     zuordnung: string = null;
     ausfuehr: string = null;
-    kherk: string = null;
-    baujahrGew: string = null;
-    abnahmeGew: string = null;
-    dauerGew: string = null;
-    ablaufGew: string = null;
-    objektId: string = null;
-    objektnr: string = null;
-    erfart: string = null;
-    quelle: string = null;
-    ADatum: string = null;
-    bemerkung: string = null;
-    bearbeiter: string = null;
-    behoerde: string = null;
 
     constructor(daten: Daten) {
+        super();
         this._daten = daten;
     }
 

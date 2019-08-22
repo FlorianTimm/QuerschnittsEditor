@@ -512,6 +512,9 @@
         },
         "behoerde": {
             "art": 0
+        },
+        "stand": {
+            "art": 0
         }
     },
     "STAUSPKT": {
@@ -623,6 +626,9 @@
             "art": 0
         },
         "behoerde": {
+            "art": 0
+        },
+        "stand": {
             "art": 0
         }
     }
