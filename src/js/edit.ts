@@ -5,43 +5,39 @@
  * @copyright MIT
  */
 
-import { View, MapEvent } from 'ol';
-import { defaults as defaultInteractions } from 'ol/interaction';
-import { defaults as defaultControls, ScaleLine, ZoomSlider } from 'ol/control';
-import { Layer } from 'ol/layer';
-import { TileWMS as TileWMS } from 'ol/source';
-import { register } from 'ol/proj/proj4';
-import { transform, fromLonLat } from 'ol/proj';
 import 'babel-polyfill';
-
+import { MapEvent, View } from 'ol';
+import { defaults as defaultControls, ScaleLine, ZoomSlider } from 'ol/control';
+import { defaults as defaultInteractions } from 'ol/interaction';
+import { Layer } from 'ol/layer';
+import { fromLonLat, transform } from 'ol/proj';
+import { register } from 'ol/proj/proj4';
+import { TileWMS as TileWMS } from 'ol/source';
+import StaticImage from 'ol/source/ImageStatic';
+import OSM from 'ol/source/OSM';
+import proj4 from 'proj4';
 import Daten from './Daten';
+import LayerSwitch from './LayerSwitch';
+import Measure from './Measure';
+import { ImageLayer, TileLayer } from './openLayers/Layer';
+import Map from './openLayers/Map';
 import PublicWFS from './PublicWFS';
-
-import QuerModifyTool from './Tools/Querschnitt/QuerModifyTool';
-import QuerInfoTool from './Tools/Querschnitt/QuerInfoTool';
-import QuerPartTool from './Tools/Querschnitt/QuerPartTool';
+import AvAdd from './Tools/Aufstellvorrichtung/AvAdd';
+import AvAdd2ER from './Tools/Aufstellvorrichtung/AvAdd2ER';
+import AvDelete from './Tools/Aufstellvorrichtung/AvDelete';
+import AvMove from './Tools/Aufstellvorrichtung/AvMove';
+import AvVzAdd from './Tools/Aufstellvorrichtung/AvVzAdd';
+import InfoTool from './Tools/InfoTool';
+import QuerAdd2ER from './Tools/Querschnitt/QuerAdd2ER';
 import QuerAddTool from './Tools/Querschnitt/QuerAddTool';
 import QuerDelTool from './Tools/Querschnitt/QuerDelTool';
-import QuerAdd2ER from './Tools/Querschnitt/QuerAdd2ER';
-
-import AvAdd from './Tools/Aufstellvorrichtung/AvAdd';
-import AvDelete from './Tools/Aufstellvorrichtung/AvDelete';
-import AvVzAdd from './Tools/Aufstellvorrichtung/AvVzAdd';
-import AvMove from './Tools/Aufstellvorrichtung/AvMove';
-import AvAdd2ER from './Tools/Aufstellvorrichtung/AvAdd2ER';
-
-import InfoTool from './Tools/InfoTool';
-import Measure from './Measure';
-import LayerSwitch from './LayerSwitch';
-import OSM from 'ol/source/OSM';
-import Map from './openLayers/Map';
-import { TileLayer, ImageLayer } from './openLayers/Layer';
-import StaticImage from 'ol/source/ImageStatic';
-import proj4 from 'proj4';
+import QuerInfoTool from './Tools/Querschnitt/QuerInfoTool';
+import QuerModifyTool from './Tools/Querschnitt/QuerModifyTool';
+import QuerPartTool from './Tools/Querschnitt/QuerPartTool';
 import SAPAdd from './Tools/StrassenAusPunkt/SAPAdd';
-import SAPMove from './Tools/StrassenAusPunkt/SAPMove';
 import SAPAdd2ER from './Tools/StrassenAusPunkt/SAPAdd2ER';
 import SAPDelete from './Tools/StrassenAusPunkt/SAPDelete';
+import SAPMove from './Tools/StrassenAusPunkt/SAPMove';
 
 var CONFIG: [string, string] = require('./config.json');
 

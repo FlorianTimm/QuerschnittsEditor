@@ -1,13 +1,13 @@
 var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
-import PublicWFS from '../PublicWFS';
-import { Polygon, MultiLineString } from 'ol/geom';
 import { Feature } from 'ol';
-import QuerStation from './QuerStation';
-import Vektor from '../Vektor';
+import { MultiLineString, Polygon } from 'ol/geom';
 import Daten from '../Daten';
-import Aufbau from '../Objekte/Aufbaudaten';
 import Abschnitt from '../Objekte/Abschnitt';
+import Aufbau from '../Objekte/Aufbaudaten';
+import PublicWFS from '../PublicWFS';
+import Vektor from '../Vektor';
 import Objekt from './Objekt';
+import QuerStation from './QuerStation';
 
 /**
 * @author Florian Timm, LGV HH 

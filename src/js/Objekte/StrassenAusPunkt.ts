@@ -29,14 +29,22 @@ export default class StrassenAusPunkt extends PunktObjekt implements InfoToolSel
     labstbaVst: number;
 
     constructor() {
-        super(function () { return 'rgba(0,120,0,0.8)' }, function () { return 'black' });
+        super();
         StrassenAusPunkt.loadKlartexte();
     }
 
+    colorFunktion1(): import("ol/colorlike").ColorLike {
+        return 'rgba(0,120,0,0.8)'
+    }
+
+    colorFunktion2(): import("ol/colorlike").ColorLike {
+        return 'black';
+    }
+
     private static loadKlartexte() {
-        Klartext.getInstanz().load('Itstrauspktart', StrassenAusPunkt.klartextLoaded, 'Itstrauspktart', 'sapadd_art');
-        Klartext.getInstanz().load('Itallglage', StrassenAusPunkt.klartextLoaded, 'Itallglage', 'sapadd_lage');
-        Klartext.getInstanz().load('Itquelle', StrassenAusPunkt.klartextLoaded, 'Itquelle', 'sapadd_quelle');
+        Klartext.getInstanz().load('Itstrauspktart', StrassenAusPunkt.klartext2select, 'Itstrauspktart', document.forms.namedItem("sapadd").sapadd_art);
+        Klartext.getInstanz().load('Itallglage', StrassenAusPunkt.klartext2select, 'Itallglage', document.forms.namedItem("sapadd").sapadd_lage);
+        Klartext.getInstanz().load('Itquelle', StrassenAusPunkt.klartext2select, 'Itquelle', document.forms.namedItem("sapadd").sapadd_quelle);
     }
 
     getHTMLInfo(ziel: HTMLElement) {

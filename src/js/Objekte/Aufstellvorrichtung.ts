@@ -4,19 +4,18 @@
  * @version 2019.08.22
  * @copyright MIT
  */
-
-import PublicWFS from '../PublicWFS';
-import { Point } from 'ol/geom';
-import Zeichen from './Zeichen';
 import "../import_jquery.js";
 import 'chosen-js';
 import 'chosen-js/chosen.css';
+import { Point } from 'ol/geom';
 import Daten from "../Daten";
-import Klartext from './Klartext';
-import Abschnitt from './Abschnitt';
+import PublicWFS from '../PublicWFS';
 import { InfoToolSelectable } from '../Tools/InfoTool';
+import Abschnitt from './Abschnitt';
+import Klartext from './Klartext';
 import Objekt from './Objekt';
 import PunktObjekt from './PunktObjekt';
+import Zeichen from './Zeichen';
 
 class Aufstellvorrichtung extends PunktObjekt implements InfoToolSelectable, Objekt {
     private _daten: Daten;
@@ -31,23 +30,27 @@ class Aufstellvorrichtung extends PunktObjekt implements InfoToolSelectable, Obj
     rlageVst: string;
 
     constructor() {
-        super(function (feature: Aufstellvorrichtung) {
-            if (feature.hasSekObj > 0 || (feature._zeichen != null && feature._zeichen.length > 0)) {
-                return 'rgba(250,120,0,0.8)';
-            } else {
-                return 'rgba(255,0,0,0.8)';
-            }
-        }, function (feature: Aufstellvorrichtung) {
-            return 'black';
-        });
+        super();
         this._daten = Daten.getInstanz();
         Aufstellvorrichtung.loadKlartexte();
     }
 
     static loadKlartexte() {
-        Klartext.getInstanz().load('Itaufstvorart', Aufstellvorrichtung.klartextLoaded, 'Itaufstvorart', 'avadd_art');
-        Klartext.getInstanz().load('Itallglage', Aufstellvorrichtung.klartextLoaded, 'Itallglage', 'avadd_lage');
-        Klartext.getInstanz().load('Itquelle', Aufstellvorrichtung.klartextLoaded, 'Itquelle', 'avadd_quelle');
+        Klartext.getInstanz().load('Itaufstvorart', Aufstellvorrichtung.klartext2select, 'Itaufstvorart', document.forms.namedItem("avadd").avadd_art);
+        Klartext.getInstanz().load('Itallglage', Aufstellvorrichtung.klartext2select, 'Itallglage', document.forms.namedItem("avadd").avadd_lage);
+        Klartext.getInstanz().load('Itquelle', Aufstellvorrichtung.klartext2select, 'Itquelle', document.forms.namedItem("avadd").avadd_quelle);
+    }
+
+    colorFunktion1(): import("ol/colorlike").ColorLike {
+        if (this.hasSekObj > 0 || (this._zeichen != null && this._zeichen.length > 0)) {
+            return 'rgba(250,120,0,0.8)';
+        } else {
+            return 'rgba(255,0,0,0.8)';
+        }
+    }
+
+    colorFunktion2(): import("ol/colorlike").ColorLike {
+        return 'black';
     }
 
     getHTMLInfo(ziel: HTMLElement) {

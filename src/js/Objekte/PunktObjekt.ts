@@ -7,15 +7,10 @@ import { Map } from 'ol';
 import { ColorLike } from "ol/colorlike";
 import Klartext from "./Klartext";
 
-export default class PunktObjekt extends Objekt {
-    protected color1: (feature: Feature)=> ColorLike ;
-    protected color2: (feature: Feature)=> ColorLike ;
+export default abstract class PunktObjekt extends Objekt {
 
-    constructor(color1: (feature: Feature)=> ColorLike, color2: (feature: Feature)=> ColorLike) {
-        super();
-        this.color1 = color1;
-        this.color2 = color2;
-    }
+    abstract colorFunktion1(): ColorLike;
+    abstract colorFunktion2(): ColorLike;
 
     static createLayer(map: Map) {
         let source = new VectorSource({
@@ -26,8 +21,8 @@ export default class PunktObjekt extends Objekt {
             opacity: 0.7,
         });
         layer.setStyle(function (feature: PunktObjekt, zoom) {
-            let color1 = this.color1(feature);
-            let color2 = this.color2(feature);
+            let color1 = feature.colorFunktion1();
+            let color2 = feature.colorFunktion2();
 
             let text = new Text({
                 font: '13px Calibri,sans-serif',
@@ -42,7 +37,7 @@ export default class PunktObjekt extends Objekt {
                 // and show only under certain resolution
                 text: ((zoom < 0.2) ? ("" + feature.vst) : '')
             });
-            
+
             let datum = new Date(feature.stand);
             //console.log(feature.stand);
             if ((Date.now() - datum.getTime()) > 3600000 * 24) {
@@ -72,20 +67,21 @@ export default class PunktObjekt extends Objekt {
                     text: text
                 });
             }
-        });
+        }.bind(this));
         map.addLayer(layer);
         return layer;
     }
 
-    protected static klartextLoaded(klartext: string, id: string) {
+    protected static klartext2select(klartexteObjekt: {}, klartext: string, selectInput: HTMLSelectElement) {
+        console.log(selectInput);
         let arten = Klartext.getInstanz().getAllSorted(klartext);
         for (let a of arten) {
             let option = document.createElement('option');
             let t = document.createTextNode(a.beschreib);
             option.appendChild(t);
             option.setAttribute('value', a.objektId);
-            document.forms.namedItem("sapadd")[id].appendChild(option);
+            selectInput.appendChild(option);
         }
-        $(document.forms.namedItem("sapadd")[id]).chosen({ width: "95%", search_contains: true });
+        $(selectInput).chosen({ width: "95%", search_contains: true });
     }
 }
