@@ -82,13 +82,13 @@ class AvDelete implements Tool {
             '		</ogc:And>\n' +
             '	</ogc:Filter>\n' +
             '</wfs:Delete>';
-        PublicWFS.doTransaction(update, this._deleteCallback, undefined, this);
+        PublicWFS.doTransaction(update, this._deleteCallback.bind(this));
     }
 
-    _deleteCallback(_xml: any, _this: AvDelete) {
-        let feature = _this._select.getFeatures().getArray()[0];
-        (<VectorSource>_this._layer.getSource()).removeFeature(feature);
-        _this._select.getFeatures().clear();
+    _deleteCallback(_xml: XMLDocument) {
+        let feature = this._select.getFeatures().getArray()[0];
+        (<VectorSource>this._layer.getSource()).removeFeature(feature);
+        this._select.getFeatures().clear();
         PublicWFS.showMessage("Aufstellvorichtung gelöscht!")
         this._delField.style.display = "none";
     }

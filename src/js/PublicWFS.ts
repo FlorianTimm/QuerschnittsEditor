@@ -61,8 +61,8 @@ export default class PublicWFS {
     static addInER(
         abschnitt: Abschnitt,
         objekt: string, ereignisraum_nr: string,
-        callbackSuccess: (xml: Document, ...args: any[]) => void,
-        callbackFailed: (xml: Document, ...args: any[]) => void,
+        callbackSuccess?: (xml: Document, ...args: any[]) => void,
+        callbackFailed?: (xml: Document, ...args: any[]) => void,
         ...args: any[]) {
 
         var xmlhttp = new XMLHttpRequest();

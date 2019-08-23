@@ -112,7 +112,7 @@ class AvVzAdd implements Tool {
         buttonAbbrechen.style.marginBottom = "250px";
         this._popup.appendChild(buttonAbbrechen);
 
-        this._auswahl.getZeichen(AvVzAdd._zeichenGeladen, this)
+        this._auswahl.getZeichen(this._zeichenGeladen.bind(this))
     }
 
     /**
@@ -125,14 +125,14 @@ class AvVzAdd implements Tool {
         this._createSchildForm(schild);
     }
 
-    static _zeichenGeladen(zeichen: Zeichen[], _this: AvVzAdd) {
+    _zeichenGeladen(zeichen: Zeichen[]) {
         zeichen.sort(function (a: Zeichen, b: Zeichen) {
             if (a.sort != null && b.sort != null) {
                 return Number(a.sort) - Number(b.sort);
             }
         });
         for (let eintrag of zeichen) {
-            _this._createSchildForm(eintrag);
+            this._createSchildForm(eintrag);
         }
     }
 
@@ -567,7 +567,6 @@ class AvVzAdd implements Tool {
     /**
      * wird nach der Ausführung des Updates ausgeführt
      * @param {*} __ 
-     * @param {AvVzAdd} _this 
      * @param {*} _auswahl 
      */
     _updateCallback(__: any, _auswahl: { reloadZeichen: () => void; }) {

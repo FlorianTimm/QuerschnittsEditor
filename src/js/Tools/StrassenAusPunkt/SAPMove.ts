@@ -157,11 +157,6 @@ export default class SAPMove implements Tool {
         (this._feat_station_line.getGeometry() as LineString).setCoordinates([daten['pos'][6], daten['pos'][5]]);
     }
 
-    static _wfsEditAufstell(_this) {
-
-    }
-
-
     start() {
         this._map.addInteraction(this._select);
         this._map.addInteraction(this._modify);

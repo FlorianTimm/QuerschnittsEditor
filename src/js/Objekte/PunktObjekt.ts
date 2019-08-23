@@ -73,7 +73,6 @@ export default abstract class PunktObjekt extends Objekt {
     }
 
     protected static klartext2select(klartexteObjekt: {}, klartext: string, selectInput: HTMLSelectElement) {
-        console.log(selectInput);
         let arten = Klartext.getInstanz().getAllSorted(klartext);
         for (let a of arten) {
             let option = document.createElement('option');

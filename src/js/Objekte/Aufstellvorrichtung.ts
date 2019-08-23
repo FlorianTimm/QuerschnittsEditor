@@ -90,13 +90,12 @@ class Aufstellvorrichtung extends PunktObjekt implements InfoToolSelectable, Obj
 
         if (ziel != undefined) {
             ziel.innerHTML = r;
-            this.getZeichen(Aufstellvorrichtung._vz_addHTML, this, ziel)
+            this.getZeichen(this._vz_addHTML.bind(this), ziel)
         }
-
         return r;
     }
 
-    private static _vz_addHTML(zeichen: any, _this: Aufstellvorrichtung, ziel: HTMLElement) {
+    private _vz_addHTML(zeichen: any, ziel: HTMLElement) {
         let div = document.createElement('div');
         div.style.marginTop = '5px';
         for (let eintrag of zeichen) {
@@ -122,11 +121,11 @@ class Aufstellvorrichtung extends PunktObjekt implements InfoToolSelectable, Obj
 
     }
 
-    static _loadER_Callback(xml: XMLDocument, daten: Daten) {
+    static _loadER_Callback(xml: XMLDocument) {
         let aufstell = xml.getElementsByTagName("Otaufstvor");
         for (let i = 0; i < aufstell.length; i++) {
-            let f = Aufstellvorrichtung.fromXML(aufstell[i], daten);
-            daten.l_aufstell.getSource().addFeature(f);
+            let f = Aufstellvorrichtung.fromXML(aufstell[i]);
+            Daten.getInstanz().l_aufstell.getSource().addFeature(f);
         }
     }
 
@@ -148,15 +147,15 @@ class Aufstellvorrichtung extends PunktObjekt implements InfoToolSelectable, Obj
         //console.log(daten);
         let aufstell = xml.getElementsByTagName("Otaufstvor");
         for (let i = 0; i < aufstell.length; i++) {
-            let f = Aufstellvorrichtung.fromXML(aufstell[i], daten);
+            let f = Aufstellvorrichtung.fromXML(aufstell[i]);
             daten.l_aufstell.getSource().addFeature(f);
         }
         callback(...args);
         document.body.style.cursor = '';
     }
 
-    static fromXML(xml: Element, daten: Daten) {
-        //console.log(daten);
+    static fromXML(xml: Element) {
+        let daten = Daten.getInstanz();
         let r = new Aufstellvorrichtung();
         r.setDataFromXML("AUFSTELL", xml);
 
