@@ -289,7 +289,7 @@ class AvVzAdd extends Tool {
             }.bind(this));
 
             alle.first().nextAll().children('select').chosen({
-                width: "20px",
+                width: "200px",
                 search_contains: true,
             });
         }.bind(this));
