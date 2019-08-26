@@ -1,7 +1,7 @@
 import { Map } from "ol";
 import Daten from '../../Daten';
 import QuerInfoTool from "./QuerInfoTool";
-import Tool from '../Tool';
+import Tool from '../prototypes/Tool';
 import { Fill, Stroke, Style } from 'ol/style';
 import { never } from 'ol/events/condition';
 import { SelectInteraction } from '../../openLayers/Interaction'
@@ -13,7 +13,7 @@ import Querschnitt from "src/js/Objekte/Querschnittsdaten";
  * @version 2019.05.20
  * @copyright MIT
  */
-class QuerDelTool implements Tool {
+class QuerDelTool extends Tool {
     private map: Map;
     private daten: Daten;
     private info: QuerInfoTool;
@@ -21,6 +21,7 @@ class QuerDelTool implements Tool {
     private select_fl: SelectInteraction;
 
     constructor(map: Map, info: QuerInfoTool) {
+        super();
         this.map = map;
         this.daten = Daten.getInstanz();
         this.info = info;

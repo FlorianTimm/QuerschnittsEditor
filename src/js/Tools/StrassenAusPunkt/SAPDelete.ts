@@ -2,7 +2,7 @@ import { Select as SelectInteraction } from 'ol/interaction';
 import PublicWFS from '../../PublicWFS';
 import 'jquery-ui-bundle';
 import 'jquery-ui-bundle/jquery-ui.css'
-import Tool from '../Tool';
+import Tool from '../prototypes/Tool';
 import { Map, MapBrowserEvent } from 'ol';
 import Daten from '../../Daten';
 import { Layer } from 'ol/layer';
@@ -16,7 +16,7 @@ import VectorSource from 'ol/source/Vector';
  * @version 2019.05.20
  * @copyright MIT
  */
-export default class SAPDelete implements Tool {
+export default class SAPDelete extends Tool {
     private _map: Map;
     private _daten: Daten;
     private _layer: Layer;
@@ -26,6 +26,7 @@ export default class SAPDelete implements Tool {
     private _select: SelectInteraction;
 
     constructor(map: Map, layer: Layer, sidebar: string) {
+        super();
         this._map = map;
         this._daten = Daten.getInstanz();
         this._layer = layer;

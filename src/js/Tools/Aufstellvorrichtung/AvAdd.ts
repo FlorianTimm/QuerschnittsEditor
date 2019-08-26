@@ -7,8 +7,8 @@ import { Point, LineString } from 'ol/geom';
 import Feature from 'ol/Feature';
 import PublicWFS from '../../PublicWFS';
 import Aufstellvorrichtung from '../../Objekte/Aufstellvorrichtung';
-import Tool from '../Tool';
-import { Map } from 'ol';
+import Tool from '../prototypes/Tool';
+import { Map, MapBrowserEvent } from 'ol';
 import Daten from '../../Daten';
 import Abschnitt from '../../Objekte/Abschnitt';
 var CONFIG = require('../../config.json');
@@ -19,7 +19,7 @@ var CONFIG = require('../../config.json');
  * @version 2019.05.20
  * @copyright MIT
  */
-class AvAdd implements Tool {
+class AvAdd extends Tool {
     map: Map;
     daten: Daten;
 
@@ -36,6 +36,7 @@ class AvAdd implements Tool {
     feat_station_line: Feature;
 
     constructor(map: Map, daten: Daten) {
+        super();
         this.map = map;
         this.daten = daten;
 
@@ -115,7 +116,7 @@ class AvAdd implements Tool {
         document.getElementById('avadd_button').addEventListener('click', this.addAufstellButton.bind(this));
     }
 
-    part_get_station(event) {
+    part_get_station(event: MapBrowserEvent) {
         let achse = null;
         if (this.select.getFeatures().getArray().length > 0) {
             achse = this.select.getFeatures().item(0);
@@ -133,7 +134,7 @@ class AvAdd implements Tool {
     }
 
 
-    part_click(event) {
+    part_click(event: MapBrowserEvent) {
         this.feat_neu.set('isset', true);
         let daten = this.part_get_station(event);
         if (daten['pos'] == null) return;
@@ -156,7 +157,7 @@ class AvAdd implements Tool {
 
     }
 
-    part_move(event) {
+    part_move(event: MapBrowserEvent) {
         let daten = this.part_get_station(event);
 
         if (daten == null || daten['pos'] == null) return;
@@ -181,7 +182,7 @@ class AvAdd implements Tool {
         }
     }
 
-    private addInER_Callback(xml:XMLDocument) {
+    private addInER_Callback(xml: XMLDocument) {
         Aufstellvorrichtung.loadAbschnittER(this.daten, this.abschnitt, this.wfsAddAufstell.bind(this))
     }
 
@@ -208,14 +209,14 @@ class AvAdd implements Tool {
         PublicWFS.doTransaction(soap, this._getInsertResults.bind(this));
     }
 
-    _getInsertResults(xml:XMLDocument) {
+    _getInsertResults(xml: XMLDocument) {
         PublicWFS.showMessage("erfolgreich");
         this.abschnitt = null;
         this.station = null;
         this.seite = null;
-        (this.feat_neu.getGeometry()as Point).setCoordinates([0, 0]);
+        (this.feat_neu.getGeometry() as Point).setCoordinates([0, 0]);
         let filter = '<Filter>';
-        xml.getElementsByTagName('InsertResult')[0].childNodes.forEach(function(f:ChildNode) {
+        xml.getElementsByTagName('InsertResult')[0].childNodes.forEach(function (f: ChildNode) {
             filter += '<FeatureId fid="' + (f as Element).getAttribute('fid') + '"/>';
         })
         filter += '</Filter>';
@@ -234,7 +235,7 @@ class AvAdd implements Tool {
         this.map.removeInteraction(this.select);
         document.forms.namedItem("avadd").style.display = 'none';
         this.map.un("pointermove", this.part_move);
-        this.map.un("singleclick", this.part_click);
+        this.map.un("singleclick", this.part_click.bind(this));
         this.map.removeLayer(this.l_overlay);
     }
 }

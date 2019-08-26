@@ -210,7 +210,7 @@ class Aufstellvorrichtung extends PunktObjekt implements InfoToolSelectable, Obj
         PublicWFS.doTransaction(xml);
     }
 
-    getZeichen(callback, ...args) {
+    getZeichen(callback: (...args: any[]) => void, ...args: any[]) {
         if (this._zeichen == null && this.hasSekObj > 0) {
             this.reloadZeichen(callback, ...args);
         } else if (this.hasSekObj > 0) {
@@ -222,7 +222,7 @@ class Aufstellvorrichtung extends PunktObjekt implements InfoToolSelectable, Obj
         }
     }
 
-    reloadZeichen(callback, ...args) {
+    reloadZeichen(callback: (...args: any[]) => void, ...args: any[]) {
         PublicWFS.doQuery('Otvzeichlp', '<Filter>\n' +
             '  <PropertyIsEqualTo>\n' +
             '    <PropertyName>parent/@xlink:href</PropertyName>\n' +
@@ -231,13 +231,12 @@ class Aufstellvorrichtung extends PunktObjekt implements InfoToolSelectable, Obj
             '</Filter>', this._parseZeichen.bind(this), undefined, callback, ...args);
     }
 
-    private _parseZeichen(xml, callback, ...args) {
+    private _parseZeichen(xml: XMLDocument, callback: (...args: any[]) => void, ...args: any[]) {
         let zeichen: Zeichen[] = [];
-        console.log(xml);
         let zeichenXML = xml.getElementsByTagName('Otvzeichlp');
 
-        for (let eintrag of zeichenXML) {
-            console.log(eintrag);
+        for (let i = 0; i < zeichenXML.length; i++) {
+            let eintrag = zeichenXML.item(i);
             if (!(eintrag.getElementsByTagName("enr").length > 0)) {
                 zeichen.push(Zeichen.fromXML(eintrag, this._daten));
             }

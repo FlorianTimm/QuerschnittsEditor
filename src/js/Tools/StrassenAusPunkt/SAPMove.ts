@@ -9,7 +9,7 @@ import {never as neverCondition} from 'ol/events/condition';
 import { Map } from 'ol';
 import Daten from '../../Daten';
 import InfoTool from '../InfoTool';
-import Tool from '../Tool';
+import Tool from '../prototypes/Tool';
 import Abschnitt from '../../Objekte/Abschnitt';
 import StrassenAusPunkt from '../../Objekte/StrassenAusPunkt';
 import { ModifyInteraction } from '../../openLayers/Interaction';
@@ -20,7 +20,7 @@ import { ModifyInteraction } from '../../openLayers/Interaction';
  * @version 2019.05.20
  * @copyright MIT
  */
-export default class SAPMove implements Tool {
+export default class SAPMove extends Tool {
     private _map: Map;
     private _daten: Daten;
     private _infoTool: InfoTool;
@@ -35,6 +35,7 @@ export default class SAPMove implements Tool {
     private _modify: ModifyInteraction;
 
     constructor(map: Map, infoTool: InfoTool) {
+        super();
         this._map = map;
         this._daten = Daten.getInstanz();
         this._infoTool = infoTool;

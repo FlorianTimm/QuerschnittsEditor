@@ -6,7 +6,7 @@ import 'chosen-js/chosen.css';
 import 'jquery-ui-bundle';
 import 'jquery-ui-bundle/jquery-ui.css'
 import PublicWFS from '../../PublicWFS';
-import Tool from '../Tool';
+import Tool from '../prototypes/Tool';
 import Daten from '../../Daten';
 import { Map } from 'ol';
 import Zeichen from '../../Objekte/Zeichen';
@@ -20,7 +20,7 @@ var CONFIG = require('../../config.json');
  * @version 2019.05.20
  * @copyright MIT
  */
-class AvVzAdd implements Tool {
+class AvVzAdd extends Tool {
     private _map: Map;
     private _daten: Daten;
     private _ausblenden: any = null;
@@ -35,6 +35,7 @@ class AvVzAdd implements Tool {
      * @param daten Daten-Objekt
      */
     constructor(map: Map, daten: Daten) {
+        super();
         this._map = map;
         this._daten = daten;
 
@@ -65,8 +66,6 @@ class AvVzAdd implements Tool {
         this._popup = document.createElement("div");
         this._popup.id = "vz_popup";
         this._popup.style.textAlign = "left";
-
-        this._popup.innerHTML += '<div style="color: #f00; width: 100%; text-align: center;">ACHTUNG: Änderungen im aktuellen ER werden nicht angezeigt!<br/>Der Fehler wurde bereits an NOVASIB gemeldet.</div>'
 
         this._ausblenden.appendChild(this._popup);
 
@@ -283,14 +282,14 @@ class AvVzAdd implements Tool {
         $(function () {
             let alle = $(text).children('div')
             alle.first().children("select").chosen({
-                width: "220px",
+                width: "200px",
                 search_contains: true,
             }).change(function (event: any, data: { selected: any; }) {
-                img.src = "http://gv-srv-w00118:8080/schilder/" + this._Klartext.getInstanz().get("Itvzstvoznr", data.selected)['kt'] + ".svg";
+                img.src = "http://gv-srv-w00118:8080/schilder/" + Klartext.getInstanz().get("Itvzstvoznr", data.selected)['kt'] + ".svg";
             }.bind(this));
 
             alle.first().nextAll().children('select').chosen({
-                width: "220px",
+                width: "20px",
                 search_contains: true,
             });
         }.bind(this));
@@ -434,7 +433,7 @@ class AvVzAdd implements Tool {
                     console.log("update strbezug");
                 }
 
-                if (oldZeichen.aufstelldat != modiZeichen.aufstelldat) {
+                if (oldZeichen.aufstelldat != modiZeichen.aufstelldat && !(oldZeichen.aufstelldat == null && modiZeichen.aufstelldat == "")) {
                     upd += '<wfs:Property>\n<wfs:Name>aufstelldat</wfs:Name>\n<wfs:Value>' + modiZeichen.aufstelldat + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update aufstelldat");
                 }
@@ -465,7 +464,7 @@ class AvVzAdd implements Tool {
                         '			</ogc:PropertyIsEqualTo>\n' +
                         '			<ogc:PropertyIsEqualTo>\n' +
                         '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
-                        '				<ogc:Literal>' + this._daten.ereignisraum + '</ogc:Literal>\n' +
+                        '				<ogc:Literal>#' + this._daten.ereignisraum + '</ogc:Literal>\n' +
                         '			</ogc:PropertyIsEqualTo>\n' +
                         '		</ogc:And>\n' +
                         '	</ogc:Filter>\n' +
@@ -484,7 +483,7 @@ class AvVzAdd implements Tool {
                     '			</ogc:PropertyIsEqualTo>\n' +
                     '			<ogc:PropertyIsEqualTo>\n' +
                     '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
-                    '				<ogc:Literal>' + this._daten.ereignisraum + '</ogc:Literal>\n' +
+                    '				<ogc:Literal>#' + this._daten.ereignisraum + '</ogc:Literal>\n' +
                     '			</ogc:PropertyIsEqualTo>\n' +
                     '		</ogc:And>\n' +
                     '	</ogc:Filter>\n' +

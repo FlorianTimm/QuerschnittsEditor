@@ -5,7 +5,7 @@ import { platformModifierKeyOnly, never } from 'ol/events/condition';
 import QuerInfoTool from './QuerInfoTool';
 import Daten from '../../Daten';
 import { Map } from 'ol';
-import Tool from '../Tool';
+import Tool from '../prototypes/Tool';
 import { SelectInteraction, ModifyInteraction } from '../../openLayers/Interaction'
 import { ModifyEvent } from 'ol/interaction/Modify';
 
@@ -15,7 +15,7 @@ import { ModifyEvent } from 'ol/interaction/Modify';
  * @version 2019.05.20
  * @copyright MIT
  */
-class QuerModifyTool implements Tool {
+class QuerModifyTool extends Tool {
     private map: Map;
     private daten: Daten;
     private info: QuerInfoTool;
@@ -27,6 +27,7 @@ class QuerModifyTool implements Tool {
     private streifennr: number;
 
     constructor(map: Map, info: QuerInfoTool) {
+        super();
         this.map = map;
         this.daten = Daten.getInstanz();
         this.info = info;

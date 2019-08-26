@@ -6,7 +6,7 @@ import { Map } from 'ol';
 import Daten from '../../Daten';
 import { SelectEventType } from 'ol/interaction/Select';
 import Abschnitt from '../../Objekte/Abschnitt';
-import Tool from '../Tool';
+import Tool from '../prototypes/Tool';
 
 /**
  * Querschnittsflächen zu Ereignisraum hinzufügen
@@ -14,12 +14,13 @@ import Tool from '../Tool';
  * @version 2019.06.06
  * @copyright MIT
  */
-class QuerAdd2ER implements Tool {
+class QuerAdd2ER extends Tool {
     daten: Daten;
     map: Map;
     select: SelectInteraction;
 
     constructor(map: Map, daten: Daten) {
+        super();
         this.daten = daten;
         this.map = map;
         this.select = new SelectInteraction({

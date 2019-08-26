@@ -39,6 +39,7 @@ export default abstract class Objekt extends Feature {
 	}
 
 	setDataFromXML(objekt: string, xml: Element) {
+		this.fid = xml.getAttribute('fid');
 		for (var tag in CONFIG_WFS[objekt]) {
 			if (xml.getElementsByTagName(tag).length <= 0) continue;
 			if (CONFIG_WFS[objekt][tag].art == 0) {
@@ -54,5 +55,5 @@ export default abstract class Objekt extends Feature {
 		}
 	}
 
-	
+
 }

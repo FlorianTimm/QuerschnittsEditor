@@ -9,7 +9,7 @@ import {never as neverCondition} from 'ol/events/condition';
 import { Map } from 'ol';
 import Daten from '../../Daten';
 import AvInfoTool from '../InfoTool';
-import Tool from '../Tool';
+import Tool from '../prototypes/Tool';
 import Abschnitt from '../../Objekte/Abschnitt';
 import Aufstellvorrichtung from '../../Objekte/Aufstellvorrichtung';
 import { ModifyInteraction } from '../../openLayers/Interaction';
@@ -21,7 +21,7 @@ import { Coordinate } from 'ol/coordinate';
  * @version 2019.05.20
  * @copyright MIT
  */
-class AvMove implements Tool {
+class AvMove extends Tool {
     _map: Map;
     _daten: Daten;
     _avInfoTool: AvInfoTool;
@@ -36,6 +36,7 @@ class AvMove implements Tool {
     _modify: ModifyInteraction;
 
     constructor(map, avInfoTool) {
+        super();
         this._map = map;
         this._daten = Daten.getInstanz();
         this._avInfoTool = avInfoTool;

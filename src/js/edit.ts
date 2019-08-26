@@ -18,7 +18,7 @@ import OSM from 'ol/source/OSM';
 import proj4 from 'proj4';
 import Daten from './Daten';
 import LayerSwitch from './LayerSwitch';
-import Measure from './Measure';
+import Measure from './Tools/Measure';
 import { ImageLayer, TileLayer } from './openLayers/Layer';
 import Map from './openLayers/Map';
 import PublicWFS from './PublicWFS';

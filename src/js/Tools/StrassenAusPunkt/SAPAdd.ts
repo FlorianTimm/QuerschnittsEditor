@@ -7,7 +7,7 @@ import { Point, LineString } from 'ol/geom';
 import Feature from 'ol/Feature';
 import PublicWFS from '../../PublicWFS';
 import StrassenAusPunkt from '../../Objekte/StrassenAusPunkt';
-import Tool from '../Tool';
+import Tool from '../prototypes/Tool';
 import { Map } from 'ol';
 import Daten from '../../Daten';
 import Abschnitt from '../../Objekte/Abschnitt';
@@ -20,7 +20,7 @@ var CONFIG = require('../../config.json');
  * @copyright MIT
  */
 
-export default class SAPAdd implements Tool {
+export default class SAPAdd extends Tool {
     map: Map;
     daten: Daten;
 
@@ -37,6 +37,7 @@ export default class SAPAdd implements Tool {
     feat_station_line: Feature;
 
     constructor(map: Map) {
+        super();
         this.map = map;
         this.daten = Daten.getInstanz();
 

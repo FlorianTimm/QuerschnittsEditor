@@ -2,7 +2,7 @@ import { Style, Stroke } from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
 import PublicWFS from '../../PublicWFS';
 import Aufstellvorrichtung from '../../Objekte/Aufstellvorrichtung';
-import Tool from '../Tool'
+import Tool from '../prototypes/Tool'
 import Daten from '../../Daten';
 import { Map } from 'ol';
 import { SelectEventType } from 'ol/interaction/Select';
@@ -14,12 +14,13 @@ import Abschnitt from '../../Objekte/Abschnitt';
  * @version 2019.05.20
  * @copyright MIT
  */
-class AvAdd2ER implements Tool {
+class AvAdd2ER extends Tool {
     daten: Daten;
     map: Map;
     select: SelectInteraction;
 
     constructor(map: Map, daten: Daten) {
+        super();
         this.daten = daten;
         this.map = map;
 

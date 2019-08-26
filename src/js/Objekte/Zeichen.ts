@@ -3,14 +3,14 @@ import Objekt from "./Objekt";
 
 var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
 
- /**
- * Zeichen
- * @author Florian Timm, LGV HH 
- * @version 2019.08.22
- * @copyright MIT
- */
+/**
+* Zeichen
+* @author Florian Timm, LGV HH 
+* @version 2019.08.22
+* @copyright MIT
+*/
 
-class Zeichen extends Objekt{
+class Zeichen extends Objekt {
     _daten: Daten;
     hasSekObj: string = null;
     stvoznr: string = null;
@@ -42,7 +42,7 @@ class Zeichen extends Objekt{
         this._daten = daten;
     }
 
-    static fromXML(xml: Document, daten: Daten) {
+    static fromXML(xml: Element, daten: Daten) {
         //console.log(xml);
         let r = new Zeichen(daten);
         for (var tag in CONFIG_WFS["ZEICHEN"]) {

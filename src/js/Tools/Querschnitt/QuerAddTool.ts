@@ -4,7 +4,7 @@ import Querschnitt from '../../Objekte/Querschnittsdaten';
 import Map from 'ol/Map';
 import Daten from '../../Daten';
 import QuerInfoTool from './QuerInfoTool';
-import Tool from '../Tool';
+import Tool from '../prototypes/Tool';
 import { SelectEvent } from 'ol/interaction/Select';
 
 /**
@@ -13,13 +13,14 @@ import { SelectEvent } from 'ol/interaction/Select';
  * @version 2019.05.20
  * @copyright MIT
  */
-class QuerAddTool implements Tool {
+class QuerAddTool extends Tool {
     private _daten: Daten;
     private _info: QuerInfoTool;
     private _select: SelectInteraction;
     private _map: Map;
 
     constructor(map: Map, info: QuerInfoTool) {
+        super();
         this._map = map;
         this._daten = Daten.getInstanz();
         this._info = info;

@@ -2,7 +2,7 @@ import { Style, Stroke } from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
 import PublicWFS from '../../PublicWFS';
 import StrassenAusPunkt from '../../Objekte/StrassenAusPunkt';
-import Tool from '../Tool'
+import Tool from '../prototypes/Tool'
 import Daten from '../../Daten';
 import { Map } from 'ol';
 import { SelectEventType } from 'ol/interaction/Select';
@@ -14,12 +14,13 @@ import Abschnitt from '../../Objekte/Abschnitt';
  * @version 2019.05.20
  * @copyright MIT
  */
-export default class SAPAdd2ER implements Tool {
+export default class SAPAdd2ER extends Tool {
     private daten: Daten;
     private map: Map;
     private select: SelectInteraction;
 
     constructor(map: Map) {
+        super();
         this.daten = Daten.getInstanz();;
         this.map = map;
 

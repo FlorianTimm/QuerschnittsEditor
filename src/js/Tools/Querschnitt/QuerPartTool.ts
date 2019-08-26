@@ -5,7 +5,7 @@ import VectorSource from 'ol/source/Vector';
 import { Vector as VectorLayer } from 'ol/layer';
 import { Point, LineString } from 'ol/geom';
 import Feature from 'ol/Feature';
-import Tool from '../Tool';
+import Tool from '../prototypes/Tool';
 import QuerInfoTool from './QuerInfoTool';
 import Daten from '../../Daten';
 import { Map, MapBrowserPointerEvent } from 'ol';
@@ -16,7 +16,7 @@ import { Map, MapBrowserPointerEvent } from 'ol';
  * @version 2019.05.20
  * @copyright MIT
  */
-class QuerPartTool implements Tool {
+class QuerPartTool extends Tool {
     map: Map;
     daten: Daten;
     info: QuerInfoTool;
@@ -28,6 +28,7 @@ class QuerPartTool implements Tool {
     feat_station_line: Feature;
 
     constructor(map: Map, daten: Daten, info: QuerInfoTool) {
+        super();
         this.map = map;
         this.daten = daten;
         this.info = info;

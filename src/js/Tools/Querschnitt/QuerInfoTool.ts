@@ -1,7 +1,7 @@
 import { Style, Stroke, Fill } from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
 import { never } from 'ol/events/condition';
-import Tool from '../Tool';
+import Tool from '../prototypes/Tool';
 import { Map } from 'ol';
 import Daten from '../../Daten';
 import { SelectEvent } from 'ol/interaction/Select';
@@ -12,13 +12,14 @@ import { SelectEvent } from 'ol/interaction/Select';
  * @version 2019.05.20
  * @copyright MIT
  */
-class QuerInfoTool implements Tool {
+class QuerInfoTool extends Tool {
     map: Map;
     daten: Daten;
     select: SelectInteraction;
     select_fl: SelectInteraction;
 
     constructor(map: Map, daten: Daten) {
+        super();
         this.map = map;
         this.daten = daten;
 

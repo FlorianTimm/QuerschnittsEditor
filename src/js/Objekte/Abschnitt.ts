@@ -79,7 +79,6 @@ export default class Abschnitt extends Feature {
     }
 
     _loadCallback(xml: Document) {
-        console.log(this)
         let netz = xml.getElementsByTagName('VI_STRASSENNETZ');
 
         if (netz.length > 0) {
