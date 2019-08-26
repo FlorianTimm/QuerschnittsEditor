@@ -1,24 +1,30 @@
 var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
-import PublicWFS from '../PublicWFS';
-import { Polygon, MultiLineString } from 'ol/geom';
 import { Feature } from 'ol';
-import QuerStation from './QuerStation';
-import Vektor from '../Vektor';
+import { MultiLineString, Polygon } from 'ol/geom';
 import Daten from '../Daten';
-import Aufbau from '../Objekte/Aufbaudaten';
 import Abschnitt from '../Objekte/Abschnitt';
+import Aufbau from '../Objekte/Aufbaudaten';
+import PublicWFS from '../PublicWFS';
+import Vektor from '../Vektor';
 import Objekt from './Objekt';
+import QuerStation from './QuerStation';
 
-class Querschnitt implements Objekt {
+/**
+* @author Florian Timm, LGV HH 
+* @version 2019.08.22
+* @copyright MIT
+*/
+
+
+class Querschnitt extends Objekt {
     private _daten: Daten;
+    private _aufbaudaten: { [schicht: number]: Aufbau } = null;
+
     flaeche: Feature;
     trenn: Feature;
-    private _aufbaudaten: {} = null;
+
+    // SIB-Attribute
     station: QuerStation = null;
-    vst: number = null;
-    bst: number = null;
-    fid: string = null;
-    abschnittId: string = null;
     art: string = null;
     artober: string = null;
     breite: number = null;
@@ -31,87 +37,114 @@ class Querschnitt implements Objekt {
     XVstR: number = null;
     XBstL: number = null;
     XBstR: number = null;
-    kherk: number = null;
-    baujahrGew: any = null;
-    abnahmeGew: any = null;
-    dauerGew: any = null;
-    ablaufGew: any = null;
-    objektId: any = null;
-    objektnr: any = null;
-    erfart: string = null;
-    quelle: string = null;
-    ADatum: string = null;
-    bemerkung: string = null;
-    bearbeiter: string = null;
-    behoerde: any = null;
     streifen: string = null;
-    projekt: string = null;
-    streifennr: string = null;
+    streifennr: number = null;
 
-    constructor(daten: Daten) {
-        this._daten = daten;
+    constructor() {
+        super();
+        this._daten = Daten.getInstanz();
         //console.log(daten);
 
         this.flaeche = new Feature({ geom: new Polygon([[[0, 0], [0, 0], [0, 0]]]), objekt: this });
         this._daten.v_quer.addFeature(this.flaeche)
 
-        this.trenn = new Feature({ geom: new MultiLineString([[0, 0], [0, 0], [0, 0]]), objekt: this });
+        this.trenn = new Feature({ geom: new MultiLineString([[[0, 0], [0, 0], [0, 0]]]), objekt: this });
         this._daten.v_trenn.addFeature(this.trenn);
     }
 
-    static loadER(daten: Daten, callback?: (xml: Document, ...args: any[]) => void, ...args: any[]) {
-        document.body.style.cursor = 'wait'
+    static loadER(callback?: (xml: Document, ...args: any[]) => void, ...args: any[]) {
+        document.body.style.cursor = 'wait';
+        let daten = Daten.getInstanz();
         PublicWFS.doQuery('Dotquer', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Querschnitt._loadER_Callback, undefined, daten, callback, ...args);
+            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Querschnitt._loadER_Callback, undefined, callback, ...args);
     }
 
-    static loadAbschnittER(daten: Daten, abschnitt: Abschnitt, callback: (...args: any[]) => void, ...args: any[]) {
-        document.body.style.cursor = 'wait'
+    static loadAbschnittER(abschnitt: Abschnitt, callback: (...args: any[]) => void, ...args: any[]) {
+        document.body.style.cursor = 'wait';
+        let daten = Daten.getInstanz();
         PublicWFS.doQuery('Dotquer', '<Filter>' +
             '<And><PropertyIsEqualTo><PropertyName>abschnittId</PropertyName>' +
             '<Literal>' + abschnitt.abschnittid + '</Literal></PropertyIsEqualTo><PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>', Querschnitt._loadER_Callback, undefined, daten, callback, ...args);
+            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>', Querschnitt._loadER_Callback, undefined, callback, ...args);
     }
 
-    static _loadER_Callback(xml: Document, daten: Daten, callback: (...args: any[]) => void, ...args: any[]) {
+    static _loadER_Callback(xml: Document, callback: (...args: any[]) => void, ...args: any[]) {
+        let daten = Daten.getInstanz();
         let dotquer = xml.getElementsByTagName("Dotquer");
+        let liste: Querschnitt[] = [];
         for (let i = 0; i < dotquer.length; i++) {
             //console.log(quer);
-            Querschnitt.fromXML(daten, dotquer[i]);
+            liste.push(Querschnitt.fromXML(dotquer[i]));
         }
+
+        Querschnitt.checkQuerschnitte(liste);
+
         if (callback != undefined) {
             callback(...args);
         }
         document.body.style.cursor = ''
     }
 
+    static checkQuerschnitte(liste: Querschnitt[]) {
+        liste.forEach(function (querschnitt: Querschnitt) {
+            querschnitt.check()
+        })
 
-    static fromXML(daten: Daten, xml: Element) {
-        let r = new Querschnitt(daten);
+    }
 
-        r.fid = xml.getAttribute('fid');
-        daten.querschnitteFID[r.fid] = r;
+    check() {
+        //if (this.XVstL != null && this.XVstR != null && this.XBstL != null && this.XBstR != null) return;
+        //console.log(this);
+        let m = this.station.getStreifen("M")
+        let seite = this.station.getStreifen(this.streifen);
 
-        for (let tag in CONFIG_WFS.QUERSCHNITT) {
-            //console.log(tag);
-            if (xml.getElementsByTagName(tag).length <= 0) continue;
-            if (CONFIG_WFS.QUERSCHNITT[tag].art == 0) {
-                // Kein Klartext
-                r[tag] = xml.getElementsByTagName(tag)[0].firstChild.textContent;
-            } else if (CONFIG_WFS.QUERSCHNITT[tag].art == 1) {
-                // Kein Klartext
-                r[tag] = Number(xml.getElementsByTagName(tag)[0].firstChild.textContent);
-            } else if (CONFIG_WFS.QUERSCHNITT[tag].art == 2) {
-                // Klartext, xlink wird gespeichert
-                r[tag] = xml.getElementsByTagName(tag)[0].getAttribute('xlink:href');
+        if (this.streifen == "M") {
+            this.XVstL = 0.005 * this.breite;
+            this.XVstR = 0.005 * this.breite;
+            this.XBstL = 0.005 * this.bisBreite;
+            this.XBstR = 0.005 * this.bisBreite;
+            this.createGeom();
+            return;
+        }
+
+        let abstandVST = 0;
+        let abstandBST = 0;
+        for (let nr in m) {
+            abstandVST += 0.005 * m[nr].breite;
+            abstandBST += 0.005 * m[nr].bisBreite;
+        }
+        for (let nr in seite) {
+            if (Number(nr) < this.streifennr) {
+                abstandVST += 0.01 * seite[nr].breite;
+                abstandBST += 0.01 * seite[nr].bisBreite;
             }
         }
-        //console.log(r)
 
-        let abschnitt = r._daten.getAbschnitt(r.abschnittId);
+        if (this.streifen == "L") {
+            this.XVstL = -abstandVST - this.breite * 0.01;
+            this.XVstR = -abstandVST;
+            this.XBstL = -abstandBST - this.bisBreite * 0.01;
+            this.XBstR = -abstandBST;
+        } else {
+            this.XVstL = abstandVST;
+            this.XVstR = abstandVST + this.breite * 0.01;
+            this.XBstL = abstandBST;
+            this.XBstR = abstandBST + this.bisBreite * 0.01;
+        }
+        this.createGeom();
+        return;
+
+    }
+
+    static fromXML(xml: Element) {
+        let r = new Querschnitt();
+        r.setDataFromXML('QUERSCHNITT', xml)
+
+        let abschnitt: Abschnitt = r._daten.getAbschnitt(r.abschnittId);
         abschnitt.inER['Querschnitt'] = true;
 
+        //console.log(abschnitt);
         if (!(abschnitt.existsStation(r.vst))) {
             let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(' ');
             let geo = [];
@@ -134,7 +167,7 @@ class Querschnitt implements Objekt {
 
     getAufbauDaten() {
         if (this._aufbaudaten == null) {
-            let xml = PublicWFS.doQuery('Otschicht', '<ogc:Filter><ogc:And>\n' +
+            PublicWFS.doQuery('Otschicht', '<ogc:Filter><ogc:And>\n' +
                 '<ogc:PropertyIsEqualTo>\n' +
                 '    <ogc:Property>projekt/@xlink:href</ogc:Property>\n' +
                 '    <ogc:Literal>' + this._daten.ereignisraum + '</ogc:Literal>\n' +
@@ -143,20 +176,20 @@ class Querschnitt implements Objekt {
                 '    <ogc:Property>parent/@xlink:href</ogc:Property>\n' +
                 '    <ogc:Literal>' + this.fid + '</ogc:Literal>\n' +
                 '  </ogc:PropertyIsEqualTo>\n' +
-                '</ogc:And></ogc:Filter>', this._parseAufbaudaten, undefined, this);
+                '</ogc:And></ogc:Filter>', this._parseAufbaudaten.bind(this));
         }
     }
 
-    _parseAufbaudaten(xml: Document, _this: Querschnitt) {
+    _parseAufbaudaten(xml: Document) {
         let aufbaudaten = {};
         let aufbau = xml.getElementsByTagName('Otschicht');
 
         for (let i = 0; i < aufbau.length; i++) {
             let a = Aufbau.fromXML(aufbau[i]);
 
-            _this._aufbaudaten[a.schichtnr] = a;
+            this._aufbaudaten[a.schichtnr] = a;
         }
-        _this._aufbaudaten = aufbaudaten;
+        this._aufbaudaten = aufbaudaten;
     }
 
     createGeom() {
@@ -214,7 +247,16 @@ class Querschnitt implements Objekt {
             }
         }
 
-        r += '</Dotquer>\n</wfs:Insert>\n';
+        r += '</Dotquer>\n';
+
+        if (this._aufbaudaten != null) {
+
+            for (let s in this._aufbaudaten) {
+                //console.log(this._aufbaudaten[s]);
+                r += this._aufbaudaten[s].createXML();
+            }
+        }
+        r += '</wfs:Insert>\n';
         return r;
     }
 
@@ -323,12 +365,68 @@ class Querschnitt implements Objekt {
     }
 
 
+    createUpdateArtEinzelnXML() {
+        return '<wfs:Update typeName="Dotquer">\n' +
+            '	<wfs:Property>\n' +
+            '		<wfs:Name>art/@xlink:href</wfs:Name>\n' +
+            '		<wfs:Value>' + this.art + '</wfs:Value>\n' +
+            '	</wfs:Property>\n' +
+            '	<ogc:Filter>\n' +
+            '		<ogc:And>\n' +
+            '			<ogc:PropertyIsEqualTo>\n' +
+            '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
+            '				<ogc:Literal>' + this.objektId + '</ogc:Literal>\n' +
+            '			</ogc:PropertyIsEqualTo>\n' +
+            '			<ogc:PropertyIsEqualTo>\n' +
+            '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
+            '				<ogc:Literal>' + this.projekt + '</ogc:Literal>\n' +
+            '			</ogc:PropertyIsEqualTo>\n' +
+            '		</ogc:And>\n' +
+            '	</ogc:Filter>\n' +
+            '</wfs:Update>';
+    }
+
+    createUpdateOberEinzelnXML() {
+        return '<wfs:Update typeName="Dotquer">\n' +
+            '	<wfs:Property>\n' +
+            '		<wfs:Name>artober/@xlink:href</wfs:Name>\n' +
+            '		<wfs:Value>' + this.artober + '</wfs:Value>\n' +
+            '	</wfs:Property>\n' +
+            '	<ogc:Filter>\n' +
+            '		<ogc:And>\n' +
+            '			<ogc:PropertyIsEqualTo>\n' +
+            '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
+            '				<ogc:Literal>' + this.objektId + '</ogc:Literal>\n' +
+            '			</ogc:PropertyIsEqualTo>\n' +
+            '			<ogc:PropertyIsEqualTo>\n' +
+            '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
+            '				<ogc:Literal>' + this.projekt + '</ogc:Literal>\n' +
+            '			</ogc:PropertyIsEqualTo>\n' +
+            '		</ogc:And>\n' +
+            '	</ogc:Filter>\n' +
+            '</wfs:Update>';
+    }
+
     updateArt(art: string, artober: string) {
         this.art = art;
         this.artober = artober;
         this._daten.v_quer.changed();
 
         PublicWFS.doTransaction(this.createUpdateArtXML(), undefined, undefined);
+    }
+
+    updateArtEinzeln(art: string) {
+        this.art = art;
+        this._daten.v_quer.changed();
+
+        PublicWFS.doTransaction(this.createUpdateArtEinzelnXML(), undefined, undefined);
+    }
+
+    updateOberEinzeln(artober: string) {
+        this.artober = artober;
+        this._daten.v_quer.changed();
+
+        PublicWFS.doTransaction(this.createUpdateOberEinzelnXML(), undefined, undefined);
     }
 
 
@@ -355,7 +453,7 @@ class Querschnitt implements Objekt {
         } else {
             // Verschieben
             for (var nnr in gesStreifen) {
-                if (nnr <= nr)
+                if (Number(nnr) <= nr)
                     continue;
                 gesStreifen[nnr]['X' + edit + 'L'] += diff;
                 gesStreifen[nnr]['X' + edit + 'R'] += diff;
@@ -368,6 +466,11 @@ class Querschnitt implements Objekt {
         //console.log(soap);
 
         PublicWFS.doTransaction(soap, undefined, undefined);
+    }
+
+    delete() {
+        this._daten.v_quer.removeFeature(this.flaeche)
+        this._daten.v_trenn.removeFeature(this.trenn)
     }
 }
 

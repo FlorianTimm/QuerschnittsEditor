@@ -6,7 +6,7 @@ import { Map } from 'ol';
 import Daten from '../../Daten';
 import { SelectEventType } from 'ol/interaction/Select';
 import Abschnitt from '../../Objekte/Abschnitt';
-import Tool from '../Tool';
+import Tool from '../prototypes/Tool';
 
 /**
  * Querschnittsflächen zu Ereignisraum hinzufügen
@@ -14,12 +14,13 @@ import Tool from '../Tool';
  * @version 2019.06.06
  * @copyright MIT
  */
-class QuerAdd2ER implements Tool {
+class QuerAdd2ER extends Tool {
     daten: Daten;
     map: Map;
     select: SelectInteraction;
 
     constructor(map: Map, daten: Daten) {
+        super();
         this.daten = daten;
         this.map = map;
         this.select = new SelectInteraction({
@@ -46,14 +47,14 @@ class QuerAdd2ER implements Tool {
         let abschnitt = this.select.getFeatures().getArray()[0] as Abschnitt;
         if ("Querschnitt" in abschnitt.inER && abschnitt.inER["Querschnitt"]) return;
         document.body.style.cursor = 'wait'
-        PublicWFS.addInER(abschnitt as Abschnitt, "Querschnitt", this.daten.ereignisraum_nr, QuerAdd2ER._onSelect_Callback, undefined, this, abschnitt);
+        PublicWFS.addInER(abschnitt as Abschnitt, "Querschnitt", this.daten.ereignisraum_nr, this._onSelect_Callback.bind(this), undefined, abschnitt);
     }
 
-    static _onSelect_Callback(xml, _this, abschnitt) {
+    _onSelect_Callback(xml: Document, abschnitt: Abschnitt) {
         abschnitt.inER["Querschnitt"] = true;
-        Querschnittsdaten.loadAbschnittER(_this.daten, abschnitt, PublicWFS.showMessage, "Erfolgreich in ER kopiert");
-        _this.select.getFeatures().clear();
-        _this.daten.l_achse.changed();
+        Querschnittsdaten.loadAbschnittER(abschnitt, PublicWFS.showMessage, "Erfolgreich in ER kopiert");
+        this.select.getFeatures().clear();
+        Daten.getInstanz().l_achse.changed();
     }
 
     start() {

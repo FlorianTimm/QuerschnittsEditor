@@ -11,8 +11,8 @@ import { Extent } from 'ol/extent';
 export default class AbschnittWFS {
 
     static getById(id: string,
-        callbackSuccess: (xml: XMLDocument, ...args: any[]) => void,
-        callbackFailed: (xml: XMLDocument, ...args: any[]) => void,
+        callbackSuccess?: (xml: XMLDocument, ...args: any[]) => void,
+        callbackFailed?: (xml: XMLDocument, ...args: any[]) => void,
         ...args: any[]) {
 
         let param = '?ABSCHNITTID=' + id;
@@ -20,8 +20,8 @@ export default class AbschnittWFS {
     }
 
     static getByStrName(name: string,
-        callbackSuccess: (xml: XMLDocument, ...args: any[]) => void,
-        callbackFailed: (xml: XMLDocument, ...args: any[]) => void,
+        callbackSuccess?: (xml: XMLDocument, ...args: any[]) => void,
+        callbackFailed?: (xml: XMLDocument, ...args: any[]) => void,
         ...args: any[]) {
 
         let param = '?STRNAME=' + encodeURIComponent(name);
@@ -29,8 +29,8 @@ export default class AbschnittWFS {
     }
 
     static getByWegenummer(klasse: string, nummer: string, buchstabe: string,
-        callbackSuccess: (xml: XMLDocument, ...args: any[]) => void,
-        callbackFailed: (xml: XMLDocument, ...args: any[]) => void,
+        callbackSuccess?: (xml: XMLDocument, ...args: any[]) => void,
+        callbackFailed?: (xml: XMLDocument, ...args: any[]) => void,
         ...args: any[]) {
 
         let param = '?KLASSE=' + klasse + '&NR=' + nummer + '&BUCHSTABE=' + buchstabe;
@@ -38,8 +38,8 @@ export default class AbschnittWFS {
     }
 
     static getByVNKNNK(vnk: string, nnk: string,
-        callbackSuccess: (xml: XMLDocument, ...args: any[]) => void,
-        callbackFailed: (xml: XMLDocument, ...args: any[]) => void,
+        callbackSuccess?: (xml: XMLDocument, ...args: any[]) => void,
+        callbackFailed?: (xml: XMLDocument, ...args: any[]) => void,
         ...args: any[]) {
 
         let param = '?VNK=' + vnk + '&NNK=' + nnk;
@@ -47,8 +47,8 @@ export default class AbschnittWFS {
     }
 
     static getByExtent(extent: Extent,
-        callbackSuccess: (xml: XMLDocument, ...args: any[]) => void,
-        callbackFailed: (xml: XMLDocument, ...args: any[]) => void,
+        callbackSuccess?: (xml: XMLDocument, ...args: any[]) => void,
+        callbackFailed?: (xml: XMLDocument, ...args: any[]) => void,
         ...args: any[]) {
 
         let param = '?BBOX=' + extent.join(',');
@@ -56,8 +56,8 @@ export default class AbschnittWFS {
     }
 
     static _makeRequest(param: string,
-        callbackSuccess: (xml: XMLDocument, ...args: any[]) => void,
-        callbackFailed: (xml: XMLDocument, ...args: any[]) => void,
+        callbackSuccess?: (xml: XMLDocument, ...args: any[]) => void,
+        callbackFailed?: (xml: XMLDocument, ...args: any[]) => void,
         ...args: any[]) {
 
         var xmlhttp = new XMLHttpRequest();
@@ -65,9 +65,9 @@ export default class AbschnittWFS {
 
         xmlhttp.onreadystatechange = function () {
             if (xmlhttp.readyState != 4) return;
-            if (xmlhttp.status == 200) {
+            if (callbackSuccess != undefined && xmlhttp.status == 200) {
                 callbackSuccess(xmlhttp.responseXML, ...args)
-            } else {
+            } else if (xmlhttp.status != 200) {
                 if (callbackFailed != undefined)
                     callbackFailed(xmlhttp.responseXML, ...args)
                 else

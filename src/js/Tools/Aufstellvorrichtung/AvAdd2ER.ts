@@ -2,7 +2,7 @@ import { Style, Stroke } from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
 import PublicWFS from '../../PublicWFS';
 import Aufstellvorrichtung from '../../Objekte/Aufstellvorrichtung';
-import Tool from '../Tool'
+import Tool from '../prototypes/Tool'
 import Daten from '../../Daten';
 import { Map } from 'ol';
 import { SelectEventType } from 'ol/interaction/Select';
@@ -14,12 +14,13 @@ import Abschnitt from '../../Objekte/Abschnitt';
  * @version 2019.05.20
  * @copyright MIT
  */
-class AvAdd2ER implements Tool {
+class AvAdd2ER extends Tool {
     daten: Daten;
     map: Map;
     select: SelectInteraction;
 
     constructor(map: Map, daten: Daten) {
+        super();
         this.daten = daten;
         this.map = map;
 
@@ -43,14 +44,14 @@ class AvAdd2ER implements Tool {
         let abschnitt = this.select.getFeatures().getArray()[0] as Abschnitt;
         if ("Otaufstvor" in abschnitt.inER && abschnitt.inER["Otaufstvor"]) return;
         document.body.style.cursor = 'wait'
-        PublicWFS.addInER(abschnitt, "Otaufstvor", this.daten.ereignisraum_nr, AvAdd2ER._onSelect_Callback, undefined, this, abschnitt);
+        PublicWFS.addInER(abschnitt, "Otaufstvor", this.daten.ereignisraum_nr, this._onSelect_Callback.bind(this), undefined, abschnitt);
     }
 
-    static _onSelect_Callback(xml, _this, abschnitt) {
+    _onSelect_Callback(xml, abschnitt: Abschnitt) {
         abschnitt.inER["Otaufstvor"] = true;
-        Aufstellvorrichtung.loadAbschnittER(_this.daten, abschnitt, PublicWFS.showMessage, "Erfolgreich in ER kopiert");
-        _this.select.getFeatures().clear();
-        _this.daten.l_achse.changed();
+        Aufstellvorrichtung.loadAbschnittER(this.daten, abschnitt, PublicWFS.showMessage, "Erfolgreich in ER kopiert");
+        this.select.getFeatures().clear();
+        this.daten.l_achse.changed();
     }
 
     start() {

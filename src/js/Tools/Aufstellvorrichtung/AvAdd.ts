@@ -7,8 +7,8 @@ import { Point, LineString } from 'ol/geom';
 import Feature from 'ol/Feature';
 import PublicWFS from '../../PublicWFS';
 import Aufstellvorrichtung from '../../Objekte/Aufstellvorrichtung';
-import Tool from '../Tool';
-import { Map } from 'ol';
+import Tool from '../prototypes/Tool';
+import { Map, MapBrowserEvent } from 'ol';
 import Daten from '../../Daten';
 import Abschnitt from '../../Objekte/Abschnitt';
 var CONFIG = require('../../config.json');
@@ -19,7 +19,7 @@ var CONFIG = require('../../config.json');
  * @version 2019.05.20
  * @copyright MIT
  */
-class AvAdd implements Tool {
+class AvAdd extends Tool {
     map: Map;
     daten: Daten;
 
@@ -36,6 +36,7 @@ class AvAdd implements Tool {
     feat_station_line: Feature;
 
     constructor(map: Map, daten: Daten) {
+        super();
         this.map = map;
         this.daten = daten;
 
@@ -115,7 +116,7 @@ class AvAdd implements Tool {
         document.getElementById('avadd_button').addEventListener('click', this.addAufstellButton.bind(this));
     }
 
-    part_get_station(event) {
+    part_get_station(event: MapBrowserEvent) {
         let achse = null;
         if (this.select.getFeatures().getArray().length > 0) {
             achse = this.select.getFeatures().item(0);
@@ -133,7 +134,7 @@ class AvAdd implements Tool {
     }
 
 
-    part_click(event) {
+    part_click(event: MapBrowserEvent) {
         this.feat_neu.set('isset', true);
         let daten = this.part_get_station(event);
         if (daten['pos'] == null) return;
@@ -156,7 +157,7 @@ class AvAdd implements Tool {
 
     }
 
-    part_move(event) {
+    part_move(event: MapBrowserEvent) {
         let daten = this.part_get_station(event);
 
         if (daten == null || daten['pos'] == null) return;
@@ -175,27 +176,27 @@ class AvAdd implements Tool {
     addAufstellButton() {
         // im ER?
         if (!("Otaufstvor" in this.abschnitt.inER)) {
-            PublicWFS.addInER(this.abschnitt, "Otaufstvor", this.daten.ereignisraum_nr, AvAdd._addInER_Callback, undefined, this);
+            PublicWFS.addInER(this.abschnitt, "Otaufstvor", this.daten.ereignisraum_nr, this.addInER_Callback.bind(this));
         } else {
-            AvAdd._wfsAddAufstell(this)
+            this.wfsAddAufstell()
         }
     }
 
-    static _addInER_Callback(xml, _this) {
-        //console.log(_this.daten)
-        Aufstellvorrichtung.loadAbschnittER(_this.daten, _this.abschnitt, AvAdd._wfsAddAufstell, _this)
+    private addInER_Callback(xml: XMLDocument) {
+        Aufstellvorrichtung.loadAbschnittER(this.daten, this.abschnitt, this.wfsAddAufstell.bind(this))
     }
 
-    static _wfsAddAufstell(_this) {
+    private wfsAddAufstell() {
         let soap = '<wfs:Insert>\n' +
             '<Otaufstvor>\n' +
-            '<projekt xlink:href="#' + _this.daten.ereignisraum + '" typeName="Projekt" />\n' +
-            '<abschnittId>' + _this.abschnitt.abschnittid + '</abschnittId>\n' +
-            '<vst>' + _this.station + '</vst>\n' +
-            '<bst>' + _this.station + '</bst>\n' +
-            '<rabstbaVst>' + _this.abstand + '</rabstbaVst>\n' +
-            '<vabstVst>' + _this.abstand + '</vabstVst>\n' +
-            '<vabstBst>' + _this.abstand + '</vabstBst>\n' +
+            '<projekt xlink:href="#' + this.daten.ereignisraum + '" typeName="Projekt" />\n' +
+            '<abschnittId>' + this.abschnitt.abschnittid + '</abschnittId>\n' +
+            '<vst>' + this.station + '</vst>\n' +
+            '<bst>' + this.station + '</bst>\n' +
+            '<rabstbaVst>' + this.abstand + '</rabstbaVst>\n' +
+            '<vabstVst>' + this.abstand + '</vabstVst>\n' +
+            '<vabstBst>' + this.abstand + '</vabstBst>\n' +
+            '<objektnr>' + document.forms.namedItem("avadd").avadd_extid.value + '</objektnr>\n' +
             '<bemerkung>mit QuerschnittsEditor erfasst</bemerkung>\n' +
             '<detailgrad xlink:href="' + CONFIG.DETAIL_HOCH + '" typeName="Itobjdetailgrad" />\n' +
             '<erfart xlink:href="' + CONFIG.ERFASSUNG + '" typeName="Iterfart" />\n' +
@@ -205,23 +206,21 @@ class AvAdd implements Tool {
             '<quelle xlink:href="#S' + document.forms.namedItem("avadd").avadd_quelle.value + '" typeName="Itquelle" />\n' +
             '</Otaufstvor> </wfs:Insert>';
         //console.log(soap)
-        PublicWFS.doTransaction(soap, _this._getInsertResults, undefined, _this);
+        PublicWFS.doTransaction(soap, this._getInsertResults.bind(this));
     }
 
-    _getInsertResults(xml, _this) {
-        //console.log(_this)
+    _getInsertResults(xml: XMLDocument) {
         PublicWFS.showMessage("erfolgreich");
-        _this.abschnitt = null;
-        _this.station = null;
-        _this.seite = null;
-        _this.feat_neu.getGeometry().setCoordinates([0, 0]);
-        //console.log(_this.daten);
+        this.abschnitt = null;
+        this.station = null;
+        this.seite = null;
+        (this.feat_neu.getGeometry() as Point).setCoordinates([0, 0]);
         let filter = '<Filter>';
-        for (let f of xml.getElementsByTagName('InsertResult')[0].childNodes) {
-            filter += '<FeatureId fid="' + f.getAttribute('fid') + '"/>';
-        }
+        xml.getElementsByTagName('InsertResult')[0].childNodes.forEach(function (f: ChildNode) {
+            filter += '<FeatureId fid="' + (f as Element).getAttribute('fid') + '"/>';
+        })
         filter += '</Filter>';
-        PublicWFS.doQuery('Otaufstvor', filter, Aufstellvorrichtung._loadER_Callback, undefined, _this.daten);
+        PublicWFS.doQuery('Otaufstvor', filter, Aufstellvorrichtung._loadER_Callback);
     }
 
     start() {
@@ -236,7 +235,7 @@ class AvAdd implements Tool {
         this.map.removeInteraction(this.select);
         document.forms.namedItem("avadd").style.display = 'none';
         this.map.un("pointermove", this.part_move);
-        this.map.un("singleclick", this.part_click);
+        this.map.un("singleclick", this.part_click.bind(this));
         this.map.removeLayer(this.l_overlay);
     }
 }

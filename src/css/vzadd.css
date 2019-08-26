@@ -14,9 +14,9 @@
 #vz_popup {
     background-color: rgba(255, 255, 255, 0.8);
     display: inline-block;
-    margin-top: 5%;
+    margin-top: 2%;
     padding: 20px;
-    max-height: 80%;
+    max-height: 90%;
     overflow-y: auto;
 }
 
@@ -43,7 +43,7 @@
 .schilderListe .schildText {
     vertical-align: top;
     padding-left: 60px;
-    width: 450px;
+    width: 680px;
 }
 
 .schildText:after {
@@ -60,7 +60,7 @@
     font-size: 8pt;
 }
 
-.ui-state-highlight {
+form.ui-state-highlight {
     height: 180px;
     line-height: 1.2em;
     background-color: #ff4;
@@ -84,7 +84,7 @@ div.form_group {
 }
 
 div.form_group input[type='text'] {
-    width: 220px;
+    width: 200px;
 }
 
 .ui-dialog-content {

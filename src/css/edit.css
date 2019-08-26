@@ -1,6 +1,4 @@
-html,
-body,
-#map {
+html, body, #map {
     height: 100%;
     width: 100%;
     margin: 0;
@@ -37,11 +35,7 @@ sidebar>* {
     max-width: 200px;
 }
 
-#qsMultiMod select,
-#qsMultiMod input,
-#info input,
-#info select,
-#avadd select {
+#qsMultiMod select, #qsMultiMod input, #info input, #info select, #avadd select {
     width: 100%;
 }
 
@@ -51,9 +45,7 @@ form table {
     border-collapse: collapse;
 }
 
-form table,
-th,
-td {
+form table, th, td {
     border: 1px solid black;
 }
 
@@ -70,18 +62,19 @@ td {
     font-family: sans-serif;
 }
 
-form#info,
-form#modify,
-form#qsMultiMod {
+form#info, form#modify, form#qsMultiMod {
     display: none;
 }
 
-form#hinzu,
-form#avadd,
-form#loeschen,
-form#teilen {
+form#hinzu, form#quer_del, form#avadd, form#sapadd, form#loeschen, form#teilen {
     text-align: center;
     display: none;
+}
+
+form#quer_del input[type="button"] {
+    background-color: red;
+    color: white;
+    font-weight: 600;
 }
 
 /* Style the tab */
@@ -103,11 +96,10 @@ form#teilen {
     cursor: pointer;
     padding: 10px;
     transition: 0.3s;
-    width: 50%;
+    width: 33%;
 }
 
-button#zoomToExtent,
-button#loadExtent {
+button#zoomToExtent, button#loadExtent {
     background-color: #ccc;
     float: left;
     border: 1px solid #999;
@@ -156,13 +148,15 @@ input[type="radio"]:checked+label {
 
 /* Go from zero to full opacity */
 
-#tab_Querschnitt,
-.bt_Querschnitt {
+#tab_Querschnitt, .bt_Querschnitt {
     background-color: rgba(255, 243, 188, 0.8);
 }
 
-#tab_Otaufstvor,
-.bt_Aufstell {
+#tab_Otaufstvor, .bt_Aufstell {
+    background-color: rgba(250, 182, 182, 0.8);
+}
+
+#tab_Otstrauspkt, .bt_Strassenaus {
     background-color: rgba(212, 255, 214, 0.8);
 }
 
@@ -177,7 +171,6 @@ input[type="radio"]:checked+label {
     from {
         opacity: 0;
     }
-
     to {
         opacity: 1;
     }
@@ -193,23 +186,22 @@ form#suche {
     overflow-x: hidden;
 }
 
-form#avadd {
+form#avadd , form#sapadd {
     overflow-x: inherit;
     text-align: left;
 }
 
-form#avadd input,
-form#avadd select,
-form#avadd .chosen-container {
+form#avadd input, form#avadd select, form#avadd .chosen-container,
+form#sapadd input, form#sapadd select, form#sapadd .chosen-container {
     margin-bottom: 4px;
     width: 95%;
 }
 
-form#avadd .chosen-container {
+form#avadd .chosen-container, form#sapadd .chosen-container {
     font-size: 9pt;
 }
 
-form#avadd label {
+form#avadd label, form#sapadd label {
     font-size: 8pt;
 }
 
@@ -220,8 +212,6 @@ form#avadd label {
 .ui-dialog {
     z-index: 1100 !important;
 }
-
-
 
 /* Tooltip fürs Messen */
 
@@ -246,8 +236,7 @@ form#avadd label {
     border: 1px solid white;
 }
 
-.tooltip-measure:before,
-.tooltip-static:before {
+.tooltip-measure:before, .tooltip-static:before {
     border-top: 6px solid rgba(0, 0, 0, 0.5);
     border-right: 6px solid transparent;
     border-left: 6px solid transparent;
@@ -277,8 +266,8 @@ div#zurueck a {
     text-decoration: none;
     display: block;
     padding: 3px;
-    background-color: rgba(0,60,136,0.5);
-    color:white;
+    background-color: rgba(0, 60, 136, 0.5);
+    color: white;
     border: none;
     margin: 1px;
     border-radius: 2px;
@@ -286,5 +275,5 @@ div#zurueck a {
 }
 
 div#zurueck a:hover {
-    background-color: rgba(0,60,136,0.7);
+    background-color: rgba(0, 60, 136, 0.7);
 }

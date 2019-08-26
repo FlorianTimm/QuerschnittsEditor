@@ -6,14 +6,15 @@ import Daten from '../Daten';
 import Abschnitt from './Abschnitt';
 import Querschnitt from './Querschnittsdaten';
 
- /**
- * Querschnitts-Station
- * @author Florian Timm, LGV HH 
- * @version 2019.06.06
- * @copyright MIT
- */
+/**
+* Querschnitts-Station
+* @author Florian Timm, LGV HH 
+* @version 2019.06.06
+* @copyright MIT
+*/
 
 export class QuerStation {
+
     daten: Daten;
     abschnitt: Abschnitt;
     vst: number;
@@ -22,7 +23,7 @@ export class QuerStation {
     seg: number[] = [];
     vector: number[][] = [];
     linie: MultiLineString = null;
-    private _querschnitte: {} = {};
+    private _querschnitte: { [streifen: string]: { [streifennr: number]: Querschnitt } } = {};
 
     constructor(daten: Daten, abschnitt: Abschnitt, vst: number, bst: number, geo: number[]) {
         this.daten = daten;
@@ -41,29 +42,30 @@ export class QuerStation {
         }
         this._querschnitte[streifen][nr] = querschnitt;
     }
-    getQuerschnitt(streifen: string, streifennr: number) {
+    getQuerschnitt(streifen: string, streifennr: number): Querschnitt {
         if (!(streifen in this._querschnitte))
             return null;
         if (!(streifennr in this._querschnitte[streifen]))
             return null;
         return this._querschnitte[streifen][streifennr];
     }
-    getAllQuerschnitte() {
-        let r = [];
+
+    getAllQuerschnitte(): Querschnitt[] {
+        let r: Querschnitt[] = [];
         for (let streifen in this._querschnitte) {
-            for (let querschnitt in this._querschnitte[streifen]) {
-                r.push(querschnitt);
+            for (let nr in this._querschnitte[streifen]) {
+                r.push(this._querschnitte[streifen][nr]);
             }
         }
         return r;
     }
-    getStreifen(streifen: string) {
+    getStreifen(streifen: string): { [streifennr: number]: Querschnitt } {
         if (!(streifen in this._querschnitte))
             return null;
         return this._querschnitte[streifen];
     }
 
-    getQuerschnittByBstAbstand(XBstL: number, XBstR: number) {
+    getQuerschnittByBstAbstand(XBstL: number, XBstR: number): Querschnitt {
         for (let streifen in this._querschnitte) {
             for (let querschnitt in this._querschnitte[streifen]) {
                 if (XBstL < 0 && this._querschnitte[streifen][querschnitt].XBstL == XBstL) return this._querschnitte[streifen][querschnitt];
@@ -73,7 +75,7 @@ export class QuerStation {
         return null;
     }
 
-    getQuerschnittByVstAbstand(XVstL: number, XVstR: number) {
+    getQuerschnittByVstAbstand(XVstL: number, XVstR: number): Querschnitt {
         for (let streifen in this._querschnitte) {
             for (let querschnitt in this._querschnitte[streifen]) {
                 if (XVstL < 0 && this._querschnitte[streifen][querschnitt].XVstL == XVstL) return this._querschnitte[streifen][querschnitt];
@@ -119,12 +121,123 @@ export class QuerStation {
     }
     teilen(station: number) {
         PublicWFS.showMessage("noch nicht möglich", true);
-        this.abschnitt.getAufbauDaten(QuerStation.teilen_callback, undefined, this, station);
+        this.abschnitt.getAufbauDaten(this.teilen_callback.bind(this), undefined, station);
     }
 
-    static teilen_callback(_this, station) {
+    teilen_callback(station: number) {
+        this.abschnitt.writeQuerAufbau();
+    }
 
-        _this.abschnitt.writeQuerAufbau();
+    deleteAll() {
+        for (let streifen in this._querschnitte) {
+            for (let nr in this._querschnitte[streifen]) {
+                this._querschnitte[streifen][nr].delete();
+            }
+        }
+        this._querschnitte = {};
+    }
+
+    rewrite() {
+        let soap = '<wfs:Delete typeName="Dotquer">\n' +
+            '<ogc:Filter>\n' +
+            '  <ogc:And>\n' +
+            '    <ogc:PropertyIsEqualTo>\n' +
+            '       <ogc:PropertyName>abschnittId</ogc:PropertyName>\n' +
+            '      <ogc:Literal>' + this.abschnitt.abschnittid + '</ogc:Literal>\n' +
+            '    </ogc:PropertyIsEqualTo>\n' +
+            '    <ogc:PropertyIsEqualTo>\n' +
+            '       <ogc:PropertyName>vst</ogc:PropertyName>\n' +
+            '      <ogc:Literal>' + this.vst + '</ogc:Literal>\n' +
+            '    </ogc:PropertyIsEqualTo>\n' +
+            '    <ogc:PropertyIsEqualTo>\n' +
+            '       <ogc:PropertyName>bst</ogc:PropertyName>\n' +
+            '      <ogc:Literal>' + this.bst + '</ogc:Literal>\n' +
+            '    </ogc:PropertyIsEqualTo>\n' +
+            '    <ogc:PropertyIsEqualTo>\n' +
+            '      <ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
+            '      <ogc:Literal>' + this.daten.ereignisraum + '</ogc:Literal>\n' +
+            '    </ogc:PropertyIsEqualTo>\n' +
+            '  </ogc:And>\n' +
+            '</ogc:Filter>\n' +
+            '</wfs:Delete>\n' +
+            '<wfs:Delete typeName="Otschicht">\n' +
+            '<ogc:Filter>\n' +
+            '  <ogc:And>\n' +
+            '    <ogc:PropertyIsEqualTo>\n' +
+            '       <ogc:PropertyName>abschnittId</ogc:PropertyName>\n' +
+            '      <ogc:Literal>' + this.abschnitt.abschnittid + '</ogc:Literal>\n' +
+            '    </ogc:PropertyIsEqualTo>\n' +
+            '    <ogc:PropertyIsEqualTo>\n' +
+            '       <ogc:PropertyName>vst</ogc:PropertyName>\n' +
+            '      <ogc:Literal>' + this.vst + '</ogc:Literal>\n' +
+            '    </ogc:PropertyIsEqualTo>\n' +
+            '    <ogc:PropertyIsEqualTo>\n' +
+            '       <ogc:PropertyName>bst</ogc:PropertyName>\n' +
+            '      <ogc:Literal>' + this.bst + '</ogc:Literal>\n' +
+            '    </ogc:PropertyIsEqualTo>\n' +
+            '    <ogc:PropertyIsEqualTo>\n' +
+            '      <ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
+            '      <ogc:Literal>' + this.daten.ereignisraum + '</ogc:Literal>\n' +
+            '    </ogc:PropertyIsEqualTo>\n' +
+            '  </ogc:And>\n' +
+            '</ogc:Filter>\n' +
+            '</wfs:Delete>\n';
+        for (let qs of this.getAllQuerschnitte()) {
+            //console.log(qs);
+            soap += qs.createInsertXML();
+        }
+
+        console.log(soap);
+        PublicWFS.doTransaction(soap, this.reload.bind(this))
+    }
+
+    reload() {
+        let filter = '<Filter>' +
+            '<And>' +
+            '<PropertyIsEqualTo>' +
+            '<PropertyName>abschnittId</PropertyName>' +
+            '<Literal>' + this.abschnitt.abschnittid + '</Literal>' +
+            '</PropertyIsEqualTo>' +
+            '<PropertyIsEqualTo>' +
+            '<PropertyName>vst</PropertyName>' +
+            '<Literal>' + this.vst + '</Literal>' +
+            '</PropertyIsEqualTo>' +
+            '<PropertyIsEqualTo>' +
+            '<PropertyName>bst</PropertyName>' +
+            '<Literal>' + this.bst + '</Literal>' +
+            '</PropertyIsEqualTo>' +
+            '<PropertyIsEqualTo>' +
+            '<PropertyName>projekt/@xlink:href</PropertyName>' +
+            '<Literal>' + this.daten.ereignisraum + '</Literal>' +
+            '</PropertyIsEqualTo>' +
+            '</And>' +
+            '</Filter>';
+        PublicWFS.doQuery('Dotquer', filter, this.loadStationCallback.bind(this));
+    }
+
+    loadStationCallback(xml: Document) {
+        this.deleteAll();
+        let dotquer = xml.getElementsByTagName("Dotquer");
+        let liste: Querschnitt[] = [];
+        for (let i = 0; i < dotquer.length; i++) {
+            //console.log(quer);
+            liste.push(Querschnitt.fromXML(dotquer[i]));
+        }
+        for (let i = 0; i < liste.length; i++) {
+            liste[i].check();
+        }
+    }
+
+    deleteStreifen(streifen: string, nummer: number) {
+        this.daten.v_trenn.removeFeature(this._querschnitte[streifen][nummer].trenn)
+        this.daten.v_quer.removeFeature(this._querschnitte[streifen][nummer].flaeche)
+        let max = -1;
+        for (let i in this._querschnitte[streifen]) {
+            if (Number(i) > max) {
+                max = Number(i);
+            }
+        }
+        delete this._querschnitte[streifen][nummer];
     }
 }
 

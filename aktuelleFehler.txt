@@ -1,0 +1,17 @@
+
+Auch mittlere Punkte von Querschnitten können verschoben werden
+Keine Anzeige bei Multiselect und gleichen Attributen (Art/ArtOber)
+Absturz bei großen Daten
+
+
+
+
+
+x Suchfeld sortieren, nach erster Zahl sortieren
+x Suchfeld maximale Breite festlegen
+x neue Querschnitte ohn VstL usw anzeigen
+x Straßenbezug (3 Optionen, voreingestellt: aktuelle Straße)
+x Aufstelldatum (leer, Datum)
+x Variable Text bei Schild (Zeichensatz)
+x Externe Objektnummer bei Schildern
+x Schild wirklich löschen, wenn Löschen gewählt wird

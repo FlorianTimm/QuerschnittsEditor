@@ -5,8 +5,9 @@ import { platformModifierKeyOnly, never } from 'ol/events/condition';
 import QuerInfoTool from './QuerInfoTool';
 import Daten from '../../Daten';
 import { Map } from 'ol';
-import Tool from '../Tool';
+import Tool from '../prototypes/Tool';
 import { SelectInteraction, ModifyInteraction } from '../../openLayers/Interaction'
+import { ModifyEvent } from 'ol/interaction/Modify';
 
 /**
  * Funktion zum Verändern von Querschnittsflächen
@@ -14,7 +15,7 @@ import { SelectInteraction, ModifyInteraction } from '../../openLayers/Interacti
  * @version 2019.05.20
  * @copyright MIT
  */
-class QuerModifyTool implements Tool {
+class QuerModifyTool extends Tool {
     private map: Map;
     private daten: Daten;
     private info: QuerInfoTool;
@@ -25,15 +26,16 @@ class QuerModifyTool implements Tool {
     private snap_station: Snap;
     private streifennr: number;
 
-    constructor(map: Map, daten: Daten, info: QuerInfoTool) {
+    constructor(map: Map, info: QuerInfoTool) {
+        super();
         this.map = map;
-        this.daten = daten;
+        this.daten = Daten.getInstanz();
         this.info = info;
 
-        this._createLinienSelect();
-        this._createFlaechenSelect();
-        this._createModify();
-        this._createSnap();
+        this.createLinienSelect();
+        this.createFlaechenSelect();
+        this.createModify();
+        this.createSnap();
 
         document.getElementById('info_art').addEventListener('change', this.updateInfo.bind(this));
         document.getElementById('info_ober').addEventListener('change', this.updateInfo.bind(this));
@@ -42,8 +44,8 @@ class QuerModifyTool implements Tool {
 
         document.getElementById('befehl_modify').addEventListener('change', this._switch.bind(this));
 
-        document.getElementById('qsmm_art').addEventListener('change', this.updateMulti.bind(this));
-        document.getElementById('qsmm_ober').addEventListener('change', this.updateMulti.bind(this));
+        document.getElementById('qsmm_art').addEventListener('change', this.updateMultiArt.bind(this));
+        document.getElementById('qsmm_ober').addEventListener('change', this.updateMultiOber.bind(this));
     };
 
     _switch() {
@@ -54,7 +56,7 @@ class QuerModifyTool implements Tool {
         }
     }
 
-    _createModify() {
+    private createModify() {
         this.modify = new ModifyInteraction({
             deleteCondition: never,
             insertVertexCondition: never,
@@ -168,7 +170,7 @@ class QuerModifyTool implements Tool {
         return diff;
     }
 
-    _createLinienSelect() {
+    createLinienSelect() {
         this.select = new SelectInteraction({
             layers: [this.daten.l_trenn],
             toggleCondition: never,
@@ -186,7 +188,7 @@ class QuerModifyTool implements Tool {
         });
     }
 
-    _createFlaechenSelect() {
+    createFlaechenSelect() {
         this.select_fl = new SelectInteraction({
             layers: [this.daten.l_quer],
             toggleCondition: platformModifierKeyOnly,
@@ -207,13 +209,19 @@ class QuerModifyTool implements Tool {
                 this.select.getFeatures().push(a);
             } else if (selection.length > 1) {
                 // MultiSelect
-                let art = selection[0].get('objekt').art.substr(-32)
-                let ober = selection[0].get('objekt').artober.substr(-32)
+                let art = 'diff';
+                let ober = 'diff';
+                if (selection[0].get('objekt').art != null)
+                    art = selection[0].get('objekt').art.substr(-32)
+                if (selection[0].get('objekt').artober != null)
+                    ober = selection[0].get('objekt').artober.substr(-32)
+
                 for (let i = 1; i < selection.length; i++) {
                     let feat = selection[i].get('objekt');
-                    if (art != feat.art.substr(-32)) art = 'diff';
-                    if (ober != feat.artober.substr(-32)) ober = 'diff';
+                    if (feat.art != null || art != feat.art.substr(-32)) art = 'diff';
+                    if (feat.art != null || ober != feat.artober.substr(-32)) ober = 'diff';
                 }
+
                 document.forms.namedItem("qsMultiMod").qsmm_anzahl.value = selection.length;
                 document.forms.namedItem("qsMultiMod").qsmm_art.value = (art == 'diff') ? '' : art;
                 document.forms.namedItem("qsMultiMod").qsmm_ober.value = (ober == 'diff') ? '' : ober;
@@ -223,7 +231,7 @@ class QuerModifyTool implements Tool {
         }.bind(this));
     }
 
-    _createSnap() {
+    createSnap() {
         this.snap_trenn = new Snap({
             source: this.daten.v_trenn,
             edge: false
@@ -251,13 +259,22 @@ class QuerModifyTool implements Tool {
         querschnitt.updateArt(art, artober);
     }
 
-    updateMulti() {
+    updateMultiArt() {
         let querschnitte = this.select_fl.getFeatures().getArray();
         let art = (document.getElementById('qsmm_art') as HTMLInputElement).value;
+
+        for (let querschnitt of querschnitte) {
+            querschnitt.get('objekt').updateArtEinzeln(art);
+        }
+    }
+
+
+    updateMultiOber() {
+        let querschnitte = this.select_fl.getFeatures().getArray();
         let artober = (document.getElementById('qsmm_ober') as HTMLInputElement).value;
 
         for (let querschnitt of querschnitte) {
-            querschnitt.get('objekt').updateArt(art, artober);
+            querschnitt.get('objekt').updateOberEinzeln(artober);
         }
     }
 

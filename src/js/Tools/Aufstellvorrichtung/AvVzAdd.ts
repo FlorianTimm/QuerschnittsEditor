@@ -6,11 +6,12 @@ import 'chosen-js/chosen.css';
 import 'jquery-ui-bundle';
 import 'jquery-ui-bundle/jquery-ui.css'
 import PublicWFS from '../../PublicWFS';
-import Tool from '../Tool';
+import Tool from '../prototypes/Tool';
 import Daten from '../../Daten';
 import { Map } from 'ol';
 import Zeichen from '../../Objekte/Zeichen';
 import { SelectEvent } from 'ol/interaction/Select';
+import Klartext from '../../Objekte/Klartext';
 var CONFIG = require('../../config.json');
 
 /**
@@ -19,7 +20,7 @@ var CONFIG = require('../../config.json');
  * @version 2019.05.20
  * @copyright MIT
  */
-class AvVzAdd implements Tool {
+class AvVzAdd extends Tool {
     private _map: Map;
     private _daten: Daten;
     private _ausblenden: any = null;
@@ -34,6 +35,7 @@ class AvVzAdd implements Tool {
      * @param daten Daten-Objekt
      */
     constructor(map: Map, daten: Daten) {
+        super();
         this._map = map;
         this._daten = daten;
 
@@ -43,7 +45,7 @@ class AvVzAdd implements Tool {
         });
 
         this._select.on("select", this._selected.bind(this));
-        AvVzAdd.loadKlartexte(this._daten);
+        AvVzAdd.loadKlartexte();
     }
 
     /**
@@ -63,9 +65,7 @@ class AvVzAdd implements Tool {
         document.body.appendChild(this._ausblenden);
         this._popup = document.createElement("div");
         this._popup.id = "vz_popup";
-        this._popup.style.textAlign = "right";
-
-        this._popup.innerHTML += '<div style="color: #f00; width: 100%; text-align: center;">ACHTUNG: Änderungen im aktuellen ER werden nicht angezeigt!<br/>Der Fehler wurde bereits an NOVASIB gemeldet.</div>'
+        this._popup.style.textAlign = "left";
 
         this._ausblenden.appendChild(this._popup);
 
@@ -81,7 +81,7 @@ class AvVzAdd implements Tool {
         let stvoZNrNeu = document.createElement("select");
         stvoZNrNeu.id = "schilder";
         stvoZNrNeu.appendChild(document.createElement("option"));
-        for (let stvoznr of this._daten.klartexte.getAllSorted("Itvzstvoznr")) {
+        for (let stvoznr of Klartext.getInstanz().getAllSorted("Itvzstvoznr")) {
             let ele = document.createElement("option");
             ele.value = stvoznr['objektId'];
             ele.innerHTML = stvoznr['beschreib'];
@@ -94,7 +94,8 @@ class AvVzAdd implements Tool {
         $(stvoZNrNeu).chosen({
             search_contains: true,
             placeholder_text_single: "Schild hinzufügen...",
-            no_results_text: "Nichts gefunden!"
+            no_results_text: "Nichts gefunden!",
+            width: "600px"
         });
 
         this._popup.appendChild(document.createElement("br"));
@@ -110,7 +111,7 @@ class AvVzAdd implements Tool {
         buttonAbbrechen.style.marginBottom = "250px";
         this._popup.appendChild(buttonAbbrechen);
 
-        this._auswahl.getZeichen(AvVzAdd._zeichenGeladen, this)
+        this._auswahl.getZeichen(this._zeichenGeladen.bind(this))
     }
 
     /**
@@ -123,15 +124,14 @@ class AvVzAdd implements Tool {
         this._createSchildForm(schild);
     }
 
-    static _zeichenGeladen(zeichen: Zeichen[], _this: AvVzAdd) {
-        console.log(_this);
+    _zeichenGeladen(zeichen: Zeichen[]) {
         zeichen.sort(function (a: Zeichen, b: Zeichen) {
             if (a.sort != null && b.sort != null) {
                 return Number(a.sort) - Number(b.sort);
             }
         });
         for (let eintrag of zeichen) {
-            _this._createSchildForm(eintrag);
+            this._createSchildForm(eintrag);
         }
     }
 
@@ -148,8 +148,8 @@ class AvVzAdd implements Tool {
         let img = document.createElement("img");
         img.classList.add('schildBild');
         img.style.height = "50px";
-        img.src = "http://gv-srv-w00118:8080/schilder/" + this._daten.klartexte.get("Itvzstvoznr", eintrag.stvoznr)['kt'] + ".svg";
-        img.title = this._daten.klartexte.get("Itvzstvoznr", eintrag.stvoznr)['beschreib'] + (eintrag.vztext != null) ? ("\n" + eintrag.vztext) : ('');
+        img.src = "http://gv-srv-w00118:8080/schilder/" + Klartext.getInstanz().get("Itvzstvoznr", eintrag.stvoznr)['kt'] + ".svg";
+        img.title = Klartext.getInstanz().get("Itvzstvoznr", eintrag.stvoznr)['beschreib'] + (eintrag.vztext != null) ? ("\n" + eintrag.vztext) : ('');
         div.appendChild(img);
         let text = document.createElement("div");
         div.appendChild(text);
@@ -187,6 +187,49 @@ class AvVzAdd implements Tool {
         // Größe des Schilder
         if (eintrag.groesse == undefined) eintrag.groesse = CONFIG.GROESSE;
         text.appendChild(this._createSelect(eintrag, 'Gr&ouml;&szlig;e', 'groesse', 'Itvzgroesse'));
+
+        // Straßenbezug
+        if (eintrag.strbezug == undefined) eintrag.strbezug = CONFIG.STRASSENBEZUG;
+        text.appendChild(this._createSelect(eintrag, 'Stra&szlig;enbezug', 'strbezug', 'Itbesstrbezug'));
+
+        // Aufstelldatum
+        let aufstellGroup = document.createElement("div");
+        aufstellGroup.className = "form_group";
+        let aufstell_label = document.createElement("label");
+        aufstell_label.innerHTML = 'Aufstelldatum';
+        aufstellGroup.appendChild(aufstell_label);
+        aufstellGroup.appendChild(document.createElement("br"));
+        let aufstellField = document.createElement("input");
+        aufstellField.autocomplete = "off";
+        aufstellField.name = "aufstelldat";
+        aufstellField.value = ((eintrag.aufstelldat != null) ? (eintrag.aufstelldat) : (''));
+        aufstellGroup.appendChild(aufstellField);
+
+        $.datepicker.regional['de'] = {
+            closeText: 'Done',
+            prevText: 'Prev',
+            nextText: 'Next',
+            currentText: 'heute',
+            monthNames: ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
+                'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
+            monthNamesShort: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun',
+                'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
+            dayNames: ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'],
+            dayNamesShort: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
+            dayNamesMin: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
+            weekHeader: 'KW',
+            dateFormat: 'dd.mm.yy',
+            firstDay: 0,
+            isRTL: false,
+            showMonthAfterYear: false,
+            yearSuffix: ''
+        };
+        $(aufstellField).datepicker($.datepicker.regional["de"]);
+        $(aufstellField).datepicker('option', 'dateFormat', 'yy-mm-dd');
+        $(aufstellField).datepicker('option', 'changeMonth', true);
+        $(aufstellField).datepicker('option', 'changeYear', true);
+
+        text.appendChild(aufstellGroup);
 
         // Externe Objektnr
         let extnr_group = document.createElement("div");
@@ -239,14 +282,14 @@ class AvVzAdd implements Tool {
         $(function () {
             let alle = $(text).children('div')
             alle.first().children("select").chosen({
-                width: "220px",
+                width: "200px",
                 search_contains: true,
             }).change(function (event: any, data: { selected: any; }) {
-                img.src = "http://gv-srv-w00118:8080/schilder/" + this._daten.klartexte.get("Itvzstvoznr", data.selected)['kt'] + ".svg";
+                img.src = "http://gv-srv-w00118:8080/schilder/" + Klartext.getInstanz().get("Itvzstvoznr", data.selected)['kt'] + ".svg";
             }.bind(this));
 
             alle.first().nextAll().children('select').chosen({
-                width: "220px",
+                width: "200px",
                 search_contains: true,
             });
         }.bind(this));
@@ -272,7 +315,8 @@ class AvVzAdd implements Tool {
         select.classList.add(id);
         select.name = id;
         select.id = id + "[" + eintrag.objektId + "]";
-        for (let kt of this._daten.klartexte.getAllSorted(klartext)) {
+
+        for (let kt of Daten.getInstanz().klartexte.getAllSorted(klartext)) {
             let option = document.createElement("option");
             option.value = kt['objektId'];
             option.innerHTML = kt['beschreib'];
@@ -287,17 +331,17 @@ class AvVzAdd implements Tool {
 
     /**
      * Lädt die benötigen Klartexte (sofern nciht schon vorhanden)
-     * @param {Daten} daten 
      */
-    static loadKlartexte(daten: Daten) {
-        daten.klartexte.load('Itvzstvoznr');
-        daten.klartexte.load('Itquelle');
-        daten.klartexte.load('Iterfart');
-        daten.klartexte.load('Itvzlagefb');
-        daten.klartexte.load('Itvzlesbarkeit');
-        daten.klartexte.load("Itvzart");
-        daten.klartexte.load("Itvzbeleucht");
-        daten.klartexte.load("Itvzgroesse");
+    static loadKlartexte() {
+        Klartext.getInstanz().load('Itvzstvoznr');
+        Klartext.getInstanz().load('Itquelle');
+        Klartext.getInstanz().load('Iterfart');
+        Klartext.getInstanz().load('Itvzlagefb');
+        Klartext.getInstanz().load('Itvzlesbarkeit');
+        Klartext.getInstanz().load("Itvzart");
+        Klartext.getInstanz().load("Itvzbeleucht");
+        Klartext.getInstanz().load("Itvzgroesse");
+        Klartext.getInstanz().load("Itbesstrbezug");
     }
 
     /**
@@ -326,6 +370,8 @@ class AvVzAdd implements Tool {
             schild.beleucht = ($(eintrag).children().children("select[name='beleucht']")[0] as HTMLInputElement).value;
             schild.art = ($(eintrag).children().children("select[name='art']")[0] as HTMLInputElement).value;
             schild.groesse = ($(eintrag).children().children("select[name='groesse']")[0] as HTMLInputElement).value;
+            schild.strbezug = ($(eintrag).children().children("select[name='strbezug']")[0] as HTMLInputElement).value;
+            schild.aufstelldat = ($(eintrag).children().children("input[name='aufstelldat']")[0] as HTMLInputElement).value;
             schild.erfart = ($(eintrag).children().children("select[name='erfart']")[0] as HTMLInputElement).value;
             schild.quelle = ($(eintrag).children().children("select[name='quelle']")[0] as HTMLInputElement).value;
             schild.objektnr = ($(eintrag).children().children("input[name='objektnr']")[0] as HTMLInputElement).value;
@@ -382,6 +428,16 @@ class AvVzAdd implements Tool {
                     console.log("update groesse");
                 }
 
+                if (oldZeichen.strbezug.substr(-32) != modiZeichen.strbezug) {
+                    upd += '<wfs:Property>\n<wfs:Name>strbezug/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.strbezug + '</wfs:Value>\n</wfs:Property>\n';
+                    console.log("update strbezug");
+                }
+
+                if (oldZeichen.aufstelldat != modiZeichen.aufstelldat && !(oldZeichen.aufstelldat == null && modiZeichen.aufstelldat == "")) {
+                    upd += '<wfs:Property>\n<wfs:Name>aufstelldat</wfs:Name>\n<wfs:Value>' + modiZeichen.aufstelldat + '</wfs:Value>\n</wfs:Property>\n';
+                    console.log("update aufstelldat");
+                }
+
                 if (oldZeichen.erfart.substr(-32) != modiZeichen.erfart) {
                     upd += '<wfs:Property>\n<wfs:Name>erfart/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.erfart + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update erfart");
@@ -408,7 +464,7 @@ class AvVzAdd implements Tool {
                         '			</ogc:PropertyIsEqualTo>\n' +
                         '			<ogc:PropertyIsEqualTo>\n' +
                         '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
-                        '				<ogc:Literal>' + this._daten.ereignisraum + '</ogc:Literal>\n' +
+                        '				<ogc:Literal>#' + this._daten.ereignisraum + '</ogc:Literal>\n' +
                         '			</ogc:PropertyIsEqualTo>\n' +
                         '		</ogc:And>\n' +
                         '	</ogc:Filter>\n' +
@@ -427,7 +483,7 @@ class AvVzAdd implements Tool {
                     '			</ogc:PropertyIsEqualTo>\n' +
                     '			<ogc:PropertyIsEqualTo>\n' +
                     '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
-                    '				<ogc:Literal>' + this._daten.ereignisraum + '</ogc:Literal>\n' +
+                    '				<ogc:Literal>#' + this._daten.ereignisraum + '</ogc:Literal>\n' +
                     '			</ogc:PropertyIsEqualTo>\n' +
                     '		</ogc:And>\n' +
                     '	</ogc:Filter>\n' +
@@ -448,6 +504,9 @@ class AvVzAdd implements Tool {
                 '<art xlink:href="#' + zeichen.art + '" typeName="Itvzart" />\n' +
                 '<parent typeName="Otaufstvor" xlink:href="#' + this._auswahl.fid + '"/>\n' +
                 '<groesse xlink:href="#' + zeichen.groesse + '" typeName="Itvzgroesse" />\n' +
+                '<strbezug xlink:href="#' + zeichen.strbezug + '" typeName="Itbesstrbezug" />\n' +
+                '<aufstelldat>' + zeichen.aufstelldat + '</aufstelldat>\n' +
+                ((zeichen.objektnr != null && zeichen.objektnr != '') ? ('<objektnr>' + zeichen.objektnr + '</objektnr>\n') : '') +
                 '<erfart xlink:href="#' + zeichen.erfart + '" typeName="Iterfart" />\n' +
                 '<quelle xlink:href="#' + zeichen.quelle + '" typeName="Itquelle" />\n' +
                 '<ADatum>' + new Date().toISOString().slice(0, 10) + '</ADatum>\n' +
@@ -478,7 +537,7 @@ class AvVzAdd implements Tool {
                         else
                             PublicWFS.addSekInER(this._auswahl, "Otaufstvor", "Otvzeichlp", this._daten.ereignisraum_nr, this._erCallback, undefined, this, update, this._auswahl);
                         */
-                        PublicWFS.addSekInER(this._auswahl, "Otaufstvor", "Otvzeichlp", this._daten.ereignisraum_nr, this._erCallback, this._erCallback, this, update, this._auswahl);
+                        PublicWFS.addSekInER(this._auswahl, "Otaufstvor", "Otvzeichlp", this._daten.ereignisraum_nr, this._erCallback.bind(this), this._erCallback.bind(this), update, this._auswahl);
                         //this._closePopup(event);
                         $("#dialog-confirm").dialog("close");
                     }.bind(this),
@@ -495,27 +554,26 @@ class AvVzAdd implements Tool {
     /**
      * Wird aufgerufen, nachdem erfolgreich oder erfolglos versucht wurde, die Aufstellvorrichtung in den Ereignisraum zu laden
      * @param {*} __ 
-     * @param {AvVzAdd} _this 
      * @param {string} update Transaktion als Text
      * @param {*} _auswahl 
      */
-    _erCallback(__: any, _this: { _updateCallback: (xml: Document, ...args: any[]) => void; }, update: string, _auswahl: any) {
+    _erCallback(__: any, update: string, _auswahl: any) {
         console.log("Update: " + update)
-        PublicWFS.doTransaction(update, _this._updateCallback, undefined, _this, _auswahl);
+        PublicWFS.doTransaction(update, this._updateCallback.bind(this), undefined, _auswahl);
     }
 
 
     /**
      * wird nach der Ausführung des Updates ausgeführt
      * @param {*} __ 
-     * @param {AvVzAdd} _this 
      * @param {*} _auswahl 
      */
-    _updateCallback(__: any, _this: { _select: { getFeatures: () => { clear: () => void; }; }; }, _auswahl: { reloadZeichen: () => void; }) {
+    _updateCallback(__: any, _auswahl: { reloadZeichen: () => void; }) {
         PublicWFS.showMessage("erfolgreich", false);
         console.log("reload");
         _auswahl.reloadZeichen();
-        _this._select.getFeatures().clear();
+        Daten.getInstanz()
+        this._select.getFeatures().clear();
     }
 
     /**

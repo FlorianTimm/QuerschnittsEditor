@@ -5,39 +5,39 @@
  * @copyright MIT
  */
 
- import { View, MapEvent } from 'ol';
-import { defaults as defaultInteractions } from 'ol/interaction';
-import { defaults as defaultControls, ScaleLine, ZoomSlider } from 'ol/control';
-import { Layer } from 'ol/layer';
-import { TileWMS as TileWMS } from 'ol/source';
-import { register } from 'ol/proj/proj4';
-import { transform, fromLonLat } from 'ol/proj';
 import 'babel-polyfill';
-
+import { MapEvent, View } from 'ol';
+import { defaults as defaultControls, ScaleLine, ZoomSlider } from 'ol/control';
+import { defaults as defaultInteractions } from 'ol/interaction';
+import { Layer } from 'ol/layer';
+import { fromLonLat, transform } from 'ol/proj';
+import { register } from 'ol/proj/proj4';
+import { TileWMS as TileWMS } from 'ol/source';
+import StaticImage from 'ol/source/ImageStatic';
+import OSM from 'ol/source/OSM';
+import proj4 from 'proj4';
 import Daten from './Daten';
+import LayerSwitch from './LayerSwitch';
+import Measure from './Tools/Measure';
+import { ImageLayer, TileLayer } from './openLayers/Layer';
+import Map from './openLayers/Map';
 import PublicWFS from './PublicWFS';
-
-import QuerModifyTool from './Tools/Querschnitt/QuerModifyTool';
-import QuerInfoTool from './Tools/Querschnitt/QuerInfoTool';
-import QuerPartTool from './Tools/Querschnitt/QuerPartTool';
+import AvAdd from './Tools/Aufstellvorrichtung/AvAdd';
+import AvAdd2ER from './Tools/Aufstellvorrichtung/AvAdd2ER';
+import AvDelete from './Tools/Aufstellvorrichtung/AvDelete';
+import AvMove from './Tools/Aufstellvorrichtung/AvMove';
+import AvVzAdd from './Tools/Aufstellvorrichtung/AvVzAdd';
+import InfoTool from './Tools/InfoTool';
+import QuerAdd2ER from './Tools/Querschnitt/QuerAdd2ER';
 import QuerAddTool from './Tools/Querschnitt/QuerAddTool';
 import QuerDelTool from './Tools/Querschnitt/QuerDelTool';
-import QuerAdd2ER from './Tools/Querschnitt/QuerAdd2ER';
-
-import AvInfoTool from './Tools/Aufstellvorrichtung/AvInfoTool';
-import AvAdd from './Tools/Aufstellvorrichtung/AvAdd';
-import AvDelete from './Tools/Aufstellvorrichtung/AvDelete';
-import AvVzAdd from './Tools/Aufstellvorrichtung/AvVzAdd';
-import AvMove from './Tools/Aufstellvorrichtung/AvMove';
-import AvAdd2ER from './Tools/Aufstellvorrichtung/AvAdd2ER';
-
-import Measure from './Measure';
-import LayerSwitch from './LayerSwitch';
-import OSM from 'ol/source/OSM';
-import Map from './openLayers/Map';
-import { TileLayer, ImageLayer } from './openLayers/Layer';
-import StaticImage from 'ol/source/ImageStatic';
-import proj4 from 'proj4';
+import QuerInfoTool from './Tools/Querschnitt/QuerInfoTool';
+import QuerModifyTool from './Tools/Querschnitt/QuerModifyTool';
+import QuerPartTool from './Tools/Querschnitt/QuerPartTool';
+import SAPAdd from './Tools/StrassenAusPunkt/SAPAdd';
+import SAPAdd2ER from './Tools/StrassenAusPunkt/SAPAdd2ER';
+import SAPDelete from './Tools/StrassenAusPunkt/SAPDelete';
+import SAPMove from './Tools/StrassenAusPunkt/SAPMove';
 
 var CONFIG: [string, string] = require('./config.json');
 
@@ -51,7 +51,8 @@ var er = decodeURI(urlParamER[1])
 var ernr = decodeURI(urlParamERNR[1])
 console.log("Ereignisraum: " + ernr);
 
-let daten: Daten, infoTool: QuerInfoTool, editTool: QuerModifyTool, delTool: QuerDelTool, partTool: QuerPartTool, addTool: QuerAddTool, vsInfoTool: AvInfoTool, avAdd: AvAdd, avAdd2ER: AvAdd2ER, qsAdd2ER: QuerAdd2ER, avMove: AvMove, vzAdd: AvVzAdd, measure: Measure, avDel: AvDelete;
+let daten: Daten, infoTool: QuerInfoTool, editTool: QuerModifyTool, delTool: QuerDelTool, partTool: QuerPartTool, addTool: QuerAddTool, vsInfoTool: InfoTool, avAdd: AvAdd, avAdd2ER: AvAdd2ER, qsAdd2ER: QuerAdd2ER, avMove: AvMove, vzAdd: AvVzAdd, measure: Measure, avDel: AvDelete;
+let sapInfoTool: InfoTool, sapAdd: SAPAdd, sapMove: SAPMove, sapAdd2ER: SAPAdd2ER, sapDel: SAPDelete;
 
 window.addEventListener('load', function () {
     proj4.defs("EPSG:31467", "+proj=tmerc +lat_0=0 +lon_0=9 +k=1 +x_0=3500000 +y_0=0 +ellps=bessel +towgs84=598.1,73.7,418.2,0.202,0.045,-2.455,6.7 +units=m +no_defs");
@@ -116,35 +117,53 @@ window.addEventListener('load', function () {
     map.on("moveend", recreateHash);
 
     daten = new Daten(map, er, ernr);
+
     infoTool = new QuerInfoTool(map, daten);
     infoTool.start();
-    editTool = new QuerModifyTool(map, daten, infoTool);
-    delTool = new QuerDelTool(map, daten, infoTool);
-    addTool = new QuerAddTool(map, daten, infoTool);
+    editTool = new QuerModifyTool(map, infoTool);
+    delTool = new QuerDelTool(map, infoTool);
+    addTool = new QuerAddTool(map, infoTool);
     partTool = new QuerPartTool(map, daten, infoTool);
-    vsInfoTool = new AvInfoTool(map, daten.l_aufstell, "sidebar");
+    qsAdd2ER = new QuerAdd2ER(map, daten);
+
+    vsInfoTool = new InfoTool(map, daten.l_aufstell, "sidebar");
     avAdd = new AvAdd(map, daten);
     vzAdd = new AvVzAdd(map, daten);
-    avMove = new AvMove(map, daten, vsInfoTool);
+    avMove = new AvMove(map, vsInfoTool);
     avAdd2ER = new AvAdd2ER(map, daten);
-    qsAdd2ER = new QuerAdd2ER(map, daten);
-    measure = new Measure(map);
     avDel = new AvDelete(map, daten, daten.l_aufstell, "sidebar");
 
-    document.getElementById("befehl_info").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_vsinfo").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_avadd").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_avdel").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_vzadd").addEventListener('change', befehl_changed);
+    sapInfoTool = new InfoTool(map, daten.l_straus, "sidebar");
+    sapAdd = new SAPAdd(map);
+    sapMove = new SAPMove(map, vsInfoTool);
+    sapAdd2ER = new SAPAdd2ER(map);
+    sapDel = new SAPDelete(map, daten.l_straus, "sidebar");
+
+    measure = new Measure(map);
+
+
     document.getElementById("befehl_modify").addEventListener('change', befehl_changed);
     document.getElementById("befehl_delete").addEventListener('change', befehl_changed);
     document.getElementById("befehl_part").addEventListener('change', befehl_changed);
     document.getElementById("befehl_add").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_qsadd2er").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_info").addEventListener('change', befehl_changed);
+
+    document.getElementById("befehl_vsinfo").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_avadd").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_avdel").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_vzadd").addEventListener('change', befehl_changed);
     document.getElementById("befehl_avadd2er").addEventListener('change', befehl_changed);
     document.getElementById("befehl_avmove").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_qsadd2er").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_messen").addEventListener('change', befehl_changed);
 
+    document.getElementById("befehl_sapinfo").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_sapadd").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_sapdel").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_sapadd").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_sapadd2er").addEventListener('change', befehl_changed);
+    document.getElementById("befehl_sapmove").addEventListener('change', befehl_changed);
+
+    document.getElementById("befehl_messen").addEventListener('change', befehl_changed);
 
     document.getElementById("zoomToExtent").addEventListener('click', function () {
         let minX = null, maxX = null, minY = null, maxY = null;
@@ -215,22 +234,45 @@ function recreateHash(event: MapEvent) {
 }
 
 function befehl_changed() {
+    // Querschnitt
     infoTool.stop();
     editTool.stop();
     delTool.stop();
     partTool.stop();
     addTool.stop();
+    qsAdd2ER.stop();
+
+    // Aufstellvorrichtung / Schild
     vsInfoTool.stop();
     avAdd.stop();
     avAdd2ER.stop();
-    qsAdd2ER.stop();
     avMove.stop();
     vzAdd.stop();
-    measure.stop();
     avDel.stop();
+
+    // Straßenausstattung punktuell
+    sapAdd.stop();
+    sapAdd2ER.stop();
+    sapDel.stop();
+    sapInfoTool.stop();
+    sapMove.stop();
+
+    // Sonstige
+    measure.stop();
 
     if ((document.getElementById("befehl_info") as HTMLInputElement).checked)
         infoTool.start();
+    else if ((document.getElementById("befehl_qsadd2er") as HTMLInputElement).checked)
+        qsAdd2ER.start();
+    else if ((document.getElementById("befehl_modify") as HTMLInputElement).checked)
+        editTool.start();
+    else if ((document.getElementById("befehl_delete") as HTMLInputElement).checked)
+        delTool.start();
+    else if ((document.getElementById("befehl_part") as HTMLInputElement).checked)
+        partTool.start();
+    else if ((document.getElementById("befehl_add") as HTMLInputElement).checked)
+        addTool.start();
+
     else if ((document.getElementById("befehl_vsinfo") as HTMLInputElement).checked)
         vsInfoTool.start();
     else if ((document.getElementById("befehl_avadd") as HTMLInputElement).checked)
@@ -243,16 +285,18 @@ function befehl_changed() {
         avAdd2ER.start();
     else if ((document.getElementById("befehl_avmove") as HTMLInputElement).checked)
         avMove.start();
-    else if ((document.getElementById("befehl_qsadd2er") as HTMLInputElement).checked)
-        qsAdd2ER.start();
-    else if ((document.getElementById("befehl_modify") as HTMLInputElement).checked)
-        editTool.start();
-    else if ((document.getElementById("befehl_delete") as HTMLInputElement).checked)
-        delTool.start();
-    else if ((document.getElementById("befehl_part") as HTMLInputElement).checked)
-        partTool.start();
-    else if ((document.getElementById("befehl_add") as HTMLInputElement).checked)
-        addTool.start();
+
+    else if ((document.getElementById("befehl_sapinfo") as HTMLInputElement).checked)
+        sapInfoTool.start();
+    else if ((document.getElementById("befehl_sapadd") as HTMLInputElement).checked)
+        sapAdd.start();
+    else if ((document.getElementById("befehl_sapdel") as HTMLInputElement).checked)
+        sapDel.start();
+    else if ((document.getElementById("befehl_sapadd2er") as HTMLInputElement).checked)
+        sapAdd2ER.start();
+    else if ((document.getElementById("befehl_sapmove") as HTMLInputElement).checked)
+        sapMove.start();
+
     else if ((document.getElementById("befehl_messen") as HTMLInputElement).checked)
         measure.start();
 }
@@ -374,9 +418,8 @@ function openTab(evt: MouseEvent) {
     document.getElementById(tabName).style.display = "block";
     (evt.currentTarget as HTMLElement).className += " active";
     document.getElementById(tabName).getElementsByTagName('input')[0].click();
-
-    daten.modus = (evt.currentTarget as HTMLElement).dataset.tab.replace("tab_", "")
-    daten.l_achse.changed();
+    Daten.getInstanz().modus = (evt.currentTarget as HTMLElement).dataset.tab.replace("tab_", "")
+    Daten.getInstanz().l_achse.changed();
 }
 
 window.addEventListener('load', function () {

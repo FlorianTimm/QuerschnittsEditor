@@ -1,112 +1,62 @@
 /**
  * Aufstellvorrichtung
  * @author Florian Timm, LGV HH 
- * @version 2019.06.06
+ * @version 2019.08.22
  * @copyright MIT
  */
-
-import PublicWFS from '../PublicWFS';
-import { Point } from 'ol/geom';
-import Feature from 'ol/Feature';
-import VectorSource from 'ol/source/Vector';
-import { Vector as VectorLayer } from 'ol/layer';
-import { Style, Stroke, Fill, Circle, Text } from 'ol/style';
-import Zeichen from './Zeichen';
 import "../import_jquery.js";
 import 'chosen-js';
 import 'chosen-js/chosen.css';
+import { Point } from 'ol/geom';
 import Daten from "../Daten";
-import Klartext from './Klartext';
+import PublicWFS from '../PublicWFS';
+import { InfoToolSelectable } from '../Tools/InfoTool';
 import Abschnitt from './Abschnitt';
-import { InfoToolSelectable } from '../Tools/Aufstellvorrichtung/AvInfoTool';
-import { Map } from 'ol';
+import Klartext from './Klartext';
+import Objekt from './Objekt';
+import PunktObjekt from './PunktObjekt';
+import Zeichen from './Zeichen';
 
-var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
+class Aufstellvorrichtung extends PunktObjekt implements InfoToolSelectable, Objekt {
+    private _daten: Daten;
+    private _zeichen: Zeichen[] = null;
 
-
-class Aufstellvorrichtung extends Feature implements InfoToolSelectable {
-    _daten: Daten;
-    _zeichen: Zeichen = null;
-    fid: string = null;
-    inER: {} = {};
-    abschnitt: Abschnitt;
-    vst: number;
-    bst: number;
     labstbaVst: number;
     rabstbaVst: number;
     hasSekObj: number;
-    quelle: string;
     vabstVst: number;
     vabstBst: number;
-    objektId: string;
-    projekt: string;
     art: string;
     rlageVst: string;
-    abschnittId: string;
 
-    constructor(daten: Daten) {
-        super({ geom: null });
-        this._daten = daten;
-        Aufstellvorrichtung.loadKlartexte(this._daten.klartexte);
+    constructor() {
+        super();
+        this._daten = Daten.getInstanz();
+        Aufstellvorrichtung.loadKlartexte();
     }
 
-    static loadKlartexte(klartexte: Klartext) {
-        klartexte.load('Itaufstvorart', Aufstellvorrichtung._ktArtLoaded, klartexte);
-        klartexte.load('Itallglage', Aufstellvorrichtung._ktLageLoaded, klartexte);
-        klartexte.load('Itquelle', Aufstellvorrichtung._ktQuelleLoaded, klartexte);
+    static loadKlartexte() {
+        Klartext.getInstanz().load('Itaufstvorart', Aufstellvorrichtung.klartext2select, 'Itaufstvorart', document.forms.namedItem("avadd").avadd_art);
+        Klartext.getInstanz().load('Itallglage', Aufstellvorrichtung.klartext2select, 'Itallglage', document.forms.namedItem("avadd").avadd_lage);
+        Klartext.getInstanz().load('Itquelle', Aufstellvorrichtung.klartext2select, 'Itquelle', document.forms.namedItem("avadd").avadd_quelle);
     }
 
-    static _ktArtLoaded(__: any, klartexte: Klartext) {
-        let arten = klartexte.getAllSorted('Itaufstvorart');
-        for (let a of arten) {
-            let option = document.createElement('option');
-            let t = document.createTextNode(a.beschreib);
-            option.appendChild(t);
-            option.setAttribute('value', a.objektId);
-            document.forms.namedItem("avadd").avadd_art.appendChild(option);
+    colorFunktion1(): import("ol/colorlike").ColorLike {
+        if (this.hasSekObj > 0 || (this._zeichen != null && this._zeichen.length > 0)) {
+            return 'rgba(250,120,0,0.8)';
+        } else {
+            return 'rgba(255,0,0,0.8)';
         }
-        $("select#avadd_art").chosen({ width: "95%", search_contains: true });
     }
 
-    static _ktLageLoaded(__: any, klartexte: Klartext) {
-        let arten = klartexte.getAllSorted('Itallglage');
-        for (let a of arten) {
-            let option = document.createElement('option');
-            let t = document.createTextNode(a.beschreib);
-            option.appendChild(t);
-            option.setAttribute('value', a.objektId);
-            document.forms.namedItem("avadd").avadd_lage.appendChild(option);
-        }
-        $("select#avadd_lage").chosen({ width: "95%", search_contains: true });
-    }
-
-    static _ktQuelleLoaded(__: any, klartexte: Klartext) {
-        let arten = klartexte.getAllSorted('Itquelle');
-        for (let a of arten) {
-            let option = document.createElement('option');
-            let t = document.createTextNode(a.beschreib);
-            option.appendChild(t);
-            option.setAttribute('value', a.objektId);
-            document.forms.namedItem("avadd").avadd_quelle.appendChild(option);
-        }
-        $("select#avadd_quelle").chosen({ width: "95%", search_contains: true });
+    colorFunktion2(): import("ol/colorlike").ColorLike {
+        return 'black';
     }
 
     getHTMLInfo(ziel: HTMLElement) {
-        let kt = this._daten.klartexte;
+        let kt = Klartext.getInstanz();
         let r = "<table>";
-        /*for (var tag in CONFIG_WFS.AUFSTELL) {
-            if (this[tag] == null || this[tag] == undefined) continue;
 
-            r += "<tr><td>" + tag + "</td><td>";
-            if (tag == 'art') {
-                r += art.get(this[tag]).beschreib
-            } else {
-                r += this[tag];
-            }
-            r += "</td></tr>";
-        }
-        */
         r += "<tr><td>VNK</td><td>" + this.abschnitt.vnk + "</td></tr>";
         r += "<tr><td>NNK</td><td>" + this.abschnitt.nnk + "</td></tr>";
         r += "<tr><td>VST</td><td>" + this.vst + "</td></tr>";
@@ -130,6 +80,9 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable {
         }
 
         r += "<tr><td>Art</td><td>" + kt.get('Itaufstvorart', this.art).beschreib + "</td></tr>";
+        if (this.objektnr != null && this.objektnr != "") {
+            r += "<tr><td>ext. Nr.</td><td>" + this.objektnr + "</td></tr>";
+        }
         r += "<tr><td>Lage</td><td>" + kt.get('Itallglage', this.rlageVst).beschreib + "</td></tr>";
         r += "<tr><td>Schilder</td><td>" + this.hasSekObj + "</td></tr>";
         r += "<tr><td>Quelle</td><td>" + ((this.quelle != null) ? (kt.get("Itquelle", this.quelle).beschreib) : '') + "</td></tr>";
@@ -137,25 +90,23 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable {
 
         if (ziel != undefined) {
             ziel.innerHTML = r;
-            this.getZeichen(Aufstellvorrichtung._vz_addHTML, this, ziel)
+            this.getZeichen(this._vz_addHTML.bind(this), ziel)
         }
-
         return r;
     }
 
-    static _vz_addHTML(zeichen: any, _this: Aufstellvorrichtung, ziel: HTMLElement) {
+    private _vz_addHTML(zeichen: any, ziel: HTMLElement) {
         let div = document.createElement('div');
         div.style.marginTop = '5px';
         for (let eintrag of zeichen) {
             let img = document.createElement("img");
             img.style.height = "30px";
-            img.src = "http://gv-srv-w00118:8080/schilder/" + _this._daten.klartexte.get("Itvzstvoznr", eintrag.stvoznr)['kt'] + ".svg";
-            img.title = _this._daten.klartexte.get("Itvzstvoznr", eintrag.stvoznr)['beschreib'] + ((eintrag.vztext != null) ? ("\n" + eintrag.vztext) : (''))
+            img.src = "http://gv-srv-w00118:8080/schilder/" + Klartext.getInstanz().get("Itvzstvoznr", eintrag.stvoznr)['kt'] + ".svg";
+            img.title = Klartext.getInstanz().get("Itvzstvoznr", eintrag.stvoznr)['beschreib'] + ((eintrag.vztext != null) ? ("\n" + eintrag.vztext) : (''))
             div.appendChild(img);
         }
         ziel.appendChild(div);
     }
-
 
     /**
      * 
@@ -163,18 +114,18 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable {
      * @param {*} daten 
      */
     static loadER(daten: Daten) {
-        Aufstellvorrichtung.loadKlartexte(daten.klartexte);
+        Aufstellvorrichtung.loadKlartexte();
         PublicWFS.doQuery('Otaufstvor', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
             '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Aufstellvorrichtung._loadER_Callback, undefined, daten);
 
     }
 
-    static _loadER_Callback(xml: XMLDocument, daten: Daten) {
+    static _loadER_Callback(xml: XMLDocument) {
         let aufstell = xml.getElementsByTagName("Otaufstvor");
         for (let i = 0; i < aufstell.length; i++) {
-            let f = Aufstellvorrichtung.fromXML(aufstell[i], daten);
-            daten.l_aufstell.getSource().addFeature(f);
+            let f = Aufstellvorrichtung.fromXML(aufstell[i]);
+            Daten.getInstanz().l_aufstell.getSource().addFeature(f);
         }
     }
 
@@ -192,34 +143,21 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable {
             '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>', Aufstellvorrichtung._loadAbschnittER_Callback, undefined, daten, callback, ...args);
     }
 
-    static _loadAbschnittER_Callback(xml: XMLDocument, daten: Daten, callback: (...args: any[]) => void, ...args: any[]) {
+    private static _loadAbschnittER_Callback(xml: XMLDocument, daten: Daten, callback: (...args: any[]) => void, ...args: any[]) {
         //console.log(daten);
         let aufstell = xml.getElementsByTagName("Otaufstvor");
         for (let i = 0; i < aufstell.length; i++) {
-            let f = Aufstellvorrichtung.fromXML(aufstell[i], daten);
+            let f = Aufstellvorrichtung.fromXML(aufstell[i]);
             daten.l_aufstell.getSource().addFeature(f);
         }
         callback(...args);
         document.body.style.cursor = '';
     }
 
-    static fromXML(xml: Element, daten: Daten) {
-        //console.log(daten);
-        let r = new Aufstellvorrichtung(daten);
-        r.fid = xml.getAttribute('fid');
-        for (var tag in CONFIG_WFS["AUFSTELL"]) {
-            if (xml.getElementsByTagName(tag).length <= 0) continue;
-            if (CONFIG_WFS["AUFSTELL"][tag].art == 0) {
-                // Kein Klartext
-                r[tag] = xml.getElementsByTagName(tag)[0].firstChild.textContent;
-            } else if (CONFIG_WFS.AUFSTELL[tag].art == 1) {
-                // Kein Klartext
-                r[tag] = Number(xml.getElementsByTagName(tag)[0].firstChild.textContent);
-            } else if (CONFIG_WFS.AUFSTELL[tag].art == 2) {
-                // Klartext, xlink wird gespeichert
-                r[tag] = xml.getElementsByTagName(tag)[0].getAttribute('xlink:href');
-            }
-        }
+    static fromXML(xml: Element) {
+        let daten = Daten.getInstanz();
+        let r = new Aufstellvorrichtung();
+        r.setDataFromXML("AUFSTELL", xml);
 
         let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(',');
         r.setGeometry(new Point([parseFloat(koords[0]), parseFloat(koords[1])]));
@@ -229,48 +167,7 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable {
         return r;
     }
 
-    static createLayer(map: Map) {
-        let source = new VectorSource({
-            features: []
-        });
-        let layer = new VectorLayer({
-            source: source,
-            opacity: 0.7,
-        });
-        layer.setStyle(function (feature: Aufstellvorrichtung, zoom) {
-            return new Style({
-                image: new Circle({
-                    radius: 3,
-                    fill: new Fill({ color: 'black' }),
-                    stroke: new Stroke({
-                        color: (feature.hasSekObj > 0) ? ('rgba(250,120,0,0.8)') : ('rgba(255,0,0,0.8)'),
-                        width: 3
-                    })
-                }),
-                text: new Text({
-                    font: '13px Calibri,sans-serif',
-                    fill: new Fill({ color: '#000' }),
-                    stroke: new Stroke({
-                        color: '#fff', width: 2
-                    }),
-                    offsetX: 9,
-                    offsetY: -8,
-                    textAlign: 'left',
-                    // get the text from the feature - `this` is ol.Feature
-                    // and show only under certain resolution
-                    text: ((zoom < 0.2) ? ("" + feature.vst) : '')
-                }),
-            });
-        });
-        map.addLayer(layer);
-        return layer;
-    }
-
-    _getText() {
-        return "test";
-    }
-
-    updateStation(station, abstand) {
+    updateStation(station: number, abstand: number) {
         this.vabstVst = Math.round(abstand * 10) / 10;
         this.vabstBst = this.vabstVst;
         this.rabstbaVst = this.vabstVst;
@@ -313,7 +210,7 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable {
         PublicWFS.doTransaction(xml);
     }
 
-    getZeichen(callback, ...args) {
+    getZeichen(callback: (...args: any[]) => void, ...args: any[]) {
         if (this._zeichen == null && this.hasSekObj > 0) {
             this.reloadZeichen(callback, ...args);
         } else if (this.hasSekObj > 0) {
@@ -325,29 +222,28 @@ class Aufstellvorrichtung extends Feature implements InfoToolSelectable {
         }
     }
 
-    reloadZeichen(callback, ...args) {
+    reloadZeichen(callback: (...args: any[]) => void, ...args: any[]) {
         PublicWFS.doQuery('Otvzeichlp', '<Filter>\n' +
             '  <PropertyIsEqualTo>\n' +
             '    <PropertyName>parent/@xlink:href</PropertyName>\n' +
             '    <Literal>' + this.fid + '</Literal>\n' +
             '  </PropertyIsEqualTo>\n' +
-            '</Filter>', this._parseZeichen, undefined, this, callback, ...args);
+            '</Filter>', this._parseZeichen.bind(this), undefined, callback, ...args);
     }
 
-    _parseZeichen(xml, _this, callback, ...args) {
-        let zeichen = [];
-        console.log(xml);
+    private _parseZeichen(xml: XMLDocument, callback: (...args: any[]) => void, ...args: any[]) {
+        let zeichen: Zeichen[] = [];
         let zeichenXML = xml.getElementsByTagName('Otvzeichlp');
 
-        for (let eintrag of zeichenXML) {
-            console.log(eintrag);
+        for (let i = 0; i < zeichenXML.length; i++) {
+            let eintrag = zeichenXML.item(i);
             if (!(eintrag.getElementsByTagName("enr").length > 0)) {
-                zeichen.push(Zeichen.fromXML(eintrag, _this._daten));
+                zeichen.push(Zeichen.fromXML(eintrag, this._daten));
             }
         }
-        _this._zeichen = zeichen;
+        this._zeichen = zeichen;
         if (callback != undefined) {
-            callback(_this._zeichen, ...args);
+            callback(this._zeichen, ...args);
         }
     }
 
