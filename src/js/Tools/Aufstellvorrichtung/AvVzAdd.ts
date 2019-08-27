@@ -34,10 +34,10 @@ class AvVzAdd extends Tool {
      * @param map Karten-Objekt
      * @param daten Daten-Objekt
      */
-    constructor(map: Map, daten: Daten) {
+    constructor(map: Map) {
         super();
         this._map = map;
-        this._daten = daten;
+        this._daten = Daten.getInstanz();
 
         this._select = new SelectInteraction({
             layers: [this._daten.l_aufstell],

@@ -134,21 +134,21 @@ class Aufstellvorrichtung extends PunktObjekt implements InfoToolSelectable, Obj
      * @param {Daten} daten 
      * @param {Abschnitt} abschnitt 
      */
-    static loadAbschnittER(daten: Daten, abschnitt: Abschnitt, callback: (...args: any[]) => void, ...args: any[]) {
+    static loadAbschnittER(abschnitt: Abschnitt, callback: (...args: any[]) => void, ...args: any[]) {
         //console.log(daten);
         document.body.style.cursor = 'wait';
         PublicWFS.doQuery('Otaufstvor', '<Filter>' +
             '<And><PropertyIsEqualTo><PropertyName>abschnittId</PropertyName>' +
             '<Literal>' + abschnitt.abschnittid + '</Literal></PropertyIsEqualTo><PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>', Aufstellvorrichtung._loadAbschnittER_Callback, undefined, daten, callback, ...args);
+            '<Literal>' + Daten.getInstanz().ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>', Aufstellvorrichtung._loadAbschnittER_Callback, undefined, callback, ...args);
     }
 
-    private static _loadAbschnittER_Callback(xml: XMLDocument, daten: Daten, callback: (...args: any[]) => void, ...args: any[]) {
+    private static _loadAbschnittER_Callback(xml: XMLDocument, callback: (...args: any[]) => void, ...args: any[]) {
         //console.log(daten);
         let aufstell = xml.getElementsByTagName("Otaufstvor");
         for (let i = 0; i < aufstell.length; i++) {
             let f = Aufstellvorrichtung.fromXML(aufstell[i]);
-            daten.l_aufstell.getSource().addFeature(f);
+            Daten.getInstanz().l_aufstell.getSource().addFeature(f);
         }
         callback(...args);
         document.body.style.cursor = '';

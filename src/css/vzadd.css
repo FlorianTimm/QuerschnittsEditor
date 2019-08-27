@@ -83,7 +83,7 @@ div.form_group {
     height: 50px;
 }
 
-div.form_group input[type='text'] {
+input[type='text'] {
     width: 200px;
 }
 

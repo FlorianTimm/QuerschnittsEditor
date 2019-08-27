@@ -47,7 +47,7 @@ export default class SAPAdd2ER extends Tool {
         PublicWFS.addInER(abschnitt, "Otstrauspkt", this.daten.ereignisraum_nr, this._onSelect_Callback.bind(this), undefined, abschnitt);
     }
 
-    _onSelect_Callback(xml: XMLDocument,  abschnitt: Abschnitt) {
+    _onSelect_Callback(xml: XMLDocument, abschnitt: Abschnitt) {
         abschnitt.inER["Otstrauspkt"] = true;
         StrassenAusPunkt.loadAbschnittER(abschnitt, PublicWFS.showMessage, "Erfolgreich in ER kopiert");
         this.select.getFeatures().clear();

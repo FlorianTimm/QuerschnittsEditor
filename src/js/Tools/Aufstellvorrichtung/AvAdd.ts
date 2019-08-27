@@ -1,16 +1,10 @@
-import { Circle, Style, Stroke, Fill } from 'ol/style';
-import { Select as SelectInteraction } from 'ol/interaction';
-import Vektor from '../../Vektor';
-import VectorSource from 'ol/source/Vector';
-import { Vector as VectorLayer } from 'ol/layer';
 import { Point, LineString } from 'ol/geom';
-import Feature from 'ol/Feature';
 import PublicWFS from '../../PublicWFS';
 import Aufstellvorrichtung from '../../Objekte/Aufstellvorrichtung';
-import Tool from '../prototypes/Tool';
+import AddTool from '../prototypes/AddTool';
 import { Map, MapBrowserEvent } from 'ol';
 import Daten from '../../Daten';
-import Abschnitt from '../../Objekte/Abschnitt';
+import HTML from '../../HTML';
 var CONFIG = require('../../config.json');
 
 /**
@@ -19,142 +13,21 @@ var CONFIG = require('../../config.json');
  * @version 2019.05.20
  * @copyright MIT
  */
-class AvAdd extends Tool {
-    map: Map;
-    daten: Daten;
-
-    abschnitt: Abschnitt = null;
-    station: number = null;
-    abstand: number = null;
-    seite: string = null;
-
-    select: SelectInteraction;
-    v_overlay: VectorSource;
-    l_overlay: VectorLayer;
-    feat_station: Feature;
-    feat_neu: Feature;
-    feat_station_line: Feature;
-
-    constructor(map: Map, daten: Daten) {
-        super();
-        this.map = map;
-        this.daten = daten;
-
-        this.select = new SelectInteraction({
-            layers: [this.daten.l_achse],
-            style: new Style({
-                stroke: new Stroke({
-                    color: 'rgba(0, 50, 255, 0.5)',
-                    width: 5
-                })
-            })
-        });
-
-
-        this.v_overlay = new VectorSource({
-            features: []
-        });
-
-        this.l_overlay = new VectorLayer({
-            source: this.v_overlay,
-            style: new Style({
-                stroke: new Stroke({
-                    color: '#dd0000',
-                    width: 3
-                }),
-                image: new Circle({
-                    radius: 7,
-                    fill: new Fill({ color: 'black' }),
-                    stroke: new Stroke({
-                        color: [255, 0, 0], width: 2
-                    })
-                }),
-            })
-        });
-
-
-        this.feat_station = new Feature({ geometry: new Point([0, 0]) });
-        this.feat_station.setStyle(
-            new Style({
-                image: new Circle({
-                    radius: 3,
-                    fill: new Fill({ color: [0, 0, 200], }),
-                    stroke: new Stroke({
-                        color: [0, 0, 200], width: 2
-                    })
-                }),
-            })
-        )
-        this.v_overlay.addFeature(this.feat_station);
-
-
-        this.feat_neu = new Feature({ geometry: new Point([0, 0]) });
-        this.feat_neu.setStyle(function (feature, zoom) {
-            return new Style({
-                image: new Circle({
-                    radius: 3,
-                    fill: new Fill({ color: 'black' }),
-                    stroke: new Stroke({
-                        color: 'rgba(50,50,250,0.9)', width: 3
-                    })
-                })
-            });
-        });
-        this.v_overlay.addFeature(this.feat_neu);
-
-        this.feat_station_line = new Feature({ geometry: new LineString([[0, 0], [0, 0]]) });
-        this.feat_station_line.setStyle(
-            new Style({
-                stroke: new Stroke({
-                    color: 'rgba(0, 0, 255, 0.5)',
-                    width: 2
-                }),
-            })
-        );
-        this.v_overlay.addFeature(this.feat_station_line);
-
+class AvAdd extends AddTool {
+    form: HTMLFormElement;
+    constructor(map: Map) {
+        super(map);
+        this.createForm();
         document.getElementById('avadd_button').addEventListener('click', this.addAufstellButton.bind(this));
     }
 
-    part_get_station(event: MapBrowserEvent) {
-        let achse = null;
-        if (this.select.getFeatures().getArray().length > 0) {
-            achse = this.select.getFeatures().item(0);
-        } else {
-            achse = this.daten.v_achse.getClosestFeatureToCoordinate(event.coordinate);
-        }
-
-        if (achse == null) {
-            (this.feat_station.getGeometry() as Point).setCoordinates([0, 0]);
-            (this.feat_station_line.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
-            return null;
-        }
-
-        return { achse: achse, pos: Vektor.get_pos(achse.getGeometry().getCoordinates(), event.coordinate) };
-    }
-
-
     part_click(event: MapBrowserEvent) {
-        this.feat_neu.set('isset', true);
-        let daten = this.part_get_station(event);
-        if (daten['pos'] == null) return;
-
-        (this.feat_neu.getGeometry() as Point).setCoordinates(daten['pos'][6]);
-
-        this.abschnitt = daten['achse'];
-        this.station = Math.round(daten['pos'][2] * this.abschnitt.getFaktor());
-        this.abstand = Math.round(daten['pos'][4] * 10) / 10;
-        this.seite = daten['pos'][3]
-        if (this.seite == 'M') this.abstand = 0;
-        if (this.seite == 'L') this.abstand = -this.abstand;
-
+        let daten = this.calcStation(event);
         (document.getElementById("avadd_vnk") as HTMLInputElement).value = daten['achse'].vnk;
         (document.getElementById("avadd_nnk") as HTMLInputElement).value = daten['achse'].nnk;
         (document.getElementById("avadd_station") as HTMLInputElement).value = String(this.station);
         (document.getElementById("avadd_abstand") as HTMLInputElement).value = daten['pos'][3] + ' ' + daten['pos'][4].toFixed(1);
-
         (document.getElementById("avadd_button") as HTMLInputElement).disabled = false;
-
     }
 
     part_move(event: MapBrowserEvent) {
@@ -176,20 +49,20 @@ class AvAdd extends Tool {
     addAufstellButton() {
         // im ER?
         if (!("Otaufstvor" in this.abschnitt.inER)) {
-            PublicWFS.addInER(this.abschnitt, "Otaufstvor", this.daten.ereignisraum_nr, this.addInER_Callback.bind(this));
+            PublicWFS.addInER(this.abschnitt, "Otaufstvor", Daten.getInstanz().ereignisraum_nr, this.addInER_Callback.bind(this));
         } else {
             this.wfsAddAufstell()
         }
     }
 
     private addInER_Callback(xml: XMLDocument) {
-        Aufstellvorrichtung.loadAbschnittER(this.daten, this.abschnitt, this.wfsAddAufstell.bind(this))
+        Aufstellvorrichtung.loadAbschnittER(this.abschnitt, this.wfsAddAufstell.bind(this))
     }
 
     private wfsAddAufstell() {
         let soap = '<wfs:Insert>\n' +
             '<Otaufstvor>\n' +
-            '<projekt xlink:href="#' + this.daten.ereignisraum + '" typeName="Projekt" />\n' +
+            '<projekt xlink:href="#' + Daten.getInstanz().ereignisraum + '" typeName="Projekt" />\n' +
             '<abschnittId>' + this.abschnitt.abschnittid + '</abschnittId>\n' +
             '<vst>' + this.station + '</vst>\n' +
             '<bst>' + this.station + '</bst>\n' +
@@ -224,19 +97,57 @@ class AvAdd extends Tool {
     }
 
     start() {
-        this.map.addInteraction(this.select);
         document.forms.namedItem("avadd").style.display = 'block';
-        this.map.on("pointermove", this.part_move.bind(this));
-        this.map.on("singleclick", this.part_click.bind(this));
-        this.map.addLayer(this.l_overlay);
+        super.start();
     }
 
     stop() {
-        this.map.removeInteraction(this.select);
         document.forms.namedItem("avadd").style.display = 'none';
-        this.map.un("pointermove", this.part_move);
-        this.map.un("singleclick", this.part_click.bind(this));
-        this.map.removeLayer(this.l_overlay);
+        super.stop();
+    }
+
+    createForm() {
+        let sidebar = document.getElementById("sidebar");
+        this.form = document.createElement("form");
+        this.form.id = "avadd";
+        sidebar.appendChild(this.form);
+
+        // Art
+        HTML.createSelectForm(this.form, "Art", "avadd_art");
+        this.form.appendChild(document.createElement("br"));
+
+        // Lage
+        HTML.createSelectForm(this.form, "Lage", "avadd_lage");
+        this.form.appendChild(document.createElement("br"));
+
+        // Quelle
+        HTML.createSelectForm(this.form, "Quelle", "avadd_quelle");
+        this.form.appendChild(document.createElement("br"));
+
+        // VNK
+        HTML.createTextInput(this.form, "VNK", "avadd_vnk").disabled = true;
+        this.form.appendChild(document.createElement("br"));
+
+        // NNK
+        HTML.createTextInput(this.form, "NNK", "avadd_nnk").disabled = true;
+        this.form.appendChild(document.createElement("br"));
+
+        // Station
+        HTML.createTextInput(this.form, "Station", "avadd_station").disabled = true;
+        this.form.appendChild(document.createElement("br"));
+
+        // Station
+        HTML.createTextInput(this.form, "Abstand", "avadd_abstand").disabled = true;
+        this.form.appendChild(document.createElement("br"));
+
+
+        // Button
+        let input = document.createElement("input");
+        input.id = "avadd_button";
+        input.type = "button"
+        input.value = "Ausstattung hinzu."
+        input.disabled = true;
+        this.form.appendChild(input);
     }
 }
 

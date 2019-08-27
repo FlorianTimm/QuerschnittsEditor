@@ -1,36 +1,38 @@
 import { Select as SelectInteraction } from 'ol/interaction';
-import PublicWFS from '../../PublicWFS';
-import 'jquery-ui-bundle';
-import 'jquery-ui-bundle/jquery-ui.css'
-import Tool from '../prototypes/Tool';
-import { Map, MapBrowserEvent } from 'ol';
-import Daten from '../../Daten';
+import Tool from './prototypes/Tool';
+import { Map } from 'ol';
+import Daten from '../Daten';
 import { Layer } from 'ol/layer';
-import Aufstellvorrichtung from '../../Objekte/Aufstellvorrichtung';
 import { SelectEvent } from 'ol/interaction/Select';
+import { InfoToolSelectable } from './InfoTool';
 import VectorSource from 'ol/source/Vector';
+import PublicWFS from '../PublicWFS';
+import PunktObjekt from 'src/js/Objekte/PunktObjekt';
 
 /**
- * Funktion zum Löschen von Aufstellvorrichtungen
+ * Prototyp des Werkzeuges zum Löschen von Punktobjekten
  * @author Florian Timm, LGV HH 
- * @version 2019.05.20
+ * @version 2019.08.20
  * @copyright MIT
  */
-class AvDelete extends Tool {
-    private _map: Map;
-    private _daten: Daten;
-    private _layer: Layer;
-    private _sidebar: HTMLElement;
-    private _delField: HTMLFormElement;
-    private _infoField: HTMLDivElement;
-    private _select: SelectInteraction;
 
-    constructor(map: Map, daten: Daten, layer: Layer, sidebar: string) {
+export default class DeleteTool extends Tool {
+    protected _map: Map;
+    protected _daten: Daten;
+    protected _layer: Layer;
+    protected _sidebar: HTMLElement;
+    protected _delField: HTMLFormElement;
+    protected _infoField: HTMLDivElement;
+    protected _select: SelectInteraction;
+    private objekt: string;
+
+    constructor(map: Map, layer: Layer, sidebar: string, objekt: string) {
         super();
         this._map = map;
-        this._daten = daten;
+        this._daten = Daten.getInstanz();
         this._layer = layer;
         this._sidebar = document.getElementById(sidebar);
+        this.objekt = objekt;
 
         this._delField = document.createElement("form");
         this._infoField = document.createElement("div");
@@ -40,8 +42,8 @@ class AvDelete extends Tool {
 
 
         let button = document.createElement("button");
-        button.addEventListener("click", function (evt: { preventDefault: () => void; }) {
-            evt.preventDefault();
+        button.addEventListener("click", function (event: MouseEvent) {
+            event.preventDefault();
             this._featureDelete()
         }.bind(this))
         button.innerHTML = "L&ouml;schen";
@@ -60,16 +62,16 @@ class AvDelete extends Tool {
             return;
         }
         this._delField.style.display = "block";
-        let auswahl = <Aufstellvorrichtung>event.selected[0];
+        let auswahl = <InfoToolSelectable>event.selected[0];
 
         this._delField;
         auswahl.getHTMLInfo(this._infoField);
     }
 
     _featureDelete() {
-        let feature = this._select.getFeatures().getArray()[0] as Aufstellvorrichtung;
+        let feature = this._select.getFeatures().getArray()[0] as PunktObjekt;
         console.log(feature);
-        let update = '<wfs:Delete typeName="Otaufstvor">\n' +
+        let update = '<wfs:Delete typeName="' + this.objekt + '">\n' +
             '	<ogc:Filter>\n' +
             '		<ogc:And>\n' +
             '			<ogc:PropertyIsEqualTo>\n' +
@@ -90,7 +92,7 @@ class AvDelete extends Tool {
         let feature = this._select.getFeatures().getArray()[0];
         (<VectorSource>this._layer.getSource()).removeFeature(feature);
         this._select.getFeatures().clear();
-        PublicWFS.showMessage("Aufstellvorichtung gelöscht!")
+        PublicWFS.showMessage("Objekt gelöscht!")
         this._delField.style.display = "none";
     }
 
@@ -102,7 +104,4 @@ class AvDelete extends Tool {
         this._map.removeInteraction(this._select);
         this._delField.style.display = "none";
     }
-
 }
-
-export default AvDelete;

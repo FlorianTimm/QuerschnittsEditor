@@ -87,7 +87,11 @@ function readER(xml: Document) {
         select.disabled = false;
         (document.getElementById("submit") as HTMLInputElement).disabled = false;
     } else {
-        select.innerHTML = '<option id="platzhalter">Keine Ereignisr&auml;ume vorhanden!</option>'
+        let option = document.createElement("option");
+        option.id = "platzhalter";
+        option.textContent = "Keine Ereignisr&auml;ume vorhanden!";
+        select.innerHTML = ""
+        select.appendChild(option);
     }
 }
 

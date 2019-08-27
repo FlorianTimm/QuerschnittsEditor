@@ -1,30 +1,29 @@
- import { Circle, Style, Stroke, Fill } from 'ol/style';
+import { Circle, Style, Stroke, Fill } from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
-import Vektor from '../../Vektor';
+import Vektor from '../Vektor';
 import { Vector as VectorSource } from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
 import { LineString, Point } from 'ol/geom';
 import Feature from 'ol/Feature';
-import {never as neverCondition} from 'ol/events/condition';
+import { never as neverCondition } from 'ol/events/condition';
 import { Map } from 'ol';
-import Daten from '../../Daten';
-import AvInfoTool from '../InfoTool';
-import Tool from '../prototypes/Tool';
-import Abschnitt from '../../Objekte/Abschnitt';
-import Aufstellvorrichtung from '../../Objekte/Aufstellvorrichtung';
-import { ModifyInteraction } from '../../openLayers/Interaction';
+import InfoTool from './InfoTool';
+import Tool from './prototypes/Tool';
+import Abschnitt from '../Objekte/Abschnitt';
+import { ModifyInteraction } from '../openLayers/Interaction';
 import { Coordinate } from 'ol/coordinate';
+import PunktObjekt from '../Objekte/PunktObjekt';
 
 /**
- * Funktion zum Verschieben von Aufstellvorrichtungen
+ * Funktion zum Verschieben von Punktobjekten
  * @author Florian Timm, LGV HH 
  * @version 2019.05.20
  * @copyright MIT
  */
-class AvMove extends Tool {
+
+export default class MoveTool extends Tool {
     _map: Map;
-    _daten: Daten;
-    _avInfoTool: AvInfoTool;
+    _infoTool: InfoTool;
     abschnitt: Abschnitt = null;
     station: number = null;
     abstand: number = null;
@@ -35,14 +34,13 @@ class AvMove extends Tool {
     _feat_station_line: Feature;
     _modify: ModifyInteraction;
 
-    constructor(map, avInfoTool) {
+    constructor(map: Map, avInfoTool: InfoTool, selectLayer: VectorLayer) {
         super();
         this._map = map;
-        this._daten = Daten.getInstanz();
-        this._avInfoTool = avInfoTool;
+        this._infoTool = avInfoTool;
 
         this._select = new SelectInteraction({
-            layers: [this._daten.l_aufstell],
+            layers: [selectLayer],
         });
 
         this._createLayer();
@@ -93,14 +91,6 @@ class AvMove extends Tool {
         this._modify.on('modifystart', this._modifyStart.bind(this));
         this._modify.on('modifyend', this._modifyEnd.bind(this));
     }
-    /*
-        1 = Verkehrszeichen
-        8 = noch nicht drin, Verkehrszeichen
-        9 = Verkehrszeich
-        5 = Wegweisend
-        17 = Touri
-    
-        */
 
     _selected(event) {
         if (this._select.getFeatures().getLength() > 0) {
@@ -110,7 +100,7 @@ class AvMove extends Tool {
             this._map.unset("pointermove", this._move.bind(this));
             (this._feat_station_line.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
         }
-        this._avInfoTool.featureSelected(event);
+        this._infoTool.featureSelected(event);
     }
 
     _modifyStart(event) {
@@ -129,20 +119,20 @@ class AvMove extends Tool {
         this._select.getFeatures().clear();
         (feat.getGeometry() as Point).setCoordinates(daten['pos'][6]);
 
-        let station = Math.round(daten['pos'][2] * (feat as Aufstellvorrichtung).abschnitt.getFaktor());
+        let station = Math.round(daten['pos'][2] * (feat as PunktObjekt).abschnitt.getFaktor());
         let abstand = Math.round(daten['pos'][4] * 10) / 10;
         let seite = daten['pos'][3]
         if (seite == 'M') abstand = 0;
         else if (seite == 'L') abstand = -abstand;
         console.log(abstand);
 
-        (feat as Aufstellvorrichtung).updateStation(station, abstand);
+        (feat as PunktObjekt).updateStation(station, abstand);
     }
 
     _get_station(coordinates: Coordinate) {
         let achse = null;
         if (this._select.getFeatures().getLength() > 0) {
-            achse = (this._select.getFeatures().item(0) as Aufstellvorrichtung).abschnitt;
+            achse = (this._select.getFeatures().item(0) as PunktObjekt).abschnitt;
         } else {
             return null;
         }
@@ -173,5 +163,3 @@ class AvMove extends Tool {
         (this._feat_station_line.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
     }
 }
-
-export default AvMove;

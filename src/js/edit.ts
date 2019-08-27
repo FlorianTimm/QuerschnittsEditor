@@ -24,10 +24,9 @@ import Map from './openLayers/Map';
 import PublicWFS from './PublicWFS';
 import AvAdd from './Tools/Aufstellvorrichtung/AvAdd';
 import AvAdd2ER from './Tools/Aufstellvorrichtung/AvAdd2ER';
-import AvDelete from './Tools/Aufstellvorrichtung/AvDelete';
-import AvMove from './Tools/Aufstellvorrichtung/AvMove';
 import AvVzAdd from './Tools/Aufstellvorrichtung/AvVzAdd';
 import InfoTool from './Tools/InfoTool';
+import MoveTool from './Tools/MoveTool';
 import QuerAdd2ER from './Tools/Querschnitt/QuerAdd2ER';
 import QuerAddTool from './Tools/Querschnitt/QuerAddTool';
 import QuerDelTool from './Tools/Querschnitt/QuerDelTool';
@@ -36,8 +35,7 @@ import QuerModifyTool from './Tools/Querschnitt/QuerModifyTool';
 import QuerPartTool from './Tools/Querschnitt/QuerPartTool';
 import SAPAdd from './Tools/StrassenAusPunkt/SAPAdd';
 import SAPAdd2ER from './Tools/StrassenAusPunkt/SAPAdd2ER';
-import SAPDelete from './Tools/StrassenAusPunkt/SAPDelete';
-import SAPMove from './Tools/StrassenAusPunkt/SAPMove';
+import DeleteTool from './Tools/DeleteTool';
 
 var CONFIG: [string, string] = require('./config.json');
 
@@ -51,8 +49,8 @@ var er = decodeURI(urlParamER[1])
 var ernr = decodeURI(urlParamERNR[1])
 console.log("Ereignisraum: " + ernr);
 
-let daten: Daten, infoTool: QuerInfoTool, editTool: QuerModifyTool, delTool: QuerDelTool, partTool: QuerPartTool, addTool: QuerAddTool, vsInfoTool: InfoTool, avAdd: AvAdd, avAdd2ER: AvAdd2ER, qsAdd2ER: QuerAdd2ER, avMove: AvMove, vzAdd: AvVzAdd, measure: Measure, avDel: AvDelete;
-let sapInfoTool: InfoTool, sapAdd: SAPAdd, sapMove: SAPMove, sapAdd2ER: SAPAdd2ER, sapDel: SAPDelete;
+let daten: Daten, infoTool: QuerInfoTool, editTool: QuerModifyTool, delTool: QuerDelTool, partTool: QuerPartTool, addTool: QuerAddTool, vsInfoTool: InfoTool, avAdd: AvAdd, avAdd2ER: AvAdd2ER, qsAdd2ER: QuerAdd2ER, avMove: MoveTool, vzAdd: AvVzAdd, measure: Measure, avDel: DeleteTool;
+let sapInfoTool: InfoTool, sapAdd: SAPAdd, sapMove: MoveTool, sapAdd2ER: SAPAdd2ER, sapDel: DeleteTool;
 
 window.addEventListener('load', function () {
     proj4.defs("EPSG:31467", "+proj=tmerc +lat_0=0 +lon_0=9 +k=1 +x_0=3500000 +y_0=0 +ellps=bessel +towgs84=598.1,73.7,418.2,0.202,0.045,-2.455,6.7 +units=m +no_defs");
@@ -63,58 +61,7 @@ window.addEventListener('load', function () {
     var map = createMap();
     //console.log(map.getControls());
 
-    if (document.location.hash != "") {
-        let hash = document.location.hash.replace("#", "").split('&')
-
-        let layer: string = null, x: number = null, y: number = null, zoom: number = null;
-
-        for (let i = 0; i < hash.length; i++) {
-            let t = hash[i].split("=");
-            switch (t[0]) {
-                case "zoom":
-                    zoom = parseInt(t[1]);
-                    break;
-                case "x":
-                    x = parseFloat(t[1]);
-                    break;
-                case "y":
-                    y = parseFloat(t[1]);
-                    break;
-                case "layer":
-                    layer = t[1];
-                    break;
-            }
-        }
-
-        if (zoom != null) {
-            map.getView().setZoom(zoom);
-        }
-
-        if (x != null && y != null) {
-            map.getView().setCenter([x, y]);
-        }
-
-        if (layer != null) {
-            let selection = layer.split(',');
-            map.getLayers().forEach(function (layer, id, array) {
-                if (layer.get('switchable') == true) {
-                    if (selection.indexOf(id + "") != -1) {
-                        layer.setVisible(true);
-                    } else {
-                        layer.setVisible(false);
-                    }
-                }
-            });
-        }
-    }
-    map.getLayers().forEach(function (layer, id, array) {
-        if (layer.get('switchable') == undefined || layer.get('switchable') == true) {
-            layer.on("propertychange", recreateHash)
-        }
-    });
-    map.firstHash = true;
-
-    map.on("moveend", recreateHash);
+    checkHash(map);
 
     daten = new Daten(map, er, ernr);
 
@@ -127,20 +74,22 @@ window.addEventListener('load', function () {
     qsAdd2ER = new QuerAdd2ER(map, daten);
 
     vsInfoTool = new InfoTool(map, daten.l_aufstell, "sidebar");
-    avAdd = new AvAdd(map, daten);
-    vzAdd = new AvVzAdd(map, daten);
-    avMove = new AvMove(map, vsInfoTool);
+    avAdd = new AvAdd(map);
+    vzAdd = new AvVzAdd(map);
+    avMove = new MoveTool(map, vsInfoTool, daten.l_aufstell);
     avAdd2ER = new AvAdd2ER(map, daten);
-    avDel = new AvDelete(map, daten, daten.l_aufstell, "sidebar");
+    avDel = new DeleteTool(map, daten.l_aufstell, "sidebar", "Otaufstvor");
 
     sapInfoTool = new InfoTool(map, daten.l_straus, "sidebar");
     sapAdd = new SAPAdd(map);
-    sapMove = new SAPMove(map, vsInfoTool);
+    sapMove = new MoveTool(map, vsInfoTool, daten.l_straus);
     sapAdd2ER = new SAPAdd2ER(map);
-    sapDel = new SAPDelete(map, daten.l_straus, "sidebar");
+    sapDel = new DeleteTool(map, daten.l_straus, "sidebar", "Otstrauspkt");
 
     measure = new Measure(map);
 
+
+    Daten.getInstanz().loadER();
 
     document.getElementById("befehl_modify").addEventListener('change', befehl_changed);
     document.getElementById("befehl_delete").addEventListener('change', befehl_changed);
@@ -210,6 +159,56 @@ window.addEventListener('load', function () {
     })
 });
 
+
+function checkHash(map: Map) {
+    if (document.location.hash != "") {
+        let hash = document.location.hash.replace("#", "").split('&');
+        let layer: string = null, x: number = null, y: number = null, zoom: number = null;
+        for (let i = 0; i < hash.length; i++) {
+            let t = hash[i].split("=");
+            switch (t[0]) {
+                case "zoom":
+                    zoom = parseInt(t[1]);
+                    break;
+                case "x":
+                    x = parseFloat(t[1]);
+                    break;
+                case "y":
+                    y = parseFloat(t[1]);
+                    break;
+                case "layer":
+                    layer = t[1];
+                    break;
+            }
+        }
+        if (zoom != null) {
+            map.getView().setZoom(zoom);
+        }
+        if (x != null && y != null) {
+            map.getView().setCenter([x, y]);
+        }
+        if (layer != null) {
+            let selection = layer.split(',');
+            map.getLayers().forEach(function (layer, id, array) {
+                if (layer.get('switchable') == true) {
+                    if (selection.indexOf(id + "") != -1) {
+                        layer.setVisible(true);
+                    }
+                    else {
+                        layer.setVisible(false);
+                    }
+                }
+            });
+        }
+    }
+    map.getLayers().forEach(function (layer, id, array) {
+        if (layer.get('switchable') == undefined || layer.get('switchable') == true) {
+            layer.on("propertychange", recreateHash);
+        }
+    });
+    map.firstHash = true;
+    map.on("moveend", recreateHash);
+}
 
 function recreateHash(event: MapEvent) {
     //console.log(event)

@@ -63,9 +63,16 @@ class Daten {
 
         this.abschnitte = {};
 
-        Querschnitt.loadER();
+
         this.l_aufstell = Aufstellvorrichtung.createLayer(this.map);
         this.l_straus = StrassenAusPunkt.createLayer(this.map);
+    }
+
+    /**
+     * Lädt Daten aus den ERs
+     */
+    loadER () {
+        Querschnitt.loadER();
         Aufstellvorrichtung.loadER(this);
         StrassenAusPunkt.loadER();
     }

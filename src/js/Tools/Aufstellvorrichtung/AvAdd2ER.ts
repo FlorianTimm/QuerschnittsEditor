@@ -47,9 +47,9 @@ class AvAdd2ER extends Tool {
         PublicWFS.addInER(abschnitt, "Otaufstvor", this.daten.ereignisraum_nr, this._onSelect_Callback.bind(this), undefined, abschnitt);
     }
 
-    _onSelect_Callback(xml, abschnitt: Abschnitt) {
+    _onSelect_Callback(xml: XMLDocument, abschnitt: Abschnitt) {
         abschnitt.inER["Otaufstvor"] = true;
-        Aufstellvorrichtung.loadAbschnittER(this.daten, abschnitt, PublicWFS.showMessage, "Erfolgreich in ER kopiert");
+        Aufstellvorrichtung.loadAbschnittER(abschnitt, PublicWFS.showMessage, "Erfolgreich in ER kopiert");
         this.select.getFeatures().clear();
         this.daten.l_achse.changed();
     }

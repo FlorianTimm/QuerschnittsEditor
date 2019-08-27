@@ -12,6 +12,8 @@ export default abstract class PunktObjekt extends Objekt {
     abstract colorFunktion1(): ColorLike;
     abstract colorFunktion2(): ColorLike;
 
+    abstract updateStation(station: number, abstand: number): void;
+
     static createLayer(map: Map) {
         let source = new VectorSource({
             features: []
