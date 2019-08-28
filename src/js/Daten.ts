@@ -24,7 +24,7 @@ import StrassenAusPunkt from './Objekte/StrassenAusPunkt';
 var CONFIG = require('./config.json');
 
 class Daten {
-    private static daten = null;
+    private static daten: Daten = null;
 
     map: Map;
     modus: string = "Otaufstvor"
@@ -43,6 +43,7 @@ class Daten {
     v_quer: VectorSource;
     l_quer: VectorLayer;
     l_straus: VectorLayer;
+    warteAufObjektklassen: number;
 
 
     constructor(map: Map, ereignisraum: string, ereignisraum_nr: string) {
@@ -71,13 +72,59 @@ class Daten {
     /**
      * Lädt Daten aus den ERs
      */
-    loadER () {
-        Querschnitt.loadER();
-        Aufstellvorrichtung.loadER(this);
-        StrassenAusPunkt.loadER();
+    loadER(zoomToExtentWhenReady?: boolean) {
+        if (zoomToExtentWhenReady == undefined) zoomToExtentWhenReady = true;
+
+        this.warteAufObjektklassen = 3;
+        Querschnitt.loadER(this.loadErCallback.bind(this), zoomToExtentWhenReady);
+        Aufstellvorrichtung.loadER(this.loadErCallback.bind(this, zoomToExtentWhenReady));
+        StrassenAusPunkt.loadER(this.loadErCallback.bind(this, zoomToExtentWhenReady));
     }
 
-    static getInstanz() {
+    private loadErCallback(zoomToExtentWhenReady?: boolean) {
+        this.warteAufObjektklassen -= 1;
+        console.log(this.warteAufObjektklassen)
+        if (this.warteAufObjektklassen <= 0) {
+            console.log("ERs geladen");
+            (document.getElementById("zoomToExtent") as HTMLButtonElement).disabled = false;
+            if (zoomToExtentWhenReady != false)
+                this.zoomToExtent();
+        }
+    }
+
+    zoomToExtent() {
+        let minX = null, maxX = null, minY = null, maxY = null;
+        let features = this.v_achse.getFeatures();
+        if (features.length == 0) {
+            PublicWFS.showMessage("Keine Daten geladen<br /><br />[ ER enthält keine bearbeitbaren Objekte ]", true);
+            return;
+        }
+
+        for (let f of features) {
+            let geo = f.getGeometry()
+            if (geo == undefined) {
+                console.log("Geometrien noch nicht geladen, prüfe in 500ms")
+                setTimeout(this.zoomToExtent.bind(this), 500);
+                return;
+            }
+            let p = geo.getExtent();
+
+            if (minX == null || minX > p[0]) minX = p[0];
+            if (minY == null || minY > p[1]) minY = p[1];
+            if (maxX == null || maxX < p[2]) maxX = p[2];
+            if (maxY == null || maxY < p[3]) maxY = p[3];
+        }
+        this.map.getView().fit([minX, minY, maxX, maxY], { padding: [20, 240, 20, 20] })
+
+        //map.getView().fit(daten.l_achse.getExtent());
+
+        /*
+        let extent = Daten.calcAbschnitteExtent(daten.l_achse.getSource().getFeatures());
+        map.getView().fit(extent, { padding: [20, 240, 20, 20] })
+        */
+    }
+
+    static getInstanz(): Daten {
         return Daten.daten;
     }
 
