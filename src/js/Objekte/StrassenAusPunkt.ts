@@ -49,7 +49,7 @@ export default class StrassenAusPunkt extends PunktObjekt implements InfoToolSel
 
     getHTMLInfo(ziel: HTMLElement) {
         console.log(ziel);
-        let kt = Daten.getInstanz().klartexte;
+        let kt = Klartext.getInstanz();
         let r = "<table>";
 
         r += "<tr><td>VNK</td><td>" + this.abschnitt.vnk + "</td></tr>";
@@ -91,21 +91,24 @@ export default class StrassenAusPunkt extends PunktObjekt implements InfoToolSel
  * @param {*} daten 
  */
 
-    static loadER() {
-        StrassenAusPunkt.loadKlartexte();
+
+    static loadER(callback?: (...args: any) => void, ...args: any) {
         let daten = Daten.getInstanz();
+        StrassenAusPunkt.loadKlartexte();
         PublicWFS.doQuery('Otstrauspkt', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', StrassenAusPunkt._loadER_Callback);
+            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', StrassenAusPunkt._loadER_Callback, undefined, callback, ...args);
 
     }
 
-    static _loadER_Callback(xml: XMLDocument) {
-        let straus = xml.getElementsByTagName("Otstrauspkt");
-        for (let i = 0; i < straus.length; i++) {
-            let f = StrassenAusPunkt.fromXML(straus[i]);
-            Daten.getInstanz().l_straus.getSource().addFeature(f);
+    static _loadER_Callback(xml: XMLDocument, callback?: (...args: any) => void, ...args: any) {
+        let aufstell = xml.getElementsByTagName("Otstrauspkt");
+        for (let i = 0; i < aufstell.length; i++) {
+            let f = StrassenAusPunkt.fromXML(aufstell[i]);
+            Daten.getInstanz().l_aufstell.getSource().addFeature(f);
         }
+        if (callback != undefined)
+            callback(...args);
     }
 
     /**

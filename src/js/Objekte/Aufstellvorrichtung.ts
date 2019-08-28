@@ -113,20 +113,23 @@ class Aufstellvorrichtung extends PunktObjekt implements InfoToolSelectable, Obj
      * @param {*} ereignisraum 
      * @param {*} daten 
      */
-    static loadER(daten: Daten) {
+    static loadER(callback?: (...args: any) => void, ...args: any) {
+        let daten = Daten.getInstanz();
         Aufstellvorrichtung.loadKlartexte();
         PublicWFS.doQuery('Otaufstvor', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Aufstellvorrichtung._loadER_Callback, undefined, daten);
+            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Aufstellvorrichtung._loadER_Callback, undefined, callback, ...args);
 
     }
 
-    static _loadER_Callback(xml: XMLDocument) {
+    static _loadER_Callback(xml: XMLDocument, callback?: (...args: any) => void, ...args: any) {
         let aufstell = xml.getElementsByTagName("Otaufstvor");
         for (let i = 0; i < aufstell.length; i++) {
             let f = Aufstellvorrichtung.fromXML(aufstell[i]);
             Daten.getInstanz().l_aufstell.getSource().addFeature(f);
         }
+        if (callback != undefined)
+            callback(...args);
     }
 
     /**

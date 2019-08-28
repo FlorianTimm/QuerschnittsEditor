@@ -61,7 +61,7 @@ window.addEventListener('load', function () {
     var map = createMap();
     //console.log(map.getControls());
 
-    checkHash(map);
+    let foundHash = checkHash(map);
 
     daten = new Daten(map, er, ernr);
 
@@ -89,7 +89,7 @@ window.addEventListener('load', function () {
     measure = new Measure(map);
 
 
-    Daten.getInstanz().loadER();
+    daten.loadER(!foundHash);
 
     document.getElementById("befehl_modify").addEventListener('change', befehl_changed);
     document.getElementById("befehl_delete").addEventListener('change', befehl_changed);
@@ -114,30 +114,7 @@ window.addEventListener('load', function () {
 
     document.getElementById("befehl_messen").addEventListener('change', befehl_changed);
 
-    document.getElementById("zoomToExtent").addEventListener('click', function () {
-        let minX = null, maxX = null, minY = null, maxY = null;
-        let features = daten.l_achse.getSource().getFeatures();
-        if (features.length == 0) {
-            PublicWFS.showMessage("(noch) keine Geometrien geladen", true);
-            return;
-        }
-        for (let f of features) {
-            let p = f.getGeometry().getExtent();
-
-            if (minX == null || minX > p[0]) minX = p[0];
-            if (minY == null || minY > p[1]) minY = p[1];
-            if (maxX == null || maxX < p[2]) maxX = p[2];
-            if (maxY == null || maxY < p[3]) maxY = p[3];
-        }
-        map.getView().fit([minX, minY, maxX, maxY], { padding: [20, 240, 20, 20] })
-
-        //map.getView().fit(daten.l_achse.getExtent());
-
-        /*
-        let extent = Daten.calcAbschnitteExtent(daten.l_achse.getSource().getFeatures());
-        map.getView().fit(extent, { padding: [20, 240, 20, 20] })
-        */
-    })
+    document.getElementById("zoomToExtent").addEventListener('click', Daten.getInstanz().zoomToExtent.bind(daten))
 
 
     document.getElementById("loadExtent").addEventListener('click', function () {
@@ -161,6 +138,7 @@ window.addEventListener('load', function () {
 
 
 function checkHash(map: Map) {
+    let foundHash = false;
     if (document.location.hash != "") {
         let hash = document.location.hash.replace("#", "").split('&');
         let layer: string = null, x: number = null, y: number = null, zoom: number = null;
@@ -200,6 +178,7 @@ function checkHash(map: Map) {
                 }
             });
         }
+        foundHash = true;
     }
     map.getLayers().forEach(function (layer, id, array) {
         if (layer.get('switchable') == undefined || layer.get('switchable') == true) {
@@ -208,6 +187,7 @@ function checkHash(map: Map) {
     });
     map.firstHash = true;
     map.on("moveend", recreateHash);
+    return foundHash;
 }
 
 function recreateHash(event: MapEvent) {
