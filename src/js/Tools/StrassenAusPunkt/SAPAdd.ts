@@ -90,10 +90,10 @@ export default class SAPAdd extends AddTool {
         this.seite = null;
         (this.feat_neu.getGeometry() as Point).setCoordinates([0, 0]);
         let filter = '<Filter>';
-        xml.getElementsByTagName('InsertResult')[0].childNodes.forEach(
-            function (f: ChildNode) {
-                filter += '<FeatureId fid="' + (f as Element).getAttribute('fid') + '"/>';
-            });
+        let childs = xml.getElementsByTagName('InsertResult')[0].childNodes;
+        for (let i = 0; i < childs.length; i++) {
+            filter += '<FeatureId fid="' + (childs[i] as Element).getAttribute('fid') + '"/>';
+        };
         filter += '</Filter>';
         PublicWFS.doQuery('Otstrauspkt', filter, StrassenAusPunkt._loadER_Callback);
     }

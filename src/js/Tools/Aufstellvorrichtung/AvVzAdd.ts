@@ -406,29 +406,29 @@ class AvVzAdd extends Tool {
                     upd += '<wfs:Property>\n<wfs:Name>vztext</wfs:Name>\n<wfs:Value>' + modiZeichen.vztext + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update text");
                 }
-                if (oldZeichen.lageFb.substr(-32) != modiZeichen.lageFb) {
+                if (oldZeichen.lageFb == null || oldZeichen.lageFb.substr(-32) != modiZeichen.lageFb) {
                     upd += '<wfs:Property>\n<wfs:Name>lageFb/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.lageFb + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update lageFb");
                 }
-                if (oldZeichen.lesbarkeit.substr(-32) != modiZeichen.lesbarkeit) {
+                if (oldZeichen.lesbarkeit == null || oldZeichen.lesbarkeit.substr(-32) != modiZeichen.lesbarkeit) {
                     upd += '<wfs:Property>\n<wfs:Name>lesbarkeit/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.lesbarkeit + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update text");
                 }
-                if (oldZeichen.beleucht.substr(-32) != modiZeichen.beleucht) {
+                if (oldZeichen.beleucht == null || oldZeichen.beleucht.substr(-32) != modiZeichen.beleucht) {
                     upd += '<wfs:Property>\n<wfs:Name>beleucht/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.beleucht + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update beleucht");
                 }
-                if (oldZeichen.art.substr(-32) != modiZeichen.art) {
+                if (oldZeichen.art == null || oldZeichen.art.substr(-32) != modiZeichen.art) {
                     upd += '<wfs:Property>\n<wfs:Name>art/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.art + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update art");
                 }
 
-                if (oldZeichen.groesse.substr(-32) != modiZeichen.groesse) {
+                if (oldZeichen.groesse == null || oldZeichen.groesse.substr(-32) != modiZeichen.groesse) {
                     upd += '<wfs:Property>\n<wfs:Name>groesse/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.groesse + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update groesse");
                 }
 
-                if (oldZeichen.strbezug.substr(-32) != modiZeichen.strbezug) {
+                if (oldZeichen.strbezug == null || oldZeichen.strbezug.substr(-32) != modiZeichen.strbezug) {
                     upd += '<wfs:Property>\n<wfs:Name>strbezug/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.strbezug + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update strbezug");
                 }
@@ -438,12 +438,12 @@ class AvVzAdd extends Tool {
                     console.log("update aufstelldat");
                 }
 
-                if (oldZeichen.erfart.substr(-32) != modiZeichen.erfart) {
+                if (oldZeichen.erfart == null || oldZeichen.erfart.substr(-32) != modiZeichen.erfart) {
                     upd += '<wfs:Property>\n<wfs:Name>erfart/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.erfart + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update erfart");
                 }
 
-                if (oldZeichen.quelle.substr(-32) != modiZeichen.quelle) {
+                if (oldZeichen.quelle == null || oldZeichen.quelle.substr(-32) != modiZeichen.quelle) {
                     upd += '<wfs:Property>\n<wfs:Name>quelle/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.quelle + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update quelle");
                 }

@@ -28,7 +28,7 @@ class LayerSwitch extends Control {
 		element.addEventListener('mouseenter', function () {
 			//layerswi.style.height = "20em";
 			//layerswi.style.overflow = "auto";
-			let layers = this.getMap().getLayers();
+			let layers = (this as LayerSwitch).getMap().getLayers();
 			layers.forEach(function (layer: Layer, id: number) {
 				if (layer.get('switchable') == true) {
 					let div_layer = document.createElement('div');
