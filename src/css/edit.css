@@ -186,13 +186,12 @@ form#suche {
     overflow-x: hidden;
 }
 
-form#avadd , form#sapadd {
+form#avadd, form#sapadd {
     overflow-x: inherit;
     text-align: left;
 }
 
-form#avadd input, form#avadd select, form#avadd .chosen-container,
-form#sapadd input, form#sapadd select, form#sapadd .chosen-container {
+form#avadd input, form#avadd select, form#avadd .chosen-container, form#sapadd input, form#sapadd select, form#sapadd .chosen-container {
     margin-bottom: 4px;
     width: 95%;
 }
@@ -276,4 +275,9 @@ div#zurueck a {
 
 div#zurueck a:hover {
     background-color: rgba(0, 60, 136, 0.7);
+}
+
+span.hotkey_alt {
+    text-decoration: underline;
+    text-decoration-color: red;
 }

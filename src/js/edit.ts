@@ -413,3 +413,48 @@ window.addEventListener('load', function () {
 
 
 
+document.onkeyup = function (e: KeyboardEvent) {
+    if ($(e.target).closest("input")[0]) {
+        return;
+    }
+    
+    console.log(e.code);
+    console.log(Daten.getInstanz().modus);
+    let modus = Daten.getInstanz().modus;
+
+    if (modus == "Otaufstvor") {
+        if (e.altKey && e.code == "KeyI") {
+            (document.getElementById("befehl_vsinfo") as HTMLInputElement).checked = true;
+        } else if (e.altKey && e.code == "KeyR") {
+            (document.getElementById("befehl_avadd2er") as HTMLInputElement).checked = true;
+        } else if (e.altKey && e.code == "KeyH") {
+            (document.getElementById("befehl_avadd") as HTMLInputElement).checked = true;
+        } else if (e.altKey && e.code == "KeyL") {
+            (document.getElementById("befehl_avdel") as HTMLInputElement).checked = true;
+        } else if (e.altKey && e.code == "KeyS") {
+            (document.getElementById("befehl_vzadd") as HTMLInputElement).checked = true;
+        } else if (e.altKey && e.code == "KeyV") {
+            (document.getElementById("befehl_avmove") as HTMLInputElement).checked = true;
+        }
+    } else if (modus == "Querschnitt") {
+
+    } else if (modus == "Otstrauspkt") {
+        if (e.altKey && e.code == "KeyI") {
+            (document.getElementById("befehl_sapinfo") as HTMLInputElement).checked = true;
+        } else if (e.altKey && e.code == "KeyR") {
+            (document.getElementById("befehl_sapadd2er") as HTMLInputElement).checked = true;
+        } else if (e.altKey && e.code == "KeyH") {
+            (document.getElementById("befehl_sapadd") as HTMLInputElement).checked = true;
+        } else if (e.altKey && e.code == "KeyL") {
+            (document.getElementById("befehl_sapdel") as HTMLInputElement).checked = true;
+        } else if (e.altKey && e.code == "KeyV") {
+            (document.getElementById("befehl_sapmove") as HTMLInputElement).checked = true;
+        }
+    }
+    befehl_changed();
+};
+$("span.hotkey_alt").each(function () {
+    let t = $(this).text();
+    $(this).parent().prop('title', 'Alt + ' + t.toUpperCase() + '')
+});
+$("span.hotkey_alt").parent().tooltip({track: true})
