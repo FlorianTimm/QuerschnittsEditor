@@ -1,0 +1,15 @@
+<soapenv:Envelope 
+	xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+	xmlns:pub="http://ttsib.novasib.de/PublicServices" 
+	xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">
+	<soapenv:Header/>
+	<soapenv:Body>
+		<pub:createProjekt>
+			<kurzBez>-0</kurzBez>
+			<langBez>3.14</langBez>
+			<eKat>D</eKat>
+			<autoER>0</autoER>
+		</pub:createProjekt>
+
+	</soapenv:Body>
+</soapenv:Envelope>

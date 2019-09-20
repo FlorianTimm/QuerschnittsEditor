@@ -1,10 +1,3 @@
-/**
- * Daten
- * @author Florian Timm, LGV HH 
- * @version 2019.06.06
- * @copyright MIT
- */
-
 import { Vector as VectorSource } from 'ol/source';
 import { Style, Stroke, Fill, Text, Icon, Circle } from 'ol/style';
 import Point from 'ol/geom/Point';
@@ -23,28 +16,35 @@ import StrassenAusPunkt from './Objekte/StrassenAusPunkt';
 
 var CONFIG = require('./config.json');
 
-class Daten {
+/**
+ * Daten
+ * @author Florian Timm, LGV HH 
+ * @version 2019.06.06
+ * @copyright MIT
+ */
+
+export default class Daten {
     private static daten: Daten = null;
 
-    map: Map;
-    modus: string = "Otaufstvor"
-    ereignisraum: string;
-    ereignisraum_nr: string;
-    querschnitteFID: {};
-    private klartexte: Klartext;
-    abschnitte: {};
-    l_aufstell: VectorLayer;
-    v_achse: VectorSource;
-    l_achse: VectorLayer;
-    v_station: VectorSource;
-    l_station: VectorLayer;
-    v_trenn: VectorSource;
-    l_trenn: VectorLayer;
-    v_quer: VectorSource;
-    l_quer: VectorLayer;
-    l_straus: VectorLayer;
-    warteAufObjektklassen: number;
+    public modus: string = "Otaufstvor"
+    public ereignisraum: string;
+    public ereignisraum_nr: string;
+    public querschnitteFID: { [oid: string]: Abschnitt };
+    public l_aufstell: VectorLayer;
+    public v_achse: VectorSource;
+    public l_achse: VectorLayer;
+    public v_station: VectorSource;
+    public l_station: VectorLayer;
+    public v_trenn: VectorSource;
+    public l_trenn: VectorLayer;
+    public v_quer: VectorSource;
+    public l_quer: VectorLayer;
+    public l_straus: VectorLayer;
 
+    private klartexte: Klartext;
+    private abschnitte: {};
+    private map: Map;
+    private warteAufObjektklassen: number;
 
     constructor(map: Map, ereignisraum: string, ereignisraum_nr: string) {
         Daten.daten = this;
@@ -72,7 +72,7 @@ class Daten {
     /**
      * Lädt Daten aus den ERs
      */
-    loadER(zoomToExtentWhenReady?: boolean) {
+    public loadER(zoomToExtentWhenReady?: boolean) {
         if (zoomToExtentWhenReady == undefined) zoomToExtentWhenReady = true;
 
         this.warteAufObjektklassen = 3;
@@ -92,7 +92,7 @@ class Daten {
         }
     }
 
-    zoomToExtent() {
+    public zoomToExtent() {
         let minX = null, maxX = null, minY = null, maxY = null;
         let features = this.v_achse.getFeatures();
         if (features.length == 0) {
@@ -124,7 +124,7 @@ class Daten {
         */
     }
 
-    static getInstanz(): Daten {
+    public static getInstanz(): Daten {
         return Daten.daten;
     }
 
@@ -156,7 +156,7 @@ class Daten {
         }
     }
 
-    getAbschnitt(absId: string): Abschnitt {
+    public getAbschnitt(absId: string): Abschnitt {
         if (!(absId in this.abschnitte)) {
             this.abschnitte[absId] = Abschnitt.load(absId);
             this.v_achse.addFeature(this.abschnitte[absId]);
@@ -165,7 +165,7 @@ class Daten {
         return this.abschnitte[absId];
     }
 
-    loadExtent() {
+    public loadExtent() {
         document.body.style.cursor = 'wait'
         let extent = this.map.getView().calculateExtent();
         if ("ABSCHNITT_WFS_URL" in CONFIG) {
@@ -415,7 +415,7 @@ class Daten {
         this.map.addLayer(this.l_quer);
     }
 
-    searchForStreet(event?: Event) {
+    public searchForStreet(event?: Event) {
         console.log(document.forms.namedItem("suche").suche.value);
         let wert = document.forms.namedItem("suche").suche.value;
         if (wert == "") return;
@@ -471,7 +471,7 @@ class Daten {
         document.body.style.cursor = '';
     }
 
-    static calcAbschnitteExtent(abschnitte) {
+    public static calcAbschnitteExtent(abschnitte: Abschnitt[]) {
         let minX = null, maxX = null, minY = null, maxY = null;
         for (let i = 0; i < abschnitte.length; i++) {
             let f = abschnitte[i];
@@ -486,5 +486,3 @@ class Daten {
         return [minX, minY, maxX, maxY];
     }
 }
-
-export default Daten;

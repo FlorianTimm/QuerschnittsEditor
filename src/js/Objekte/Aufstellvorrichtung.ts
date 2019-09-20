@@ -1,7 +1,7 @@
 /**
  * Aufstellvorrichtung
  * @author Florian Timm, LGV HH 
- * @version 2019.08.22
+ * @version 2019.09.19
  * @copyright MIT
  */
 import "../import_jquery.js";
@@ -17,21 +17,21 @@ import Objekt from './Objekt';
 import PunktObjekt from './PunktObjekt';
 import Zeichen from './Zeichen';
 
-class Aufstellvorrichtung extends PunktObjekt implements InfoToolSelectable, Objekt {
-    private _daten: Daten;
-    private _zeichen: Zeichen[] = null;
+export default class Aufstellvorrichtung extends PunktObjekt implements InfoToolSelectable, Objekt {
+    private daten: Daten;
+    private zeichen: Zeichen[] = null;
 
-    labstbaVst: number;
-    rabstbaVst: number;
-    hasSekObj: number;
-    vabstVst: number;
-    vabstBst: number;
-    art: string;
-    rlageVst: string;
+    public labstbaVst: number;
+    public rabstbaVst: number;
+    public hasSekObj: number;
+    public vabstVst: number;
+    public vabstBst: number;
+    public art: string;
+    public rlageVst: string;
 
     constructor() {
         super();
-        this._daten = Daten.getInstanz();
+        this.daten = Daten.getInstanz();
         Aufstellvorrichtung.loadKlartexte();
     }
 
@@ -41,19 +41,19 @@ class Aufstellvorrichtung extends PunktObjekt implements InfoToolSelectable, Obj
         Klartext.getInstanz().load('Itquelle', Aufstellvorrichtung.klartext2select, 'Itquelle', document.forms.namedItem("avadd").avadd_quelle);
     }
 
-    colorFunktion1(): import("ol/colorlike").ColorLike {
-        if (this.hasSekObj > 0 || (this._zeichen != null && this._zeichen.length > 0)) {
+    public colorFunktion1(): import("ol/colorlike").ColorLike {
+        if (this.hasSekObj > 0 || (this.zeichen != null && this.zeichen.length > 0)) {
             return 'rgba(250,120,0,0.8)';
         } else {
             return 'rgba(255,0,0,0.8)';
         }
     }
 
-    colorFunktion2(): import("ol/colorlike").ColorLike {
+    public colorFunktion2(): import("ol/colorlike").ColorLike {
         return 'black';
     }
 
-    getHTMLInfo(ziel: HTMLElement) {
+    public getHTMLInfo(ziel: HTMLElement) {
         let kt = Klartext.getInstanz();
         let r = "<table>";
 
@@ -113,16 +113,16 @@ class Aufstellvorrichtung extends PunktObjekt implements InfoToolSelectable, Obj
      * @param {*} ereignisraum 
      * @param {*} daten 
      */
-    static loadER(callback?: (...args: any) => void, ...args: any) {
+    public static loadER(callback?: (...args: any) => void, ...args: any) {
         let daten = Daten.getInstanz();
         Aufstellvorrichtung.loadKlartexte();
         PublicWFS.doQuery('Otaufstvor', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Aufstellvorrichtung._loadER_Callback, undefined, callback, ...args);
+            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Aufstellvorrichtung.loadER_Callback, undefined, callback, ...args);
 
     }
 
-    static _loadER_Callback(xml: XMLDocument, callback?: (...args: any) => void, ...args: any) {
+    public static loadER_Callback(xml: XMLDocument, callback?: (...args: any) => void, ...args: any) {
         let aufstell = xml.getElementsByTagName("Otaufstvor");
         for (let i = 0; i < aufstell.length; i++) {
             let f = Aufstellvorrichtung.fromXML(aufstell[i]);
@@ -137,7 +137,7 @@ class Aufstellvorrichtung extends PunktObjekt implements InfoToolSelectable, Obj
      * @param {Daten} daten 
      * @param {Abschnitt} abschnitt 
      */
-    static loadAbschnittER(abschnitt: Abschnitt, callback: (...args: any[]) => void, ...args: any[]) {
+    public static loadAbschnittER(abschnitt: Abschnitt, callback: (...args: any[]) => void, ...args: any[]) {
         //console.log(daten);
         document.body.style.cursor = 'wait';
         PublicWFS.doQuery('Otaufstvor', '<Filter>' +
@@ -157,7 +157,7 @@ class Aufstellvorrichtung extends PunktObjekt implements InfoToolSelectable, Obj
         document.body.style.cursor = '';
     }
 
-    static fromXML(xml: Element) {
+    public static fromXML(xml: Element) {
         let daten = Daten.getInstanz();
         let r = new Aufstellvorrichtung();
         r.setDataFromXML("AUFSTELL", xml);
@@ -170,7 +170,7 @@ class Aufstellvorrichtung extends PunktObjekt implements InfoToolSelectable, Obj
         return r;
     }
 
-    updateStation(station: number, abstand: number) {
+    public updateStation(station: number, abstand: number) {
         this.vabstVst = Math.round(abstand * 10) / 10;
         this.vabstBst = this.vabstVst;
         this.rabstbaVst = this.vabstVst;
@@ -213,19 +213,19 @@ class Aufstellvorrichtung extends PunktObjekt implements InfoToolSelectable, Obj
         PublicWFS.doTransaction(xml);
     }
 
-    getZeichen(callback: (...args: any[]) => void, ...args: any[]) {
-        if (this._zeichen == null && this.hasSekObj > 0) {
+    public getZeichen(callback: (...args: any[]) => void, ...args: any[]) {
+        if (this.zeichen == null && this.hasSekObj > 0) {
             this.reloadZeichen(callback, ...args);
         } else if (this.hasSekObj > 0) {
             if (callback != undefined) {
-                callback(this._zeichen, ...args);
+                callback(this.zeichen, ...args);
             } else {
-                return this._zeichen;
+                return this.zeichen;
             }
         }
     }
 
-    reloadZeichen(callback: (...args: any[]) => void, ...args: any[]) {
+    public reloadZeichen(callback: (...args: any[]) => void, ...args: any[]) {
         PublicWFS.doQuery('Otvzeichlp', '<Filter>\n' +
             '  <PropertyIsEqualTo>\n' +
             '    <PropertyName>parent/@xlink:href</PropertyName>\n' +
@@ -241,15 +241,13 @@ class Aufstellvorrichtung extends PunktObjekt implements InfoToolSelectable, Obj
         for (let i = 0; i < zeichenXML.length; i++) {
             let eintrag = zeichenXML.item(i);
             if (!(eintrag.getElementsByTagName("enr").length > 0)) {
-                zeichen.push(Zeichen.fromXML(eintrag, this._daten));
+                zeichen.push(Zeichen.fromXML(eintrag, this.daten));
             }
         }
-        this._zeichen = zeichen;
+        this.zeichen = zeichen;
         if (callback != undefined) {
-            callback(this._zeichen, ...args);
+            callback(this.zeichen, ...args);
         }
     }
 
 }
-
-export default Aufstellvorrichtung

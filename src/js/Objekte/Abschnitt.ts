@@ -13,39 +13,36 @@ var CONFIG: { [index: string]: string } = require('../config.json');
 /**
  * Straßenabschnitt
  * @author Florian Timm, LGV HH 
- * @version 2019.08.19
+ * @version 2019.09.19
  * @copyright MIT
  */
 export default class Abschnitt extends Feature {
     private daten: Daten;
-    fid: string = null;
-    abschnittid: string = null;
-    vnk: string = null;
-    nnk: string = null;
-    vtknr: any;
-    vnklfd: number;
-    vzusatz: any;
-    ntknr: any;
-    nnklfd: number;
-    nzusatz: any;
-    len: number = null;
-    inER: {} = {};
+    public fid: string = null;
+    public abschnittid: string = null;
+    public vnk: string = null;
+    public nnk: string = null;
+    public vtknr: any;
+    public vnklfd: number;
+    public vzusatz: any;
+    public ntknr: any;
+    public nnklfd: number;
+    public nzusatz: any;
+    public len: number = null;
+    public inER: {} = {};
 
     private _faktor: any = null;
     private _station: {} = {};
-    private _aufstell: {} = {};
-    private _querschnitte: {} = {};
-
 
     private _feature: any;
-    private _aufbaudaten: any;
+    private aufbaudaten: { [schichtnr: number]: Aufbaudaten };
 
     constructor() {
         super();
         this.daten = Daten.getInstanz();
     }
 
-    getFaktor() {
+    public getFaktor() {
         if (this._faktor == null)
             this._faktor = this.len / Vektor.line_len((this.getGeometry() as MultiLineString).getCoordinates());
         return this._faktor;
@@ -62,7 +59,7 @@ export default class Abschnitt extends Feature {
     static loadFromAbschnittWFS(abschnittid: string) {
         let r = new Abschnitt();
         r.abschnittid = abschnittid;
-        AbschnittWFS.getById(abschnittid, r._loadCallback.bind(r));
+        AbschnittWFS.getById(abschnittid, r.loadCallback.bind(r));
         return r;
     }
 
@@ -73,27 +70,27 @@ export default class Abschnitt extends Feature {
         PublicWFS.doQuery('VI_STRASSENNETZ', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>ABSCHNITT_ID</PropertyName>' +
             '<Literal>' + r.abschnittid + '</Literal></PropertyIsEqualTo>' +
-            '</Filter>', r._loadCallback.bind(r));
+            '</Filter>', r.loadCallback.bind(r));
 
         return r;
     }
 
-    _loadCallback(xml: Document) {
+    private loadCallback(xml: Document) {
         let netz = xml.getElementsByTagName('VI_STRASSENNETZ');
 
         if (netz.length > 0) {
-            this._fromXML(netz[0]);
+            this.fromXML(netz[0]);
         }
     }
 
     static fromXML(xml: Element) {
         //console.log(xml);
         let r = new Abschnitt();
-        r._fromXML(xml);
+        r.fromXML(xml);
         return r;
     }
 
-    private _fromXML(xml: Element) {
+    private fromXML(xml: Element) {
         //console.log(xml)
 
         this.len = Number(xml.getElementsByTagName('LEN')[0].firstChild.textContent);
@@ -120,30 +117,30 @@ export default class Abschnitt extends Feature {
         this.setGeometry(new LineString(ak));
     }
 
-    _readData(xmlhttp: XMLHttpRequest) {
+    private readData(xmlhttp: XMLHttpRequest) {
         if (xmlhttp.responseXML == undefined) {
             PublicWFS.showMessage('Abschnitt nicht gefunden', true);
             return;
         }
     }
 
-    getFeature() {
+    public getFeature() {
         return this._feature;
     }
 
-    addStation(station: QuerStation): void {
+    public addStation(station: QuerStation): void {
         this._station[station.vst] = station;
     }
 
-    getStation(station: number): QuerStation {
+    public getStation(station: number): QuerStation {
         return this._station[station];
     }
 
-    existsStation(station: number): boolean {
+    public existsStation(station: number): boolean {
         return station in this._station;
     }
 
-    getStationByStation(station: number): QuerStation {
+    public getStationByStation(station: number): QuerStation {
         let r = null;
         for (var a in this._station) {
             if (parseInt(a) > station) break;
@@ -152,7 +149,7 @@ export default class Abschnitt extends Feature {
         return r;
     }
 
-    getStationByVST(vst: number): QuerStation {
+    public getStationByVST(vst: number): QuerStation {
         for (let a in this._station) {
             if (this._station[a].vst == vst)
                 return this._station[a];
@@ -160,7 +157,7 @@ export default class Abschnitt extends Feature {
         return null;
     }
 
-    getStationByBST(bst: number): QuerStation {
+    public getStationByBST(bst: number): QuerStation {
         for (let a in this._station) {
             if (this._station[a].bst == bst)
                 return this._station[a];
@@ -168,9 +165,9 @@ export default class Abschnitt extends Feature {
         return null;
     }
 
-    getAufbauDaten(callbackSuccess: (...args: any[]) => void, callbackError: (...args: any[]) => void, ...args: any[]) {
+    public getAufbauDaten(callbackSuccess: (...args: any[]) => void, callbackError: (...args: any[]) => void, ...args: any[]) {
         //console.log(callbackSuccess);
-        if (this._aufbaudaten == null) {
+        if (this.aufbaudaten == null) {
             let xml = PublicWFS.doQuery('Otschicht', '<Filter><And>' +
                 '<PropertyIsEqualTo>' +
                 '<PropertyName>projekt/@xlink:href</PropertyName>' +
@@ -180,28 +177,28 @@ export default class Abschnitt extends Feature {
                 '<PropertyName>abschnittOderAst/@xlink:href</PropertyName>' +
                 '<Literal>S' + this.abschnittid + '</Literal>' +
                 '</PropertyIsEqualTo>' +
-                '</And></Filter>', this._parseAufbaudaten.bind(this), callbackError, callbackSuccess, ...args);
+                '</And></Filter>', this.parseAufbaudaten.bind(this), callbackError, callbackSuccess, ...args);
         }
     }
 
-    private _parseAufbaudaten(xml: Document, callbackSuccess?: (...args: any[]) => void, ...args: any[]) {
+    private parseAufbaudaten(xml: Document, callbackSuccess?: (...args: any[]) => void, ...args: any[]) {
         let aufbau = xml.getElementsByTagName('Otschicht');
         for (let i = 0; i < aufbau.length; i++) {
             let a = Aufbaudaten.fromXML(aufbau[i]);
             if (a.parent == null) continue;
             let quer = this.daten.querschnitteFID[a.parent.replace('#', '')];
-            if (quer._aufbaudaten == null) {
-                quer._aufbaudaten = {};
+            if (quer.aufbaudaten == null) {
+                quer.aufbaudaten = {};
             }
 
-            quer._aufbaudaten[a.schichtnr] = a;
+            quer.aufbaudaten[a.schichtnr] = a;
         }
         if (callbackSuccess != undefined) {
             callbackSuccess(...args);
         }
     }
 
-    writeQuerAufbau() {
+    public writeQuerAufbau() {
         let xml = '<wfs:Delete typeName="Dotquer">\n' +
             '	<ogc:Filter>\n' +
             '		<ogc:And>\n' +

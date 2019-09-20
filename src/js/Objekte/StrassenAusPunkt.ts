@@ -97,11 +97,11 @@ export default class StrassenAusPunkt extends PunktObjekt implements InfoToolSel
         StrassenAusPunkt.loadKlartexte();
         PublicWFS.doQuery('Otstrauspkt', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', StrassenAusPunkt._loadER_Callback, undefined, callback, ...args);
+            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', StrassenAusPunkt.loadER_Callback, undefined, callback, ...args);
 
     }
 
-    static _loadER_Callback(xml: XMLDocument, callback?: (...args: any) => void, ...args: any) {
+    public static loadER_Callback(xml: XMLDocument, callback?: (...args: any) => void, ...args: any) {
         let aufstell = xml.getElementsByTagName("Otstrauspkt");
         for (let i = 0; i < aufstell.length; i++) {
             let f = StrassenAusPunkt.fromXML(aufstell[i]);

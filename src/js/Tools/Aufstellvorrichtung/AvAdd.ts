@@ -21,7 +21,7 @@ class AvAdd extends AddTool {
         document.getElementById('avadd_button').addEventListener('click', this.addAufstellButton.bind(this));
     }
 
-    part_click(event: MapBrowserEvent) {
+    protected part_click(event: MapBrowserEvent) {
         let daten = this.calcStation(event);
         (document.getElementById("avadd_vnk") as HTMLInputElement).value = daten['achse'].vnk;
         (document.getElementById("avadd_nnk") as HTMLInputElement).value = daten['achse'].nnk;
@@ -30,7 +30,7 @@ class AvAdd extends AddTool {
         (document.getElementById("avadd_button") as HTMLInputElement).disabled = false;
     }
 
-    part_move(event: MapBrowserEvent) {
+    protected part_move(event: MapBrowserEvent) {
         let daten = this.part_get_station(event);
 
         if (daten == null || daten['pos'] == null) return;
@@ -46,7 +46,7 @@ class AvAdd extends AddTool {
         }
     }
 
-    addAufstellButton() {
+    private addAufstellButton() {
         // im ER?
         if (!("Otaufstvor" in this.abschnitt.inER)) {
             PublicWFS.addInER(this.abschnitt, "Otaufstvor", Daten.getInstanz().ereignisraum_nr, this.addInER_Callback.bind(this));
@@ -79,10 +79,10 @@ class AvAdd extends AddTool {
             '<quelle xlink:href="#S' + document.forms.namedItem("avadd").avadd_quelle.value + '" typeName="Itquelle" />\n' +
             '</Otaufstvor> </wfs:Insert>';
         //console.log(soap)
-        PublicWFS.doTransaction(soap, this._getInsertResults.bind(this));
+        PublicWFS.doTransaction(soap, this.getInsertResults.bind(this));
     }
 
-    _getInsertResults(xml: XMLDocument) {
+    private getInsertResults(xml: XMLDocument) {
         PublicWFS.showMessage("erfolgreich");
         this.abschnitt = null;
         this.station = null;
@@ -94,7 +94,7 @@ class AvAdd extends AddTool {
             filter += '<FeatureId fid="' + (childs[i] as Element).getAttribute('fid') + '"/>';
         }
         filter += '</Filter>';
-        PublicWFS.doQuery('Otaufstvor', filter, Aufstellvorrichtung._loadER_Callback);
+        PublicWFS.doQuery('Otaufstvor', filter, Aufstellvorrichtung.loadER_Callback);
     }
 
     start() {
@@ -107,7 +107,7 @@ class AvAdd extends AddTool {
         super.stop();
     }
 
-    createForm() {
+    private createForm() {
         let sidebar = document.getElementById("sidebar");
         this.form = document.createElement("form");
         this.form.id = "avadd";

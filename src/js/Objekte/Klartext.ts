@@ -7,7 +7,7 @@
 
 import PublicWFS from '../PublicWFS';
 
-class Klartext {
+export default class Klartext {
     private static instance: Klartext;
     private _klartexte: { [klartextBezeichnung: string]: { [oid: string]: { kt: string, beschreib: string, objektId: string } } };
 
@@ -21,15 +21,15 @@ class Klartext {
         return this.instance;
     }
 
-    load(klartext: string, whenReady?: (klartext: {}, ...args: any[]) => void, ...args: any[]) {
+    public load(klartext: string, whenReady?: (klartext: {}, ...args: any[]) => void, ...args: any[]) {
         if (!(klartext in this._klartexte)) {
-            PublicWFS.doQuery(klartext, '', this._read.bind(this), undefined, klartext, whenReady, ...args);
+            PublicWFS.doQuery(klartext, '', this.read.bind(this), undefined, klartext, whenReady, ...args);
         } else if (whenReady != undefined) {
             whenReady(this._klartexte[klartext], ...args);
         }
     }
 
-    _read(xml: Document, klartext: string, whenReady?: (klartext: {}, ...args: any[]) => void, ...args: any[]) {
+    private read(xml: Document, klartext: string, whenReady?: (klartext: {}, ...args: any[]) => void, ...args: any[]) {
         if (!(klartext in this._klartexte)) {
             this._klartexte[klartext] = {}
 
@@ -52,7 +52,7 @@ class Klartext {
         if (whenReady != undefined) whenReady(this._klartexte[klartext], ...args);
     }
 
-    get(klartext: string, bezeichnung: string) {
+    public get(klartext: string, bezeichnung: string) {
         if (bezeichnung == null) return null;
         let bez = bezeichnung.substr(-32);
         if (!(klartext in this._klartexte)) {
@@ -65,7 +65,7 @@ class Klartext {
         return null;
     }
 
-    getAll(klartext: string): { [klartextBezeichnung: string]: { [objektId: string]: { kt: string, beschreib: string, objektId: string } } } {
+    public getAll(klartext: string): { [klartextBezeichnung: string]: { [objektId: string]: { kt: string, beschreib: string, objektId: string } } } {
         if (!(klartext in this._klartexte)) {
             this.load(klartext);
             return null;
@@ -73,7 +73,7 @@ class Klartext {
         return this._klartexte;
     }
 
-    getAllArray(klartext: string): { kt: string, beschreib: string, objektId: string }[] {
+    public getAllArray(klartext: string): { kt: string, beschreib: string, objektId: string }[] {
         if (!(klartext in this._klartexte)) {
             this.load(klartext);
             return null;
@@ -87,7 +87,7 @@ class Klartext {
         return arr;
     }
 
-    getAllSorted(klartext: string): { kt: string, beschreib: string, objektId: string }[] {
+    public getAllSorted(klartext: string): { kt: string, beschreib: string, objektId: string }[] {
         let sortable = this.getAllArray(klartext)
         if (sortable == null) return null;
         //console.log(klartext)
@@ -113,5 +113,3 @@ class Klartext {
         return sortable;
     }
 }
-
-export default Klartext;

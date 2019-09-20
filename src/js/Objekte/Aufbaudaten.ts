@@ -9,37 +9,37 @@ var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number
 * @copyright MIT
 */
 export default class Aufbau extends Objekt {
-	schichtnr: number = null;
-	parent: string = null;
-	teilnr: number = null;
-	teilbreite: string = null;
-	decksch: string = null;
-	baujahr: string = null;
-	dicke: number = null;
-	baumonat: number = null;
-	korngr: string = null;
-	unscharf: string = null;
-	kennz: string = null;
-	art1: string = null;
-	art2: string = null;
-	art3: string = null;
-	artneu: string = null;
-	material1: string = null;
-	material2: string = null;
-	material3: string = null;
-	bindemit1: string = null;
-	bindemit2: string = null;
-	detaila: string = null;
-	detailb: string = null;
-	detailc: string = null;
-	detaild: string = null;
-	umweltr: string = null;
+	public schichtnr: number = null;
+	public parent: string = null;
+	public teilnr: number = null;
+	public teilbreite: string = null;
+	public decksch: string = null;
+	public baujahr: string = null;
+	public dicke: number = null;
+	public baumonat: number = null;
+	public korngr: string = null;
+	public unscharf: string = null;
+	public kennz: string = null;
+	public art1: string = null;
+	public art2: string = null;
+	public art3: string = null;
+	public artneu: string = null;
+	public material1: string = null;
+	public material2: string = null;
+	public material3: string = null;
+	public bindemit1: string = null;
+	public bindemit2: string = null;
+	public detaila: string = null;
+	public detailb: string = null;
+	public detailc: string = null;
+	public detaild: string = null;
+	public umweltr: string = null;
 
 	private constructor() {
 		super();
 	}
 
-	static fromXML(xml: Element): Aufbau {
+	public static fromXML(xml: Element): Aufbau {
 		//console.log(xml);
 		let r = new Aufbau();
 		r.setDataFromXML("AUFBAUDATEN", xml)

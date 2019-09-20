@@ -11,34 +11,34 @@ import { Feature } from "ol";
 var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
 
 export default abstract class Objekt extends Feature {
-	abschnittOderAst: string = null;
-	vst: number = null;
-	bst: number = null;
-	kherk: string = null;
-	baujahrGew: string = null;
-	abnahmeGew: string = null;
-	dauerGew: string = null;
-	ablaufGew: string = null;
-	objektId: string = null;
-	objektnr: string = null;
-	erfart: string = null;
-	quelle: string = null;
-	ADatum: string = null;
-	bemerkung: string = null;
-	bearbeiter: string = null;
-	behoerde: string = null;
-	stand: string = null;
-	fid: string = null;
-	inER: {} = {};
-	abschnitt: Abschnitt = null;
-	projekt: string = null;
-	abschnittId: string = null;
+	public abschnittOderAst: string = null;
+	public vst: number = null;
+	public bst: number = null;
+	public kherk: string = null;
+	public baujahrGew: string = null;
+	public abnahmeGew: string = null;
+	public dauerGew: string = null;
+	public ablaufGew: string = null;
+	public objektId: string = null;
+	public objektnr: string = null;
+	public erfart: string = null;
+	public quelle: string = null;
+	public ADatum: string = null;
+	public bemerkung: string = null;
+	public bearbeiter: string = null;
+	public behoerde: string = null;
+	public stand: string = null;
+	public fid: string = null;
+	public inER: {} = {};
+	public abschnitt: Abschnitt = null;
+	public projekt: string = null;
+	public abschnittId: string = null;
 
 	constructor() {
 		super({ geom: null });
 	}
 
-	setDataFromXML(objekt: string, xml: Element) {
+	public setDataFromXML(objekt: string, xml: Element) {
 		this.fid = xml.getAttribute('fid');
 		for (var tag in CONFIG_WFS[objekt]) {
 			if (xml.getElementsByTagName(tag).length <= 0) continue;

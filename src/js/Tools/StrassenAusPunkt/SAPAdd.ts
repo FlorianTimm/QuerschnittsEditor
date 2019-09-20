@@ -11,7 +11,7 @@ var CONFIG = require('../../config.json');
 /**
  * Funktion zum Hinzufügen von Straßenausstattung (punktuell)
  * @author Florian Timm, LGV HH 
- * @version 2019.08.14
+ * @version 2019.09.20
  * @copyright MIT
  */
 
@@ -23,7 +23,7 @@ export default class SAPAdd extends AddTool {
         document.getElementById('sapadd_button').addEventListener('click', this.addAufstellButton.bind(this));
     }
 
-    part_click(event: MapBrowserEvent) {
+    protected part_click(event: MapBrowserEvent) {
         let daten = this.calcStation(event);
         (document.getElementById("sapadd_vnk") as HTMLInputElement).value = daten['achse'].vnk;
         (document.getElementById("sapadd_nnk") as HTMLInputElement).value = daten['achse'].nnk;
@@ -32,7 +32,7 @@ export default class SAPAdd extends AddTool {
         (document.getElementById("sapadd_button") as HTMLInputElement).disabled = false;
     }
 
-    part_move(event: MapBrowserEvent) {
+    protected part_move(event: MapBrowserEvent) {
         let daten = this.part_get_station(event);
 
         if (daten == null || daten['pos'] == null) return;
@@ -48,20 +48,20 @@ export default class SAPAdd extends AddTool {
         }
     }
 
-    addAufstellButton() {
+    private addAufstellButton() {
         // im ER?
         if (!("Otstrauspkt" in this.abschnitt.inER)) {
-            PublicWFS.addInER(this.abschnitt, "Otstrauspkt", Daten.getInstanz().ereignisraum_nr, this._addInER_Callback.bind(this));
+            PublicWFS.addInER(this.abschnitt, "Otstrauspkt", Daten.getInstanz().ereignisraum_nr, this.addInER_Callback.bind(this));
         } else {
-            this._wfsAddStrausPkt()
+            this.wfsAddStrausPkt()
         }
     }
 
-    _addInER_Callback(xml: XMLDocument) {
-        StrassenAusPunkt.loadAbschnittER(this.abschnitt, this._wfsAddStrausPkt.bind(this))
+    private addInER_Callback(xml: XMLDocument) {
+        StrassenAusPunkt.loadAbschnittER(this.abschnitt, this.wfsAddStrausPkt.bind(this))
     }
 
-    _wfsAddStrausPkt() {
+    private wfsAddStrausPkt() {
         let soap = '<wfs:Insert>\n' +
             '<Otstrauspkt>\n' +
             '<projekt xlink:href="#' + Daten.getInstanz().ereignisraum + '" typeName="Projekt" />\n' +
@@ -80,10 +80,10 @@ export default class SAPAdd extends AddTool {
             '<quelle xlink:href="#S' + document.forms.namedItem("sapadd").sapadd_quelle.value + '" typeName="Itquelle" />\n' +
             '</Otstrauspkt> </wfs:Insert>';
         //console.log(soap)
-        PublicWFS.doTransaction(soap, this._getInsertResults.bind(this));
+        PublicWFS.doTransaction(soap, this.getInsertResults.bind(this));
     }
 
-    _getInsertResults(xml: XMLDocument) {
+    private getInsertResults(xml: XMLDocument) {
         PublicWFS.showMessage("erfolgreich");
         this.abschnitt = null;
         this.station = null;
@@ -95,21 +95,21 @@ export default class SAPAdd extends AddTool {
             filter += '<FeatureId fid="' + (childs[i] as Element).getAttribute('fid') + '"/>';
         };
         filter += '</Filter>';
-        PublicWFS.doQuery('Otstrauspkt', filter, StrassenAusPunkt._loadER_Callback);
+        PublicWFS.doQuery('Otstrauspkt', filter, StrassenAusPunkt.loadER_Callback);
     }
 
-    start() {
+    public start() {
         document.forms.namedItem("sapadd").style.display = 'block';
         super.start();
     }
 
-    stop() {
+    public stop() {
         document.forms.namedItem("sapadd").style.display = 'none';
         super.stop();
     }
 
 
-    createForm() {
+    private createForm() {
         let sidebar = document.getElementById("sidebar");
         this.form = document.createElement("form");
         this.form.id = "sapadd";

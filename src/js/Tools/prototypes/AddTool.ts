@@ -9,7 +9,13 @@ import Tool from '../prototypes/Tool';
 import { Map, MapBrowserEvent } from 'ol';
 import Abschnitt from '../../Objekte/Abschnitt';
 import Daten from '../../Daten';
-var CONFIG = require('../../config.json');
+
+/**
+ * Funktion zum Hinzufügen von Objekten
+ * @author Florian Timm, LGV HH 
+ * @version 2019.09.20
+ * @copyright MIT
+ */
 
 export default abstract class AddTool extends Tool {
     protected map: Map;
@@ -133,8 +139,8 @@ export default abstract class AddTool extends Tool {
         return { achse: achse, pos: Vektor.get_pos(achse.getGeometry().getCoordinates(), event.coordinate) };
     }
 
-    abstract part_move(event: MapBrowserEvent): void;
-    abstract part_click(event: MapBrowserEvent): void;
+    protected abstract part_move(event: MapBrowserEvent): void;
+    protected abstract part_click(event: MapBrowserEvent): void;
 
     start() {
         this.map.addInteraction(this.select);
