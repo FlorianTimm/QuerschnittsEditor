@@ -197,35 +197,4 @@ export default class Abschnitt extends Feature {
             callbackSuccess(...args);
         }
     }
-
-    public writeQuerAufbau() {
-        let xml = '<wfs:Delete typeName="Dotquer">\n' +
-            '	<ogc:Filter>\n' +
-            '		<ogc:And>\n' +
-            '			<ogc:PropertyIsEqualTo>\n' +
-            '				<ogc:PropertyName>abschnittId</ogc:PropertyName>\n' +
-            '				<ogc:Literal>' + this.abschnittid + '</ogc:Literal>\n' +
-            '			</ogc:PropertyIsEqualTo>\n' +
-            '			<ogc:PropertyIsEqualTo>\n' +
-            '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
-            '				<ogc:Literal>' + this.daten.ereignisraum + '</ogc:Literal>\n' +
-            '			</ogc:PropertyIsEqualTo>\n' +
-            '		</ogc:And>\n' +
-            '	</ogc:Filter>\n' +
-            '</wfs:Delete>';
-
-        for (let station_key in this._station) {
-            let station = this._station[station_key];
-            for (let streifen_key in station._querschnitte) {
-                let streifen = station._querschnitte[streifen_key];
-                console.log(streifen);
-                for (let querschnitt_key in streifen) {
-                    xml += streifen[querschnitt_key].createInsertXML();
-                }
-            }
-        }
-        //PublicWFS.doTransaction(xml, callback())
-
-        console.log(xml);
-    }
 }

@@ -316,7 +316,7 @@ class AvVzAdd extends Tool {
         select.name = id;
         select.id = id + "[" + eintrag.objektId + "]";
 
-        for (let kt of Daten.getInstanz().klartexte.getAllSorted(klartext)) {
+        for (let kt of Klartext.getInstanz().getAllSorted(klartext)) {
             let option = document.createElement("option");
             option.value = kt['objektId'];
             option.innerHTML = kt['beschreib'];

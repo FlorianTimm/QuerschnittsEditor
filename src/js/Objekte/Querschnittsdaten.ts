@@ -232,13 +232,23 @@ class Querschnitt extends Objekt {
         this.flaeche.setGeometry(new Polygon([g])) //setCoordinates([g])
     }
 
-    createInsertXML() {
+    createInsertXML(changes?: { [tag: string]: number | string }, removeIds?: boolean) {
         let r = '<wfs:Insert>\n<Dotquer>\n';
 
         for (let tag in CONFIG_WFS.QUERSCHNITT) {
             //console.log(tag);
-            if (this[tag] === null || this[tag] === undefined) continue;
-            if (CONFIG_WFS.QUERSCHNITT[tag].art == 0 || CONFIG_WFS.QUERSCHNITT[tag].art == 1) {
+            if (changes != undefined && tag in changes) {
+                if (CONFIG_WFS.QUERSCHNITT[tag].art == 0 || CONFIG_WFS.QUERSCHNITT[tag].art == 1) {
+                    // Kein Klartext
+                    r += '<' + tag + '>' + changes[tag] + '</' + tag + '>\n';
+                } else if (CONFIG_WFS.QUERSCHNITT[tag].art == 2) {
+                    // Klartext
+                    r += '<' + tag + ' xlink:href="' + changes[tag] + '" typeName="' + CONFIG_WFS.QUERSCHNITT[tag].kt + '" />\n';
+                }
+            }
+            else if (removeIds == true && tag == "objektId") continue;
+            else if (this[tag] === null || this[tag] === undefined) continue;
+            else if (CONFIG_WFS.QUERSCHNITT[tag].art == 0 || CONFIG_WFS.QUERSCHNITT[tag].art == 1) {
                 // Kein Klartext
                 r += '<' + tag + '>' + this[tag] + '</' + tag + '>\n';
             } else if (CONFIG_WFS.QUERSCHNITT[tag].art == 2) {

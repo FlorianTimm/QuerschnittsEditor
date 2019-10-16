@@ -13,7 +13,7 @@ import Querschnitt from './Querschnittsdaten';
 * @copyright MIT
 */
 
-export class QuerStation {
+export default class QuerStation {
 
     daten: Daten;
     abschnitt: Abschnitt;
@@ -121,12 +121,67 @@ export class QuerStation {
     }
     teilen(station: number) {
         PublicWFS.showMessage("noch nicht möglich", true);
-        this.abschnitt.getAufbauDaten(this.teilen_callback.bind(this), undefined, station);
+        this.abschnitt.getAufbauDaten(this.teilen_callback_aufbaudaten.bind(this), undefined, station);
     }
 
-    teilen_callback(station: number) {
-        this.abschnitt.writeQuerAufbau();
+    private teilen_callback_aufbaudaten(station: number) {
+
+        let xml = '<wfs:Delete typeName="Dotquer">\n' +
+            '	<ogc:Filter>\n' +
+            '		<ogc:And>\n' +
+            '			<ogc:PropertyIsEqualTo>\n' +
+            '				<ogc:PropertyName>abschnittId</ogc:PropertyName>\n' +
+            '				<ogc:Literal>' + this.abschnitt.abschnittid + '</ogc:Literal>\n' +
+            '			</ogc:PropertyIsEqualTo>\n' +
+            '			<ogc:PropertyIsEqualTo>\n' +
+            '				<ogc:PropertyName>vst</ogc:PropertyName>\n' +
+            '				<ogc:Literal>' + this.vst + '</ogc:Literal>\n' +
+            '			</ogc:PropertyIsEqualTo>\n' +
+            '			<ogc:PropertyIsEqualTo>\n' +
+            '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
+            '				<ogc:Literal>' + this.daten.ereignisraum + '</ogc:Literal>\n' +
+            '			</ogc:PropertyIsEqualTo>\n' +
+            '		</ogc:And>\n' +
+            '	</ogc:Filter>\n' +
+            '</wfs:Delete>';
+
+        let faktor = (station - this.vst) / (this.bst - this.vst);
+        for (let streifen_key in this._querschnitte) {
+            let streifen = this._querschnitte[streifen_key];
+            console.log(streifen);
+            for (let querschnitt_key in streifen) {
+                let st: Querschnitt = streifen[querschnitt_key];
+                let breite = st.breite + (st.bisBreite - st.breite) * faktor;
+                let XL = st.XVstL + (st.XBstL - st.XVstL) * faktor;
+                let XR = st.XVstR + (st.XBstR - st.XVstR) * faktor;
+                xml += st.createInsertXML({
+                    vst: this.vst,
+                    bst: station,
+                    breite: st.breite,
+                    bisBreite: breite,
+                    XVstL: st.XVstL,
+                    XVstR: st.XVstR,
+                    XBstL: XL,
+                    XBstR: XR
+                }, true);
+                xml += st.createInsertXML({
+                    vst: station,
+                    bst: this.bst,
+                    breite: breite,
+                    bisBreite: st.bisBreite,
+                    XVstL: XL,
+                    XVstR: XR,
+                    XBstL: st.XBstL,
+                    XBstR: st.XBstR
+                }, true);
+            }
+        }
+
+        PublicWFS.doTransaction(xml)
+
+        console.log(xml);
     }
+
 
     deleteAll() {
         for (let streifen in this._querschnitte) {
@@ -240,5 +295,3 @@ export class QuerStation {
         delete this._querschnitte[streifen][nummer];
     }
 }
-
-export default QuerStation;
