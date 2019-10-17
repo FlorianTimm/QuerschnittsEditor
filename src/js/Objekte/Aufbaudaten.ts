@@ -46,22 +46,36 @@ export default class Aufbau extends Objekt {
 		return r;
 	}
 
-	public createXML(deleteParentId?: boolean): string {
+	public createXML(changes?: { [tag: string]: number | string }, removeIds?: boolean): string {
 		let r = '<Otschicht>\n';
 
 		for (let tag in CONFIG_WFS["AUFBAUDATEN"]) {
-			console.log(tag);
-			if (this[tag] === null) continue;
-			if (CONFIG_WFS["AUFBAUDATEN"][tag].art == 0 || CONFIG_WFS["AUFBAUDATEN"][tag].art == 1) {
-				// Kein Klartext
-				r += '<' + tag + '>' + this[tag] + '</' + tag + '>\n';
-			} else if (CONFIG_WFS["AUFBAUDATEN"][tag].art == 2) {
-				// Klartext
-				r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS["AUFBAUDATEN"][tag].kt + '" />\n';
+			for (let change in changes) {
+				if (CONFIG_WFS.AUFBAUDATEN[change].art == 0 || CONFIG_WFS.AUFBAUDATEN[change].art == 1) {
+					// Kein Klartext
+					r += '<' + change + '>' + changes[change] + '</' + change + '>\n';
+				} else if (CONFIG_WFS.AUFBAUDATEN[change].art == 2) {
+					// Klartext
+					r += '<' + change + ' xlink:href="' + changes[change] + '" typeName="' + CONFIG_WFS.AUFBAUDATEN[change].kt + '" />\n';
+				}
 			}
+
+			for (let tag in CONFIG_WFS.AUFBAUDATEN) {
+				//console.log(tag);
+				if (changes != undefined && tag in changes) continue;
+				else if (removeIds == true && (tag == "objektId" || tag == "fid")) continue;
+				else if (this[tag] === null || this[tag] === undefined) continue;
+				else if (CONFIG_WFS.AUFBAUDATEN[tag].art == 0 || CONFIG_WFS.AUFBAUDATEN[tag].art == 1) {
+					// Kein Klartext
+					r += '<' + tag + '>' + this[tag] + '</' + tag + '>\n';
+				} else if (CONFIG_WFS.AUFBAUDATEN[tag].art == 2) {
+					// Klartext
+					r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS.AUFBAUDATEN[tag].kt + '" />\n';
+				}
+			}
+			r += '</Otschicht>\n';
+			console.log(r);
+			return r;
 		}
-		r += '</Otschicht>\n';
-		console.log(r);
-		return r;
 	}
 }

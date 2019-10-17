@@ -29,7 +29,7 @@ export default class Daten {
     public modus: string = "Otaufstvor"
     public ereignisraum: string;
     public ereignisraum_nr: string;
-    public querschnitteFID: { [oid: string]: Abschnitt };
+    //public querschnitteFID: { [oid: string]: Abschnitt };
     public l_aufstell: VectorLayer;
     public v_achse: VectorSource;
     public l_achse: VectorLayer;
@@ -51,7 +51,7 @@ export default class Daten {
         this.map = map;
         this.ereignisraum = ereignisraum;
         this.ereignisraum_nr = ereignisraum_nr;
-        this.querschnitteFID = {};
+        //this.querschnitteFID = {};
 
         this.klartexte = Klartext.getInstanz();
         this.klartexte.load("Itquerart", this._showArt.bind(this));

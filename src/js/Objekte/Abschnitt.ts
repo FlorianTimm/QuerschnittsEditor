@@ -7,6 +7,7 @@ import Aufbaudaten from './Aufbaudaten';
 import Daten from '../Daten';
 import QuerStation from './QuerStation';
 import { MultiLineString } from 'ol/geom';
+import Aufbau from './Aufbaudaten';
 
 var CONFIG: { [index: string]: string } = require('../config.json');
 
@@ -32,10 +33,10 @@ export default class Abschnitt extends Feature {
     public inER: {} = {};
 
     private _faktor: any = null;
-    private _station: {} = {};
+    private _station: { [vst: number]: QuerStation } = {};
 
     private _feature: any;
-    private aufbaudaten: { [schichtnr: number]: Aufbaudaten };
+    public aufbaudatenLoaded: boolean = false;
 
     constructor() {
         super();
@@ -165,9 +166,9 @@ export default class Abschnitt extends Feature {
         return null;
     }
 
-    public getAufbauDaten(callbackSuccess: (...args: any[]) => void, callbackError: (...args: any[]) => void, ...args: any[]) {
+    public getAufbauDaten(callbackSuccess: (...args: any[]) => void, callbackError?: (...args: any[]) => void, ...args: any[]) {
         //console.log(callbackSuccess);
-        if (this.aufbaudaten == null) {
+        if (!this.aufbaudatenLoaded) {
             let xml = PublicWFS.doQuery('Otschicht', '<Filter><And>' +
                 '<PropertyIsEqualTo>' +
                 '<PropertyName>projekt/@xlink:href</PropertyName>' +
@@ -183,16 +184,29 @@ export default class Abschnitt extends Feature {
 
     private parseAufbaudaten(xml: Document, callbackSuccess?: (...args: any[]) => void, ...args: any[]) {
         let aufbau = xml.getElementsByTagName('Otschicht');
+        let aufbaudaten: { [fid: string]: { [schichtnr: number]: Aufbau } } = {};
+
         for (let i = 0; i < aufbau.length; i++) {
             let a = Aufbaudaten.fromXML(aufbau[i]);
             if (a.parent == null) continue;
-            let quer = this.daten.querschnitteFID[a.parent.replace('#', '')];
-            if (quer.aufbaudaten == null) {
-                quer.aufbaudaten = {};
-            }
-
-            quer.aufbaudaten[a.schichtnr] = a;
+            let fid = a.parent.replace('#', '');
+            if (!(fid in aufbaudaten) ) aufbaudaten[fid] = {};
+            aufbaudaten[fid][a.schichtnr] = a;
         }
+
+        for (let stationNr in this._station) {
+            for (let querschnitt in this._station[stationNr]) {
+                for (let streifen of this._station[stationNr].getAllQuerschnitte()) {
+                    if (streifen.fid in aufbaudaten) {
+                        streifen.setAufbauGesamt(aufbaudaten[streifen.fid])
+                    } else {
+                        streifen.addAufbau()
+                    }
+                }
+            }
+        }
+
+
         if (callbackSuccess != undefined) {
             callbackSuccess(...args);
         }

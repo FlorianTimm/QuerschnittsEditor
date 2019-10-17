@@ -5,6 +5,7 @@ import PublicWFS from '../PublicWFS';
 import Daten from '../Daten';
 import Abschnitt from './Abschnitt';
 import Querschnitt from './Querschnittsdaten';
+import Aufbau from './Aufbaudaten';
 
 /**
 * Querschnitts-Station
@@ -19,13 +20,13 @@ export default class QuerStation {
     abschnitt: Abschnitt;
     vst: number;
     bst: number;
-    geo: number[];
+    geo: number[][];
     seg: number[] = [];
     vector: number[][] = [];
     linie: MultiLineString = null;
     private _querschnitte: { [streifen: string]: { [streifennr: number]: Querschnitt } } = {};
 
-    constructor(daten: Daten, abschnitt: Abschnitt, vst: number, bst: number, geo: number[]) {
+    constructor(daten: Daten, abschnitt: Abschnitt, vst: number, bst: number, geo: number[][]) {
         this.daten = daten;
         this.abschnitt = abschnitt;
         this.vst = vst;
@@ -120,8 +121,11 @@ export default class QuerStation {
         }
     }
     teilen(station: number) {
-        PublicWFS.showMessage("noch nicht möglich", true);
-        this.abschnitt.getAufbauDaten(this.teilen_callback_aufbaudaten.bind(this), undefined, station);
+        if (this.vst < station && this.bst > station) {
+            this.abschnitt.getAufbauDaten(this.teilen_callback_aufbaudaten.bind(this), undefined, station);
+        } else {
+            PublicWFS.showMessage("nicht möglich, da neue Station zu dicht an bestehenden", true);
+        }
     }
 
     private teilen_callback_aufbaudaten(station: number) {
@@ -151,9 +155,9 @@ export default class QuerStation {
             console.log(streifen);
             for (let querschnitt_key in streifen) {
                 let st: Querschnitt = streifen[querschnitt_key];
-                let breite = st.breite + (st.bisBreite - st.breite) * faktor;
-                let XL = st.XVstL + (st.XBstL - st.XVstL) * faktor;
-                let XR = st.XVstR + (st.XBstR - st.XVstR) * faktor;
+                let breite = Math.round(st.breite + (st.bisBreite - st.breite) * faktor);
+                let XL = Math.round((st.XVstL + (st.XBstL - st.XVstL) * faktor) * 100) / 100;
+                let XR = Math.round((st.XVstR + (st.XBstR - st.XVstR) * faktor) * 100) / 100;
                 xml += st.createInsertXML({
                     vst: this.vst,
                     bst: station,
@@ -163,7 +167,7 @@ export default class QuerStation {
                     XVstR: st.XVstR,
                     XBstL: XL,
                     XBstR: XR
-                }, true);
+                }, true, false);
                 xml += st.createInsertXML({
                     vst: station,
                     bst: this.bst,
@@ -173,15 +177,60 @@ export default class QuerStation {
                     XVstR: XR,
                     XBstL: st.XBstL,
                     XBstR: st.XBstR
-                }, true);
+                }, true, false);
             }
         }
 
-        PublicWFS.doTransaction(xml)
-
-        console.log(xml);
+        PublicWFS.doTransaction(xml, this.teilenCallbackAddQuer.bind(this), undefined, station);
     }
 
+    private teilenCallbackAddQuer(xml: Document, station: number) {
+        console.log(xml);
+        let filter = '<Filter>';
+        let childs = xml.getElementsByTagName('InsertResult')[0].childNodes;
+        for (let i = 0; i < childs.length; i++) {
+            filter += '<FeatureId fid="' + (childs[i] as Element).getAttribute('fid') + '"/>';
+        }
+        filter += '</Filter>';
+        PublicWFS.doQuery('Dotquer', filter, this.teilenCallbackQuerschnitte.bind(this), undefined, station);
+
+    }
+
+    private teilenCallbackQuerschnitte(xml: Document, station: number) {
+        let insert = "<wfs:Insert>\n";
+        let dotquer = Array.from(xml.getElementsByTagName("Dotquer"));
+        let insertRows = 0;
+        for (let i = 0; i < dotquer.length; i++) {
+            let neu = Querschnitt.fromXML(dotquer[i], true);
+            let alt = this.getQuerschnitt(neu.streifen, neu.streifennr)
+
+            let aufbau = alt.getAufbau() as { [schicht: number]: Aufbau };
+            console.log(aufbau);
+            for (let schichtnr in aufbau) {
+                let schicht = aufbau[schichtnr];
+                if (schicht.bst <= neu.vst || schicht.vst >= neu.bst) continue;
+                insert += schicht.createXML({
+                    vst: schicht.vst < neu.vst ? neu.vst : schicht.vst,
+                    bst: schicht.bst > neu.bst ? neu.bst : schicht.bst,
+                    parent: neu.fid
+                }, true)
+                insertRows++;
+            }
+
+        }
+        insert += "</wfs:Insert>";
+        console.log(insert)
+        if (insertRows > 0) {
+            PublicWFS.doTransaction(insert);
+        }
+
+        let neueStation = new QuerStation(this.daten, this.abschnitt, station, this.bst, this.geo);
+        this.bst = station;
+        this.reload()
+
+        this.abschnitt.addStation(neueStation);
+        neueStation.reload();
+    }
 
     deleteAll() {
         for (let streifen in this._querschnitte) {
@@ -271,16 +320,32 @@ export default class QuerStation {
     }
 
     loadStationCallback(xml: Document) {
+        let first = true;
         this.deleteAll();
         let dotquer = xml.getElementsByTagName("Dotquer");
         let liste: Querschnitt[] = [];
         for (let i = 0; i < dotquer.length; i++) {
             //console.log(quer);
-            liste.push(Querschnitt.fromXML(dotquer[i]));
+            let q = Querschnitt.fromXML(dotquer[i])
+            liste.push(q);
+
+            if (first) {
+                let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(' ');
+                this.geo = [];
+                for (let i = 0; i < koords.length; i++) {
+                    let k = koords[i].split(',')
+                    let x = Number(k[0]);
+                    let y = Number(k[1]);
+                    this.geo.push([x, y]);
+                }
+                first = false;
+                this.calcVector()
+            }
         }
         for (let i = 0; i < liste.length; i++) {
             liste[i].check();
         }
+
     }
 
     deleteStreifen(streifen: string, nummer: number) {

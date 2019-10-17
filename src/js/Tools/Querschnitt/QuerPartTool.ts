@@ -177,6 +177,9 @@ class QuerPartTool extends Tool {
 
         let sta = this.daten.getAbschnitt(absid).getStationByStation(station);
         sta.teilen(station);
+        this.feat_teilung.set('isset', false);
+        (this.feat_teilung.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
+        (document.getElementById("teilen_button") as HTMLInputElement).disabled = true;
     }
 
     start() {

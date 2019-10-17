@@ -137,9 +137,11 @@ class Querschnitt extends Objekt {
 
     }
 
-    static fromXML(xml: Element) {
+    static fromXML(xml: Element, doNotAdd: boolean = false) {
         let r = new Querschnitt();
         r.setDataFromXML('QUERSCHNITT', xml)
+
+        if (doNotAdd) return r;  // Abbruch, falls nur die Daten geparst werden sollen
 
         let abschnitt: Abschnitt = r._daten.getAbschnitt(r.abschnittId);
         abschnitt.inER['Querschnitt'] = true;
@@ -164,9 +166,36 @@ class Querschnitt extends Objekt {
     }
 
 
+    public addAufbau(schicht?: number, aufbau?: Aufbau) {
+        if (this._aufbaudaten == null) { this._aufbaudaten = {} };
+        if (schicht == undefined || aufbau == undefined) return;
+        this._aufbaudaten[schicht] = aufbau;
+    }
 
-    getAufbauDaten() {
+
+    public setAufbauGesamt(aufbau: { [schicht: number]: Aufbau }) {
+        this._aufbaudaten = aufbau;
+    }
+
+
+    public getAufbau(callback?: (schichten: { [schicht: number]: Aufbau }) => void): { [schicht: number]: Aufbau } | void {
+        if (callback == undefined) return this._aufbaudaten
+
         if (this._aufbaudaten == null) {
+            this.abschnitt.getAufbauDaten(this.getAufbauCallback.bind(this), undefined, callback)
+        } else {
+            this.getAufbauCallback(callback);
+        }
+
+    }
+
+    private getAufbauCallback(callback: (schichten: { [schicht: number]: Aufbau }) => void) {
+        callback(this._aufbaudaten);
+    }
+
+
+    /*getAufbauDaten() {
+        if (this._aufbaudaten == null && ) {
             PublicWFS.doQuery('Otschicht', '<ogc:Filter><ogc:And>\n' +
                 '<ogc:PropertyIsEqualTo>\n' +
                 '    <ogc:Property>projekt/@xlink:href</ogc:Property>\n' +
@@ -190,7 +219,7 @@ class Querschnitt extends Objekt {
             this._aufbaudaten[a.schichtnr] = a;
         }
         this._aufbaudaten = aufbaudaten;
-    }
+    }*/
 
     createGeom() {
         let g = [];
@@ -232,21 +261,23 @@ class Querschnitt extends Objekt {
         this.flaeche.setGeometry(new Polygon([g])) //setCoordinates([g])
     }
 
-    createInsertXML(changes?: { [tag: string]: number | string }, removeIds?: boolean) {
+    createInsertXML(changes?: { [tag: string]: number | string }, removeIds?: boolean, includeAufbaudaten: boolean = true) {
         let r = '<wfs:Insert>\n<Dotquer>\n';
+
+        for (let change in changes) {
+            if (CONFIG_WFS.QUERSCHNITT[change].art == 0 || CONFIG_WFS.QUERSCHNITT[change].art == 1) {
+                // Kein Klartext
+                r += '<' + change + '>' + changes[change] + '</' + change + '>\n';
+            } else if (CONFIG_WFS.QUERSCHNITT[change].art == 2) {
+                // Klartext
+                r += '<' + change + ' xlink:href="' + changes[change] + '" typeName="' + CONFIG_WFS.QUERSCHNITT[change].kt + '" />\n';
+            }
+        }
 
         for (let tag in CONFIG_WFS.QUERSCHNITT) {
             //console.log(tag);
-            if (changes != undefined && tag in changes) {
-                if (CONFIG_WFS.QUERSCHNITT[tag].art == 0 || CONFIG_WFS.QUERSCHNITT[tag].art == 1) {
-                    // Kein Klartext
-                    r += '<' + tag + '>' + changes[tag] + '</' + tag + '>\n';
-                } else if (CONFIG_WFS.QUERSCHNITT[tag].art == 2) {
-                    // Klartext
-                    r += '<' + tag + ' xlink:href="' + changes[tag] + '" typeName="' + CONFIG_WFS.QUERSCHNITT[tag].kt + '" />\n';
-                }
-            }
-            else if (removeIds == true && tag == "objektId") continue;
+            if (changes != undefined && tag in changes) continue;
+            else if (removeIds == true && (tag == "objektId" || tag == "fid")) continue;
             else if (this[tag] === null || this[tag] === undefined) continue;
             else if (CONFIG_WFS.QUERSCHNITT[tag].art == 0 || CONFIG_WFS.QUERSCHNITT[tag].art == 1) {
                 // Kein Klartext
@@ -259,7 +290,7 @@ class Querschnitt extends Objekt {
 
         r += '</Dotquer>\n';
 
-        if (this._aufbaudaten != null) {
+        if (this._aufbaudaten != null && includeAufbaudaten) {
 
             for (let s in this._aufbaudaten) {
                 //console.log(this._aufbaudaten[s]);
