@@ -65,7 +65,7 @@ class QuerAddTool extends Tool {
         let selection = this._select.getFeatures();
         if (this._select.getFeatures().getLength() <= 0) return;
         let querschnitt = <Querschnitt>selection.item(0).get('objekt');
-        querschnitt.station.abschnitt.getAufbauDaten(this.addQuerschnittCallback.bind(this), undefined);
+        querschnitt.station.abschnitt.getAufbauDaten(this.addQuerschnittCallback.bind(this));
     }
 
     addQuerschnittCallback() {

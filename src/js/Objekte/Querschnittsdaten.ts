@@ -182,7 +182,7 @@ class Querschnitt extends Objekt {
         if (callback == undefined) return this._aufbaudaten
 
         if (this._aufbaudaten == null) {
-            this.abschnitt.getAufbauDaten(this.getAufbauCallback.bind(this), undefined, callback)
+            this.abschnitt.getAufbauDaten(this.getAufbauCallback.bind(this), undefined, false, callback)
         } else {
             this.getAufbauCallback(callback);
         }
@@ -261,7 +261,7 @@ class Querschnitt extends Objekt {
         this.flaeche.setGeometry(new Polygon([g])) //setCoordinates([g])
     }
 
-    createInsertXML(changes?: { [tag: string]: number | string }, removeIds?: boolean, includeAufbaudaten: boolean = true) {
+    createInsertXML(changes?: { [tag: string]: number | string }, removeIds?: boolean) {
         let r = '<wfs:Insert>\n<Dotquer>\n';
 
         for (let change in changes) {
@@ -289,15 +289,22 @@ class Querschnitt extends Objekt {
         }
 
         r += '</Dotquer>\n';
+        r += '</wfs:Insert>\n';
+        return r;
+    }
 
-        if (this._aufbaudaten != null && includeAufbaudaten) {
+    createAufbauDatenXML() {
+        let r = '';
+        if (this._aufbaudaten != null) {
+            r += '<wfs:Insert>\n'
 
             for (let s in this._aufbaudaten) {
                 //console.log(this._aufbaudaten[s]);
                 r += this._aufbaudaten[s].createXML();
             }
+            r += '</wfs:Insert>\n';
+
         }
-        r += '</wfs:Insert>\n';
         return r;
     }
 

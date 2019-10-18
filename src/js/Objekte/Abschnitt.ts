@@ -166,9 +166,10 @@ export default class Abschnitt extends Feature {
         return null;
     }
 
-    public getAufbauDaten(callbackSuccess: (...args: any[]) => void, callbackError?: (...args: any[]) => void, ...args: any[]) {
+    public getAufbauDaten(callbackSuccess?: (...args: any[]) => void, callbackError?: (...args: any[]) => void, reload: boolean = false, ...args: any[]) {
         //console.log(callbackSuccess);
-        if (!this.aufbaudatenLoaded) {
+
+        if (!this.aufbaudatenLoaded || reload) {
             let xml = PublicWFS.doQuery('Otschicht', '<Filter><And>' +
                 '<PropertyIsEqualTo>' +
                 '<PropertyName>projekt/@xlink:href</PropertyName>' +
@@ -190,7 +191,7 @@ export default class Abschnitt extends Feature {
             let a = Aufbaudaten.fromXML(aufbau[i]);
             if (a.parent == null) continue;
             let fid = a.parent.replace('#', '');
-            if (!(fid in aufbaudaten) ) aufbaudaten[fid] = {};
+            if (!(fid in aufbaudaten)) aufbaudaten[fid] = {};
             aufbaudaten[fid][a.schichtnr] = a;
         }
 
@@ -200,7 +201,7 @@ export default class Abschnitt extends Feature {
                     if (streifen.fid in aufbaudaten) {
                         streifen.setAufbauGesamt(aufbaudaten[streifen.fid])
                     } else {
-                        streifen.addAufbau()
+                        streifen.setAufbauGesamt({});
                     }
                 }
             }

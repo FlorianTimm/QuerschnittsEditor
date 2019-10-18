@@ -122,7 +122,7 @@ export default class QuerStation {
     }
     teilen(station: number) {
         if (this.vst < station && this.bst > station) {
-            this.abschnitt.getAufbauDaten(this.teilen_callback_aufbaudaten.bind(this), undefined, station);
+            this.abschnitt.getAufbauDaten(this.teilen_callback_aufbaudaten.bind(this), undefined, false, station);
         } else {
             PublicWFS.showMessage("nicht möglich, da neue Station zu dicht an bestehenden", true);
         }
@@ -167,7 +167,7 @@ export default class QuerStation {
                     XVstR: st.XVstR,
                     XBstL: XL,
                     XBstR: XR
-                }, true, false);
+                }, true);
                 xml += st.createInsertXML({
                     vst: station,
                     bst: this.bst,
@@ -177,59 +177,11 @@ export default class QuerStation {
                     XVstR: XR,
                     XBstL: st.XBstL,
                     XBstR: st.XBstR
-                }, true, false);
+                }, true);
             }
         }
 
-        PublicWFS.doTransaction(xml, this.teilenCallbackAddQuer.bind(this), undefined, station);
-    }
-
-    private teilenCallbackAddQuer(xml: Document, station: number) {
-        console.log(xml);
-        let filter = '<Filter>';
-        let childs = xml.getElementsByTagName('InsertResult')[0].childNodes;
-        for (let i = 0; i < childs.length; i++) {
-            filter += '<FeatureId fid="' + (childs[i] as Element).getAttribute('fid') + '"/>';
-        }
-        filter += '</Filter>';
-        PublicWFS.doQuery('Dotquer', filter, this.teilenCallbackQuerschnitte.bind(this), undefined, station);
-
-    }
-
-    private teilenCallbackQuerschnitte(xml: Document, station: number) {
-        let insert = "<wfs:Insert>\n";
-        let dotquer = Array.from(xml.getElementsByTagName("Dotquer"));
-        let insertRows = 0;
-        for (let i = 0; i < dotquer.length; i++) {
-            let neu = Querschnitt.fromXML(dotquer[i], true);
-            let alt = this.getQuerschnitt(neu.streifen, neu.streifennr)
-
-            let aufbau = alt.getAufbau() as { [schicht: number]: Aufbau };
-            console.log(aufbau);
-            for (let schichtnr in aufbau) {
-                let schicht = aufbau[schichtnr];
-                if (schicht.bst <= neu.vst || schicht.vst >= neu.bst) continue;
-                insert += schicht.createXML({
-                    vst: schicht.vst < neu.vst ? neu.vst : schicht.vst,
-                    bst: schicht.bst > neu.bst ? neu.bst : schicht.bst,
-                    parent: neu.fid
-                }, true)
-                insertRows++;
-            }
-
-        }
-        insert += "</wfs:Insert>";
-        console.log(insert)
-        if (insertRows > 0) {
-            PublicWFS.doTransaction(insert);
-        }
-
-        let neueStation = new QuerStation(this.daten, this.abschnitt, station, this.bst, this.geo);
-        this.bst = station;
-        this.reload()
-
-        this.abschnitt.addStation(neueStation);
-        neueStation.reload();
+        PublicWFS.doTransaction(xml, this.neueQuerschnitteCallbackInsertResult.bind(this), undefined, station);
     }
 
     deleteAll() {
@@ -242,6 +194,10 @@ export default class QuerStation {
     }
 
     rewrite() {
+        this.abschnitt.getAufbauDaten(this.rewriteCallbackAufbaudaten.bind(this))
+    }
+
+    private rewriteCallbackAufbaudaten() {
         let soap = '<wfs:Delete typeName="Dotquer">\n' +
             '<ogc:Filter>\n' +
             '  <ogc:And>\n' +
@@ -292,7 +248,58 @@ export default class QuerStation {
         }
 
         console.log(soap);
-        PublicWFS.doTransaction(soap, this.reload.bind(this))
+        PublicWFS.doTransaction(soap, this.neueQuerschnitteCallbackInsertResult.bind(this))
+    }
+
+    private neueQuerschnitteCallbackInsertResult(xml: Document, station?: number) {
+        console.log(xml);
+        let filter = '<Filter>';
+        let childs = xml.getElementsByTagName('InsertResult')[0].childNodes;
+        for (let i = 0; i < childs.length; i++) {
+            filter += '<FeatureId fid="' + (childs[i] as Element).getAttribute('fid') + '"/>';
+        }
+        filter += '</Filter>';
+        PublicWFS.doQuery('Dotquer', filter, this.neueQuerschnitteCallbackDotquer.bind(this), undefined, station);
+
+    }
+
+    private neueQuerschnitteCallbackDotquer(xml: Document, station?: number) {
+        let insert = "<wfs:Insert>\n";
+        let dotquer = Array.from(xml.getElementsByTagName("Dotquer"));
+        let insertRows = 0;
+        for (let i = 0; i < dotquer.length; i++) {
+            let neu = Querschnitt.fromXML(dotquer[i], true);
+            let alt = this.getQuerschnitt(neu.streifen, neu.streifennr)
+
+            let aufbau = alt.getAufbau() as { [schicht: number]: Aufbau };
+            console.log(aufbau);
+            for (let schichtnr in aufbau) {
+                let schicht = aufbau[schichtnr];
+                if (schicht.bst <= neu.vst || schicht.vst >= neu.bst) continue;
+                insert += schicht.createXML({
+                    vst: schicht.vst < neu.vst ? neu.vst : schicht.vst,
+                    bst: schicht.bst > neu.bst ? neu.bst : schicht.bst,
+                    parent: neu.fid
+                }, true)
+                insertRows++;
+            }
+
+        }
+        insert += "</wfs:Insert>";
+        console.log(insert)
+        if (insertRows > 0) {
+            PublicWFS.doTransaction(insert);
+        }
+
+
+        if (station != undefined) {
+            let neueStation = new QuerStation(this.daten, this.abschnitt, station, this.bst, this.geo);
+            this.bst = station;
+            this.abschnitt.addStation(neueStation);
+            neueStation.reload();
+        }
+
+        this.reload()
     }
 
     reload() {
@@ -317,6 +324,7 @@ export default class QuerStation {
             '</And>' +
             '</Filter>';
         PublicWFS.doQuery('Dotquer', filter, this.loadStationCallback.bind(this));
+
     }
 
     loadStationCallback(xml: Document) {
@@ -345,10 +353,9 @@ export default class QuerStation {
         for (let i = 0; i < liste.length; i++) {
             liste[i].check();
         }
-
     }
 
-    deleteStreifen(streifen: string, nummer: number) {
+    public deleteStreifen(streifen: string, nummer: number) {
         this.daten.v_trenn.removeFeature(this._querschnitte[streifen][nummer].trenn)
         this.daten.v_quer.removeFeature(this._querschnitte[streifen][nummer].flaeche)
         let max = -1;
