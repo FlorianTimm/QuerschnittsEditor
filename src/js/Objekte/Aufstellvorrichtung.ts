@@ -16,6 +16,7 @@ import Klartext from './Klartext';
 import Objekt from './Objekt';
 import PunktObjekt from './PunktObjekt';
 import Zeichen from './Zeichen';
+import HTML from "../HTML";
 
 export default class Aufstellvorrichtung extends PunktObjekt implements InfoToolSelectable, Objekt {
     private daten: Daten;
@@ -36,9 +37,9 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
     }
 
     static loadKlartexte() {
-        Klartext.getInstanz().load('Itaufstvorart', Aufstellvorrichtung.klartext2select, 'Itaufstvorart', document.forms.namedItem("avadd").avadd_art);
-        Klartext.getInstanz().load('Itallglage', Aufstellvorrichtung.klartext2select, 'Itallglage', document.forms.namedItem("avadd").avadd_lage);
-        Klartext.getInstanz().load('Itquelle', Aufstellvorrichtung.klartext2select, 'Itquelle', document.forms.namedItem("avadd").avadd_quelle);
+        Klartext.getInstanz().load('Itaufstvorart');
+        Klartext.getInstanz().load('Itallglage');
+        Klartext.getInstanz().load('Itquelle');
     }
 
     public colorFunktion1(): import("ol/colorlike").ColorLike {
@@ -51,48 +52,6 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
 
     public colorFunktion2(): import("ol/colorlike").ColorLike {
         return 'black';
-    }
-
-    public getHTMLInfo(ziel: HTMLElement) {
-        let kt = Klartext.getInstanz();
-        let r = "<table>";
-
-        r += "<tr><td>VNK</td><td>" + this.abschnitt.vnk + "</td></tr>";
-        r += "<tr><td>NNK</td><td>" + this.abschnitt.nnk + "</td></tr>";
-        r += "<tr><td>VST</td><td>" + this.vst + "</td></tr>";
-        if (this.labstbaVst == null) {
-            r += "<tr><td>Abstand:</td><td>"
-        } else {
-            r += "<tr><td>Abst.&nbsp;re.</td><td>"
-        }
-
-        if (this.rabstbaVst >= 0.01) r += "R";
-        else if (this.rabstbaVst <= 0.01) r += "L";
-        else r += "M";
-        r += " " + Math.abs(this.rabstbaVst) + '</td></tr>';
-        console.log(this.labstbaVst);
-        if (this.labstbaVst != null) {
-            r += "<tr><td>Abst.&nbsp;li.</td><td>"
-            if (this.labstbaVst >= 0.01) r += "R";
-            else if (this.labstbaVst <= 0.01) r += "L";
-            else r += "M";
-            r += " " + Math.abs(this.labstbaVst) + '</td></tr>';
-        }
-
-        r += "<tr><td>Art</td><td>" + kt.get('Itaufstvorart', this.art).beschreib + "</td></tr>";
-        if (this.objektnr != null && this.objektnr != "") {
-            r += "<tr><td>ext. Nr.</td><td>" + this.objektnr + "</td></tr>";
-        }
-        r += "<tr><td>Lage</td><td>" + kt.get('Itallglage', this.rlageVst).beschreib + "</td></tr>";
-        r += "<tr><td>Schilder</td><td>" + this.hasSekObj + "</td></tr>";
-        r += "<tr><td>Quelle</td><td>" + ((this.quelle != null) ? (kt.get("Itquelle", this.quelle).beschreib) : '') + "</td></tr>";
-        r += "</table>"
-
-        if (ziel != undefined) {
-            ziel.innerHTML = r;
-            this.getZeichen(this._vz_addHTML.bind(this), ziel)
-        }
-        return r;
     }
 
     private _vz_addHTML(zeichen: any, ziel: HTMLElement) {
@@ -115,7 +74,6 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
      */
     public static loadER(callback?: (...args: any) => void, ...args: any) {
         let daten = Daten.getInstanz();
-        Aufstellvorrichtung.loadKlartexte();
         PublicWFS.doQuery('Otaufstvor', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
             '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Aufstellvorrichtung.loadER_Callback, undefined, callback, ...args);
@@ -249,5 +207,124 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
             callback(this.zeichen, ...args);
         }
     }
+
+    createForm(formId: string) {
+        return Aufstellvorrichtung.createForm(formId, this);
+    }
+
+    public static createForm(formId: string, aufstell?: Aufstellvorrichtung, changeable: boolean = false): HTMLFormElement {
+        let sidebar = document.getElementById("sidebar");
+        let form = document.createElement("form");
+        form.id = formId;
+        sidebar.appendChild(form);
+
+        // Art
+        Aufstellvorrichtung.createFields(form, formId, aufstell, changeable);
+
+        return form;
+    }
+
+    private static createFields(form: HTMLFormElement, formId: string, aufstell?: Aufstellvorrichtung, changeable: boolean = false) {
+        let art = Klartext.createKlartextSelectForm("Itvzart", form, "Art", formId + "_art", aufstell != undefined ? aufstell.art : undefined);
+        art.disabled = !changeable;
+        form.appendChild(document.createElement("br"));
+
+        // Lage
+        let lage = Klartext.createKlartextSelectForm("Itallglage", form, "Lage", formId + "_lage", aufstell != undefined ? aufstell.rlageVst : undefined);
+        lage.disabled = !changeable;
+        form.appendChild(document.createElement("br"));
+
+        // Quelle
+        let quelle = Klartext.createKlartextSelectForm("Itquelle", form, "Quelle", formId + "_quelle", aufstell != undefined ? aufstell.quelle : undefined);
+        quelle.disabled = !changeable;
+        form.appendChild(document.createElement("br"));
+
+        // ext: Objektid
+        let objektnr = HTML.createTextInput(form, "ext. Objektnummer", formId + "_extid", aufstell != undefined ? aufstell.objektnr : undefined);
+        objektnr.disabled = !changeable;
+        form.appendChild(document.createElement("br"));
+
+        // VNK
+        let vnk = HTML.createTextInput(form, "VNK", formId + "_vnk", aufstell != undefined ? aufstell.abschnitt.vnk : undefined);
+        vnk.disabled = true;
+        form.appendChild(document.createElement("br"));
+
+        // NNK
+        let nnk = HTML.createTextInput(form, "NNK", formId + "_nnk", aufstell != undefined ? aufstell.abschnitt.nnk : undefined);
+        nnk.disabled = true;
+        form.appendChild(document.createElement("br"));
+
+        // Station
+        let station = HTML.createTextInput(form, "Station", formId + "_station", aufstell != undefined ? aufstell.vst.toString() : undefined);
+        station.disabled = true;
+        form.appendChild(document.createElement("br"));
+
+        // Abstand
+        let abstTxt = "";
+        if (aufstell != undefined) {
+            if (aufstell.rabstbaVst >= 0.01) abstTxt = "R";
+            else if (aufstell.rabstbaVst <= 0.01) abstTxt = "L";
+            else abstTxt = "M";
+            abstTxt += " " + Math.abs(aufstell.rabstbaVst);
+        }
+        let abstand = HTML.createTextInput(form, "Abstand", formId + "_abstand", abstTxt);
+        abstand.disabled = true;
+        form.appendChild(document.createElement("br"));
+
+        // Button
+        if (changeable) {
+            let input = document.createElement("input");
+            input.id = formId + "_button";
+            input.type = "button"
+            input.value = "Ausstattung speichern"
+            input.disabled = true;
+            form.appendChild(input);
+        }
+    }
+
+    public getHTMLInfo(ziel: HTMLFormElement, changeable: boolean = false): void {
+        Aufstellvorrichtung.createFields(ziel, "av_info", this, changeable);
+
+
+        /*let kt = Klartext.getInstanz();
+        let r = "<table>";
+
+        r += "<tr><td>VNK</td><td>" + this.abschnitt.vnk + "</td></tr>";
+        r += "<tr><td>NNK</td><td>" + this.abschnitt.nnk + "</td></tr>";
+        r += "<tr><td>VST</td><td>" + this.vst + "</td></tr>";
+        if (this.labstbaVst == null) {
+            r += "<tr><td>Abstand:</td><td>"
+        } else {
+            r += "<tr><td>Abst.&nbsp;re.</td><td>"
+        }
+
+        if (this.rabstbaVst >= 0.01) r += "R";
+        else if (this.rabstbaVst <= 0.01) r += "L";
+        else r += "M";
+        r += " " + Math.abs(this.rabstbaVst) + '</td></tr>';
+        console.log(this.labstbaVst);
+        if (this.labstbaVst != null) {
+            r += "<tr><td>Abst.&nbsp;li.</td><td>"
+            if (this.labstbaVst >= 0.01) r += "R";
+            else if (this.labstbaVst <= 0.01) r += "L";
+            else r += "M";
+            r += " " + Math.abs(this.labstbaVst) + '</td></tr>';
+        }
+
+        r += "<tr><td>Art</td><td>" + kt.get('Itaufstvorart', this.art).beschreib + "</td></tr>";
+        if (this.objektnr != null && this.objektnr != "") {
+            r += "<tr><td>ext. Nr.</td><td>" + this.objektnr + "</td></tr>";
+        }
+        r += "<tr><td>Lage</td><td>" + kt.get('Itallglage', this.rlageVst).beschreib + "</td></tr>";
+        r += "<tr><td>Schilder</td><td>" + this.hasSekObj + "</td></tr>";
+        r += "<tr><td>Quelle</td><td>" + ((this.quelle != null) ? (kt.get("Itquelle", this.quelle).beschreib) : '') + "</td></tr>";
+        r += "</table>"
+
+        if (ziel != undefined) {
+            ziel.innerHTML = r;
+            this.getZeichen(this._vz_addHTML.bind(this), ziel)
+        }*/
+    }
+
 
 }

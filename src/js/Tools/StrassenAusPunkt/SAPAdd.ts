@@ -19,7 +19,7 @@ export default class SAPAdd extends AddTool {
     form: HTMLFormElement;
     constructor(map: Map) {
         super(map);
-        this.createForm();
+        this.form = StrassenAusPunkt.createForm("sapadd");
         document.getElementById('sapadd_button').addEventListener('click', this.addAufstellButton.bind(this));
     }
 
@@ -106,50 +106,5 @@ export default class SAPAdd extends AddTool {
     public stop() {
         document.forms.namedItem("sapadd").style.display = 'none';
         super.stop();
-    }
-
-
-    private createForm() {
-        let sidebar = document.getElementById("sidebar");
-        this.form = document.createElement("form");
-        this.form.id = "sapadd";
-        sidebar.appendChild(this.form);
-
-        // Art
-        HTML.createSelectForm(this.form, "Art", "sapadd_art");
-        this.form.appendChild(document.createElement("br"));
-
-        // Lage
-        HTML.createSelectForm(this.form, "Lage", "sapadd_lage");
-        this.form.appendChild(document.createElement("br"));
-
-        // Quelle
-        HTML.createSelectForm(this.form, "Quelle", "sapadd_quelle");
-        this.form.appendChild(document.createElement("br"));
-
-        // VNK
-        HTML.createTextInput(this.form, "VNK", "sapadd_vnk").disabled = true;
-        this.form.appendChild(document.createElement("br"));
-
-        // NNK
-        HTML.createTextInput(this.form, "NNK", "sapadd_nnk").disabled = true;
-        this.form.appendChild(document.createElement("br"));
-
-        // Station
-        HTML.createTextInput(this.form, "Station", "sapadd_station").disabled = true;
-        this.form.appendChild(document.createElement("br"));
-
-        // Station
-        HTML.createTextInput(this.form, "Abstand", "sapadd_abstand").disabled = true;
-        this.form.appendChild(document.createElement("br"));
-
-
-        // Button
-        let input = document.createElement("input");
-        input.id = "sapadd_button";
-        input.type = "button"
-        input.value = "Ausstattung hinzu."
-        input.disabled = true;
-        this.form.appendChild(input);
     }
 }

@@ -17,7 +17,7 @@ class AvAdd extends AddTool {
     form: HTMLFormElement;
     constructor(map: Map) {
         super(map);
-        this.createForm();
+        this.form = Aufstellvorrichtung.createForm('avadd',undefined, true);
         document.getElementById('avadd_button').addEventListener('click', this.addAufstellButton.bind(this));
     }
 
@@ -105,55 +105,6 @@ class AvAdd extends AddTool {
     stop() {
         document.forms.namedItem("avadd").style.display = 'none';
         super.stop();
-    }
-
-    private createForm() {
-        let sidebar = document.getElementById("sidebar");
-        this.form = document.createElement("form");
-        this.form.id = "avadd";
-        sidebar.appendChild(this.form);
-
-        // Art
-        HTML.createSelectForm(this.form, "Art", "avadd_art");
-        this.form.appendChild(document.createElement("br"));
-
-        // Lage
-        HTML.createSelectForm(this.form, "Lage", "avadd_lage");
-        this.form.appendChild(document.createElement("br"));
-
-        // Quelle
-        HTML.createSelectForm(this.form, "Quelle", "avadd_quelle");
-        this.form.appendChild(document.createElement("br"));
-
-        // ext: Objektid
-        HTML.createTextInput(this.form, "ext. Objektnummer", "avadd_extid");
-        this.form.appendChild(document.createElement("br"));
-
-
-        // VNK
-        HTML.createTextInput(this.form, "VNK", "avadd_vnk").disabled = true;
-        this.form.appendChild(document.createElement("br"));
-
-        // NNK
-        HTML.createTextInput(this.form, "NNK", "avadd_nnk").disabled = true;
-        this.form.appendChild(document.createElement("br"));
-
-        // Station
-        HTML.createTextInput(this.form, "Station", "avadd_station").disabled = true;
-        this.form.appendChild(document.createElement("br"));
-
-        // Station
-        HTML.createTextInput(this.form, "Abstand", "avadd_abstand").disabled = true;
-        this.form.appendChild(document.createElement("br"));
-
-
-        // Button
-        let input = document.createElement("input");
-        input.id = "avadd_button";
-        input.type = "button"
-        input.value = "Ausstattung hinzu."
-        input.disabled = true;
-        this.form.appendChild(input);
     }
 }
 

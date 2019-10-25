@@ -11,6 +11,7 @@ export default abstract class PunktObjekt extends Objekt {
 
     abstract colorFunktion1(): ColorLike;
     abstract colorFunktion2(): ColorLike;
+    abstract createForm(formId: string, aufstell?: PunktObjekt): HTMLFormElement;
 
     abstract updateStation(station: number, abstand: number): void;
 
@@ -72,17 +73,5 @@ export default abstract class PunktObjekt extends Objekt {
         }.bind(this));
         map.addLayer(layer);
         return layer;
-    }
-
-    protected static klartext2select(klartexteObjekt: {}, klartext: string, selectInput: HTMLSelectElement) {
-        let arten = Klartext.getInstanz().getAllSorted(klartext);
-        for (let a of arten) {
-            let option = document.createElement('option');
-            let t = document.createTextNode(a.beschreib);
-            option.appendChild(t);
-            option.setAttribute('value', a.objektId);
-            selectInput.appendChild(option);
-        }
-        $(selectInput).chosen({ width: "95%", search_contains: true });
     }
 }

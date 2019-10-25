@@ -455,7 +455,7 @@ class AvVzAdd extends Tool {
 
                 if (upd != "") {
                     anzUpdate += 1
-                    update += '<wfs:Update typeName="Otvzeichlp">\n' + upd +
+                    update += '<wfs:Update typeName="Otvzeichlp">\n' +
                         '	<ogc:Filter>\n' +
                         '		<ogc:And>\n' +
                         '			<ogc:PropertyIsEqualTo>\n' +
@@ -467,7 +467,7 @@ class AvVzAdd extends Tool {
                         '				<ogc:Literal>#' + this._daten.ereignisraum + '</ogc:Literal>\n' +
                         '			</ogc:PropertyIsEqualTo>\n' +
                         '		</ogc:And>\n' +
-                        '	</ogc:Filter>\n' +
+                        '	</ogc:Filter>\n' + upd +
                         '</wfs:Update>\n';
                 }
                 //console.log("update");

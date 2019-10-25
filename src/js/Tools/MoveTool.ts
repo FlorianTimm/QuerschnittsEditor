@@ -30,7 +30,7 @@ export default class MoveTool extends Tool {
     private l_overlay: VectorLayer;
     private feat_station_line: Feature;
     private modify: ModifyInteraction;
-    
+
     constructor(map: Map, avInfoTool: InfoTool, selectLayer: VectorLayer) {
         super();
         this.map = map;
@@ -97,7 +97,7 @@ export default class MoveTool extends Tool {
             this.map.unset("pointermove", this.move.bind(this));
             (this.feat_station_line.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
         }
-        this.infoTool.featureSelected(event);
+        this.infoTool.featureSelected(event, true);
     }
 
     private modifyStart(event: ModifyEvent) {

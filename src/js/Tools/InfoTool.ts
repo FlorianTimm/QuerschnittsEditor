@@ -39,15 +39,15 @@ export default class InfoTool extends Tool {
      * Wird ausgelöst beim Auswählen einer Aufstellvorrichtung
      * @param {SelectEvent} event 
      */
-    featureSelected(event: SelectEvent) {
+    featureSelected(event: SelectEvent, changeable: boolean = false) {
         if (event.selected.length == 0) {
             this._infoField.style.display = "none";
             return;
         }
         this._infoField.style.display = "block";
         let auswahl = event.selected[0];
-
-        (auswahl as InfoToolSelectable).getHTMLInfo(this._infoField);
+        this._infoField.innerHTML = "";
+        (auswahl as InfoToolSelectable).getHTMLInfo(this._infoField, changeable);
     }
 
     start() {
@@ -62,5 +62,5 @@ export default class InfoTool extends Tool {
 }
 
 export interface InfoToolSelectable extends Feature {
-    getHTMLInfo: (sidebar: HTMLElement) => void;
+    getHTMLInfo: (sidebar: HTMLElement, changeable?: boolean) => void;
 }

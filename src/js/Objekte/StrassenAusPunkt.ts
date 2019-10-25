@@ -15,6 +15,7 @@ import Klartext from './Klartext';
 import Abschnitt from './Abschnitt';
 import { InfoToolSelectable } from '../Tools/InfoTool';
 import PunktObjekt from './PunktObjekt';
+import HTML from '../HTML';
 
 var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
 
@@ -42,9 +43,9 @@ export default class StrassenAusPunkt extends PunktObjekt implements InfoToolSel
     }
 
     private static loadKlartexte() {
-        Klartext.getInstanz().load('Itstrauspktart', StrassenAusPunkt.klartext2select, 'Itstrauspktart', document.forms.namedItem("sapadd").sapadd_art);
-        Klartext.getInstanz().load('Itallglage', StrassenAusPunkt.klartext2select, 'Itallglage', document.forms.namedItem("sapadd").sapadd_lage);
-        Klartext.getInstanz().load('Itquelle', StrassenAusPunkt.klartext2select, 'Itquelle', document.forms.namedItem("sapadd").sapadd_quelle);
+        Klartext.klartext2select('Itstrauspktart', document.forms.namedItem("sapadd").sapadd_art);
+        Klartext.klartext2select('Itallglage', document.forms.namedItem("sapadd").sapadd_lage);
+        Klartext.klartext2select('Itquelle', document.forms.namedItem("sapadd").sapadd_quelle);
     }
 
     getHTMLInfo(ziel: HTMLElement) {
@@ -205,5 +206,69 @@ export default class StrassenAusPunkt extends PunktObjekt implements InfoToolSel
             '	</ogc:Filter>\n' +
             '</wfs:Update>';
         PublicWFS.doTransaction(xml);
+    }
+
+    createForm(formId: string) {
+        return StrassenAusPunkt.createForm(formId, this);
+    }
+
+    public static createForm(formId: string, ausstattung?: StrassenAusPunkt): HTMLFormElement {
+        let sidebar = document.getElementById("sidebar");
+        let form = document.createElement("form");
+        form.id = formId;
+        sidebar.appendChild(form);
+
+        // Art
+        let art = HTML.createSelectForm(form, "Art", formId + "_art");
+        form.appendChild(document.createElement("br"));
+
+        // Lage
+        let lage = HTML.createSelectForm(form, "Lage", formId + "_lage");
+        form.appendChild(document.createElement("br"));
+
+        // Quelle
+        let quelle = HTML.createSelectForm(form, "Quelle", formId + "_quelle");
+        form.appendChild(document.createElement("br"));
+
+        // VNK
+        let vnk = HTML.createTextInput(form, "VNK", formId + "_vnk")
+        vnk.disabled = true;
+        form.appendChild(document.createElement("br"));
+
+        // NNK
+        let nnk = HTML.createTextInput(form, "NNK", formId + "_nnk")
+        nnk.disabled = true;
+        form.appendChild(document.createElement("br"));
+
+        // Station
+        let station = HTML.createTextInput(form, "Station", formId + "_station")
+        station.disabled = true;
+        form.appendChild(document.createElement("br"));
+
+        // Abstand
+        let abstand = HTML.createTextInput(form, "Abstand", formId + "_abstand")
+        abstand.disabled = true;
+        form.appendChild(document.createElement("br"));
+
+
+        // Button
+        let input = document.createElement("input");
+        input.id = formId + "_button";
+        input.type = "button"
+        input.value = "Ausstattung hinzu."
+        input.disabled = true;
+        form.appendChild(input);
+
+        if (ausstattung != undefined) {
+            art.value = ausstattung.art;
+            lage.value = ausstattung.rlageVst;
+            quelle.value = ausstattung.quelle;
+            vnk.value = ausstattung.abschnitt.vnk;
+            nnk.value = ausstattung.abschnitt.nnk;
+            station.value = ausstattung.vst.toString();
+            abstand.value = ausstattung.vabstVst.toString();
+        }
+
+        return form;
     }
 }
