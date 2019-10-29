@@ -11,12 +11,15 @@ import QuerStation from './QuerStation';
 
 /**
 * @author Florian Timm, LGV HH 
-* @version 2019.08.22
+* @version 2019.10.29
 * @copyright MIT
 */
 
 
-class Querschnitt extends Objekt {
+export default class Querschnitt extends Objekt {
+    getObjektKlassenName(): string {
+        return "Dotquer"
+    }
     private _daten: Daten;
     private _aufbaudaten: { [schicht: number]: Aufbau } = null;
 
@@ -24,21 +27,21 @@ class Querschnitt extends Objekt {
     trenn: Feature;
 
     // SIB-Attribute
-    station: QuerStation = null;
-    art: string = null;
-    artober: string = null;
-    breite: number = null;
-    bisBreite: number = null;
-    blpart: any = null;
-    blpartnull: any = null;
-    uipart: any = null;
-    uipartnull: any = null;
-    XVstL: number = null;
-    XVstR: number = null;
-    XBstL: number = null;
-    XBstR: number = null;
-    streifen: string = null;
-    streifennr: number = null;
+    private station: QuerStation = null;
+    private art: string = null;
+    private artober: string = null;
+    private breite: number = null;
+    private bisBreite: number = null;
+    private blpart: any = null;
+    private blpartnull: any = null;
+    private uipart: any = null;
+    private uipartnull: any = null;
+    private XVstL: number = null;
+    private XVstR: number = null;
+    private XBstL: number = null;
+    private XBstR: number = null;
+    private streifen: 'M' | 'L' | 'R' = null;
+    private streifennr: number = null;
 
     constructor() {
         super();
@@ -46,10 +49,10 @@ class Querschnitt extends Objekt {
         //console.log(daten);
 
         this.flaeche = new Feature({ geom: new Polygon([[[0, 0], [0, 0], [0, 0]]]), objekt: this });
-        this._daten.v_quer.addFeature(this.flaeche)
+        this._daten.vectorQuer.addFeature(this.flaeche)
 
         this.trenn = new Feature({ geom: new MultiLineString([[[0, 0], [0, 0], [0, 0]]]), objekt: this });
-        this._daten.v_trenn.addFeature(this.trenn);
+        this._daten.vectorTrenn.addFeature(this.trenn);
     }
 
     static loadER(callback?: (xml: Document, ...args: any[]) => void, ...args: any[]) {
@@ -65,7 +68,7 @@ class Querschnitt extends Objekt {
         let daten = Daten.getInstanz();
         PublicWFS.doQuery('Dotquer', '<Filter>' +
             '<And><PropertyIsEqualTo><PropertyName>abschnittId</PropertyName>' +
-            '<Literal>' + abschnitt.abschnittid + '</Literal></PropertyIsEqualTo><PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
+            '<Literal>' + abschnitt.getAbschnittid() + '</Literal></PropertyIsEqualTo><PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
             '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>', Querschnitt._loadER_Callback, undefined, callback, ...args);
     }
 
@@ -93,7 +96,7 @@ class Querschnitt extends Objekt {
 
     }
 
-    check() {
+    public check() {
         //if (this.XVstL != null && this.XVstR != null && this.XBstL != null && this.XBstR != null) return;
         //console.log(this);
         let m = this.station.getStreifen("M")
@@ -144,7 +147,7 @@ class Querschnitt extends Objekt {
         if (doNotAdd) return r;  // Abbruch, falls nur die Daten geparst werden sollen
 
         let abschnitt: Abschnitt = r._daten.getAbschnitt(r.abschnittId);
-        abschnitt.inER['Querschnitt'] = true;
+        abschnitt.addOKinER('Querschnitt');
 
         //console.log(abschnitt);
         if (!(abschnitt.existsStation(r.vst))) {
@@ -156,7 +159,7 @@ class Querschnitt extends Objekt {
                 let y = Number(k[1]);
                 geo.push([x, y]);
             }
-            r.station = new QuerStation(r._daten, abschnitt, r.vst, r.bst, geo);
+            r.station = new QuerStation(abschnitt, r.vst, r.bst, geo);
         } else {
             r.station = abschnitt.getStation(r.vst);
         }
@@ -193,35 +196,7 @@ class Querschnitt extends Objekt {
         callback(this._aufbaudaten);
     }
 
-
-    /*getAufbauDaten() {
-        if (this._aufbaudaten == null && ) {
-            PublicWFS.doQuery('Otschicht', '<ogc:Filter><ogc:And>\n' +
-                '<ogc:PropertyIsEqualTo>\n' +
-                '    <ogc:Property>projekt/@xlink:href</ogc:Property>\n' +
-                '    <ogc:Literal>' + this._daten.ereignisraum + '</ogc:Literal>\n' +
-                '  </ogc:PropertyIsEqualTo>\n' +
-                '  <ogc:PropertyIsEqualTo>\n' +
-                '    <ogc:Property>parent/@xlink:href</ogc:Property>\n' +
-                '    <ogc:Literal>' + this.fid + '</ogc:Literal>\n' +
-                '  </ogc:PropertyIsEqualTo>\n' +
-                '</ogc:And></ogc:Filter>', this._parseAufbaudaten.bind(this));
-        }
-    }
-
-    _parseAufbaudaten(xml: Document) {
-        let aufbaudaten = {};
-        let aufbau = xml.getElementsByTagName('Otschicht');
-
-        for (let i = 0; i < aufbau.length; i++) {
-            let a = Aufbau.fromXML(aufbau[i]);
-
-            this._aufbaudaten[a.schichtnr] = a;
-        }
-        this._aufbaudaten = aufbaudaten;
-    }*/
-
-    createGeom() {
+    private createGeom() {
         let g = [];
         let l = [];
         let r = [];
@@ -231,10 +206,10 @@ class Querschnitt extends Objekt {
         let abst2 = this.XVstL
         let diff2 = this.XBstL - abst2
 
-        let anzahl = this.station.geo.length;
+        let anzahl = this.station.getGeometry().length;
 
         for (let j = 0; j < anzahl; j++) {
-            let coord = Vektor.sum(this.station.geo[j], Vektor.multi(this.station.vector[j], this.station.seg[j] * diff2 + abst2));
+            let coord = Vektor.sum(this.station.getGeometry()[j], Vektor.multi(this.station.getVector()[j], this.station.getSegment()[j] * diff2 + abst2));
             if (isNaN(coord[0]) || isNaN(coord[1])) {
                 console.log("Fehler: keine Koordinaten");
                 continue;
@@ -244,7 +219,7 @@ class Querschnitt extends Objekt {
         }
 
         for (let j = anzahl - 1; j >= 0; j--) {
-            let coord = Vektor.sum(this.station.geo[j], Vektor.multi(this.station.vector[j], this.station.seg[j] * diff1 + abst1));
+            let coord = Vektor.sum(this.station.getGeometry()[j], Vektor.multi(this.station.getVector()[j], this.station.getSegment()[j] * diff1 + abst1));
             if (isNaN(coord[0]) || isNaN(coord[1])) {
                 console.log("Fehler: keine Koordinaten");
                 continue;
@@ -261,7 +236,7 @@ class Querschnitt extends Objekt {
         this.flaeche.setGeometry(new Polygon([g])) //setCoordinates([g])
     }
 
-    createInsertXML(changes?: { [tag: string]: number | string }, removeIds?: boolean) {
+    public createInsertXML(changes?: { [tag: string]: number | string }, removeIds?: boolean) {
         let r = '<wfs:Insert>\n<Dotquer>\n';
 
         for (let change in changes) {
@@ -293,7 +268,7 @@ class Querschnitt extends Objekt {
         return r;
     }
 
-    createAufbauDatenXML() {
+    private createAufbauDatenXML() {
         let r = '';
         if (this._aufbaudaten != null) {
             r += '<wfs:Insert>\n'
@@ -308,177 +283,48 @@ class Querschnitt extends Objekt {
         return r;
     }
 
-    createUpdateBreiteXML() {
-        return '<wfs:Update typeName="Dotquer">\n' +
-            '	<wfs:Property>\n' +
-            '		<wfs:Name>breite</wfs:Name>\n' +
-            '		<wfs:Value>' + Math.round(this.breite) + '</wfs:Value>\n' +
-            '	</wfs:Property>\n' +
-            '	<wfs:Property>\n' +
-            '		<wfs:Name>bisBreite</wfs:Name>\n' +
-            '		<wfs:Value>' + Math.round(this.bisBreite) + '</wfs:Value>\n' +
-            '	</wfs:Property>\n' +
-            '	<wfs:Property>\n' +
-            '		<wfs:Name>XVstL</wfs:Name>\n' +
-            '		<wfs:Value>' + Math.round(this.XVstL * 100) / 100 + '</wfs:Value>\n' +
-            '	</wfs:Property>\n' +
-            '	<wfs:Property>\n' +
-            '		<wfs:Name>XVstR</wfs:Name>\n' +
-            '		<wfs:Value>' + Math.round(this.XVstR * 100) / 100 + '</wfs:Value>\n' +
-            '	</wfs:Property>\n' +
-            '	<wfs:Property>\n' +
-            '		<wfs:Name>XBstL</wfs:Name>\n' +
-            '		<wfs:Value>' + Math.round(this.XBstL * 100) / 100 + '</wfs:Value>\n' +
-            '	</wfs:Property>\n' +
-            '	<wfs:Property>\n' +
-            '		<wfs:Name>XBstR</wfs:Name>\n' +
-            '		<wfs:Value>' + Math.round(this.XBstR * 100) / 100 + '</wfs:Value>\n' +
-            '	</wfs:Property>\n' +
-            '	<ogc:Filter>\n' +
-            '		<ogc:And>\n' +
-            '			<ogc:PropertyIsEqualTo>\n' +
-            '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
-            '				<ogc:Literal>' + this.objektId + '</ogc:Literal>\n' +
-            '			</ogc:PropertyIsEqualTo>\n' +
-            '			<ogc:PropertyIsEqualTo>\n' +
-            '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
-            '				<ogc:Literal>' + this.projekt + '</ogc:Literal>\n' +
-            '			</ogc:PropertyIsEqualTo>\n' +
-            '		</ogc:And>\n' +
-            '	</ogc:Filter>\n' +
-            '</wfs:Update>';
+    private createUpdateBreiteXML() {
+        return super.createUpdateXML({
+            breite: Math.round(this.breite),
+            bisBreite: Math.round(this.bisBreite),
+            XVstL: Math.round(this.XVstL * 100) / 100,
+            XVstR: Math.round(this.XVstR * 100) / 100,
+            XBstL: Math.round(this.XBstL * 100) / 100,
+            XBstR: Math.round(this.XBstR * 100) / 100
+        });
     }
 
 
-    createUpdateStreifenXML() {
-        return '<wfs:Update typeName="Dotquer">\n' +
-            '	<wfs:Property>\n' +
-            '		<wfs:Name>streifennr</wfs:Name>\n' +
-            '		<wfs:Value>' + this.streifennr + '</wfs:Value>\n' +
-            '	</wfs:Property>\n' +
-            '	<wfs:Property>\n' +
-            '		<wfs:Name>XVstL</wfs:Name>\n' +
-            '		<wfs:Value>' + Math.round(this.XVstL * 100) / 100 + '</wfs:Value>\n' +
-            '	</wfs:Property>\n' +
-            '	<wfs:Property>\n' +
-            '		<wfs:Name>XVstR</wfs:Name>\n' +
-            '		<wfs:Value>' + Math.round(this.XVstR * 100) / 100 + '</wfs:Value>\n' +
-            '	</wfs:Property>\n' +
-            '	<wfs:Property>\n' +
-            '		<wfs:Name>XBstL</wfs:Name>\n' +
-            '		<wfs:Value>' + Math.round(this.XBstL * 100) / 100 + '</wfs:Value>\n' +
-            '	</wfs:Property>\n' +
-            '	<wfs:Property>\n' +
-            '		<wfs:Name>XBstR</wfs:Name>\n' +
-            '		<wfs:Value>' + Math.round(this.XBstR * 100) / 100 + '</wfs:Value>\n' +
-            '	</wfs:Property>\n' +
-            '	<ogc:Filter>\n' +
-            '		<ogc:And>\n' +
-            '			<ogc:PropertyIsEqualTo>\n' +
-            '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
-            '				<ogc:Literal>' + this.objektId + '</ogc:Literal>\n' +
-            '			</ogc:PropertyIsEqualTo>\n' +
-            '			<ogc:PropertyIsEqualTo>\n' +
-            '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
-            '				<ogc:Literal>' + this.projekt + '</ogc:Literal>\n' +
-            '			</ogc:PropertyIsEqualTo>\n' +
-            '		</ogc:And>\n' +
-            '	</ogc:Filter>\n' +
-            '</wfs:Update>';
-    }
-
-    createUpdateArtXML() {
-        return '<wfs:Update typeName="Dotquer">\n' +
-            '	<wfs:Property>\n' +
-            '		<wfs:Name>art/@xlink:href</wfs:Name>\n' +
-            '		<wfs:Value>' + this.art + '</wfs:Value>\n' +
-            '	</wfs:Property>\n' +
-            '	<wfs:Property>\n' +
-            '		<wfs:Name>artober/@xlink:href</wfs:Name>\n' +
-            '		<wfs:Value>' + this.artober + '</wfs:Value>\n' +
-            '	</wfs:Property>\n' +
-            '	<ogc:Filter>\n' +
-            '		<ogc:And>\n' +
-            '			<ogc:PropertyIsEqualTo>\n' +
-            '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
-            '				<ogc:Literal>' + this.objektId + '</ogc:Literal>\n' +
-            '			</ogc:PropertyIsEqualTo>\n' +
-            '			<ogc:PropertyIsEqualTo>\n' +
-            '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
-            '				<ogc:Literal>' + this.projekt + '</ogc:Literal>\n' +
-            '			</ogc:PropertyIsEqualTo>\n' +
-            '		</ogc:And>\n' +
-            '	</ogc:Filter>\n' +
-            '</wfs:Update>';
-    }
-
-
-    createUpdateArtEinzelnXML() {
-        return '<wfs:Update typeName="Dotquer">\n' +
-            '	<wfs:Property>\n' +
-            '		<wfs:Name>art/@xlink:href</wfs:Name>\n' +
-            '		<wfs:Value>' + this.art + '</wfs:Value>\n' +
-            '	</wfs:Property>\n' +
-            '	<ogc:Filter>\n' +
-            '		<ogc:And>\n' +
-            '			<ogc:PropertyIsEqualTo>\n' +
-            '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
-            '				<ogc:Literal>' + this.objektId + '</ogc:Literal>\n' +
-            '			</ogc:PropertyIsEqualTo>\n' +
-            '			<ogc:PropertyIsEqualTo>\n' +
-            '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
-            '				<ogc:Literal>' + this.projekt + '</ogc:Literal>\n' +
-            '			</ogc:PropertyIsEqualTo>\n' +
-            '		</ogc:And>\n' +
-            '	</ogc:Filter>\n' +
-            '</wfs:Update>';
-    }
-
-    createUpdateOberEinzelnXML() {
-        return '<wfs:Update typeName="Dotquer">\n' +
-            '	<wfs:Property>\n' +
-            '		<wfs:Name>artober/@xlink:href</wfs:Name>\n' +
-            '		<wfs:Value>' + this.artober + '</wfs:Value>\n' +
-            '	</wfs:Property>\n' +
-            '	<ogc:Filter>\n' +
-            '		<ogc:And>\n' +
-            '			<ogc:PropertyIsEqualTo>\n' +
-            '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
-            '				<ogc:Literal>' + this.objektId + '</ogc:Literal>\n' +
-            '			</ogc:PropertyIsEqualTo>\n' +
-            '			<ogc:PropertyIsEqualTo>\n' +
-            '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
-            '				<ogc:Literal>' + this.projekt + '</ogc:Literal>\n' +
-            '			</ogc:PropertyIsEqualTo>\n' +
-            '		</ogc:And>\n' +
-            '	</ogc:Filter>\n' +
-            '</wfs:Update>';
-    }
-
-    updateArt(art: string, artober: string) {
+    private updateArt(art: string, artober: string) {
         this.art = art;
         this.artober = artober;
-        this._daten.v_quer.changed();
+        this._daten.vectorQuer.changed();
 
-        PublicWFS.doTransaction(this.createUpdateArtXML(), undefined, undefined);
+        PublicWFS.doTransaction(this.createUpdateXML({
+            art: this.art,
+            artober: this.artober
+        }));
     }
 
-    updateArtEinzeln(art: string) {
+    private updateArtEinzeln(art: string) {
         this.art = art;
-        this._daten.v_quer.changed();
+        this._daten.vectorQuer.changed();
 
-        PublicWFS.doTransaction(this.createUpdateArtEinzelnXML(), undefined, undefined);
+        PublicWFS.doTransaction(this.createUpdateXML({
+            art: this.art,
+        }));
     }
 
-    updateOberEinzeln(artober: string) {
+    private updateOberEinzeln(artober: string) {
         this.artober = artober;
-        this._daten.v_quer.changed();
-
-        PublicWFS.doTransaction(this.createUpdateOberEinzelnXML(), undefined, undefined);
+        this._daten.vectorQuer.changed();
+        PublicWFS.doTransaction(this.createUpdateXML({
+            artober: this.artober
+        }));
     }
 
 
-    editBreite(edit: string, diff: number, fit: boolean) {
+    private editBreite(edit: string, diff: number, fit: boolean) {
         let gesStreifen = this.station.getStreifen(this.streifen);
         let nr = this.streifennr;
 
@@ -516,10 +362,91 @@ class Querschnitt extends Objekt {
         PublicWFS.doTransaction(soap, undefined, undefined);
     }
 
-    delete() {
-        this._daten.v_quer.removeFeature(this.flaeche)
-        this._daten.v_trenn.removeFeature(this.trenn)
+    public delete() {
+        this._daten.vectorQuer.removeFeature(this.flaeche)
+        this._daten.vectorTrenn.removeFeature(this.trenn)
     }
-}
 
-export default Querschnitt;
+
+    // Getter
+    public getStation(): QuerStation {
+        return this.station;
+    }
+
+    public getStreifennr(): number {
+        return this.streifennr
+    }
+    public getArt(): string {
+        return this.art;
+    }
+    public getArtober(): string {
+        return this.artober;
+    }
+    public getXBstL(): number {
+        return this.XBstL;
+    }
+    public getXBstR(): number {
+        return this.XBstR;
+    }
+    public getXVstL(): number {
+        return this.XVstL;
+    }
+    public getXVstR(): number {
+        return this.XVstR;
+    }
+    public getBreite(): number {
+        return this.breite;
+    }
+    public getBisBreite(): number {
+        return this.bisBreite;
+    }
+    public getStreifen(): 'M' | 'L' | 'R' {
+        return this.streifen;
+    }
+
+
+    //Setter
+    public setStation(station: QuerStation) {
+        this.station = station;
+    }
+    public setStreifen(streifen: 'M' | 'L' | 'R') {
+        this.streifen = streifen;
+    }
+
+    public setStreifennr(streifennr: number) {
+        this.streifennr = streifennr;
+    }
+
+    public setBreite(breite: number) {
+        this.breite = breite;
+    }
+
+    public setBisBreite(bisBreite: number) {
+        this.bisBreite = bisBreite;
+    }
+
+    public setArt(art: string) {
+        this.art = art;
+    }
+
+    public setArtober(artober: string) {
+        this.artober = artober;
+    }
+
+    public setXVstR(XVstR: number) {
+        this.XVstR = XVstR;
+    }
+
+    public setXVstL(XVstL: number) {
+        this.XVstL = XVstL;
+    }
+
+    public setXBstR(XBstR: number) {
+        this.XBstR = XBstR;
+    }
+
+    public setXBstL(XBstL: number) {
+        this.XBstL = XBstL;
+    }
+
+}

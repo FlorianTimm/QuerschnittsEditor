@@ -12,7 +12,7 @@ import PunktObjekt from 'src/js/Objekte/PunktObjekt';
 /**
  * Prototyp des Werkzeuges zum Löschen von Punktobjekten
  * @author Florian Timm, LGV HH 
- * @version 2019.08.20
+ * @version 2019.10.29
  * @copyright MIT
  */
 
@@ -76,7 +76,7 @@ export default class DeleteTool extends Tool {
             '		<ogc:And>\n' +
             '			<ogc:PropertyIsEqualTo>\n' +
             '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
-            '				<ogc:Literal>' + feature.objektId + '</ogc:Literal>\n' +
+            '				<ogc:Literal>' + feature.getObjektId() + '</ogc:Literal>\n' +
             '			</ogc:PropertyIsEqualTo>\n' +
             '			<ogc:PropertyIsEqualTo>\n' +
             '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +

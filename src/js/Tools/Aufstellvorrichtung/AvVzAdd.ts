@@ -17,7 +17,7 @@ var CONFIG = require('../../config.json');
 /**
  * Funktion zum Hinzufügen von Verkehrsschildern
  * @author Florian Timm, LGV HH 
- * @version 2019.05.20
+ * @version 2019.10.29
  * @copyright MIT
  */
 class AvVzAdd extends Tool {
@@ -40,7 +40,7 @@ class AvVzAdd extends Tool {
         this._daten = Daten.getInstanz();
 
         this._select = new SelectInteraction({
-            layers: [this._daten.l_aufstell],
+            layers: [this._daten.layerAufstell],
             hitTolerance: 10
         });
 
@@ -120,14 +120,14 @@ class AvVzAdd extends Tool {
      */
     newSchild(event: MouseEvent) {
         let schild = new Zeichen(this._daten);
-        schild.stvoznr = (event.target as HTMLInputElement).value;
+        schild.setStvoznr((event.target as HTMLInputElement).value);
         this._createSchildForm(schild);
     }
 
     _zeichenGeladen(zeichen: Zeichen[]) {
         zeichen.sort(function (a: Zeichen, b: Zeichen) {
-            if (a.sort != null && b.sort != null) {
-                return Number(a.sort) - Number(b.sort);
+            if (a.getSort() != null && b.getSort() != null) {
+                return Number(a.getSort()) - Number(b.getSort());
             }
         });
         for (let eintrag of zeichen) {
@@ -142,14 +142,14 @@ class AvVzAdd extends Tool {
     _createSchildForm(eintrag: Zeichen) {
         let div = document.createElement("form");
         this._liste.appendChild(div);
-        div.dataset.oid = eintrag.objektId;
+        div.dataset.oid = eintrag.getObjektId();
         div.classList.add('ui-state-default');
         div.classList.add('schild');
         let img = document.createElement("img");
         img.classList.add('schildBild');
         img.style.height = "50px";
-        img.src = "http://gv-srv-w00118:8080/schilder/" + Klartext.getInstanz().get("Itvzstvoznr", eintrag.stvoznr)['kt'] + ".svg";
-        img.title = Klartext.getInstanz().get("Itvzstvoznr", eintrag.stvoznr)['beschreib'] + (eintrag.vztext != null) ? ("\n" + eintrag.vztext) : ('');
+        img.src = "http://gv-srv-w00118:8080/schilder/" + Klartext.getInstanz().get("Itvzstvoznr", eintrag.getStvoznr())['kt'] + ".svg";
+        img.title = Klartext.getInstanz().get("Itvzstvoznr", eintrag.getStvoznr())['beschreib'] + (eintrag.getVztext() != null) ? ("\n" + eintrag.getVztext()) : ('');
         div.appendChild(img);
         let text = document.createElement("div");
         div.appendChild(text);
@@ -166,30 +166,30 @@ class AvVzAdd extends Tool {
         text_label.innerHTML = 'Text';
         text_group.appendChild(text_label);
         text_group.appendChild(document.createElement("br"));
-        text_group.innerHTML += '<input type="text" name="vztext" value="' + ((eintrag.vztext != null) ? (eintrag.vztext) : ('')) + '" />';
+        text_group.innerHTML += '<input type="text" name="vztext" value="' + ((eintrag.getVztext() != null) ? (eintrag.getVztext()) : ('')) + '" />';
         text.appendChild(text_group);
 
         // Lage FB
-        if (eintrag.lageFb == undefined) eintrag.lageFb = CONFIG.LAGEFB;
+        if (eintrag.getLageFb() == undefined) eintrag.setLageFb(CONFIG.LAGEFB);
         text.appendChild(this._createSelect(eintrag, 'Lage', 'lageFb', 'Itvzlagefb'));
 
         // Lesbarkeit
         text.appendChild(this._createSelect(eintrag, 'Lesbarkeit', 'lesbarkeit', 'Itvzlesbarkeit'));
 
         // Beleuchtet
-        if (eintrag.beleucht == undefined) eintrag.beleucht = CONFIG.BELEUCHTET;
+        if (eintrag.getBeleucht() == undefined) eintrag.setBeleucht(CONFIG.BELEUCHTET);
         text.appendChild(this._createSelect(eintrag, 'Beleuchtung', 'beleucht', 'Itvzbeleucht'));
 
         //Einzelschild
-        if (eintrag.art == undefined) eintrag.art = CONFIG.EINZELSCHILD;
+        if (eintrag.getArt() == undefined) eintrag.setArt(CONFIG.EINZELSCHILD);
         text.appendChild(this._createSelect(eintrag, 'Einzelschild', 'art', 'Itvzart'));
 
         // Größe des Schilder
-        if (eintrag.groesse == undefined) eintrag.groesse = CONFIG.GROESSE;
+        if (eintrag.getGroesse() == undefined) eintrag.setGroesse(CONFIG.GROESSE);
         text.appendChild(this._createSelect(eintrag, 'Gr&ouml;&szlig;e', 'groesse', 'Itvzgroesse'));
 
         // Straßenbezug
-        if (eintrag.strbezug == undefined) eintrag.strbezug = CONFIG.STRASSENBEZUG;
+        if (eintrag.getStrbezug() == undefined) eintrag.setStrbezug(CONFIG.STRASSENBEZUG);
         text.appendChild(this._createSelect(eintrag, 'Stra&szlig;enbezug', 'strbezug', 'Itbesstrbezug'));
 
         // Aufstelldatum
@@ -202,7 +202,7 @@ class AvVzAdd extends Tool {
         let aufstellField = document.createElement("input");
         aufstellField.autocomplete = "off";
         aufstellField.name = "aufstelldat";
-        aufstellField.value = ((eintrag.aufstelldat != null) ? (eintrag.aufstelldat) : (''));
+        aufstellField.value = ((eintrag.getAufstelldat() != null) ? (eintrag.getAufstelldat()) : (''));
         aufstellGroup.appendChild(aufstellField);
 
         $.datepicker.regional['de'] = {
@@ -238,11 +238,11 @@ class AvVzAdd extends Tool {
         extnr_label.innerHTML = 'Externe Objektnummer';
         extnr_group.appendChild(extnr_label);
         extnr_group.appendChild(document.createElement("br"));
-        extnr_group.innerHTML += '<input type="text" name="objektnr" value="' + ((eintrag.objektnr != null) ? (eintrag.objektnr) : ('')) + '" />';
+        extnr_group.innerHTML += '<input type="text" name="objektnr" value="' + ((eintrag.getObjektnr() != null) ? (eintrag.getObjektnr()) : ('')) + '" />';
         text.appendChild(extnr_group);
 
         // Erfassungsart
-        if (eintrag.erfart == undefined) eintrag.erfart = CONFIG.ERFASSUNG;
+        if (eintrag.getErfart() == undefined) eintrag.setErfart(CONFIG.ERFASSUNG);
         text.appendChild(this._createSelect(eintrag, 'Erfassung', 'erfart', 'Iterfart'));
 
         // Quelle
@@ -314,7 +314,7 @@ class AvVzAdd extends Tool {
         select.classList.add("big");
         select.classList.add(id);
         select.name = id;
-        select.id = id + "[" + eintrag.objektId + "]";
+        select.id = id + "[" + eintrag.getObjektId() + "]";
 
         for (let kt of Klartext.getInstanz().getAllSorted(klartext)) {
             let option = document.createElement("option");
@@ -360,26 +360,26 @@ class AvVzAdd extends Tool {
             if (eintraege.length == 0) break;
             let eintrag = eintraege[0];
             let schild = new Zeichen(this._daten);
-            schild.objektId = forms[i].dataset.oid;
-            schild.sort = i + 1;
-            schild.stvoznr = ($(eintrag).children().children("select[name='stvoznr']")[0] as HTMLInputElement).value;
-            schild.vztext = ($(eintrag).children().children("input[name='vztext']")[0] as HTMLInputElement).value;
-            if (schild.vztext == "") schild.vztext = null;
-            schild.lageFb = ($(eintrag).children().children("select[name='lageFb']")[0] as HTMLInputElement).value;
-            schild.lesbarkeit = ($(eintrag).children().children("select[name='lesbarkeit']")[0] as HTMLInputElement).value;
-            schild.beleucht = ($(eintrag).children().children("select[name='beleucht']")[0] as HTMLInputElement).value;
-            schild.art = ($(eintrag).children().children("select[name='art']")[0] as HTMLInputElement).value;
-            schild.groesse = ($(eintrag).children().children("select[name='groesse']")[0] as HTMLInputElement).value;
-            schild.strbezug = ($(eintrag).children().children("select[name='strbezug']")[0] as HTMLInputElement).value;
-            schild.aufstelldat = ($(eintrag).children().children("input[name='aufstelldat']")[0] as HTMLInputElement).value;
-            schild.erfart = ($(eintrag).children().children("select[name='erfart']")[0] as HTMLInputElement).value;
-            schild.quelle = ($(eintrag).children().children("select[name='quelle']")[0] as HTMLInputElement).value;
-            schild.objektnr = ($(eintrag).children().children("input[name='objektnr']")[0] as HTMLInputElement).value;
-            if (schild.objektnr == "") schild.objektnr = null;
-            if (schild.objektId.length < 10) { // undefined
+            schild.setObjektId(forms[i].dataset.oid);
+            schild.setSort(i + 1);
+            schild.setStvoznr(($(eintrag).children().children("select[name='stvoznr']")[0] as HTMLInputElement).value);
+            schild.setVztext(($(eintrag).children().children("input[name='vztext']")[0] as HTMLInputElement).value);
+            if (schild.getVztext() == "") schild.setVztext(null);
+            schild.setLageFb(($(eintrag).children().children("select[name='lageFb']")[0] as HTMLInputElement).value);
+            schild.setLesbarkeit(($(eintrag).children().children("select[name='lesbarkeit']")[0] as HTMLInputElement).value);
+            schild.setBeleucht(($(eintrag).children().children("select[name='beleucht']")[0] as HTMLInputElement).value);
+            schild.setArt(($(eintrag).children().children("select[name='art']")[0] as HTMLInputElement).value);
+            schild.setGroesse(($(eintrag).children().children("select[name='groesse']")[0] as HTMLInputElement).value);
+            schild.setStrbezug(($(eintrag).children().children("select[name='strbezug']")[0] as HTMLInputElement).value);
+            schild.setAufstelldat(($(eintrag).children().children("input[name='aufstelldat']")[0] as HTMLInputElement).value);
+            schild.setErfart(($(eintrag).children().children("select[name='erfart']")[0] as HTMLInputElement).value);
+            schild.setQuelle(($(eintrag).children().children("select[name='quelle']")[0] as HTMLInputElement).value);
+            schild.setObjektnr(($(eintrag).children().children("input[name='objektnr']")[0] as HTMLInputElement).value);
+            if (schild.getObjektnr() == "") schild.setObjektnr(null);
+            if (schild.getObjektId().length < 10) { // undefined
                 neu.push(schild);
             } else {
-                alt[schild.objektId] = schild;
+                alt[schild.getObjektId()] = schild;
             }
         }
         console.log(this._auswahl.getZeichen());
@@ -391,65 +391,65 @@ class AvVzAdd extends Tool {
         let zeichen = this._auswahl.getZeichen();
         for (let oldZeichen_i in zeichen) {
             let oldZeichen = zeichen[oldZeichen_i] as Zeichen;
-            if (oldZeichen.objektId in alt) {
-                let modiZeichen = alt[oldZeichen.objektId] as Zeichen;
+            if (oldZeichen.getObjektId() in alt) {
+                let modiZeichen = alt[oldZeichen.getObjektId()] as Zeichen;
                 let upd = "";
-                if (oldZeichen.sort != modiZeichen.sort) {
-                    upd += '<wfs:Property>\n<wfs:Name>sort</wfs:Name>\n<wfs:Value>' + modiZeichen.sort + '</wfs:Value>\n</wfs:Property>\n';
+                if (oldZeichen.getSort() != modiZeichen.getSort()) {
+                    upd += '<wfs:Property>\n<wfs:Name>sort</wfs:Name>\n<wfs:Value>' + modiZeichen.getSort() + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update sort");
                 }
-                if (oldZeichen.stvoznr.substr(-32) != modiZeichen.stvoznr) {
-                    upd += '<wfs:Property>\n<wfs:Name>stvoznr/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.stvoznr + '</wfs:Value>\n</wfs:Property>\n';
+                if (oldZeichen.getStvoznr().substr(-32) != modiZeichen.getStvoznr()) {
+                    upd += '<wfs:Property>\n<wfs:Name>stvoznr/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getStvoznr() + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update stvoznr");
                 }
-                if (oldZeichen.vztext != modiZeichen.vztext) {
-                    upd += '<wfs:Property>\n<wfs:Name>vztext</wfs:Name>\n<wfs:Value>' + modiZeichen.vztext + '</wfs:Value>\n</wfs:Property>\n';
+                if (oldZeichen.getVztext() != modiZeichen.getVztext()) {
+                    upd += '<wfs:Property>\n<wfs:Name>vztext</wfs:Name>\n<wfs:Value>' + modiZeichen.getVztext() + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update text");
                 }
-                if (oldZeichen.lageFb == null || oldZeichen.lageFb.substr(-32) != modiZeichen.lageFb) {
-                    upd += '<wfs:Property>\n<wfs:Name>lageFb/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.lageFb + '</wfs:Value>\n</wfs:Property>\n';
+                if (oldZeichen.getLageFb() == null || oldZeichen.getLageFb().substr(-32) != modiZeichen.getLageFb()) {
+                    upd += '<wfs:Property>\n<wfs:Name>lageFb/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getLageFb() + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update lageFb");
                 }
-                if (oldZeichen.lesbarkeit == null || oldZeichen.lesbarkeit.substr(-32) != modiZeichen.lesbarkeit) {
-                    upd += '<wfs:Property>\n<wfs:Name>lesbarkeit/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.lesbarkeit + '</wfs:Value>\n</wfs:Property>\n';
+                if (oldZeichen.getLesbarkeit() == null || oldZeichen.getLesbarkeit().substr(-32) != modiZeichen.getLesbarkeit()) {
+                    upd += '<wfs:Property>\n<wfs:Name>lesbarkeit/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getLesbarkeit() + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update text");
                 }
-                if (oldZeichen.beleucht == null || oldZeichen.beleucht.substr(-32) != modiZeichen.beleucht) {
-                    upd += '<wfs:Property>\n<wfs:Name>beleucht/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.beleucht + '</wfs:Value>\n</wfs:Property>\n';
+                if (oldZeichen.getBeleucht() == null || oldZeichen.getBeleucht().substr(-32) != modiZeichen.getBeleucht()) {
+                    upd += '<wfs:Property>\n<wfs:Name>beleucht/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getBeleucht + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update beleucht");
                 }
-                if (oldZeichen.art == null || oldZeichen.art.substr(-32) != modiZeichen.art) {
-                    upd += '<wfs:Property>\n<wfs:Name>art/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.art + '</wfs:Value>\n</wfs:Property>\n';
+                if (oldZeichen.getArt() == null || oldZeichen.getArt().substr(-32) != modiZeichen.getArt()) {
+                    upd += '<wfs:Property>\n<wfs:Name>art/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getArt() + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update art");
                 }
 
-                if (oldZeichen.groesse == null || oldZeichen.groesse.substr(-32) != modiZeichen.groesse) {
-                    upd += '<wfs:Property>\n<wfs:Name>groesse/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.groesse + '</wfs:Value>\n</wfs:Property>\n';
+                if (oldZeichen.getGroesse() == null || oldZeichen.getGroesse().substr(-32) != modiZeichen.getGroesse()) {
+                    upd += '<wfs:Property>\n<wfs:Name>groesse/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getGroesse() + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update groesse");
                 }
 
-                if (oldZeichen.strbezug == null || oldZeichen.strbezug.substr(-32) != modiZeichen.strbezug) {
-                    upd += '<wfs:Property>\n<wfs:Name>strbezug/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.strbezug + '</wfs:Value>\n</wfs:Property>\n';
+                if (oldZeichen.getStrbezug() == null || oldZeichen.getStrbezug().substr(-32) != modiZeichen.getStrbezug()) {
+                    upd += '<wfs:Property>\n<wfs:Name>strbezug/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getStrbezug() + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update strbezug");
                 }
 
-                if (oldZeichen.aufstelldat != modiZeichen.aufstelldat && !(oldZeichen.aufstelldat == null && modiZeichen.aufstelldat == "")) {
-                    upd += '<wfs:Property>\n<wfs:Name>aufstelldat</wfs:Name>\n<wfs:Value>' + modiZeichen.aufstelldat + '</wfs:Value>\n</wfs:Property>\n';
+                if (oldZeichen.getAufstelldat() != modiZeichen.getAufstelldat() && !(oldZeichen.getAufstelldat() == null && modiZeichen.getAufstelldat() == "")) {
+                    upd += '<wfs:Property>\n<wfs:Name>aufstelldat</wfs:Name>\n<wfs:Value>' + modiZeichen.getAufstelldat() + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update aufstelldat");
                 }
 
-                if (oldZeichen.erfart == null || oldZeichen.erfart.substr(-32) != modiZeichen.erfart) {
-                    upd += '<wfs:Property>\n<wfs:Name>erfart/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.erfart + '</wfs:Value>\n</wfs:Property>\n';
+                if (oldZeichen.getErfart() == null || oldZeichen.getErfart().substr(-32) != modiZeichen.getErfart()) {
+                    upd += '<wfs:Property>\n<wfs:Name>erfart/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getErfart() + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update erfart");
                 }
 
-                if (oldZeichen.quelle == null || oldZeichen.quelle.substr(-32) != modiZeichen.quelle) {
-                    upd += '<wfs:Property>\n<wfs:Name>quelle/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.quelle + '</wfs:Value>\n</wfs:Property>\n';
+                if (oldZeichen.getQuelle() == null || oldZeichen.getQuelle().substr(-32) != modiZeichen.getQuelle()) {
+                    upd += '<wfs:Property>\n<wfs:Name>quelle/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getQuelle() + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update quelle");
                 }
 
-                if (oldZeichen.objektnr != modiZeichen.objektnr) {
-                    upd += '<wfs:Property>\n<wfs:Name>objektnr</wfs:Name>\n<wfs:Value>' + modiZeichen.objektnr + '</wfs:Value>\n</wfs:Property>\n';
+                if (oldZeichen.getObjektnr() != modiZeichen.getObjektnr()) {
+                    upd += '<wfs:Property>\n<wfs:Name>objektnr</wfs:Name>\n<wfs:Value>' + modiZeichen.getObjektnr() + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update objektnr");
                 }
 
@@ -460,7 +460,7 @@ class AvVzAdd extends Tool {
                         '		<ogc:And>\n' +
                         '			<ogc:PropertyIsEqualTo>\n' +
                         '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
-                        '				<ogc:Literal>' + oldZeichen.objektId + '</ogc:Literal>\n' +
+                        '				<ogc:Literal>' + oldZeichen.getObjektId() + '</ogc:Literal>\n' +
                         '			</ogc:PropertyIsEqualTo>\n' +
                         '			<ogc:PropertyIsEqualTo>\n' +
                         '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
@@ -479,7 +479,7 @@ class AvVzAdd extends Tool {
                     '		<ogc:And>\n' +
                     '			<ogc:PropertyIsEqualTo>\n' +
                     '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
-                    '				<ogc:Literal>' + oldZeichen.objektId + '</ogc:Literal>\n' +
+                    '				<ogc:Literal>' + oldZeichen.getObjektId() + '</ogc:Literal>\n' +
                     '			</ogc:PropertyIsEqualTo>\n' +
                     '			<ogc:PropertyIsEqualTo>\n' +
                     '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
@@ -492,23 +492,23 @@ class AvVzAdd extends Tool {
         }
         for (let zeichen of neu) {
             console.log("neu");
-            if (zeichen.vztext == null) zeichen.vztext = "";
+            if (zeichen.getVztext == null) zeichen.setVztext("");
             update += '<wfs:Insert>\n<Otvzeichlp>\n' +
                 '<projekt typeName="Projekt" xlink:href="#' + this._daten.ereignisraum + '"/>\n' +
-                '<sort>' + zeichen.sort + '</sort>\n' +
-                '<stvoznr xlink:href="#S' + zeichen.stvoznr + '" typeName="Itvzstvoznr" />\n' +
-                '<vztext>' + zeichen.vztext + '</vztext>\n' +
-                '<lageFb xlink:href="#S' + zeichen.lageFb + '" typeName="Itvzlagefb" />\n' +
-                '<lesbarkeit xlink:href="#S' + zeichen.lesbarkeit + '" typeName="Itvzlesbarkeit" />\n' +
-                '<beleucht xlink:href="#S' + zeichen.beleucht + '" typeName="Itvzbeleucht" />\n' +
-                '<art xlink:href="#' + zeichen.art + '" typeName="Itvzart" />\n' +
+                '<sort>' + zeichen.getSort() + '</sort>\n' +
+                '<stvoznr xlink:href="#S' + zeichen.getStvoznr() + '" typeName="Itvzstvoznr" />\n' +
+                '<vztext>' + zeichen.getVztext() + '</vztext>\n' +
+                '<lageFb xlink:href="#S' + zeichen.getLageFb() + '" typeName="Itvzlagefb" />\n' +
+                '<lesbarkeit xlink:href="#S' + zeichen.getLesbarkeit() + '" typeName="Itvzlesbarkeit" />\n' +
+                '<beleucht xlink:href="#S' + zeichen.getBeleucht() + '" typeName="Itvzbeleucht" />\n' +
+                '<art xlink:href="#' + zeichen.getArt() + '" typeName="Itvzart" />\n' +
                 '<parent typeName="Otaufstvor" xlink:href="#' + this._auswahl.fid + '"/>\n' +
-                '<groesse xlink:href="#' + zeichen.groesse + '" typeName="Itvzgroesse" />\n' +
-                '<strbezug xlink:href="#' + zeichen.strbezug + '" typeName="Itbesstrbezug" />\n' +
-                '<aufstelldat>' + zeichen.aufstelldat + '</aufstelldat>\n' +
-                ((zeichen.objektnr != null && zeichen.objektnr != '') ? ('<objektnr>' + zeichen.objektnr + '</objektnr>\n') : '') +
-                '<erfart xlink:href="#' + zeichen.erfart + '" typeName="Iterfart" />\n' +
-                '<quelle xlink:href="#' + zeichen.quelle + '" typeName="Itquelle" />\n' +
+                '<groesse xlink:href="#' + zeichen.getGroesse() + '" typeName="Itvzgroesse" />\n' +
+                '<strbezug xlink:href="#' + zeichen.getStrbezug() + '" typeName="Itbesstrbezug" />\n' +
+                '<aufstelldat>' + zeichen.getAufstelldat() + '</aufstelldat>\n' +
+                ((zeichen.getObjektnr() != null && zeichen.getObjektnr() != '') ? ('<objektnr>' + zeichen.getObjektnr() + '</objektnr>\n') : '') +
+                '<erfart xlink:href="#' + zeichen.getErfart() + '" typeName="Iterfart" />\n' +
+                '<quelle xlink:href="#' + zeichen.getQuelle() + '" typeName="Itquelle" />\n' +
                 '<ADatum>' + new Date().toISOString().slice(0, 10) + '</ADatum>\n' +
                 '</Otvzeichlp>\n</wfs:Insert>';
 

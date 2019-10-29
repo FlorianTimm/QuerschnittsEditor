@@ -281,3 +281,7 @@ span.hotkey_alt {
     text-decoration: underline;
     text-decoration-color: red;
 }
+
+div.chosen-disabled {
+    opacity: 0.7 !important;
+}

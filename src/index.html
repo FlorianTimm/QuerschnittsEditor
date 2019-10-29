@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="de">
-  <head>
-    <meta charset="UTF-8">
+
+<head>
+	<meta charset="UTF-8">
 	<title>QuerschnittEdit</title>
 	<meta name="description" content="">
 	<meta name="robots" content="index, follow">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="icon" href="data:;base64,iVBORw0KGgo=">
 	<link href="css/index.css" rel="stylesheet">
-  </head>
-  <body>
-	<form method="POST" action="./jsp/login.jsp">
+</head>
+
+<body>
+	<form method="POST" action="./jsp/login.jsp" name="login">
 		<!--[if IE]>
   		<div style="background-color: red; color: black; padding: 5px; border: 2px solid yellow;">
 				<p style="font-weight: bold;">ACHTUNG</p>
@@ -20,11 +22,14 @@
 			</div><br />
 		<![endif]-->
 		Login (Zugangsdaten WFS)<br /><br />
+		<div style="color: red" id="login_fehler"></div>
 		<label for="user">Benutzer</label><input id="user" type="text" name="user" /><br />
 		<label for="passwort">Passwort</label><input id="passwort" type="password" name="password" /><br />
 		<input type="submit" value="Login" />
 	</form>
 
 	<h1><img src="img/title_blur.png" alt="LGV-QuerschnittsEditor" /></h1>
-  </body>
+	<script src="js/index.ts"></script>
+</body>
+
 </html>

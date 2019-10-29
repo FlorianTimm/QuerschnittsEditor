@@ -1,7 +1,7 @@
 /**
  * Startscript ereignisraum.html
  * @author Florian Timm, LGV HH 
- * @version 2019.06.06
+ * @version 2019.10.29
  * @copyright MIT
  */
 
@@ -89,7 +89,7 @@ function readER(xml: Document) {
     } else {
         let option = document.createElement("option");
         option.id = "platzhalter";
-        option.textContent = "Keine Ereignisr&auml;ume vorhanden!";
+        option.textContent = "Keine Ereignisräume vorhanden!";
         select.innerHTML = ""
         select.appendChild(option);
     }

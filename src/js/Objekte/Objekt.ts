@@ -4,35 +4,37 @@ import { Feature } from "ol";
 /**
  * Interface für SIB-Objekte
  * @author Florian Timm, LGV HH 
- * @version 2019.08.22
+ * @version 2019.10.29
  * @copyright MIT
  */
 
 var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
 
 export default abstract class Objekt extends Feature {
-	public abschnittOderAst: string = null;
-	public vst: number = null;
-	public bst: number = null;
-	public kherk: string = null;
-	public baujahrGew: string = null;
-	public abnahmeGew: string = null;
-	public dauerGew: string = null;
-	public ablaufGew: string = null;
-	public objektId: string = null;
-	public objektnr: string = null;
-	public erfart: string = null;
-	public quelle: string = null;
-	public ADatum: string = null;
-	public bemerkung: string = null;
-	public bearbeiter: string = null;
-	public behoerde: string = null;
-	public stand: string = null;
-	public fid: string = null;
-	public inER: {} = {};
-	public abschnitt: Abschnitt = null;
-	public projekt: string = null;
-	public abschnittId: string = null;
+	protected abschnittOderAst: string = null;
+	protected vst: number = null;
+	protected bst: number = null;
+	protected kherk: string = null;
+	protected baujahrGew: string = null;
+	protected abnahmeGew: string = null;
+	protected dauerGew: string = null;
+	protected ablaufGew: string = null;
+	protected objektId: string = null;
+	protected objektnr: string = null;
+	protected erfart: string = null;
+	protected quelle: string = null;
+	protected ADatum: string = null;
+	protected bemerkung: string = null;
+	protected bearbeiter: string = null;
+	protected behoerde: string = null;
+	protected stand: string = null;
+	protected fid: string = null;
+	protected inER: {} = {};
+	protected abschnitt: Abschnitt = null;
+	protected projekt: string = null;
+	protected abschnittId: string = null;
+
+    abstract getObjektKlassenName(): string;
 
 	constructor() {
 		super({ geom: null });
@@ -55,5 +57,104 @@ export default abstract class Objekt extends Feature {
 		}
 	}
 
+	protected createUpdateXML(updates: {}): string {
+        let xml = '<wfs:Update typeName="' + this.getObjektKlassenName() + '">\n'
+        for (let update in updates) {
+            xml += '	<wfs:Property>\n' +
+                '		<wfs:Name>' + update + '</wfs:Name>\n' +
+                '		<wfs:Value>' + updates[update] + '</wfs:Value>\n' +
+                '	</wfs:Property>\n';
+        }
+        xml += '	<ogc:Filter>\n' +
+            '		<ogc:And>\n' +
+            '			<ogc:PropertyIsEqualTo>\n' +
+            '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
+            '				<ogc:Literal>' + this.objektId + '</ogc:Literal>\n' +
+            '			</ogc:PropertyIsEqualTo>\n' +
+            '			<ogc:PropertyIsEqualTo>\n' +
+            '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
+            '				<ogc:Literal>' + this.projekt + '</ogc:Literal>\n' +
+            '			</ogc:PropertyIsEqualTo>\n' +
+            '		</ogc:And>\n' +
+            '	</ogc:Filter>\n' +
+            '</wfs:Update>';
+        return xml;
+    }
+
+
+	// Getter
+
+	public getProjekt(): string {
+		return this.projekt;
+	}
+
+	public getAbschnitt(): Abschnitt {
+		return this.abschnitt;
+	}
+
+	public getAbschnittId(): string {
+		return this.abschnittId;
+	}
+
+	public getFid(): string {
+		return this.fid;
+	}
+
+	public getObjektId(): string {
+		return this.objektId;
+	}
+
+	public getVst() {
+		return this.vst;
+	}
+
+	public getBst() {
+		return this.bst;
+	}
+
+	public getObjektnr(): string {
+		return this.objektnr;
+	}
+
+	public getErfart(): string {
+		return this.erfart;
+	}
+
+	public getQuelle(): string {
+		return this.quelle;
+	}
+
+	// Setter
+	public setProjekt(projekt: string) {
+		this.projekt = projekt;
+	}
+
+	public setAbschnittId(abschnittId: string) {
+		this.abschnittId = abschnittId;
+	}
+
+	public setVst(vst: number) {
+		this.vst = vst;
+	}
+
+	public setBst(bst: number) {
+		this.bst = bst;
+	}
+
+	public setErfart(erfart: string) {
+		this.erfart = erfart;
+	}
+
+	public setObjektId(objektId: string) {
+		this.objektId = objektId;
+	}
+
+	public setQuelle(quelle: string) {
+		this.quelle = quelle;
+	}
+
+	public setObjektnr(objektnr: string) {
+		this.objektnr = objektnr;
+	}
 
 }

@@ -11,7 +11,7 @@ import Tool from '../prototypes/Tool';
 /**
  * Querschnittsflächen zu Ereignisraum hinzufügen
  * @author Florian Timm, LGV HH 
- * @version 2019.06.06
+ * @version 2019.10.29
  * @copyright MIT
  */
 class QuerAdd2ER extends Tool {
@@ -24,7 +24,7 @@ class QuerAdd2ER extends Tool {
         this.daten = daten;
         this.map = map;
         this.select = new SelectInteraction({
-            layers: [this.daten.l_achse],
+            layers: [this.daten.layerAchse],
             hitTolerance: 10,
             style: new Style({
                 stroke: new Stroke({
@@ -45,16 +45,16 @@ class QuerAdd2ER extends Tool {
         if (this.select.getFeatures().getArray().length == 0) return;
 
         let abschnitt = this.select.getFeatures().getArray()[0] as Abschnitt;
-        if ("Querschnitt" in abschnitt.inER && abschnitt.inER["Querschnitt"]) return;
+        if (abschnitt.isOKinER("Querschnitt")) return;
         document.body.style.cursor = 'wait'
         PublicWFS.addInER(abschnitt as Abschnitt, "Querschnitt", this.daten.ereignisraum_nr, this._onSelect_Callback.bind(this), undefined, abschnitt);
     }
 
     _onSelect_Callback(xml: Document, abschnitt: Abschnitt) {
-        abschnitt.inER["Querschnitt"] = true;
+        abschnitt.addOKinER("Querschnitt");
         Querschnittsdaten.loadAbschnittER(abschnitt, PublicWFS.showMessage, "Erfolgreich in ER kopiert");
         this.select.getFeatures().clear();
-        Daten.getInstanz().l_achse.changed();
+        Daten.getInstanz().layerAchse.changed();
     }
 
     start() {

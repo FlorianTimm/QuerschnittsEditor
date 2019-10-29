@@ -1,7 +1,7 @@
 /**
  * Aufstellvorrichtung
  * @author Florian Timm, LGV HH 
- * @version 2019.09.19
+ * @version 2019.10.29
  * @copyright MIT
  */
 import "../import_jquery.js";
@@ -10,7 +10,6 @@ import 'chosen-js/chosen.css';
 import { Point } from 'ol/geom';
 import Daten from "../Daten";
 import PublicWFS from '../PublicWFS';
-import { InfoToolSelectable } from '../Tools/InfoTool';
 import Abschnitt from './Abschnitt';
 import Klartext from './Klartext';
 import Objekt from './Objekt';
@@ -18,17 +17,11 @@ import PunktObjekt from './PunktObjekt';
 import Zeichen from './Zeichen';
 import HTML from "../HTML";
 
-export default class Aufstellvorrichtung extends PunktObjekt implements InfoToolSelectable, Objekt {
+export default class Aufstellvorrichtung extends PunktObjekt {
     private daten: Daten;
     private zeichen: Zeichen[] = null;
-
-    public labstbaVst: number;
-    public rabstbaVst: number;
-    public hasSekObj: number;
-    public vabstVst: number;
-    public vabstBst: number;
-    public art: string;
-    public rlageVst: string;
+    private hasSekObj: number;
+    private art: string;
 
     constructor() {
         super();
@@ -54,37 +47,36 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         return 'black';
     }
 
-    private _vz_addHTML(zeichen: any, ziel: HTMLElement) {
+    getObjektKlassenName(): string {
+        return "Otaufstvor";
+    }
+
+    private vzAddHTML(zeichen: Zeichen[], ziel: HTMLElement) {
         let div = document.createElement('div');
         div.style.marginTop = '5px';
         for (let eintrag of zeichen) {
             let img = document.createElement("img");
             img.style.height = "30px";
-            img.src = "http://gv-srv-w00118:8080/schilder/" + Klartext.getInstanz().get("Itvzstvoznr", eintrag.stvoznr)['kt'] + ".svg";
-            img.title = Klartext.getInstanz().get("Itvzstvoznr", eintrag.stvoznr)['beschreib'] + ((eintrag.vztext != null) ? ("\n" + eintrag.vztext) : (''))
+            img.src = "http://gv-srv-w00118:8080/schilder/" + Klartext.getInstanz().get("Itvzstvoznr", eintrag.getStvoznr())['kt'] + ".svg";
+            img.title = Klartext.getInstanz().get("Itvzstvoznr", eintrag.getStvoznr())['beschreib'] + ((eintrag.getVztext() != null) ? ("\n" + eintrag.getVztext()) : (''))
             div.appendChild(img);
         }
         ziel.appendChild(div);
     }
 
-    /**
-     * 
-     * @param {*} ereignisraum 
-     * @param {*} daten 
-     */
     public static loadER(callback?: (...args: any) => void, ...args: any) {
         let daten = Daten.getInstanz();
         PublicWFS.doQuery('Otaufstvor', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Aufstellvorrichtung.loadER_Callback, undefined, callback, ...args);
+            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Aufstellvorrichtung.loadERCallback, undefined, callback, ...args);
 
     }
 
-    public static loadER_Callback(xml: XMLDocument, callback?: (...args: any) => void, ...args: any) {
+    public static loadERCallback(xml: XMLDocument, callback?: (...args: any) => void, ...args: any) {
         let aufstell = xml.getElementsByTagName("Otaufstvor");
         for (let i = 0; i < aufstell.length; i++) {
             let f = Aufstellvorrichtung.fromXML(aufstell[i]);
-            Daten.getInstanz().l_aufstell.getSource().addFeature(f);
+            Daten.getInstanz().layerAufstell.getSource().addFeature(f);
         }
         if (callback != undefined)
             callback(...args);
@@ -100,7 +92,7 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         document.body.style.cursor = 'wait';
         PublicWFS.doQuery('Otaufstvor', '<Filter>' +
             '<And><PropertyIsEqualTo><PropertyName>abschnittId</PropertyName>' +
-            '<Literal>' + abschnitt.abschnittid + '</Literal></PropertyIsEqualTo><PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
+            '<Literal>' + abschnitt.getAbschnittid() + '</Literal></PropertyIsEqualTo><PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
             '<Literal>' + Daten.getInstanz().ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>', Aufstellvorrichtung._loadAbschnittER_Callback, undefined, callback, ...args);
     }
 
@@ -109,69 +101,19 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         let aufstell = xml.getElementsByTagName("Otaufstvor");
         for (let i = 0; i < aufstell.length; i++) {
             let f = Aufstellvorrichtung.fromXML(aufstell[i]);
-            Daten.getInstanz().l_aufstell.getSource().addFeature(f);
+            Daten.getInstanz().layerAufstell.getSource().addFeature(f);
         }
         callback(...args);
         document.body.style.cursor = '';
     }
 
     public static fromXML(xml: Element) {
-        let daten = Daten.getInstanz();
         let r = new Aufstellvorrichtung();
         r.setDataFromXML("AUFSTELL", xml);
-
-        let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(',');
-        r.setGeometry(new Point([parseFloat(koords[0]), parseFloat(koords[1])]));
-        r.abschnitt = daten.getAbschnitt(r.abschnittId);
-        r.abschnitt.inER['Otaufstvor'] = true;
-        daten.l_achse.changed();
         return r;
     }
 
-    public updateStation(station: number, abstand: number) {
-        this.vabstVst = Math.round(abstand * 10) / 10;
-        this.vabstBst = this.vabstVst;
-        this.rabstbaVst = this.vabstVst;
-        this.vst = Math.round(station);
-        this.bst = this.vst;
-        let xml = '<wfs:Update typeName="Otaufstvor">\n' +
-            '	<wfs:Property>\n' +
-            '		<wfs:Name>vabstVst</wfs:Name>\n' +
-            '		<wfs:Value>' + this.vabstVst + '</wfs:Value>\n' +
-            '	</wfs:Property>\n' +
-            '	<wfs:Property>\n' +
-            '		<wfs:Name>vabstBst</wfs:Name>\n' +
-            '		<wfs:Value>' + this.vabstBst + '</wfs:Value>\n' +
-            '	</wfs:Property>\n' +
-            '	<wfs:Property>\n' +
-            '		<wfs:Name>rabstbaVst</wfs:Name>\n' +
-            '		<wfs:Value>' + this.rabstbaVst + '</wfs:Value>\n' +
-            '	</wfs:Property>\n' +
-            '	<wfs:Property>\n' +
-            '		<wfs:Name>vst</wfs:Name>\n' +
-            '		<wfs:Value>' + this.vst + '</wfs:Value>\n' +
-            '	</wfs:Property>\n' +
-            '	<wfs:Property>\n' +
-            '		<wfs:Name>bst</wfs:Name>\n' +
-            '		<wfs:Value>' + this.bst + '</wfs:Value>\n' +
-            '	</wfs:Property>\n' +
-            '	<ogc:Filter>\n' +
-            '		<ogc:And>\n' +
-            '			<ogc:PropertyIsEqualTo>\n' +
-            '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
-            '				<ogc:Literal>' + this.objektId + '</ogc:Literal>\n' +
-            '			</ogc:PropertyIsEqualTo>\n' +
-            '			<ogc:PropertyIsEqualTo>\n' +
-            '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
-            '				<ogc:Literal>' + this.projekt + '</ogc:Literal>\n' +
-            '			</ogc:PropertyIsEqualTo>\n' +
-            '		</ogc:And>\n' +
-            '	</ogc:Filter>\n' +
-            '</wfs:Update>';
-        PublicWFS.doTransaction(xml);
-    }
-
-    public getZeichen(callback: (...args: any[]) => void, ...args: any[]) {
+    public getZeichen(callback?: (zeichen: Zeichen[], ...args: any[]) => void, ...args: any[]): void | Zeichen[] {
         if (this.zeichen == null && this.hasSekObj > 0) {
             this.reloadZeichen(callback, ...args);
         } else if (this.hasSekObj > 0) {
@@ -189,10 +131,10 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
             '    <PropertyName>parent/@xlink:href</PropertyName>\n' +
             '    <Literal>' + this.fid + '</Literal>\n' +
             '  </PropertyIsEqualTo>\n' +
-            '</Filter>', this._parseZeichen.bind(this), undefined, callback, ...args);
+            '</Filter>', this.parseZeichen.bind(this), undefined, callback, ...args);
     }
 
-    private _parseZeichen(xml: XMLDocument, callback: (...args: any[]) => void, ...args: any[]) {
+    private parseZeichen(xml: XMLDocument, callback: (...args: any[]) => void, ...args: any[]) {
         let zeichen: Zeichen[] = [];
         let zeichenXML = xml.getElementsByTagName('Otvzeichlp');
 
@@ -208,10 +150,6 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         }
     }
 
-    createForm(formId: string) {
-        return Aufstellvorrichtung.createForm(formId, this);
-    }
-
     public static createForm(formId: string, aufstell?: Aufstellvorrichtung, changeable: boolean = false): HTMLFormElement {
         let sidebar = document.getElementById("sidebar");
         let form = document.createElement("form");
@@ -225,18 +163,18 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
     }
 
     private static createFields(form: HTMLFormElement, formId: string, aufstell?: Aufstellvorrichtung, changeable: boolean = false) {
-        let art = Klartext.createKlartextSelectForm("Itvzart", form, "Art", formId + "_art", aufstell != undefined ? aufstell.art : undefined);
-        art.disabled = !changeable;
+        let art = Klartext.createKlartextSelectForm("Itaufstvorart", form, "Art", formId + "_art", aufstell != undefined ? aufstell.art : undefined);
+        $(art).prop('disabled', !changeable).trigger("chosen:updated");
         form.appendChild(document.createElement("br"));
 
         // Lage
         let lage = Klartext.createKlartextSelectForm("Itallglage", form, "Lage", formId + "_lage", aufstell != undefined ? aufstell.rlageVst : undefined);
-        lage.disabled = !changeable;
+        $(lage).prop('disabled', !changeable).trigger("chosen:updated");
         form.appendChild(document.createElement("br"));
 
         // Quelle
         let quelle = Klartext.createKlartextSelectForm("Itquelle", form, "Quelle", formId + "_quelle", aufstell != undefined ? aufstell.quelle : undefined);
-        quelle.disabled = !changeable;
+        $(quelle).prop('disabled', !changeable).trigger("chosen:updated");
         form.appendChild(document.createElement("br"));
 
         // ext: Objektid
@@ -245,12 +183,12 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         form.appendChild(document.createElement("br"));
 
         // VNK
-        let vnk = HTML.createTextInput(form, "VNK", formId + "_vnk", aufstell != undefined ? aufstell.abschnitt.vnk : undefined);
+        let vnk = HTML.createTextInput(form, "VNK", formId + "_vnk", aufstell != undefined ? aufstell.getAbschnitt().getVnk() : undefined);
         vnk.disabled = true;
         form.appendChild(document.createElement("br"));
 
         // NNK
-        let nnk = HTML.createTextInput(form, "NNK", formId + "_nnk", aufstell != undefined ? aufstell.abschnitt.nnk : undefined);
+        let nnk = HTML.createTextInput(form, "NNK", formId + "_nnk", aufstell != undefined ? aufstell.getAbschnitt().getNnk() : undefined);
         nnk.disabled = true;
         form.appendChild(document.createElement("br"));
 
@@ -280,51 +218,56 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
             input.disabled = true;
             form.appendChild(input);
         }
+
+        if (aufstell != undefined) {
+            let schilder = document.createElement("div");
+            schilder.style.marginTop = "10px";
+            form.appendChild(schilder);
+            aufstell.getZeichen(aufstell.vzAddHTML.bind(aufstell), schilder);
+        }
     }
 
     public getHTMLInfo(ziel: HTMLFormElement, changeable: boolean = false): void {
         Aufstellvorrichtung.createFields(ziel, "av_info", this, changeable);
+    }
 
+    public changeAttributes(form: HTMLFormElement): void {
+        console.log(this)
+        console.log($(form).children("#av_info_art"))
+        this.setArt($(form).children("#av_info_art").children("option:selected").val() as string);
+        this.setRlageVst($(form).children("#av_info_lage").children("option:selected").val() as string);
+        this.setQuelle($(form).children("#av_info_quelle").children("option:selected").val() as string);
+        this.setObjektnr($(form).children("#av_info_extid").val() as string);
 
-        /*let kt = Klartext.getInstanz();
-        let r = "<table>";
+        console.log(this)
 
-        r += "<tr><td>VNK</td><td>" + this.abschnitt.vnk + "</td></tr>";
-        r += "<tr><td>NNK</td><td>" + this.abschnitt.nnk + "</td></tr>";
-        r += "<tr><td>VST</td><td>" + this.vst + "</td></tr>";
-        if (this.labstbaVst == null) {
-            r += "<tr><td>Abstand:</td><td>"
-        } else {
-            r += "<tr><td>Abst.&nbsp;re.</td><td>"
-        }
+        let xml = this.createUpdateXML({
+            'art/@xlink:href': this.getArt(),
+            'rlageVst/@xlink:href': this.getRlageVst(),
+            'quelle/@xlink:href': this.getQuelle(),
+            'objektnr': this.getObjektnr(),
+        });
+        PublicWFS.doTransaction(xml);
+    }
 
-        if (this.rabstbaVst >= 0.01) r += "R";
-        else if (this.rabstbaVst <= 0.01) r += "L";
-        else r += "M";
-        r += " " + Math.abs(this.rabstbaVst) + '</td></tr>';
-        console.log(this.labstbaVst);
-        if (this.labstbaVst != null) {
-            r += "<tr><td>Abst.&nbsp;li.</td><td>"
-            if (this.labstbaVst >= 0.01) r += "R";
-            else if (this.labstbaVst <= 0.01) r += "L";
-            else r += "M";
-            r += " " + Math.abs(this.labstbaVst) + '</td></tr>';
-        }
+    // Getter
+    public getArt() {
+        return this.art;
+    }
 
-        r += "<tr><td>Art</td><td>" + kt.get('Itaufstvorart', this.art).beschreib + "</td></tr>";
-        if (this.objektnr != null && this.objektnr != "") {
-            r += "<tr><td>ext. Nr.</td><td>" + this.objektnr + "</td></tr>";
-        }
-        r += "<tr><td>Lage</td><td>" + kt.get('Itallglage', this.rlageVst).beschreib + "</td></tr>";
-        r += "<tr><td>Schilder</td><td>" + this.hasSekObj + "</td></tr>";
-        r += "<tr><td>Quelle</td><td>" + ((this.quelle != null) ? (kt.get("Itquelle", this.quelle).beschreib) : '') + "</td></tr>";
-        r += "</table>"
+    public getRlageVst() {
+        return this.rlageVst;
+    }
 
-        if (ziel != undefined) {
-            ziel.innerHTML = r;
-            this.getZeichen(this._vz_addHTML.bind(this), ziel)
-        }*/
+    // Setter
+    public setArt(art: string) {
+        this.art = art;
+    }
+
+    public setRlageVst(rlageVst: string) {
+        this.rlageVst = rlageVst;
     }
 
 
-}
+};
+

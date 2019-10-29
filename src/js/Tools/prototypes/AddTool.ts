@@ -112,7 +112,7 @@ export default abstract class AddTool extends Tool {
 
     private createAchsSelect() {
         this.select = new SelectInteraction({
-            layers: [Daten.getInstanz().l_achse],
+            layers: [Daten.getInstanz().layerAchse],
             style: new Style({
                 stroke: new Stroke({
                     color: 'rgba(0, 50, 255, 0.5)',
@@ -127,7 +127,7 @@ export default abstract class AddTool extends Tool {
         if (this.select.getFeatures().getArray().length > 0) {
             achse = this.select.getFeatures().item(0);
         } else {
-            achse = Daten.getInstanz().v_achse.getClosestFeatureToCoordinate(event.coordinate);
+            achse = Daten.getInstanz().vectorAchse.getClosestFeatureToCoordinate(event.coordinate);
         }
 
         if (achse == null) {

@@ -1,7 +1,7 @@
 /**
  * Startscript edit.html
  * @author Florian Timm, LGV HH 
- * @version 2019.06.06
+ * @version 2019.10.29
  * @copyright MIT
  */
 
@@ -73,18 +73,18 @@ window.addEventListener('load', function () {
     partTool = new QuerPartTool(map, daten, infoTool);
     qsAdd2ER = new QuerAdd2ER(map, daten);
 
-    vsInfoTool = new InfoTool(map, daten.l_aufstell, "sidebar");
+    vsInfoTool = new InfoTool(map, daten.layerAufstell, "sidebar");
     avAdd = new AvAdd(map);
     vzAdd = new AvVzAdd(map);
-    avMove = new MoveTool(map, vsInfoTool, daten.l_aufstell);
+    avMove = new MoveTool(map, vsInfoTool, daten.layerAufstell);
     avAdd2ER = new AvAdd2ER(map, daten);
-    avDel = new DeleteTool(map, daten.l_aufstell, "sidebar", "Otaufstvor");
+    avDel = new DeleteTool(map, daten.layerAufstell, "sidebar", "Otaufstvor");
 
-    sapInfoTool = new InfoTool(map, daten.l_straus, "sidebar");
+    sapInfoTool = new InfoTool(map, daten.layerStraus, "sidebar");
     sapAdd = new SAPAdd(map);
-    sapMove = new MoveTool(map, vsInfoTool, daten.l_straus);
+    sapMove = new MoveTool(map, vsInfoTool, daten.layerStraus);
     sapAdd2ER = new SAPAdd2ER(map);
-    sapDel = new DeleteTool(map, daten.l_straus, "sidebar", "Otstrauspkt");
+    sapDel = new DeleteTool(map, daten.layerStraus, "sidebar", "Otstrauspkt");
 
     measure = new Measure(map);
 
@@ -398,7 +398,7 @@ function openTab(evt: MouseEvent) {
     (evt.currentTarget as HTMLElement).className += " active";
     document.getElementById(tabName).getElementsByTagName('input')[0].click();
     Daten.getInstanz().modus = (evt.currentTarget as HTMLElement).dataset.tab.replace("tab_", "")
-    Daten.getInstanz().l_achse.changed();
+    Daten.getInstanz().layerAchse.changed();
 }
 
 window.addEventListener('load', function () {
@@ -416,10 +416,11 @@ window.addEventListener('load', function () {
 document.onkeyup = function (e: KeyboardEvent) {
     if ($(e.target).closest("input")[0]) {
         return;
-    }
-    
+    }  
     console.log(e.code);
     console.log(Daten.getInstanz().modus);
+    
+
     let modus = Daten.getInstanz().modus;
 
     if (modus == "Otaufstvor") {

@@ -4,35 +4,38 @@ import { Layer } from 'ol/layer';
 import Tool from './prototypes/Tool';
 import { SelectEvent } from 'ol/interaction/Select';
 import { Feature } from 'ol';
+import "../import_jquery.js";
 
 /**
  * Funktion zum Anzeigen von Informationen zu Aufstellvorrichtungen und Schildern
  * @author Florian Timm, LGV HH 
- * @version 2019.05.20
+ * @version 2019.10.29
  * @copyright MIT
  */
+
 export default class InfoTool extends Tool {
-    _map: Map;
-    _layer: Layer;
-    _sidebar: HTMLElement;
-    _infoField: HTMLFormElement;
-    _select: SelectInteraction;
+    private map: Map;
+    private layer: Layer;
+    private sidebar: HTMLElement;
+    private infoField: HTMLFormElement;
+    private select: SelectInteraction;
+    private auswahl: Feature;
 
     constructor(map: Map, layer: Layer, sidebar: string) {
         super();
-        this._map = map;
-        this._layer = layer;
-        this._sidebar = document.getElementById(sidebar);
+        this.map = map;
+        this.layer = layer;
+        this.sidebar = document.getElementById(sidebar);
 
-        this._infoField = document.createElement("form");
-        this._sidebar.appendChild(this._infoField);
-        this._infoField.style.display = "none";
+        this.infoField = document.createElement("form");
+        this.sidebar.appendChild(this.infoField);
+        this.infoField.style.display = "none";
 
-        this._select = new SelectInteraction({
-            layers: [this._layer],
+        this.select = new SelectInteraction({
+            layers: [this.layer],
             hitTolerance: 10
         });
-        this._select.on('select', this.featureSelected.bind(this))
+        this.select.on('select', this.featureSelected.bind(this))
     }
 
     /**
@@ -41,26 +44,37 @@ export default class InfoTool extends Tool {
      */
     featureSelected(event: SelectEvent, changeable: boolean = false) {
         if (event.selected.length == 0) {
-            this._infoField.style.display = "none";
+            this.infoField.style.display = "none";
             return;
         }
-        this._infoField.style.display = "block";
-        let auswahl = event.selected[0];
-        this._infoField.innerHTML = "";
-        (auswahl as InfoToolSelectable).getHTMLInfo(this._infoField, changeable);
+        
+        this.infoField.style.display = "block";
+        this.auswahl = event.selected[0];
+        this.infoField.innerHTML = "";
+        console.log(this.auswahl);
+        (this.auswahl as InfoToolSelectable).getHTMLInfo(this.infoField, changeable);
+
+        if (changeable) {
+            let button = $(this.infoField).children("input[type=button]");
+            button.prop("disabled", false)
+            button.on("click", function () {
+                (this.auswahl as InfoToolSelectable).changeAttributes(this.infoField);
+            }.bind(this));
+        }
     }
 
     start() {
-        this._map.addInteraction(this._select);
+        this.map.addInteraction(this.select);
     }
 
     stop() {
-        this._map.removeInteraction(this._select);
-        this._infoField.style.display = "none";
+        this.map.removeInteraction(this.select);
+        this.infoField.style.display = "none";
     }
 
 }
 
 export interface InfoToolSelectable extends Feature {
     getHTMLInfo: (sidebar: HTMLElement, changeable?: boolean) => void;
+    changeAttributes: (form: HTMLFormElement) => void;
 }

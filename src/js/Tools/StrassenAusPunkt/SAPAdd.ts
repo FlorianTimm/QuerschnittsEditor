@@ -11,15 +11,16 @@ var CONFIG = require('../../config.json');
 /**
  * Funktion zum Hinzufügen von Straßenausstattung (punktuell)
  * @author Florian Timm, LGV HH 
- * @version 2019.09.20
+ * @version 2019.10.29
  * @copyright MIT
  */
 
 export default class SAPAdd extends AddTool {
-    form: HTMLFormElement;
+    private form: HTMLFormElement;
+
     constructor(map: Map) {
         super(map);
-        this.form = StrassenAusPunkt.createForm("sapadd");
+        this.form = StrassenAusPunkt.createForm("sapadd", undefined, true);
         document.getElementById('sapadd_button').addEventListener('click', this.addAufstellButton.bind(this));
     }
 
@@ -50,7 +51,7 @@ export default class SAPAdd extends AddTool {
 
     private addAufstellButton() {
         // im ER?
-        if (!("Otstrauspkt" in this.abschnitt.inER)) {
+        if (!(this.abschnitt.isOKinER("Otstrauspkt"))) {
             PublicWFS.addInER(this.abschnitt, "Otstrauspkt", Daten.getInstanz().ereignisraum_nr, this.addInER_Callback.bind(this));
         } else {
             this.wfsAddStrausPkt()
@@ -65,7 +66,7 @@ export default class SAPAdd extends AddTool {
         let soap = '<wfs:Insert>\n' +
             '<Otstrauspkt>\n' +
             '<projekt xlink:href="#' + Daten.getInstanz().ereignisraum + '" typeName="Projekt" />\n' +
-            '<abschnittId>' + this.abschnitt.abschnittid + '</abschnittId>\n' +
+            '<abschnittId>' + this.abschnitt.getAbschnittid() + '</abschnittId>\n' +
             '<vst>' + this.station + '</vst>\n' +
             '<bst>' + this.station + '</bst>\n' +
             '<rabstbaVst>' + this.abstand + '</rabstbaVst>\n' +
@@ -79,7 +80,6 @@ export default class SAPAdd extends AddTool {
             '<art xlink:href="#S' + document.forms.namedItem("sapadd").sapadd_art.value + '" typeName="Itstrauspktart" />\n' +
             '<quelle xlink:href="#S' + document.forms.namedItem("sapadd").sapadd_quelle.value + '" typeName="Itquelle" />\n' +
             '</Otstrauspkt> </wfs:Insert>';
-        //console.log(soap)
         PublicWFS.doTransaction(soap, this.getInsertResults.bind(this));
     }
 

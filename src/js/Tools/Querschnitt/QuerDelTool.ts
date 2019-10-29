@@ -10,7 +10,7 @@ import Querschnitt from "src/js/Objekte/Querschnittsdaten";
 /**
  * Funktion zum Löschen von Querschnitten
  * @author Florian Timm, LGV HH 
- * @version 2019.05.20
+ * @version 2019.10.29
  * @copyright MIT
  */
 class QuerDelTool extends Tool {
@@ -38,34 +38,34 @@ class QuerDelTool extends Tool {
         if (!("Wollen Sie die Fläche wirklich löschen?")) return;
 
         let querschnitt = <Querschnitt>selection.item(0).get('objekt');
-        let gesStreifen = querschnitt.station.getStreifen(querschnitt.streifen);
-        querschnitt.station.deleteStreifen(querschnitt.streifen, querschnitt.streifennr)
+        let gesStreifen = querschnitt.getStation().getStreifen(querschnitt.getStreifen());
+        querschnitt.getStation().deleteStreifen(querschnitt.getStreifen(), querschnitt.getStreifennr())
         for (let nr in gesStreifen) {
             let quer = gesStreifen[nr];
-            quer.streifennr = quer.streifennr - 1;
-            if (quer.streifen == 'L') {
-                quer.XBstR += querschnitt.bisBreite / 100;
-                quer.XVstR += querschnitt.breite / 100;
-                quer.XBstL += querschnitt.bisBreite / 100;
-                quer.XVstL += querschnitt.breite / 100;
-            } else if (quer.streifen == 'R') {
-                quer.XBstL -= querschnitt.bisBreite / 100;
-                quer.XVstL -= querschnitt.breite / 100;
-                quer.XBstR -= querschnitt.bisBreite / 100;
-                quer.XVstR -= querschnitt.breite / 100;
+            quer.setStreifennr(quer.getStreifennr() - 1);
+            if (quer.getStreifen() == 'L') {
+                quer.setXBstR(quer.getXBstR() + querschnitt.getBisBreite() / 100);
+                quer.setXVstR(quer.getXVstR() + querschnitt.getBreite() / 100);
+                quer.setXBstL(quer.getXBstL() + querschnitt.getBisBreite() / 100);
+                quer.setXVstL(quer.getXVstL() + querschnitt.getBreite() / 100);
+            } else if (quer.getStreifen() == 'R') {
+                quer.setXBstL(quer.getXBstL() - querschnitt.getBisBreite() / 100);
+                quer.setXVstL(quer.getXVstL() - querschnitt.getBreite() / 100);
+                quer.setXBstR(quer.getXBstR() - querschnitt.getBisBreite() / 100);
+                quer.setXVstR(quer.getXVstR() - querschnitt.getBreite() / 100);
             }
-            //querschnitt.station.addQuerschnitt(quer);
+            //querschnitt.getStation().addQuerschnitt(quer);
         }
 
         this.select.getFeatures().clear();
         this.select_fl.getFeatures().clear();
-        querschnitt.station.rewrite();
+        querschnitt.getStation().rewrite();
 
     }
 
     private createLinienSelect() {
         this.select = new SelectInteraction({
-            layers: [this.daten.l_trenn],
+            layers: [this.daten.layerTrenn],
             toggleCondition: never,
             style: new Style({
                 stroke: new Stroke({
@@ -83,7 +83,7 @@ class QuerDelTool extends Tool {
 
     private createFlaechenSelect() {
         this.select_fl = new SelectInteraction({
-            layers: [this.daten.l_quer],
+            layers: [this.daten.layerQuer],
             toggleCondition: never,
             style: new Style({
                 fill: new Fill({

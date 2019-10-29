@@ -5,11 +5,12 @@ import Tool from '../prototypes/Tool';
 import { Map } from 'ol';
 import Daten from '../../Daten';
 import { SelectEvent } from 'ol/interaction/Select';
+import Querschnitt from 'src/js/Objekte/Querschnittsdaten';
 
 /**
  * Funktion zum Anzeigen von Informationen über Aufstellvorrichtungen
  * @author Florian Timm, LGV HH 
- * @version 2019.05.20
+ * @version 2019.10.29
  * @copyright MIT
  */
 class QuerInfoTool extends Tool {
@@ -24,7 +25,7 @@ class QuerInfoTool extends Tool {
         this.daten = daten;
 
         this.select = new SelectInteraction({
-            layers: [this.daten.l_trenn],
+            layers: [this.daten.layerTrenn],
             toggleCondition: never,
             style: new Style({
                 stroke: new Stroke({
@@ -41,7 +42,7 @@ class QuerInfoTool extends Tool {
 
 
         this.select_fl = new SelectInteraction({
-            layers: [this.daten.l_quer],
+            layers: [this.daten.layerQuer],
             toggleCondition: never,
             style: new Style({
                 fill: new Fill({
@@ -68,18 +69,18 @@ class QuerInfoTool extends Tool {
             return;
         }
         document.forms.namedItem("info").style.display = "block";
-        var querschnitt = selection.item(0).get('objekt');
+        var querschnitt = selection.item(0).get('objekt') as Querschnitt;
 
-        document.getElementById("info_vnk").innerHTML = querschnitt.station.abschnitt.vnk;
-        document.getElementById("info_nnk").innerHTML = querschnitt.station.abschnitt.nnk;
-        document.getElementById("info_station").innerHTML = querschnitt.vst + " - " + querschnitt.bst;
-        document.getElementById("info_streifen").innerHTML = querschnitt.streifen + " " + querschnitt.streifennr;
+        document.getElementById("info_vnk").innerHTML = querschnitt.getStation().getAbschnitt().getVnk();
+        document.getElementById("info_nnk").innerHTML = querschnitt.getStation().getAbschnitt().getNnk();
+        document.getElementById("info_station").innerHTML = querschnitt.getVst() + " - " + querschnitt.getBst();
+        document.getElementById("info_streifen").innerHTML = querschnitt.getStreifen() + " " + querschnitt.getStreifennr();
 
-        (document.getElementById("info_art") as HTMLInputElement).value = (querschnitt.art == null) ? '' : querschnitt.art.substr(-32);
-        (document.getElementById("info_ober") as HTMLInputElement).value = (querschnitt.artober == null) ? '' : querschnitt.artober.substr(-32);
+        (document.getElementById("info_art") as HTMLInputElement).value = (querschnitt.getArt() == null) ? '' : querschnitt.getArt().substr(-32);
+        (document.getElementById("info_ober") as HTMLInputElement).value = (querschnitt.getArtober() == null) ? '' : querschnitt.getArtober().substr(-32);
 
-        (document.getElementById("info_breite") as HTMLInputElement).value = querschnitt.breite;
-        (document.getElementById("info_bisbreite") as HTMLInputElement).value = querschnitt.bisBreite;
+        (document.getElementById("info_breite") as HTMLInputElement).value = querschnitt.getBreite().toString();
+        (document.getElementById("info_bisbreite") as HTMLInputElement).value = querschnitt.getBisBreite().toString();
     }
 
 

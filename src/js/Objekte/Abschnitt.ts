@@ -14,23 +14,23 @@ var CONFIG: { [index: string]: string } = require('../config.json');
 /**
  * Straßenabschnitt
  * @author Florian Timm, LGV HH 
- * @version 2019.09.19
+ * @version 2019.10.29
  * @copyright MIT
  */
 export default class Abschnitt extends Feature {
     private daten: Daten;
-    public fid: string = null;
-    public abschnittid: string = null;
-    public vnk: string = null;
-    public nnk: string = null;
-    public vtknr: any;
-    public vnklfd: number;
-    public vzusatz: any;
-    public ntknr: any;
-    public nnklfd: number;
-    public nzusatz: any;
-    public len: number = null;
-    public inER: {} = {};
+    private fid: string = null;
+    private abschnittid: string = null;
+    private vnk: string = null;
+    private nnk: string = null;
+    private vtknr: any;
+    private vnklfd: number;
+    private vzusatz: any;
+    private ntknr: any;
+    private nnklfd: number;
+    private nzusatz: any;
+    private len: number = null;
+    private inER: { [ok: string]: boolean } = {};
 
     private _faktor: any = null;
     private _station: { [vst: number]: QuerStation } = {};
@@ -130,7 +130,7 @@ export default class Abschnitt extends Feature {
     }
 
     public addStation(station: QuerStation): void {
-        this._station[station.vst] = station;
+        this._station[station.getVst()] = station;
     }
 
     public getStation(station: number): QuerStation {
@@ -152,7 +152,7 @@ export default class Abschnitt extends Feature {
 
     public getStationByVST(vst: number): QuerStation {
         for (let a in this._station) {
-            if (this._station[a].vst == vst)
+            if (this._station[a].getVst() == vst)
                 return this._station[a];
         }
         return null;
@@ -160,7 +160,7 @@ export default class Abschnitt extends Feature {
 
     public getStationByBST(bst: number): QuerStation {
         for (let a in this._station) {
-            if (this._station[a].bst == bst)
+            if (this._station[a].getBst() == bst)
                 return this._station[a];
         }
         return null;
@@ -189,17 +189,17 @@ export default class Abschnitt extends Feature {
 
         for (let i = 0; i < aufbau.length; i++) {
             let a = Aufbaudaten.fromXML(aufbau[i]);
-            if (a.parent == null) continue;
-            let fid = a.parent.replace('#', '');
+            if (a.getParent == null) continue;
+            let fid = a.getParent().replace('#', '');
             if (!(fid in aufbaudaten)) aufbaudaten[fid] = {};
-            aufbaudaten[fid][a.schichtnr] = a;
+            aufbaudaten[fid][a.getSchichtnr()] = a;
         }
 
         for (let stationNr in this._station) {
             for (let querschnitt in this._station[stationNr]) {
                 for (let streifen of this._station[stationNr].getAllQuerschnitte()) {
-                    if (streifen.fid in aufbaudaten) {
-                        streifen.setAufbauGesamt(aufbaudaten[streifen.fid])
+                    if (streifen.getFid() in aufbaudaten) {
+                        streifen.setAufbauGesamt(aufbaudaten[streifen.getFid()])
                     } else {
                         streifen.setAufbauGesamt({});
                     }
@@ -211,5 +211,49 @@ export default class Abschnitt extends Feature {
         if (callbackSuccess != undefined) {
             callbackSuccess(...args);
         }
+    }
+
+    // Getter
+    public getAbschnittid(): string {
+        return this.abschnittid;
+    }
+
+    isOKinER(ok: string): boolean {
+        return ok in this.inER && this.inER[ok];
+    }
+
+    getVnk() {
+        return this.vnk;
+    }
+
+    getNnk() {
+        return this.nnk;
+    }
+
+    getVtknr() {
+        return this.vtknr;
+    }
+
+    getNtknr() {
+        return this.ntknr;
+    }
+
+    getVzusatz() {
+        return this.vzusatz;
+    }
+
+    getNzusatz() {
+        return this.nzusatz;
+    }
+    getVnklfd() {
+        return this.vnklfd;
+    }
+    getNnklfd() {
+        return this.nnklfd;
+    }
+
+    //Setter
+    addOKinER(ok: string, value: boolean = true) {
+        this.inER[ok] = value;
     }
 }

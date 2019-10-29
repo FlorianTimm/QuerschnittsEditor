@@ -6,14 +6,49 @@ import { Style, Stroke, Fill, Circle, Text, RegularShape } from 'ol/style';
 import { Map } from 'ol';
 import { ColorLike } from "ol/colorlike";
 import Klartext from "./Klartext";
+import PublicWFS from "../PublicWFS";
+import { InfoToolSelectable } from "../Tools/InfoTool";
+import { Point } from "ol/geom";
+import Daten from "../Daten";
 
-export default abstract class PunktObjekt extends Objekt {
+export default abstract class PunktObjekt extends Objekt implements InfoToolSelectable {
+    protected vabstVst: number;
+    protected vabstBst: number;
+    protected rlageVst: string;
+    protected rabstbaVst: number;
+    protected labstbaVst: number;
 
+    // Abstrakte Funktionen
     abstract colorFunktion1(): ColorLike;
     abstract colorFunktion2(): ColorLike;
-    abstract createForm(formId: string, aufstell?: PunktObjekt): HTMLFormElement;
+    abstract getHTMLInfo(sidebar: HTMLElement, changeable?: boolean): void;
+    abstract changeAttributes(form: HTMLFormElement): void;
 
-    abstract updateStation(station: number, abstand: number): void;
+    public updateStation(station: number, abstand: number) {
+        this.vabstVst = Math.round(abstand * 10) / 10;
+        this.vabstBst = this.vabstVst;
+        this.rabstbaVst = this.vabstVst;
+        this.vst = Math.round(station);
+        this.bst = this.vst;
+
+        let xml = this.createUpdateXML({
+            'vabstVst': this.vabstVst,
+            'vabstBst': this.vabstBst,
+            'rabstbaVst': this.rabstbaVst,
+            'vst': this.vst,
+            'bst': this.bst
+        });
+        PublicWFS.doTransaction(xml);
+    }
+
+    setDataFromXML(objekt: string, xml: Element) {
+        super.setDataFromXML(objekt, xml);
+        let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(',');
+        this.setGeometry(new Point([parseFloat(koords[0]), parseFloat(koords[1])]));
+        this.abschnitt = Daten.getInstanz().getAbschnitt(this.abschnittId);
+        this.abschnitt.addOKinER(this.getObjektKlassenName());
+        Daten.getInstanz().layerAchse.changed();
+    }
 
     static createLayer(map: Map) {
         let source = new VectorSource({

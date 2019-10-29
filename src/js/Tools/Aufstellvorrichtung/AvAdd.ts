@@ -4,20 +4,19 @@ import Aufstellvorrichtung from '../../Objekte/Aufstellvorrichtung';
 import AddTool from '../prototypes/AddTool';
 import { Map, MapBrowserEvent } from 'ol';
 import Daten from '../../Daten';
-import HTML from '../../HTML';
 var CONFIG = require('../../config.json');
 
 /**
  * Funktion zum Hinzufügen von Aufstellvorrichtungen
  * @author Florian Timm, LGV HH 
- * @version 2019.05.20
+ * @version 2019.10.29
  * @copyright MIT
  */
 class AvAdd extends AddTool {
     form: HTMLFormElement;
     constructor(map: Map) {
         super(map);
-        this.form = Aufstellvorrichtung.createForm('avadd',undefined, true);
+        this.form = Aufstellvorrichtung.createForm('avadd', undefined, true);
         document.getElementById('avadd_button').addEventListener('click', this.addAufstellButton.bind(this));
     }
 
@@ -48,7 +47,7 @@ class AvAdd extends AddTool {
 
     private addAufstellButton() {
         // im ER?
-        if (!("Otaufstvor" in this.abschnitt.inER)) {
+        if (!(this.abschnitt.isOKinER("Otaufstvor"))) {
             PublicWFS.addInER(this.abschnitt, "Otaufstvor", Daten.getInstanz().ereignisraum_nr, this.addInER_Callback.bind(this));
         } else {
             this.wfsAddAufstell()
@@ -63,7 +62,7 @@ class AvAdd extends AddTool {
         let soap = '<wfs:Insert>\n' +
             '<Otaufstvor>\n' +
             '<projekt xlink:href="#' + Daten.getInstanz().ereignisraum + '" typeName="Projekt" />\n' +
-            '<abschnittId>' + this.abschnitt.abschnittid + '</abschnittId>\n' +
+            '<abschnittId>' + this.abschnitt.getAbschnittid() + '</abschnittId>\n' +
             '<vst>' + this.station + '</vst>\n' +
             '<bst>' + this.station + '</bst>\n' +
             '<rabstbaVst>' + this.abstand + '</rabstbaVst>\n' +
@@ -94,7 +93,7 @@ class AvAdd extends AddTool {
             filter += '<FeatureId fid="' + (childs[i] as Element).getAttribute('fid') + '"/>';
         }
         filter += '</Filter>';
-        PublicWFS.doQuery('Otaufstvor', filter, Aufstellvorrichtung.loadER_Callback);
+        PublicWFS.doQuery('Otaufstvor', filter, Aufstellvorrichtung.loadERCallback);
     }
 
     start() {

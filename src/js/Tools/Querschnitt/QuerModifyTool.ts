@@ -8,11 +8,12 @@ import { Map } from 'ol';
 import Tool from '../prototypes/Tool';
 import { SelectInteraction, ModifyInteraction } from '../../openLayers/Interaction'
 import { ModifyEvent } from 'ol/interaction/Modify';
+import Querschnitt from 'src/js/Objekte/Querschnittsdaten';
 
 /**
  * Funktion zum Verändern von Querschnittsflächen
  * @author Florian Timm, LGV HH 
- * @version 2019.05.20
+ * @version 2019.10.29
  * @copyright MIT
  */
 class QuerModifyTool extends Tool {
@@ -77,7 +78,7 @@ class QuerModifyTool extends Tool {
         this.map.removeInteraction(this.snap_station);
         console.log(event);
         let auswahl = event.features.getArray()[0];
-        let querschnitt = auswahl.get('objekt');
+        let querschnitt = auswahl.get('objekt') as Querschnitt;
         let nachher = auswahl.getGeometry().getCoordinates();
         let vorher = event.target.geo_vorher.getCoordinates();
 
@@ -89,10 +90,10 @@ class QuerModifyTool extends Tool {
             for (let j = 0; j < vorher[i].length; j += vorher[i].length - 1) {
                 if (nachher[i][j][0] != vorher[i][j][0] || nachher[i][j][1] != vorher[i][j][1]) {
                     // alte Daten speichern für Vergleich, wenn angrenzender Querschnitt mitbewegt werden soll
-                    let alt_XBstR = querschnitt['XBstR']
-                    let alt_XBstL = querschnitt['XBstL']
-                    let alt_XVstR = querschnitt['XVstR']
-                    let alt_XVstL = querschnitt['XVstL']
+                    let alt_XBstR = querschnitt.getXBstR();
+                    let alt_XBstL = querschnitt.getXBstL();
+                    let alt_XVstR = querschnitt.getXVstR();
+                    let alt_XVstL = querschnitt.getXVstL();
 
                     // Variablen, je nach dem ob BST oder VST verändert wird
                     // VST
@@ -107,11 +108,11 @@ class QuerModifyTool extends Tool {
                     }
 
                     // Berechnen des Abstandes des neuen Punktes
-                    let pos = Vektor.get_pos(querschnitt.station.geo, nachher[i][j]);
+                    let pos = Vektor.get_pos(querschnitt.getStation().getGeometry(), nachher[i][j]);
                     let dist = Math.round(pos[4] * 100) / 100;
 
                     // Streifen und Nr
-                    let streifen = querschnitt.streifen;
+                    let streifen = querschnitt.getStreifen();
 
                     if (streifen == 'L')
                         dist *= -1;
@@ -125,7 +126,7 @@ class QuerModifyTool extends Tool {
                     if (document.forms.namedItem("modify").modify_glue.checked) {
                         // VST, BST suchen und ändern
                         if (vst) {
-                            let station = querschnitt.station.abschnitt.getStationByBST(querschnitt.vst);
+                            let station = querschnitt.getStation().getAbschnitt().getStationByBST(querschnitt.getVst());
                             if (station == null) break;
                             let querschnitt_nachbar = station.getQuerschnittByBstAbstand(alt_XVstL, alt_XVstR);
                             if (querschnitt_nachbar == null) break;
@@ -133,7 +134,7 @@ class QuerModifyTool extends Tool {
                         }
                         //BST, VST suchen und ändern
                         else {
-                            let station = querschnitt.station.abschnitt.getStationByVST(querschnitt.bst);
+                            let station = querschnitt.getStation().getAbschnitt().getStationByVST(querschnitt.getBst());
                             if (station == null) break;
                             let querschnitt_nachbar = station.getQuerschnittByVstAbstand(alt_XBstL, alt_XBstR);
                             if (querschnitt_nachbar == null) break;
@@ -172,7 +173,7 @@ class QuerModifyTool extends Tool {
 
     createLinienSelect() {
         this.select = new SelectInteraction({
-            layers: [this.daten.l_trenn],
+            layers: [this.daten.layerTrenn],
             toggleCondition: never,
             style: new Style({
                 stroke: new Stroke({
@@ -190,7 +191,7 @@ class QuerModifyTool extends Tool {
 
     createFlaechenSelect() {
         this.select_fl = new SelectInteraction({
-            layers: [this.daten.l_quer],
+            layers: [this.daten.layerQuer],
             toggleCondition: platformModifierKeyOnly,
             style: new Style({
                 fill: new Fill({
@@ -233,11 +234,11 @@ class QuerModifyTool extends Tool {
 
     createSnap() {
         this.snap_trenn = new Snap({
-            source: this.daten.v_trenn,
+            source: this.daten.vectorTrenn,
             edge: false
         });
         this.snap_station = new Snap({
-            source: this.daten.v_station,
+            source: this.daten.vectorStation,
             pixelTolerance: 500,
             vertex: false
         });

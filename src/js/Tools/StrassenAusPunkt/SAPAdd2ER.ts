@@ -25,7 +25,7 @@ export default class SAPAdd2ER extends Tool {
         this.map = map;
 
         this.select = new SelectInteraction({
-            layers: [this.daten.l_achse],
+            layers: [this.daten.layerAchse],
             hitTolerance: 10,
             style: new Style({
                 stroke: new Stroke({
@@ -42,16 +42,16 @@ export default class SAPAdd2ER extends Tool {
         if (this.select.getFeatures().getArray().length == 0) return;
 
         let abschnitt = this.select.getFeatures().getArray()[0] as Abschnitt;
-        if ("Otstrauspkt" in abschnitt.inER && abschnitt.inER["Otstrauspkt"]) return;
+        if (abschnitt.isOKinER("Otstrauspkt")) return;
         document.body.style.cursor = 'wait'
         PublicWFS.addInER(abschnitt, "Otstrauspkt", this.daten.ereignisraum_nr, this._onSelect_Callback.bind(this), undefined, abschnitt);
     }
 
     _onSelect_Callback(xml: XMLDocument, abschnitt: Abschnitt) {
-        abschnitt.inER["Otstrauspkt"] = true;
+        abschnitt.addOKinER("Otstrauspkt");
         StrassenAusPunkt.loadAbschnittER(abschnitt, PublicWFS.showMessage, "Erfolgreich in ER kopiert");
         this.select.getFeatures().clear();
-        Daten.getInstanz().l_achse.changed();
+        Daten.getInstanz().layerAchse.changed();
     }
 
     start() {

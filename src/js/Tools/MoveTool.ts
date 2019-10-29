@@ -14,11 +14,12 @@ import { Coordinate } from 'ol/coordinate';
 import PunktObjekt from '../Objekte/PunktObjekt';
 import { SelectEvent } from 'ol/interaction/Select';
 import { ModifyEvent } from 'ol/interaction/Modify';
+import Abschnitt from '../Objekte/Abschnitt';
 
 /**
  * Funktion zum Verschieben von Punktobjekten
  * @author Florian Timm, LGV HH 
- * @version 2019.09.19
+ * @version 2019.10.29
  * @copyright MIT
  */
 
@@ -116,7 +117,7 @@ export default class MoveTool extends Tool {
         this.select.getFeatures().clear();
         (feat.getGeometry() as Point).setCoordinates(daten['pos'][6]);
 
-        let station = Math.round(daten['pos'][2] * (feat as PunktObjekt).abschnitt.getFaktor());
+        let station = Math.round(daten['pos'][2] * (feat as PunktObjekt).getAbschnitt().getFaktor());
         let abstand = Math.round(daten['pos'][4] * 10) / 10;
         let seite = daten['pos'][3]
         if (seite == 'M') abstand = 0;
@@ -127,14 +128,14 @@ export default class MoveTool extends Tool {
     }
 
     private getStation(coordinates: Coordinate) {
-        let achse = null;
+        let achse: Abschnitt = null;
         if (this.select.getFeatures().getLength() > 0) {
-            achse = (this.select.getFeatures().item(0) as PunktObjekt).abschnitt;
+            achse = (this.select.getFeatures().item(0) as PunktObjekt).getAbschnitt();
         } else {
             return null;
         }
 
-        return { achse: achse, pos: Vektor.get_pos(achse.getGeometry().getCoordinates(), coordinates) };
+        return { achse: achse, pos: Vektor.get_pos((achse.getGeometry() as LineString).getCoordinates(), coordinates) };
     }
 
     private move(event: MapBrowserEvent) {

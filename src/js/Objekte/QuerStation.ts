@@ -10,24 +10,24 @@ import Aufbau from './Aufbaudaten';
 /**
 * Querschnitts-Station
 * @author Florian Timm, LGV HH 
-* @version 2019.06.06
+* @version 2019.10.29
 * @copyright MIT
 */
 
 export default class QuerStation {
 
-    daten: Daten;
-    abschnitt: Abschnitt;
-    vst: number;
-    bst: number;
-    geo: number[][];
-    seg: number[] = [];
-    vector: number[][] = [];
-    linie: MultiLineString = null;
+    private daten: Daten;
+    private abschnitt: Abschnitt;
+    private vst: number;
+    private bst: number;
+    private geo: number[][];
+    private seg: number[] = [];
+    private vector: number[][] = [];
+    private linie: MultiLineString = null;
     private _querschnitte: { [streifen: string]: { [streifennr: number]: Querschnitt } } = {};
 
-    constructor(daten: Daten, abschnitt: Abschnitt, vst: number, bst: number, geo: number[][]) {
-        this.daten = daten;
+    constructor(abschnitt: Abschnitt, vst: number, bst: number, geo: number[][]) {
+        this.daten = Daten.getInstanz();
         this.abschnitt = abschnitt;
         this.vst = vst;
         this.bst = bst;
@@ -36,8 +36,8 @@ export default class QuerStation {
         this.calcVector();
     }
     addQuerschnitt(querschnitt: Querschnitt) {
-        let streifen = querschnitt.streifen;
-        let nr = querschnitt.streifennr;
+        let streifen = querschnitt.getStreifen();
+        let nr = querschnitt.getStreifennr();
         if (!(streifen in this._querschnitte)) {
             this._querschnitte[streifen] = {};
         }
@@ -60,7 +60,7 @@ export default class QuerStation {
         }
         return r;
     }
-    getStreifen(streifen: string): { [streifennr: number]: Querschnitt } {
+    getStreifen(streifen: 'M' | 'L' | 'R'): { [streifennr: number]: Querschnitt } {
         if (!(streifen in this._querschnitte))
             return null;
         return this._querschnitte[streifen];
@@ -69,8 +69,8 @@ export default class QuerStation {
     getQuerschnittByBstAbstand(XBstL: number, XBstR: number): Querschnitt {
         for (let streifen in this._querschnitte) {
             for (let querschnitt in this._querschnitte[streifen]) {
-                if (XBstL < 0 && this._querschnitte[streifen][querschnitt].XBstL == XBstL) return this._querschnitte[streifen][querschnitt];
-                if (XBstR > 0 && this._querschnitte[streifen][querschnitt].XBstR == XBstR) return this._querschnitte[streifen][querschnitt];
+                if (XBstL < 0 && this._querschnitte[streifen][querschnitt].getXBstL() == XBstL) return this._querschnitte[streifen][querschnitt];
+                if (XBstR > 0 && this._querschnitte[streifen][querschnitt].getXBstR() == XBstR) return this._querschnitte[streifen][querschnitt];
             }
         }
         return null;
@@ -79,8 +79,8 @@ export default class QuerStation {
     getQuerschnittByVstAbstand(XVstL: number, XVstR: number): Querschnitt {
         for (let streifen in this._querschnitte) {
             for (let querschnitt in this._querschnitte[streifen]) {
-                if (XVstL < 0 && this._querschnitte[streifen][querschnitt].XVstL == XVstL) return this._querschnitte[streifen][querschnitt];
-                if (XVstR > 0 && this._querschnitte[streifen][querschnitt].XVstR == XVstR) return this._querschnitte[streifen][querschnitt];
+                if (XVstL < 0 && this._querschnitte[streifen][querschnitt].getXVstL() == XVstL) return this._querschnitte[streifen][querschnitt];
+                if (XVstR > 0 && this._querschnitte[streifen][querschnitt].getXVstR() == XVstR) return this._querschnitte[streifen][querschnitt];
             }
         }
         return null;
@@ -109,7 +109,7 @@ export default class QuerStation {
                 geometry: this.linie,
                 objekt: this,
             });
-            this.daten.v_station.addFeature(feat);
+            this.daten.vectorStation.addFeature(feat);
         }
         var len = Vektor.line_len(this.geo);
         this.seg.push(0);
@@ -135,11 +135,11 @@ export default class QuerStation {
             '		<ogc:And>\n' +
             '			<ogc:PropertyIsEqualTo>\n' +
             '				<ogc:PropertyName>abschnittId</ogc:PropertyName>\n' +
-            '				<ogc:Literal>' + this.abschnitt.abschnittid + '</ogc:Literal>\n' +
+            '				<ogc:Literal>' + this.abschnitt.getAbschnittid() + '</ogc:Literal>\n' +
             '			</ogc:PropertyIsEqualTo>\n' +
             '			<ogc:PropertyIsEqualTo>\n' +
             '				<ogc:PropertyName>vst</ogc:PropertyName>\n' +
-            '				<ogc:Literal>' + this.vst + '</ogc:Literal>\n' +
+            '				<ogc:Literal>' + this.getVst() + '</ogc:Literal>\n' +
             '			</ogc:PropertyIsEqualTo>\n' +
             '			<ogc:PropertyIsEqualTo>\n' +
             '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
@@ -155,16 +155,16 @@ export default class QuerStation {
             console.log(streifen);
             for (let querschnitt_key in streifen) {
                 let st: Querschnitt = streifen[querschnitt_key];
-                let breite = Math.round(st.breite + (st.bisBreite - st.breite) * faktor);
-                let XL = Math.round((st.XVstL + (st.XBstL - st.XVstL) * faktor) * 100) / 100;
-                let XR = Math.round((st.XVstR + (st.XBstR - st.XVstR) * faktor) * 100) / 100;
+                let breite = Math.round(st.getBreite() + (st.getBisBreite() - st.getBreite()) * faktor);
+                let XL = Math.round((st.getXVstL() + (st.getXBstL() - st.getXVstL()) * faktor) * 100) / 100;
+                let XR = Math.round((st.getXVstR() + (st.getXBstR() - st.getXVstR()) * faktor) * 100) / 100;
                 xml += st.createInsertXML({
                     vst: this.vst,
                     bst: station,
-                    breite: st.breite,
+                    breite: st.getBreite(),
                     bisBreite: breite,
-                    XVstL: st.XVstL,
-                    XVstR: st.XVstR,
+                    XVstL: st.getXVstL(),
+                    XVstR: st.getXVstR(),
                     XBstL: XL,
                     XBstR: XR
                 }, true);
@@ -172,11 +172,11 @@ export default class QuerStation {
                     vst: station,
                     bst: this.bst,
                     breite: breite,
-                    bisBreite: st.bisBreite,
+                    bisBreite: st.getBisBreite(),
                     XVstL: XL,
                     XVstR: XR,
-                    XBstL: st.XBstL,
-                    XBstR: st.XBstR
+                    XBstL: st.getXBstL(),
+                    XBstR: st.getXBstR()
                 }, true);
             }
         }
@@ -203,7 +203,7 @@ export default class QuerStation {
             '  <ogc:And>\n' +
             '    <ogc:PropertyIsEqualTo>\n' +
             '       <ogc:PropertyName>abschnittId</ogc:PropertyName>\n' +
-            '      <ogc:Literal>' + this.abschnitt.abschnittid + '</ogc:Literal>\n' +
+            '      <ogc:Literal>' + this.abschnitt.getAbschnittid() + '</ogc:Literal>\n' +
             '    </ogc:PropertyIsEqualTo>\n' +
             '    <ogc:PropertyIsEqualTo>\n' +
             '       <ogc:PropertyName>vst</ogc:PropertyName>\n' +
@@ -225,7 +225,7 @@ export default class QuerStation {
             '  <ogc:And>\n' +
             '    <ogc:PropertyIsEqualTo>\n' +
             '       <ogc:PropertyName>abschnittId</ogc:PropertyName>\n' +
-            '      <ogc:Literal>' + this.abschnitt.abschnittid + '</ogc:Literal>\n' +
+            '      <ogc:Literal>' + this.abschnitt.getAbschnittid() + '</ogc:Literal>\n' +
             '    </ogc:PropertyIsEqualTo>\n' +
             '    <ogc:PropertyIsEqualTo>\n' +
             '       <ogc:PropertyName>vst</ogc:PropertyName>\n' +
@@ -269,17 +269,17 @@ export default class QuerStation {
         let insertRows = 0;
         for (let i = 0; i < dotquer.length; i++) {
             let neu = Querschnitt.fromXML(dotquer[i], true);
-            let alt = this.getQuerschnitt(neu.streifen, neu.streifennr)
+            let alt = this.getQuerschnitt(neu.getStreifen(), neu.getStreifennr())
 
             let aufbau = alt.getAufbau() as { [schicht: number]: Aufbau };
             console.log(aufbau);
             for (let schichtnr in aufbau) {
                 let schicht = aufbau[schichtnr];
-                if (schicht.bst <= neu.vst || schicht.vst >= neu.bst) continue;
+                if (schicht.getBst() <= neu.getVst() || schicht.getVst() >= neu.getBst()) continue;
                 insert += schicht.createXML({
-                    vst: schicht.vst < neu.vst ? neu.vst : schicht.vst,
-                    bst: schicht.bst > neu.bst ? neu.bst : schicht.bst,
-                    parent: neu.fid
+                    vst: schicht.getVst() < neu.getVst() ? neu.getVst() : schicht.getVst(),
+                    bst: schicht.getBst() > neu.getBst() ? neu.getBst() : schicht.getBst(),
+                    parent: neu.getFid()
                 }, true)
                 insertRows++;
             }
@@ -293,7 +293,7 @@ export default class QuerStation {
 
 
         if (station != undefined) {
-            let neueStation = new QuerStation(this.daten, this.abschnitt, station, this.bst, this.geo);
+            let neueStation = new QuerStation(this.abschnitt, station, this.bst, this.geo);
             this.bst = station;
             this.abschnitt.addStation(neueStation);
             neueStation.reload();
@@ -307,7 +307,7 @@ export default class QuerStation {
             '<And>' +
             '<PropertyIsEqualTo>' +
             '<PropertyName>abschnittId</PropertyName>' +
-            '<Literal>' + this.abschnitt.abschnittid + '</Literal>' +
+            '<Literal>' + this.abschnitt.getAbschnittid() + '</Literal>' +
             '</PropertyIsEqualTo>' +
             '<PropertyIsEqualTo>' +
             '<PropertyName>vst</PropertyName>' +
@@ -356,8 +356,8 @@ export default class QuerStation {
     }
 
     public deleteStreifen(streifen: string, nummer: number) {
-        this.daten.v_trenn.removeFeature(this._querschnitte[streifen][nummer].trenn)
-        this.daten.v_quer.removeFeature(this._querschnitte[streifen][nummer].flaeche)
+        this.daten.vectorTrenn.removeFeature(this._querschnitte[streifen][nummer].trenn)
+        this.daten.vectorQuer.removeFeature(this._querschnitte[streifen][nummer].flaeche)
         let max = -1;
         for (let i in this._querschnitte[streifen]) {
             if (Number(i) > max) {
@@ -365,5 +365,31 @@ export default class QuerStation {
             }
         }
         delete this._querschnitte[streifen][nummer];
+    }
+
+    // Getter
+
+    getAbschnitt(): Abschnitt {
+        return this.abschnitt;
+    }
+
+    getVst(): number {
+        return this.vst;
+    }
+
+    getBst(): number {
+        return this.bst;
+    }
+
+    getGeometry(): number[][] {
+        return this.geo;
+    }
+
+    getVector(): number[][] {
+        return this.vector;
+    }
+
+    getSegment(): number[] {
+        return this.seg;
     }
 }

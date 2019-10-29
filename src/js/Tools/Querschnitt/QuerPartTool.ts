@@ -34,7 +34,7 @@ class QuerPartTool extends Tool {
         this.info = info;
 
         this.select = new SelectInteraction({
-            layers: [this.daten.l_achse],
+            layers: [this.daten.layerAchse],
             style: new Style({
                 stroke: new Stroke({
                     color: 'rgba(0, 50, 255, 0.5)',
@@ -115,7 +115,7 @@ class QuerPartTool extends Tool {
         if (this.select.getFeatures().getArray().length > 0) {
             achse = this.select.getFeatures().item(0);
         } else {
-            achse = this.daten.v_achse.getClosestFeatureToCoordinate(event.coordinate);
+            achse = this.daten.vectorAchse.getClosestFeatureToCoordinate(event.coordinate);
         }
 
         if (achse == null) {
