@@ -5,6 +5,10 @@ import Tool from './prototypes/Tool';
 import { SelectEvent } from 'ol/interaction/Select';
 import { Feature } from 'ol';
 import "../import_jquery.js";
+import HTML from '../HTML';
+import { Style, Stroke, Fill } from 'ol/style';
+import GeometryType from 'ol/geom/GeometryType';
+import CircleStyle from 'ol/style/Circle';
 
 /**
  * Funktion zum Anzeigen von Informationen zu Aufstellvorrichtungen und Schildern
@@ -14,12 +18,11 @@ import "../import_jquery.js";
  */
 
 export default class InfoTool extends Tool {
-    private map: Map;
+    protected map: Map;
     private layer: Layer;
     private sidebar: HTMLElement;
     private infoField: HTMLFormElement;
-    private select: SelectInteraction;
-    private auswahl: Feature;
+    protected select: SelectInteraction;
 
     constructor(map: Map, layer: Layer, sidebar: string) {
         super();
@@ -27,40 +30,93 @@ export default class InfoTool extends Tool {
         this.layer = layer;
         this.sidebar = document.getElementById(sidebar);
 
-        this.infoField = document.createElement("form");
-        this.sidebar.appendChild(this.infoField);
-        this.infoField.style.display = "none";
+        this.infoField = HTML.createToolForm(this.sidebar, false, "info")
 
         this.select = new SelectInteraction({
             layers: [this.layer],
-            hitTolerance: 10
+            hitTolerance: 10,
+            style: InfoTool.selectStyle
         });
-        this.select.on('select', this.featureSelected.bind(this))
+        this.select.on('select', this.featureSelectedEvent.bind(this))
     }
 
     /**
      * Wird ausgelöst beim Auswählen einer Aufstellvorrichtung
      * @param {SelectEvent} event 
      */
-    featureSelected(event: SelectEvent, changeable: boolean = false) {
-        if (event.selected.length == 0) {
-            this.infoField.style.display = "none";
+    featureSelectedEvent(event: SelectEvent, changeable: boolean = false) {
+        this.featureSelect(this.select, changeable);
+    }
+
+    featureSelect(select: SelectInteraction = this.select, changeable: boolean = false) {
+        let auswahl = select.getFeatures();
+
+        if (auswahl.getLength() == 0) {
+            this.hideInfoBox();
             return;
         }
-        
-        this.infoField.style.display = "block";
-        this.auswahl = event.selected[0];
-        this.infoField.innerHTML = "";
-        console.log(this.auswahl);
-        (this.auswahl as InfoToolSelectable).getHTMLInfo(this.infoField, changeable);
 
+        this.getInfoFieldForFeature(auswahl.item(0), changeable)
+    }
+
+    getInfoFieldForFeature(feature: Feature, changeable: boolean = false) {
+        this.infoField.innerHTML = "";
+        (feature as InfoToolSelectable).getInfoForm(this.infoField, changeable);
         if (changeable) {
             let button = $(this.infoField).children("input[type=button]");
-            button.prop("disabled", false)
+            button.prop("disabled", false);
             button.on("click", function () {
-                (this.auswahl as InfoToolSelectable).changeAttributes(this.infoField);
+                (feature as InfoToolEditable).changeAttributes(this.infoField);
             }.bind(this));
         }
+        this.showInfoBox();
+    }
+
+    showInfoBox() {
+        $(this.infoField).show("fast")
+    }
+
+    hideInfoBox() {
+        $(this.infoField).hide("fast", "linear", function () {
+            this.infoField.innerHTML = "";
+        }.bind(this))
+
+    }
+
+    static selectStyle(feat: Feature): Style {
+        let typ = feat.getGeometry().getType();
+        if (typ == GeometryType.LINE_STRING || typ == GeometryType.MULTI_LINE_STRING) {
+            return new Style({
+                stroke: new Stroke({
+                    color: 'rgba(255, 0, 0, 0.5)',
+                    width: 3
+                })
+            })
+        } else if (typ == GeometryType.POLYGON) {
+            return new Style({
+                fill: new Fill({
+                    color: 'rgba(255, 0, 0, 0.3)'
+                })
+            })
+        } else {
+            var white = [255, 255, 255, 1];
+            var blue = [0, 153, 255, 1];
+            var width = 3;
+            return new Style({
+                image: new CircleStyle({
+                    radius: width * 2,
+                    fill: new Fill({
+                        color: blue
+                    }),
+                    stroke: new Stroke({
+                        color: white,
+                        width: width / 2
+                    })
+                }),
+                zIndex: Infinity
+            })
+        }
+
     }
 
     start() {
@@ -75,6 +131,8 @@ export default class InfoTool extends Tool {
 }
 
 export interface InfoToolSelectable extends Feature {
-    getHTMLInfo: (sidebar: HTMLElement, changeable?: boolean) => void;
+    getInfoForm: (sidebar: HTMLElement, changeable?: boolean) => void;
+}
+export interface InfoToolEditable extends Feature {
     changeAttributes: (form: HTMLFormElement) => void;
 }

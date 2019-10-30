@@ -11,6 +11,9 @@ var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number
 */
 
 class Zeichen extends Objekt {
+    getInfoForm(sidebar: HTMLElement, changeable?: boolean): void {
+        throw new Error("Method not implemented.");
+    }
     _daten: Daten;
     private hasSekObj: string = null;
     private stvoznr: string = null;

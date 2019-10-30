@@ -1,16 +1,20 @@
 export default class HTML {
 
     static createSelectForm(form: HTMLFormElement, beschriftung: string, id: string) {
-        HTML.createLabel(beschriftung, id, form);
+        let label = HTML.createLabel(beschriftung, id, form);
+        label.className = "label_select"
         HTML.createBreak(form);
         let select = document.createElement("select");
+        select.style.marginBottom = "4px";
+        select.style.width = "95%";
         select.id = id;
         form.appendChild(select);
         return select;
     }
 
     static createTextInput(form: HTMLFormElement, beschriftung: string, id: string, inhalt?: string) {
-        HTML.createLabel(beschriftung, id, form);
+        let label = HTML.createLabel(beschriftung, id, form);
+        label.className = "label_text";
         HTML.createBreak(form);
         let input = document.createElement("input");
         input.id = id;
@@ -32,5 +36,14 @@ export default class HTML {
 
     static createBreak(form: HTMLFormElement) {
         form.appendChild(document.createElement("br"));
+    }
+
+    static createToolForm(sidebar: HTMLElement, showForm: boolean = true, formId?: string, ) {
+        let form = document.createElement("form");
+        form.className = "tool_form";
+        if (formId != undefined) form.id = formId;
+        sidebar.appendChild(form);
+        if (!showForm) form.style.display = "none";
+        return form;
     }
 }

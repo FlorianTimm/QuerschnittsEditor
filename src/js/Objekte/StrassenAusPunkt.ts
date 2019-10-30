@@ -42,9 +42,7 @@ export default class StrassenAusPunkt extends PunktObjekt {
 
     public static createForm(formId: string, ausstattung?: StrassenAusPunkt, changeable: boolean = false): HTMLFormElement {
         let sidebar = document.getElementById("sidebar");
-        let form = document.createElement("form");
-        form.id = formId;
-        sidebar.appendChild(form);
+        let form = HTML.createToolForm(sidebar, true, formId);
 
         // Art
         StrassenAusPunkt.createFields(form, formId, ausstattung, changeable);
@@ -58,7 +56,7 @@ export default class StrassenAusPunkt extends PunktObjekt {
         Klartext.getInstanz().load('Itquelle');
     }
 
-    public getHTMLInfo(ziel: HTMLFormElement, changeable: boolean = false): void {
+    public getInfoForm(ziel: HTMLFormElement, changeable: boolean = false): void {
         StrassenAusPunkt.createFields(ziel, "sap_info", this, changeable);
     }
 

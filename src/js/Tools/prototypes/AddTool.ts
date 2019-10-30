@@ -9,6 +9,7 @@ import Tool from '../prototypes/Tool';
 import { Map, MapBrowserEvent } from 'ol';
 import Abschnitt from '../../Objekte/Abschnitt';
 import Daten from '../../Daten';
+import PublicWFS from '../../PublicWFS';
 
 /**
  * Funktion zum Hinzufügen von Objekten
@@ -31,6 +32,8 @@ export default abstract class AddTool extends Tool {
     protected feat_station: Feature;
     protected feat_neu: Feature;
     protected feat_station_line: Feature;
+
+    protected form: HTMLFormElement;
 
     constructor(map: Map) {
         super();
@@ -142,7 +145,26 @@ export default abstract class AddTool extends Tool {
     protected abstract part_move(event: MapBrowserEvent): void;
     protected abstract part_click(event: MapBrowserEvent): void;
 
+    protected getInsertResults(xml: XMLDocument) {
+        PublicWFS.showMessage("erfolgreich");
+        this.abschnitt = null;
+        this.station = null;
+        this.seite = null;
+        (this.feat_neu.getGeometry() as Point).setCoordinates([0, 0]);
+        let filter = '<Filter>';
+        let childs = xml.getElementsByTagName('InsertResult')[0].childNodes;
+        for (let i = 0; i < childs.length; i++) {
+            filter += '<FeatureId fid="' + (childs[i] as Element).getAttribute('fid') + '"/>';
+        }
+        filter += '</Filter>';
+        PublicWFS.doQuery(this.getObjektklasse(), filter, this.loadERCallback);
+    }
+
+    protected abstract loadERCallback(xml: XMLDocument, ...args: any[]): void;
+    public abstract getObjektklasse(): string;
+
     start() {
+        this.form.style.display = 'block';
         this.map.addInteraction(this.select);
         this.map.on("pointermove", this.part_move.bind(this));
         this.map.on("singleclick", this.part_click.bind(this));
@@ -150,6 +172,7 @@ export default abstract class AddTool extends Tool {
     }
 
     stop() {
+        this.form.style.display = 'none';
         this.map.removeInteraction(this.select);
         this.map.un("pointermove", this.part_move);
         this.map.un("singleclick", this.part_click);

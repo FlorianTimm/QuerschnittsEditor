@@ -330,8 +330,8 @@ export default class Daten {
 
         let createStyle: (feature: Feature, resolution: number) => Style =
             function (feature: Feature, resolution: number) {
-                let kt_art = Daten.getInstanz().klartexte.get('Itquerart', feature.get('objekt').art)
-                let kt_ober = Daten.getInstanz().klartexte.get('Itquerober', feature.get('objekt').artober)
+                let kt_art = Daten.getInstanz().klartexte.get('Itquerart', (feature as Querschnitt).getArt())
+                let kt_ober = Daten.getInstanz().klartexte.get('Itquerober', (feature as Querschnitt).getArtober())
 
                 // leere Arten filtern
                 let art = 0

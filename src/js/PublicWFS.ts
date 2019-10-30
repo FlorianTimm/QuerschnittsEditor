@@ -9,7 +9,6 @@ var CONFIG = require('./config.json');
  * @copyright MIT
  */
 export default class PublicWFS {
-
     static doSoapRequest(
         xml: string,
         callbackSuccess: (xml: Document, ...args: any[]) => void,

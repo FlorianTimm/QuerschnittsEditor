@@ -35,7 +35,7 @@ sidebar>* {
     max-width: 200px;
 }
 
-#qsMultiMod select, #qsMultiMod input, #info input, #info select, #avadd select {
+#qsMultiMod select, #qsMultiMod input {
     width: 100%;
 }
 
@@ -66,7 +66,7 @@ form#info, form#modify, form#qsMultiMod {
     display: none;
 }
 
-form#hinzu, form#quer_del, form#avadd, form#sapadd, form#loeschen, form#teilen {
+form#hinzu, form#quer_del, form#loeschen, form#teilen {
     text-align: center;
     display: none;
 }
@@ -186,21 +186,21 @@ form#suche {
     overflow-x: hidden;
 }
 
-form#avadd, form#sapadd {
+.tool_form {
     overflow-x: inherit;
     text-align: left;
 }
 
-form#avadd input, form#avadd select, form#avadd .chosen-container, form#sapadd input, form#sapadd select, form#sapadd .chosen-container {
+.tool_form input[type=text], .tool_form select, .tool_form .chosen-container {
     margin-bottom: 4px;
     width: 95%;
 }
 
-form#avadd .chosen-container, form#sapadd .chosen-container {
+.tool_form .chosen-container {
     font-size: 9pt;
 }
 
-form#avadd label, form#sapadd label {
+.tool_form label.label_text, .tool_form label.label_select {
     font-size: 8pt;
 }
 

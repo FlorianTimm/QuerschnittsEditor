@@ -4,7 +4,6 @@ import StrassenAusPunkt from '../../Objekte/StrassenAusPunkt';
 import AddTool from '../prototypes/AddTool';
 import { Map, MapBrowserEvent } from 'ol';
 import Daten from '../../Daten';
-import HTML from '../../HTML';
 
 var CONFIG = require('../../config.json');
 
@@ -16,12 +15,10 @@ var CONFIG = require('../../config.json');
  */
 
 export default class SAPAdd extends AddTool {
-    private form: HTMLFormElement;
-
     constructor(map: Map) {
         super(map);
         this.form = StrassenAusPunkt.createForm("sapadd", undefined, true);
-        document.getElementById('sapadd_button').addEventListener('click', this.addAufstellButton.bind(this));
+        document.getElementById('sapadd_button').addEventListener('click', this.addSAPButton.bind(this));
     }
 
     protected part_click(event: MapBrowserEvent) {
@@ -42,14 +39,18 @@ export default class SAPAdd extends AddTool {
         (this.feat_station_line.getGeometry() as LineString).setCoordinates([daten['pos'][6], daten['pos'][5]]);
 
         if (this.abschnitt == null) {
-            (document.getElementById("sapadd_vnk") as HTMLInputElement).value = daten['achse'].vnk;
-            (document.getElementById("sapadd_nnk") as HTMLInputElement).value = daten['achse'].nnk;
-            (document.getElementById("sapadd_station") as HTMLInputElement).value = String(Math.round(daten['pos'][2] * daten['achse'].getFaktor()));
-            (document.getElementById("sapadd_abstand") as HTMLInputElement).value = daten['pos'][3] + ' ' + daten['pos'][4].toFixed(1)
+            this.refreshStationierung(daten);
         }
     }
 
-    private addAufstellButton() {
+    private refreshStationierung(daten: { achse: any; pos: any; }) {
+        (document.getElementById("sapadd_vnk") as HTMLInputElement).value = daten['achse'].vnk;
+        (document.getElementById("sapadd_nnk") as HTMLInputElement).value = daten['achse'].nnk;
+        (document.getElementById("sapadd_station") as HTMLInputElement).value = String(Math.round(daten['pos'][2] * daten['achse'].getFaktor()));
+        (document.getElementById("sapadd_abstand") as HTMLInputElement).value = daten['pos'][3] + ' ' + daten['pos'][4].toFixed(1);
+    }
+
+    private addSAPButton() {
         // im ER?
         if (!(this.abschnitt.isOKinER("Otstrauspkt"))) {
             PublicWFS.addInER(this.abschnitt, "Otstrauspkt", Daten.getInstanz().ereignisraum_nr, this.addInER_Callback.bind(this));
@@ -83,28 +84,11 @@ export default class SAPAdd extends AddTool {
         PublicWFS.doTransaction(soap, this.getInsertResults.bind(this));
     }
 
-    private getInsertResults(xml: XMLDocument) {
-        PublicWFS.showMessage("erfolgreich");
-        this.abschnitt = null;
-        this.station = null;
-        this.seite = null;
-        (this.feat_neu.getGeometry() as Point).setCoordinates([0, 0]);
-        let filter = '<Filter>';
-        let childs = xml.getElementsByTagName('InsertResult')[0].childNodes;
-        for (let i = 0; i < childs.length; i++) {
-            filter += '<FeatureId fid="' + (childs[i] as Element).getAttribute('fid') + '"/>';
-        };
-        filter += '</Filter>';
-        PublicWFS.doQuery('Otstrauspkt', filter, StrassenAusPunkt.loadER_Callback);
+    public getObjektklasse() {
+        return 'Otstrauspkt';
     }
 
-    public start() {
-        document.forms.namedItem("sapadd").style.display = 'block';
-        super.start();
-    }
-
-    public stop() {
-        document.forms.namedItem("sapadd").style.display = 'none';
-        super.stop();
+    protected loadERCallback(xml: XMLDocument, ...args: any[]) {
+        StrassenAusPunkt.loadER_Callback(xml, ...args);
     }
 }

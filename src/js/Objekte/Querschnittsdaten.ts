@@ -8,6 +8,8 @@ import PublicWFS from '../PublicWFS';
 import Vektor from '../Vektor';
 import Objekt from './Objekt';
 import QuerStation from './QuerStation';
+import Klartext from './Klartext';
+import HTML from '../HTML';
 
 /**
 * @author Florian Timm, LGV HH 
@@ -23,7 +25,7 @@ export default class Querschnitt extends Objekt {
     private _daten: Daten;
     private _aufbaudaten: { [schicht: number]: Aufbau } = null;
 
-    flaeche: Feature;
+
     trenn: Feature;
 
     // SIB-Attribute
@@ -48,8 +50,8 @@ export default class Querschnitt extends Objekt {
         this._daten = Daten.getInstanz();
         //console.log(daten);
 
-        this.flaeche = new Feature({ geom: new Polygon([[[0, 0], [0, 0], [0, 0]]]), objekt: this });
-        this._daten.vectorQuer.addFeature(this.flaeche)
+        this.setGeometry(new Polygon([[[0, 0], [0, 0], [0, 0]]]));
+        this._daten.vectorQuer.addFeature(this)
 
         this.trenn = new Feature({ geom: new MultiLineString([[[0, 0], [0, 0], [0, 0]]]), objekt: this });
         this._daten.vectorTrenn.addFeature(this.trenn);
@@ -140,17 +142,73 @@ export default class Querschnitt extends Objekt {
 
     }
 
+    private static createFields(form: HTMLFormElement, formId: string, querschnitt?: Querschnitt, changeable: boolean = false) {
+        // Art
+        let art = Klartext.createKlartextSelectForm("Itquerart", form, "Art", formId + "_art", querschnitt != undefined ? querschnitt.art : undefined);
+        $(art).prop('disabled', !changeable).trigger("chosen:updated");
+        form.appendChild(document.createElement("br"));
+
+        // Lage
+        let lage = Klartext.createKlartextSelectForm("Itquerober", form, "Lage", formId + "_ober", querschnitt != undefined ? querschnitt.artober : undefined);
+        $(lage).prop('disabled', !changeable).trigger("chosen:updated");
+        form.appendChild(document.createElement("br"));
+
+        // VNK
+        let vnk = HTML.createTextInput(form, "VNK", formId + "_vnk", querschnitt != undefined ? querschnitt.getAbschnitt().getVnk() : undefined);
+        vnk.disabled = true;
+        form.appendChild(document.createElement("br"));
+
+        // NNK
+        let nnk = HTML.createTextInput(form, "NNK", formId + "_nnk", querschnitt != undefined ? querschnitt.getAbschnitt().getNnk() : undefined);
+        nnk.disabled = true;
+        form.appendChild(document.createElement("br"));
+
+        // Station
+        let station = HTML.createTextInput(form, "Station", formId + "_station", querschnitt != undefined ? querschnitt.vst + ' - ' + querschnitt.bst : undefined);
+        station.disabled = true;
+        form.appendChild(document.createElement("br"));
+
+        // Streifen
+        let streifen = HTML.createTextInput(form, "Streifen", formId + "_streifen", querschnitt != undefined ? querschnitt.streifen + ' ' + querschnitt.streifennr : undefined);
+        streifen.disabled = true;
+        form.appendChild(document.createElement("br"));
+
+        // Breite
+        let breite = HTML.createTextInput(form, "Von Breite", formId + "_breite", querschnitt != undefined ? querschnitt.breite.toString() : undefined);
+        breite.disabled = true;
+        form.appendChild(document.createElement("br"));
+
+        // BisBreite
+        let bisbreite = HTML.createTextInput(form, "Bis Breite", formId + "_bisbreite", querschnitt != undefined ? querschnitt.bisBreite.toString() : undefined);
+        bisbreite.disabled = true;
+        form.appendChild(document.createElement("br"));
+
+        // Button
+        if (changeable) {
+            let input = document.createElement("input");
+            input.id = formId + "_button";
+            input.type = "button"
+            input.value = "Querschnitt speichern"
+            input.disabled = true;
+            form.appendChild(input);
+        }
+    }
+
+    public getInfoForm(ziel: HTMLFormElement, changeable: boolean = false): void {
+        Querschnitt.createFields(ziel, "info", this, changeable);
+    }
+
     static fromXML(xml: Element, doNotAdd: boolean = false) {
         let r = new Querschnitt();
         r.setDataFromXML('QUERSCHNITT', xml)
 
         if (doNotAdd) return r;  // Abbruch, falls nur die Daten geparst werden sollen
 
-        let abschnitt: Abschnitt = r._daten.getAbschnitt(r.abschnittId);
-        abschnitt.addOKinER('Querschnitt');
+        r.abschnitt = r._daten.getAbschnitt(r.abschnittId);
+        r.abschnitt.addOKinER('Querschnitt');
 
         //console.log(abschnitt);
-        if (!(abschnitt.existsStation(r.vst))) {
+        if (!(r.abschnitt.existsStation(r.vst))) {
             let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(' ');
             let geo = [];
             for (let i = 0; i < koords.length; i++) {
@@ -159,9 +217,9 @@ export default class Querschnitt extends Objekt {
                 let y = Number(k[1]);
                 geo.push([x, y]);
             }
-            r.station = new QuerStation(abschnitt, r.vst, r.bst, geo);
+            r.station = new QuerStation(r.abschnitt, r.vst, r.bst, geo);
         } else {
-            r.station = abschnitt.getStation(r.vst);
+            r.station = r.abschnitt.getStation(r.vst);
         }
         r.station.addQuerschnitt(r);
         r.createGeom();
@@ -233,7 +291,7 @@ export default class Querschnitt extends Objekt {
         else this.trenn.setGeometry(new MultiLineString([l, r]));
 
         g.push(g[0])
-        this.flaeche.setGeometry(new Polygon([g])) //setCoordinates([g])
+        this.setGeometry(new Polygon([g])) //setCoordinates([g])
     }
 
     public createInsertXML(changes?: { [tag: string]: number | string }, removeIds?: boolean) {
@@ -363,7 +421,7 @@ export default class Querschnitt extends Objekt {
     }
 
     public delete() {
-        this._daten.vectorQuer.removeFeature(this.flaeche)
+        this._daten.vectorQuer.removeFeature(this)
         this._daten.vectorTrenn.removeFeature(this.trenn)
     }
 

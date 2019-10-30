@@ -65,7 +65,7 @@ window.addEventListener('load', function () {
 
     daten = new Daten(map, er, ernr);
 
-    infoTool = new QuerInfoTool(map, daten);
+    infoTool = new QuerInfoTool(map, daten.layerTrenn, daten.layerQuer, "sidebar");
     infoTool.start();
     editTool = new QuerModifyTool(map, infoTool);
     delTool = new QuerDelTool(map, infoTool);
@@ -416,10 +416,10 @@ window.addEventListener('load', function () {
 document.onkeyup = function (e: KeyboardEvent) {
     if ($(e.target).closest("input")[0]) {
         return;
-    }  
+    }
     console.log(e.code);
     console.log(Daten.getInstanz().modus);
-    
+
 
     let modus = Daten.getInstanz().modus;
 
@@ -458,4 +458,4 @@ $("span.hotkey_alt").each(function () {
     let t = $(this).text();
     $(this).parent().prop('title', 'Alt + ' + t.toUpperCase() + '')
 });
-$("span.hotkey_alt").parent().tooltip({track: true})
+$("span.hotkey_alt").parent().tooltip({ track: true })

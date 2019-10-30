@@ -8,6 +8,7 @@ import { InfoToolSelectable } from './InfoTool';
 import VectorSource from 'ol/source/Vector';
 import PublicWFS from '../PublicWFS';
 import PunktObjekt from 'src/js/Objekte/PunktObjekt';
+import HTML from '../HTML';
 
 /**
  * Prototyp des Werkzeuges zum Löschen von Punktobjekten
@@ -34,12 +35,9 @@ export default class DeleteTool extends Tool {
         this._sidebar = document.getElementById(sidebar);
         this.objekt = objekt;
 
-        this._delField = document.createElement("form");
+        this._delField = HTML.createToolForm(this._sidebar, false);
         this._infoField = document.createElement("div");
         this._delField.appendChild(this._infoField);
-        this._sidebar.appendChild(this._delField);
-        this._delField.style.display = "none";
-
 
         let button = document.createElement("button");
         button.addEventListener("click", function (event: MouseEvent) {
@@ -65,7 +63,7 @@ export default class DeleteTool extends Tool {
         let auswahl = <InfoToolSelectable>event.selected[0];
 
         this._delField;
-        auswahl.getHTMLInfo(this._infoField);
+        auswahl.getInfoForm(this._infoField);
     }
 
     _featureDelete() {

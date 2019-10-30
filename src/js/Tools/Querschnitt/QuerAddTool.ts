@@ -6,6 +6,7 @@ import Daten from '../../Daten';
 import QuerInfoTool from './QuerInfoTool';
 import Tool from '../prototypes/Tool';
 import { SelectEvent } from 'ol/interaction/Select';
+import InfoTool from '../InfoTool';
 
 /**
  * Funktion zum Hinzufügen von Querschnittsflächen
@@ -26,27 +27,28 @@ class QuerAddTool extends Tool {
         this._info = info;
         this._select = new SelectInteraction({
             layers: [this._daten.layerTrenn],
-            style: new Style({
-                stroke: new Stroke({
-                    color: 'rgba(255, 0, 0, 0.5)',
-                    width: 5
-                })
-            })
+            style: InfoTool.selectStyle
         });
 
         this._select.on('select', function (e: SelectEvent) {
             if (e.selected.length == 0) {
-                document.forms.namedItem("hinzu").getElementsByTagName("input")[0].style.backgroundColor = "";
-                document.forms.namedItem("hinzu").getElementsByTagName("input")[0].disabled = true;
+                this.disableMenu();
                 return
             }
             console.log(this);
-            this._info.logAuswahl(this._select);
+            (this._info as QuerInfoTool).getInfoFieldForFeature(e.selected[0].get("objekt"))
             document.forms.namedItem("hinzu").getElementsByTagName("input")[0].style.backgroundColor = "#ffcc00";
             document.forms.namedItem("hinzu").getElementsByTagName("input")[0].disabled = false;
         }.bind(this));
 
         document.getElementById("addQuerschnittButton").addEventListener('click', this.addQuerschnitt.bind(this));
+    }
+
+
+    private disableMenu() {
+        document.forms.namedItem("hinzu").getElementsByTagName("input")[0].style.backgroundColor = "";
+        document.forms.namedItem("hinzu").getElementsByTagName("input")[0].disabled = true;
+        (this._info as QuerInfoTool).hideInfoBox();
     }
 
     start() {
@@ -55,6 +57,7 @@ class QuerAddTool extends Tool {
     }
 
     stop() {
+        this.disableMenu()
         document.forms.namedItem("hinzu").style.display = 'none';
         this._map.removeInteraction(this._select);
         document.forms.namedItem("info").style.display = "none";

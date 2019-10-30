@@ -7,11 +7,11 @@ import { Map } from 'ol';
 import { ColorLike } from "ol/colorlike";
 import Klartext from "./Klartext";
 import PublicWFS from "../PublicWFS";
-import { InfoToolSelectable } from "../Tools/InfoTool";
+import { InfoToolSelectable, InfoToolEditable } from "../Tools/InfoTool";
 import { Point } from "ol/geom";
 import Daten from "../Daten";
 
-export default abstract class PunktObjekt extends Objekt implements InfoToolSelectable {
+export default abstract class PunktObjekt extends Objekt implements InfoToolEditable {
     protected vabstVst: number;
     protected vabstBst: number;
     protected rlageVst: string;
@@ -21,7 +21,7 @@ export default abstract class PunktObjekt extends Objekt implements InfoToolSele
     // Abstrakte Funktionen
     abstract colorFunktion1(): ColorLike;
     abstract colorFunktion2(): ColorLike;
-    abstract getHTMLInfo(sidebar: HTMLElement, changeable?: boolean): void;
+    abstract getInfoForm(sidebar: HTMLElement, changeable?: boolean): void;
     abstract changeAttributes(form: HTMLFormElement): void;
 
     public updateStation(station: number, abstand: number) {

@@ -12,12 +12,15 @@ var CONFIG = require('../../config.json');
  * @version 2019.10.29
  * @copyright MIT
  */
-class AvAdd extends AddTool {
-    form: HTMLFormElement;
+export default class AvAdd extends AddTool {
     constructor(map: Map) {
         super(map);
         this.form = Aufstellvorrichtung.createForm('avadd', undefined, true);
         document.getElementById('avadd_button').addEventListener('click', this.addAufstellButton.bind(this));
+    }
+
+    getObjektklasse(): string {
+        return 'Otaufstvor';
     }
 
     protected part_click(event: MapBrowserEvent) {
@@ -81,30 +84,8 @@ class AvAdd extends AddTool {
         PublicWFS.doTransaction(soap, this.getInsertResults.bind(this));
     }
 
-    private getInsertResults(xml: XMLDocument) {
-        PublicWFS.showMessage("erfolgreich");
-        this.abschnitt = null;
-        this.station = null;
-        this.seite = null;
-        (this.feat_neu.getGeometry() as Point).setCoordinates([0, 0]);
-        let filter = '<Filter>';
-        let childs = xml.getElementsByTagName('InsertResult')[0].childNodes;
-        for (let i = 0; i < childs.length; i++) {
-            filter += '<FeatureId fid="' + (childs[i] as Element).getAttribute('fid') + '"/>';
-        }
-        filter += '</Filter>';
-        PublicWFS.doQuery('Otaufstvor', filter, Aufstellvorrichtung.loadERCallback);
-    }
+    protected loadERCallback(xml: XMLDocument, ...args: any[]): void {
+        Aufstellvorrichtung.loadERCallback(xml, ...args)
 
-    start() {
-        document.forms.namedItem("avadd").style.display = 'block';
-        super.start();
-    }
-
-    stop() {
-        document.forms.namedItem("avadd").style.display = 'none';
-        super.stop();
     }
 }
-
-export default AvAdd;

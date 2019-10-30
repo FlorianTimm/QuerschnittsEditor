@@ -98,7 +98,7 @@ export default class MoveTool extends Tool {
             this.map.unset("pointermove", this.move.bind(this));
             (this.feat_station_line.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
         }
-        this.infoTool.featureSelected(event, true);
+        this.infoTool.featureSelectedEvent(event, true);
     }
 
     private modifyStart(event: ModifyEvent) {

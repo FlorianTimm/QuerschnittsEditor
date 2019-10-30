@@ -1,5 +1,6 @@
 import Abschnitt from "./Abschnitt";
 import { Feature } from "ol";
+import { InfoToolSelectable } from "../Tools/InfoTool";
 
 /**
  * Interface für SIB-Objekte
@@ -10,7 +11,7 @@ import { Feature } from "ol";
 
 var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
 
-export default abstract class Objekt extends Feature {
+export default abstract class Objekt extends Feature implements InfoToolSelectable {
 	protected abschnittOderAst: string = null;
 	protected vst: number = null;
 	protected bst: number = null;
@@ -34,7 +35,8 @@ export default abstract class Objekt extends Feature {
 	protected projekt: string = null;
 	protected abschnittId: string = null;
 
-    abstract getObjektKlassenName(): string;
+	abstract getInfoForm(sidebar: HTMLElement, changeable?: boolean): void;
+	abstract getObjektKlassenName(): string;
 
 	constructor() {
 		super({ geom: null });
@@ -58,28 +60,28 @@ export default abstract class Objekt extends Feature {
 	}
 
 	protected createUpdateXML(updates: {}): string {
-        let xml = '<wfs:Update typeName="' + this.getObjektKlassenName() + '">\n'
-        for (let update in updates) {
-            xml += '	<wfs:Property>\n' +
-                '		<wfs:Name>' + update + '</wfs:Name>\n' +
-                '		<wfs:Value>' + updates[update] + '</wfs:Value>\n' +
-                '	</wfs:Property>\n';
-        }
-        xml += '	<ogc:Filter>\n' +
-            '		<ogc:And>\n' +
-            '			<ogc:PropertyIsEqualTo>\n' +
-            '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
-            '				<ogc:Literal>' + this.objektId + '</ogc:Literal>\n' +
-            '			</ogc:PropertyIsEqualTo>\n' +
-            '			<ogc:PropertyIsEqualTo>\n' +
-            '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
-            '				<ogc:Literal>' + this.projekt + '</ogc:Literal>\n' +
-            '			</ogc:PropertyIsEqualTo>\n' +
-            '		</ogc:And>\n' +
-            '	</ogc:Filter>\n' +
-            '</wfs:Update>';
-        return xml;
-    }
+		let xml = '<wfs:Update typeName="' + this.getObjektKlassenName() + '">\n'
+		for (let update in updates) {
+			xml += '	<wfs:Property>\n' +
+				'		<wfs:Name>' + update + '</wfs:Name>\n' +
+				'		<wfs:Value>' + updates[update] + '</wfs:Value>\n' +
+				'	</wfs:Property>\n';
+		}
+		xml += '	<ogc:Filter>\n' +
+			'		<ogc:And>\n' +
+			'			<ogc:PropertyIsEqualTo>\n' +
+			'				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
+			'				<ogc:Literal>' + this.objektId + '</ogc:Literal>\n' +
+			'			</ogc:PropertyIsEqualTo>\n' +
+			'			<ogc:PropertyIsEqualTo>\n' +
+			'				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
+			'				<ogc:Literal>' + this.projekt + '</ogc:Literal>\n' +
+			'			</ogc:PropertyIsEqualTo>\n' +
+			'		</ogc:And>\n' +
+			'	</ogc:Filter>\n' +
+			'</wfs:Update>';
+		return xml;
+	}
 
 
 	// Getter

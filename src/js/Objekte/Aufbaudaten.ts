@@ -9,6 +9,9 @@ var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number
 * @copyright MIT
 */
 export default class Aufbau extends Objekt {
+	getInfoForm(sidebar: HTMLElement, changeable?: boolean): void {
+		throw new Error("Method not implemented.");
+	}
 	getObjektKlassenName(): string {
 		return "Otschicht";
 	}

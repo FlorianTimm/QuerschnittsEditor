@@ -90,20 +90,20 @@
             <button type="button" id="loadExtent">Abschnitte laden</button>
         </form>
 
-        <form id="loeschen" name="loeschen">
+        <form id="loeschen" name="loeschen" class="tool_form">
             <input type="button" onclick="delQuerschnittButton()" value="Querschnitt l&ouml;schen"
                 disabled="disabled" />
         </form>
 
-        <form id="hinzu" name="hinzu">
+        <form id="hinzu" name="hinzu" class="tool_form">
             <input type="button" id="addQuerschnittButton" value="Querschnitt hinzuf&uuml;gen" disabled="disabled" />
         </form>
 
-        <form id="quer_del" name="quer_del">
+        <form id="quer_del" name="quer_del" class="tool_form">
             <input type="button" id="delQuerschnittButton" value="Querschnitt l&ouml;schen" disabled="disabled" />
         </form>
 
-        <form id="teilen" name="teilen">
+        <form id="teilen" name="teilen" class="tool_form">
             <table>
                 <tr>
                     <td>VNK:</td>
@@ -121,18 +121,18 @@
             <input type="button" id="teilen_button" value="Querschnitt teilen" disabled="disabled" />
         </form>
 
-        <form id="modify" name="modify">
+        <form id="modify" name="modify" class="tool_form">
             Nachfolgende Querschnitte:<br />
-            <input type="radio" name="typ" id="modify_move" value="move" checked="checked" /><label
+            <input type="radio" name="typ" id="modify_move" class="label_radio" value="move" checked="checked" /><label
                 for="modify_move">&nbsp;...verschieben</label><br />
-            <input type="radio" name="typ" id="modify_fit" value="fit" /><label
+            <input type="radio" name="typ" id="modify_fit" class="label_radio" value="fit" /><label
                 for="modify_fit">&nbsp;...anpassen</label><br />
             <br />
             <input type="checkbox" name="modify_glue" id="modify_glue" />
             <label for="modify_glue">&nbsp;angrenzende Querschnitte mitziehen</label><br />
         </form>
 
-        <form id="info" name="info">
+        <form id="info" name="info" class="tool_form">
             <table>
                 <tr>
                     <td>VNK:</td>
@@ -170,7 +170,7 @@
             </table>
         </form>
 
-        <form id="qsMultiMod" name="qsMultiMod">
+        <form id="qsMultiMod" name="qsMultiMod" class="tool_form">
             <table>
                 <tr>
                     <td>Anzahl</td>

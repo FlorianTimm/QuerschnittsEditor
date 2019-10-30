@@ -7,12 +7,10 @@
 import "../import_jquery.js";
 import 'chosen-js';
 import 'chosen-js/chosen.css';
-import { Point } from 'ol/geom';
 import Daten from "../Daten";
 import PublicWFS from '../PublicWFS';
 import Abschnitt from './Abschnitt';
 import Klartext from './Klartext';
-import Objekt from './Objekt';
 import PunktObjekt from './PunktObjekt';
 import Zeichen from './Zeichen';
 import HTML from "../HTML";
@@ -152,9 +150,7 @@ export default class Aufstellvorrichtung extends PunktObjekt {
 
     public static createForm(formId: string, aufstell?: Aufstellvorrichtung, changeable: boolean = false): HTMLFormElement {
         let sidebar = document.getElementById("sidebar");
-        let form = document.createElement("form");
-        form.id = formId;
-        sidebar.appendChild(form);
+        let form = HTML.createToolForm(sidebar, true, formId);
 
         // Art
         Aufstellvorrichtung.createFields(form, formId, aufstell, changeable);
@@ -162,7 +158,10 @@ export default class Aufstellvorrichtung extends PunktObjekt {
         return form;
     }
 
+
+
     private static createFields(form: HTMLFormElement, formId: string, aufstell?: Aufstellvorrichtung, changeable: boolean = false) {
+        // Art
         let art = Klartext.createKlartextSelectForm("Itaufstvorart", form, "Art", formId + "_art", aufstell != undefined ? aufstell.art : undefined);
         $(art).prop('disabled', !changeable).trigger("chosen:updated");
         form.appendChild(document.createElement("br"));
@@ -227,7 +226,7 @@ export default class Aufstellvorrichtung extends PunktObjekt {
         }
     }
 
-    public getHTMLInfo(ziel: HTMLFormElement, changeable: boolean = false): void {
+    public getInfoForm(ziel: HTMLFormElement, changeable: boolean = false): void {
         Aufstellvorrichtung.createFields(ziel, "av_info", this, changeable);
     }
 

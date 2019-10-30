@@ -357,7 +357,7 @@ export default class QuerStation {
 
     public deleteStreifen(streifen: string, nummer: number) {
         this.daten.vectorTrenn.removeFeature(this._querschnitte[streifen][nummer].trenn)
-        this.daten.vectorQuer.removeFeature(this._querschnitte[streifen][nummer].flaeche)
+        this.daten.vectorQuer.removeFeature(this._querschnitte[streifen][nummer])
         let max = -1;
         for (let i in this._querschnitte[streifen]) {
             if (Number(i) > max) {

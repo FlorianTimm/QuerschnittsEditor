@@ -36,6 +36,9 @@ export default class Klartext {
                     this.requestCallbacks[klartext].push({ callback: whenReady, args: args });
                 }
                 PublicWFS.doQuery(klartext, '', this.read.bind(this), undefined, klartext);
+            } else {
+                if (whenReady != undefined)
+                    this.requestCallbacks[klartext].push({ callback: whenReady, args: args });
             }
 
         } else if (whenReady != undefined) {
@@ -68,6 +71,8 @@ export default class Klartext {
             return;
         let callback: Callback;
         while (callback = this.requestCallbacks[klartext].pop()) {
+            console.log(klartext);
+            console.log(callback);
             callback.callback(this._klartexte[klartext], ...callback.args);
         }
 
