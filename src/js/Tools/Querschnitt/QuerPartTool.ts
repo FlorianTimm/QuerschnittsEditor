@@ -173,7 +173,7 @@ class QuerPartTool extends Tool {
         let absid = this.feat_teilung.get("abschnittid");
         let station = this.feat_teilung.get("station");
 
-        console.log(this.daten.getAbschnitt(absid));
+        //console.log(this.daten.getAbschnitt(absid));
 
         let sta = this.daten.getAbschnitt(absid).getStationByStation(station);
         sta.teilen(station);
@@ -197,7 +197,7 @@ class QuerPartTool extends Tool {
         this.map.un("singleclick", this.part_click);
         (this.feat_station.getGeometry() as LineString).setCoordinates([0, 0]);
         (this.feat_teilung.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
-        document.forms.namedItem("info").style.display = "none";
+        this.info.hideInfoBox();
         this.map.removeLayer(this.l_overlay);
     }
 }

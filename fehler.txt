@@ -1,0 +1,2 @@
+src/js/edit.ts(18,8): error TS1259: Module '"G:/AG_Verkehrsdaten/DV-System/Eigenentwicklungen/WebAnwendungen/querschnitteOO/node_modules/@types/proj4/index"' can only be default-imported using the 'esModuleInterop' flag
+src/js/Tools/Querschnitt/QuerAddTool.ts(39,42): error TS2445: Property 'getInfoFieldForFeature' is protected and only accessible within class 'InfoTool' and its subclasses.

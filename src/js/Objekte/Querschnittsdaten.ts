@@ -10,6 +10,7 @@ import Objekt from './Objekt';
 import QuerStation from './QuerStation';
 import Klartext from './Klartext';
 import HTML from '../HTML';
+import { InfoToolEditable } from '../Tools/InfoTool';
 
 /**
 * @author Florian Timm, LGV HH 
@@ -18,7 +19,7 @@ import HTML from '../HTML';
 */
 
 
-export default class Querschnitt extends Objekt {
+export default class Querschnitt extends Objekt implements InfoToolEditable {
     getObjektKlassenName(): string {
         return "Dotquer"
     }
@@ -144,42 +145,42 @@ export default class Querschnitt extends Objekt {
 
     private static createFields(form: HTMLFormElement, formId: string, querschnitt?: Querschnitt, changeable: boolean = false) {
         // Art
-        let art = Klartext.createKlartextSelectForm("Itquerart", form, "Art", formId + "_art", querschnitt != undefined ? querschnitt.art : undefined);
+        let art = Klartext.createKlartextSelectForm("Itquerart", form, "Art", "art", querschnitt != undefined ? querschnitt.art : undefined);
         $(art).prop('disabled', !changeable).trigger("chosen:updated");
         form.appendChild(document.createElement("br"));
 
         // Lage
-        let lage = Klartext.createKlartextSelectForm("Itquerober", form, "Lage", formId + "_ober", querschnitt != undefined ? querschnitt.artober : undefined);
+        let lage = Klartext.createKlartextSelectForm("Itquerober", form, "Lage", "ober", querschnitt != undefined ? querschnitt.artober : undefined);
         $(lage).prop('disabled', !changeable).trigger("chosen:updated");
         form.appendChild(document.createElement("br"));
 
         // VNK
-        let vnk = HTML.createTextInput(form, "VNK", formId + "_vnk", querschnitt != undefined ? querschnitt.getAbschnitt().getVnk() : undefined);
+        let vnk = HTML.createTextInput(form, "VNK", "vnk", querschnitt != undefined ? querschnitt.getAbschnitt().getVnk() : undefined);
         vnk.disabled = true;
         form.appendChild(document.createElement("br"));
 
         // NNK
-        let nnk = HTML.createTextInput(form, "NNK", formId + "_nnk", querschnitt != undefined ? querschnitt.getAbschnitt().getNnk() : undefined);
+        let nnk = HTML.createTextInput(form, "NNK", "nnk", querschnitt != undefined ? querschnitt.getAbschnitt().getNnk() : undefined);
         nnk.disabled = true;
         form.appendChild(document.createElement("br"));
 
         // Station
-        let station = HTML.createTextInput(form, "Station", formId + "_station", querschnitt != undefined ? querschnitt.vst + ' - ' + querschnitt.bst : undefined);
+        let station = HTML.createTextInput(form, "Station", "station", querschnitt != undefined ? querschnitt.vst + ' - ' + querschnitt.bst : undefined);
         station.disabled = true;
         form.appendChild(document.createElement("br"));
 
         // Streifen
-        let streifen = HTML.createTextInput(form, "Streifen", formId + "_streifen", querschnitt != undefined ? querschnitt.streifen + ' ' + querschnitt.streifennr : undefined);
+        let streifen = HTML.createTextInput(form, "Streifen", "streifen", querschnitt != undefined ? querschnitt.streifen + ' ' + querschnitt.streifennr : undefined);
         streifen.disabled = true;
         form.appendChild(document.createElement("br"));
 
         // Breite
-        let breite = HTML.createTextInput(form, "Von Breite", formId + "_breite", querschnitt != undefined ? querschnitt.breite.toString() : undefined);
+        let breite = HTML.createTextInput(form, "Von Breite", "breite", querschnitt != undefined ? querschnitt.breite.toString() : undefined);
         breite.disabled = true;
         form.appendChild(document.createElement("br"));
 
         // BisBreite
-        let bisbreite = HTML.createTextInput(form, "Bis Breite", formId + "_bisbreite", querschnitt != undefined ? querschnitt.bisBreite.toString() : undefined);
+        let bisbreite = HTML.createTextInput(form, "Bis Breite", "bisbreite", querschnitt != undefined ? querschnitt.bisBreite.toString() : undefined);
         bisbreite.disabled = true;
         form.appendChild(document.createElement("br"));
 
@@ -364,7 +365,7 @@ export default class Querschnitt extends Objekt {
         }));
     }
 
-    private updateArtEinzeln(art: string) {
+    public updateArtEinzeln(art: string) {
         this.art = art;
         this._daten.vectorQuer.changed();
 
@@ -373,7 +374,7 @@ export default class Querschnitt extends Objekt {
         }));
     }
 
-    private updateOberEinzeln(artober: string) {
+    public updateOberEinzeln(artober: string) {
         this.artober = artober;
         this._daten.vectorQuer.changed();
         PublicWFS.doTransaction(this.createUpdateXML({
@@ -381,8 +382,23 @@ export default class Querschnitt extends Objekt {
         }));
     }
 
+    public changeAttributes(form: HTMLFormElement) {
+        let changes: { [attribut: string]: any } = {}
+        if ($(form).children("#art").val() != this.getArt()) {
+            this.setArt($(form).children("#art").val() as string)
+            changes["art"] = $(form).children("#art").val()
+        }
 
-    private editBreite(edit: string, diff: number, fit: boolean) {
+        if ($(form).children("#ober").val() != this.getArtober()) {
+            this.setArtober($(form).children("#ober").val() as string)
+            changes["artober"] = $(form).children("#ober").val()
+        }
+
+        PublicWFS.doTransaction(this.createUpdateXML(changes));
+    };
+
+
+    public editBreite(edit: string, diff: number, fit: boolean) {
         let gesStreifen = this.station.getStreifen(this.streifen);
         let nr = this.streifennr;
 
@@ -435,10 +451,16 @@ export default class Querschnitt extends Objekt {
         return this.streifennr
     }
     public getArt(): string {
-        return this.art;
+        if (this.art != null)
+            return this.art.substr(-32);
+        else
+            return null
     }
     public getArtober(): string {
-        return this.artober;
+        if (this.artober != null)
+            return this.artober.substr(-32);
+        else
+            return null
     }
     public getXBstL(): number {
         return this.XBstL;

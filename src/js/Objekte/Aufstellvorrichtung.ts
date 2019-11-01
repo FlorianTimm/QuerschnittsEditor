@@ -148,9 +148,9 @@ export default class Aufstellvorrichtung extends PunktObjekt {
         }
     }
 
-    public static createForm(formId: string, aufstell?: Aufstellvorrichtung, changeable: boolean = false): HTMLFormElement {
+    public static createForm(formId: string, aufstell?: Aufstellvorrichtung, changeable: boolean = false, showForm:boolean = true): HTMLFormElement {
         let sidebar = document.getElementById("sidebar");
-        let form = HTML.createToolForm(sidebar, true, formId);
+        let form = HTML.createToolForm(sidebar, showForm, formId);
 
         // Art
         Aufstellvorrichtung.createFields(form, formId, aufstell, changeable);
@@ -231,14 +231,14 @@ export default class Aufstellvorrichtung extends PunktObjekt {
     }
 
     public changeAttributes(form: HTMLFormElement): void {
-        console.log(this)
-        console.log($(form).children("#av_info_art"))
+        //console.log(this)
+        //console.log($(form).children("#av_info_art"))
         this.setArt($(form).children("#av_info_art").children("option:selected").val() as string);
         this.setRlageVst($(form).children("#av_info_lage").children("option:selected").val() as string);
         this.setQuelle($(form).children("#av_info_quelle").children("option:selected").val() as string);
         this.setObjektnr($(form).children("#av_info_extid").val() as string);
 
-        console.log(this)
+        //console.log(this)
 
         let xml = this.createUpdateXML({
             'art/@xlink:href': this.getArt(),

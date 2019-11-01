@@ -59,7 +59,7 @@ export default abstract class Objekt extends Feature implements InfoToolSelectab
 		}
 	}
 
-	protected createUpdateXML(updates: {}): string {
+	protected createUpdateXML(updates: { [attribut: string]: any }): string {
 		let xml = '<wfs:Update typeName="' + this.getObjektKlassenName() + '">\n'
 		for (let update in updates) {
 			xml += '	<wfs:Property>\n' +

@@ -164,7 +164,7 @@ export default abstract class AddTool extends Tool {
     public abstract getObjektklasse(): string;
 
     start() {
-        this.form.style.display = 'block';
+        $(this.form).show( "fast");
         this.map.addInteraction(this.select);
         this.map.on("pointermove", this.part_move.bind(this));
         this.map.on("singleclick", this.part_click.bind(this));
@@ -172,7 +172,7 @@ export default abstract class AddTool extends Tool {
     }
 
     stop() {
-        this.form.style.display = 'none';
+        $(this.form).hide("fast");
         this.map.removeInteraction(this.select);
         this.map.un("pointermove", this.part_move);
         this.map.un("singleclick", this.part_click);

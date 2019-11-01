@@ -1,4 +1,4 @@
-import { Map } from "ol";
+import { Map, Feature } from "ol";
 import Daten from '../../Daten';
 import QuerInfoTool from "./QuerInfoTool";
 import Tool from '../prototypes/Tool';
@@ -19,8 +19,8 @@ class QuerDelTool extends Tool {
     private map: Map;
     private daten: Daten;
     private info: QuerInfoTool;
-    private select: SelectInteraction;
-    private select_fl: SelectInteraction;
+    private selectLinien: SelectInteraction;
+    private selectFlaechen: SelectInteraction;
 
     constructor(map: Map, info: QuerInfoTool) {
         super();
@@ -35,11 +35,11 @@ class QuerDelTool extends Tool {
     }
 
     private querschnittLoeschenButton() {
-        let selection = this.select.getFeatures();
-        if (this.select.getFeatures().getLength() <= 0) return;
-        if (!("Wollen Sie die Fläche wirklich löschen?")) return;
+        let selection = this.selectFlaechen.getFeatures();
+        if (this.selectLinien.getFeatures().getLength() <= 0) return;
+        if (!confirm("Wollen Sie die Fläche wirklich löschen?")) return;
 
-        let querschnitt = <Querschnitt>selection.item(0).get('objekt');
+        let querschnitt = <Querschnitt>selection.item(0);
         let gesStreifen = querschnitt.getStation().getStreifen(querschnitt.getStreifen());
         querschnitt.getStation().deleteStreifen(querschnitt.getStreifen(), querschnitt.getStreifennr())
         for (let nr in gesStreifen) {
@@ -59,48 +59,48 @@ class QuerDelTool extends Tool {
             //querschnitt.getStation().addQuerschnitt(quer);
         }
 
-        this.select.getFeatures().clear();
-        this.select_fl.getFeatures().clear();
+        this.selectLinien.getFeatures().clear();
+        this.selectFlaechen.getFeatures().clear();
         querschnitt.getStation().rewrite();
 
     }
 
     private createLinienSelect() {
-        this.select = new SelectInteraction({
+        this.selectLinien = new SelectInteraction({
             layers: [this.daten.layerTrenn],
-            toggleCondition: never,
+            condition: never,
             style: InfoTool.selectStyle
         });
-        this.select.info = this.info;
-        this.select.on('select', function (e) {
+        /*this.selectLinien.info = this.info;
+        this.selectLinien.on('select', function (e) {
             this.select_fl.getFeatures().clear();
             let auswahl = (this.select as SelectInteraction).getFeatures();
             if (auswahl.getLength() > 0) {
                 this.select_fl.getFeatures().push(auswahl.item(0).get("objekt"))
             }
             this.featureSelected()
-        }.bind(this));
+        }.bind(this));*/
     }
 
     private createFlaechenSelect() {
-        this.select_fl = new SelectInteraction({
+        this.selectFlaechen = new SelectInteraction({
             layers: [this.daten.layerQuer],
             toggleCondition: never,
             style: InfoTool.selectStyle
         });
 
-        this.select_fl.on('select', function (e, zwei) {
-            this.select.getFeatures().clear();
-            let auswahl = (this.select_fl as SelectInteraction).getFeatures();
-            if (auswahl.getLength() > 0) {
-                this.select.getFeatures().push((auswahl.item(0) as Querschnitt).trenn)
-            }
+        this.selectFlaechen.on('select', function (e, zwei) {
+            this.selectLinien.getFeatures().clear();
+            let auswahl = (this.selectFlaechen as SelectInteraction).getFeatures();
+            auswahl.forEach(function (feat: Querschnitt) {
+                this.selectLinien.getFeatures().push(feat.trenn);
+            }.bind(this))
             this.featureSelected()
         }.bind(this));
     }
 
     featureSelected() {
-        let selection = this.select_fl.getFeatures().getArray();
+        let selection = this.selectFlaechen.getFeatures().getArray();
         if (selection.length != 1) {
             this.disableMenu();
             return;
@@ -108,9 +108,9 @@ class QuerDelTool extends Tool {
         (<HTMLButtonElement>document.getElementById("delQuerschnittButton")).disabled = false;
         let auswahl = selection[0];
         let a = (auswahl as Querschnitt).trenn;
-        this.select.getFeatures().push(a);
+        this.selectLinien.getFeatures().push(a);
 
-        (this.info as InfoTool).featureSelect(this.select_fl);
+        (this.info as InfoTool).featureSelect(this.selectFlaechen);
     }
 
     private disableMenu() {
@@ -119,17 +119,17 @@ class QuerDelTool extends Tool {
     }
 
     start() {
-        this.map.addInteraction(this.select);
-        this.map.addInteraction(this.select_fl);
+        this.map.addInteraction(this.selectLinien);
+        this.map.addInteraction(this.selectFlaechen);
         document.forms.namedItem("quer_del").style.display = 'block';
     }
 
     stop() {
-        this.map.removeInteraction(this.select);
-        this.map.removeInteraction(this.select_fl);
+        this.map.removeInteraction(this.selectLinien);
+        this.map.removeInteraction(this.selectFlaechen);
         this.disableMenu()
         document.forms.namedItem("quer_del").style.display = 'none';
-        document.forms.namedItem("info").style.display = "none";
+        this.info.hideInfoBox();
     }
 }
 

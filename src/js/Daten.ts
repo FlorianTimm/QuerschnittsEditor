@@ -137,7 +137,6 @@ export default class Daten {
             let v = document.createAttribute('value');
             v.value = a.objektId;
             option.setAttributeNode(v);
-            document.forms.namedItem("info").info_art.appendChild(option);
             document.forms.namedItem("qsMultiMod").qsmm_art.appendChild(option.cloneNode(true));
         }
     }
@@ -151,7 +150,6 @@ export default class Daten {
             let v = document.createAttribute('value');
             v.value = a.objektId;
             option.setAttributeNode(v);
-            document.forms.namedItem("info").info_ober.appendChild(option);
             document.forms.namedItem("qsMultiMod").qsmm_ober.appendChild(option.cloneNode(true));
         }
     }

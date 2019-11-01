@@ -71,8 +71,6 @@ export default class Klartext {
             return;
         let callback: Callback;
         while (callback = this.requestCallbacks[klartext].pop()) {
-            console.log(klartext);
-            console.log(callback);
             callback.callback(this._klartexte[klartext], ...callback.args);
         }
 
@@ -139,8 +137,8 @@ export default class Klartext {
         return sortable;
     }
 
-    static createKlartextSelectForm(klartext: string, form: HTMLFormElement, beschriftung: string, id: string, value?: string) {
-        let field = HTML.createSelectForm(form, beschriftung, id);
+    static createKlartextSelectForm(klartext: string, form: HTMLFormElement, beschriftung: string, id: string, value?: string, platzhalter?: string) {
+        let field = HTML.createSelectForm(form, beschriftung, id, platzhalter);
         Klartext.klartext2select(klartext, field, value);
         return field;
     }
@@ -149,19 +147,16 @@ export default class Klartext {
         Klartext.getInstanz().load(klartext, Klartext.klartext2select_callback, klartext, selectInput, value);
     }
 
-    private static klartext2select_callback(klartexteObjekt: {}, klartext: string, selectInput: HTMLSelectElement, value?: string) {
+    private static klartext2select_callback(klartexteObjekt: {}, klartext: string, selectInput: HTMLSelectElement, value: string = null) {
         let arten = Klartext.getInstanz().getAllSorted(klartext);
+
         for (let a of arten) {
-            let option = document.createElement('option');
-            let t = document.createTextNode(a.beschreib);
-            option.appendChild(t);
-            option.setAttribute('value', a.objektId);
-            if (value != undefined && value.substr(-32) == a.objektId) {
-                option.setAttribute("selected", "selected");
-            }
-            selectInput.appendChild(option);
+            let isSelected = (value != undefined && value.substr(-32) == a.objektId);
+            HTML.createSelectNode(selectInput, a.beschreib, a.objektId, isSelected);
         }
-        $(selectInput).chosen({ width: "95%", search_contains: true });
+        if (value == undefined || value == null) selectInput.value = null;
+
+        $(selectInput).chosen({ width: "95%", search_contains: true, no_results_text: "Keine Übereinstimmung gefunden für ", placeholder_text_single: "Wert auswählen...", });
     }
 }
 

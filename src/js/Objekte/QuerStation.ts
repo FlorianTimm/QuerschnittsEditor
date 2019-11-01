@@ -270,7 +270,7 @@ export default class QuerStation {
         for (let i = 0; i < dotquer.length; i++) {
             let neu = Querschnitt.fromXML(dotquer[i], true);
             let alt = this.getQuerschnitt(neu.getStreifen(), neu.getStreifennr())
-
+            if (alt == undefined) continue;
             let aufbau = alt.getAufbau() as { [schicht: number]: Aufbau };
             console.log(aufbau);
             for (let schichtnr in aufbau) {

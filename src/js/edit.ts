@@ -412,7 +412,7 @@ window.addEventListener('load', function () {
 
 
 
-
+/*
 document.onkeyup = function (e: KeyboardEvent) {
     if ($(e.target).closest("input")[0]) {
         return;
@@ -459,3 +459,4 @@ $("span.hotkey_alt").each(function () {
     $(this).parent().prop('title', 'Alt + ' + t.toUpperCase() + '')
 });
 $("span.hotkey_alt").parent().tooltip({ track: true })
+*/

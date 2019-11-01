@@ -17,7 +17,7 @@ var CONFIG = require('../../config.json');
 export default class SAPAdd extends AddTool {
     constructor(map: Map) {
         super(map);
-        this.form = StrassenAusPunkt.createForm("sapadd", undefined, true);
+        this.form = StrassenAusPunkt.createForm("sapadd", undefined, true, false);
         document.getElementById('sapadd_button').addEventListener('click', this.addSAPButton.bind(this));
     }
 

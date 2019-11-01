@@ -15,7 +15,7 @@ var CONFIG = require('../../config.json');
 export default class AvAdd extends AddTool {
     constructor(map: Map) {
         super(map);
-        this.form = Aufstellvorrichtung.createForm('avadd', undefined, true);
+        this.form = Aufstellvorrichtung.createForm('avadd', undefined, true, false);
         document.getElementById('avadd_button').addEventListener('click', this.addAufstellButton.bind(this));
     }
 

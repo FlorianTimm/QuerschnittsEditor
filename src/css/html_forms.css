@@ -1,0 +1,25 @@
+.tool_form {
+    overflow-x: inherit;
+    text-align: left;
+}
+
+.tool_form input[type="text"], .tool_form input[type="number"], .tool_form select, .tool_form .chosen-container {
+    margin-bottom: 4px;
+    width: 95%;
+}
+
+.tool_form .chosen-container {
+    font-size: 9pt;
+}
+
+.tool_form label.label_text, .tool_form label.label_select, .tool_form label.label_number {
+    font-size: 8pt;
+}
+
+.ui-front {
+    z-index: 1050 !important;
+}
+
+.ui-dialog {
+    z-index: 1100 !important;
+}

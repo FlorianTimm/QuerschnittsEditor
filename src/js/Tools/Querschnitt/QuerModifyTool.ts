@@ -1,5 +1,4 @@
 import { Snap } from 'ol/interaction';
-import { Fill, Stroke, Style } from 'ol/style';
 import Vektor from '../../Vektor';
 import { platformModifierKeyOnly, never } from 'ol/events/condition';
 import QuerInfoTool from './QuerInfoTool';
@@ -11,6 +10,15 @@ import { ModifyEvent } from 'ol/interaction/Modify';
 import Querschnitt from 'src/js/Objekte/Querschnittsdaten';
 import { SelectEvent } from 'ol/interaction/Select';
 import InfoTool from '../InfoTool';
+import { MultiLineString } from 'ol/geom';
+import HTML from '../../HTML';
+import Klartext from '../../Objekte/Klartext';
+
+import "../../import_jquery.js";
+import 'chosen-js';
+import 'chosen-js/chosen.css';
+import 'jquery-ui-bundle';
+import 'jquery-ui-bundle/jquery-ui.css'
 
 /**
  * Funktion zum Verändern von Querschnittsflächen
@@ -18,7 +26,7 @@ import InfoTool from '../InfoTool';
  * @version 2019.10.29
  * @copyright MIT
  */
-class QuerModifyTool extends Tool {
+export default class QuerModifyTool extends Tool {
     private map: Map;
     private daten: Daten;
     private info: QuerInfoTool;
@@ -27,7 +35,12 @@ class QuerModifyTool extends Tool {
     private selectFlaechen: SelectInteraction;
     private snapTrenn: Snap;
     private snapStation: Snap;
+    private streifen: 'M' | 'L' | 'R';
     private streifennr: number;
+    private multiEditForm: HTMLFormElement;
+    private multiCountInput: HTMLInputElement;
+    private multiArtSelect: HTMLSelectElement;
+    private multiOberSelect: HTMLSelectElement;
 
     constructor(map: Map, info: QuerInfoTool) {
         super();
@@ -40,16 +53,22 @@ class QuerModifyTool extends Tool {
         this.createModify();
         this.createSnap();
 
-        document.getElementById('info_art').addEventListener('change', this.updateInfo.bind(this));
-        document.getElementById('info_ober').addEventListener('change', this.updateInfo.bind(this));
-        document.getElementById('info_breite').addEventListener('change', this.updateInfoBreite.bind(this));
-        document.getElementById('info_bisbreite').addEventListener('change', this.updateInfoBreite.bind(this));
-
         document.getElementById('befehl_modify').addEventListener('change', this._switch.bind(this));
 
-        document.getElementById('qsmm_art').addEventListener('change', this.updateMultiArt.bind(this));
-        document.getElementById('qsmm_ober').addEventListener('change', this.updateMultiOber.bind(this));
+        this.createMultiModForm();
     };
+
+    private createMultiModForm() {
+        this.multiEditForm = HTML.createToolForm(document.getElementById("sidebar"), false, "qsMultiMod");
+
+        this.multiArtSelect = Klartext.createKlartextSelectForm("Itquerart", this.multiEditForm, "Art", 'qsmm_art', undefined, "- verschiedene -")
+        this.multiOberSelect = Klartext.createKlartextSelectForm("Itquerober", this.multiEditForm, "Art der Oberfläche", 'qsmm_ober', undefined, "- verschiedene -")
+        this.multiCountInput = HTML.createNumberInput(this.multiEditForm, "Anzahl", "qsmm_anzahl");
+        this.multiCountInput.disabled = true;
+
+        $(this.multiArtSelect).on("change", this.updateMultiArt.bind(this));
+        $(this.multiOberSelect).on("change", this.updateMultiOber.bind(this));
+    }
 
     _switch() {
         if ((document.getElementById('befehl_info') as HTMLInputElement).checked) {
@@ -68,25 +87,22 @@ class QuerModifyTool extends Tool {
         this.modify.geo_vorher = null;
         this.modify.modify = this;
 
-        this.modify.on('modifystart', function (e) {
-            let auswahl = e.features.getArray()[0];
-            e.target.geo_vorher = auswahl.getGeometry().clone();
-            this.map.addInteraction(this.snap_station);
-        }.bind(this));
-        this.modify.on('modifyend', this._modifyEnd.bind(this));
+        this.modify.on('modifystart', this.modifyStart.bind(this));
+        this.modify.on('modifyend', this.modifyEnd.bind(this));
     }
 
-    _modifyEnd(event) {
+    private modifyStart(e) {
+        let auswahl = e.features.getArray()[0];
+        e.target.geo_vorher = auswahl.getGeometry().clone();
+        this.map.addInteraction(this.snapStation);
+    }
+
+    private modifyEnd(event: ModifyEvent) {
         this.map.removeInteraction(this.snapStation);
-        console.log(event);
         let auswahl = event.features.getArray()[0];
         let querschnitt = auswahl.get('objekt') as Querschnitt;
-        let nachher = auswahl.getGeometry().getCoordinates();
+        let nachher = (auswahl.getGeometry() as MultiLineString).getCoordinates();
         let vorher = event.target.geo_vorher.getCoordinates();
-
-
-
-
 
         for (let i = 0; i < vorher.length; i++) {
             for (let j = 0; j < vorher[i].length; j += vorher[i].length - 1) {
@@ -100,8 +116,8 @@ class QuerModifyTool extends Tool {
                     // Variablen, je nach dem ob BST oder VST verändert wird
                     // VST
                     let vst = true;
-                    let edit = "Vst";
-                    let edit_breite = "breite";
+                    let edit: 'Vst' | 'Bst' = "Vst";
+                    let edit_breite: "breite" | "bisBreite" = "breite";
                     // BST
                     if (j > 0) {
                         vst = false;
@@ -124,7 +140,7 @@ class QuerModifyTool extends Tool {
                     diff = this._check_and_edit_querschnitt(querschnitt, diff, edit, edit_breite);
 
                     // Nachbar-Querschnitt mitziehen?
-                    console.log(querschnitt);
+                    //console.log(querschnitt);
                     if (document.forms.namedItem("modify").modify_glue.checked) {
                         // VST, BST suchen und ändern
                         if (vst) {
@@ -148,15 +164,15 @@ class QuerModifyTool extends Tool {
             }
         }
         //breiteNachfAnpassen(absid, station, streifen, nr, edit, diff);
-        this.info.featureSelect(auswahl);
+        this.info.featureSelect(this.selectFlaechen);
     }
 
-    _check_and_edit_querschnitt(querschnitt, diff, Vst_or_Bst, breite_or_bisBreite) {
-        let streifen = querschnitt.streifen;
-        let nr = querschnitt.streifennr;
+    _check_and_edit_querschnitt(querschnitt: Querschnitt, diff: number, Vst_or_Bst: 'Vst' | 'Bst', breite_or_bisBreite: 'breite' | 'bisBreite') {
+        let streifen = querschnitt.getStreifen();
+        let nr = querschnitt.getStreifennr();
 
         // Überschneidung mit nächsten 
-        let next_quer = querschnitt.station.getQuerschnitt(streifen, nr + 1)
+        let next_quer = querschnitt.getStation().getQuerschnitt(streifen, nr + 1)
         if ((document.getElementById('modify_fit') as HTMLInputElement).checked && next_quer != undefined) {
             let max_diff = next_quer[breite_or_bisBreite] / 100;
             if (((streifen == 'L') ? (-diff) : (diff)) > max_diff) {
@@ -176,10 +192,10 @@ class QuerModifyTool extends Tool {
     private createLinienSelect() {
         this.selectLinien = new SelectInteraction({
             layers: [this.daten.layerTrenn],
-            toggleCondition: platformModifierKeyOnly,
+            condition: never,
             style: InfoTool.selectStyle
         });
-        this.selectLinien.on('select', this.linieSelected.bind(this));
+        //this.selectLinien.on('select', this.linieSelected.bind(this));
     }
 
     private createFlaechenSelect() {
@@ -192,6 +208,7 @@ class QuerModifyTool extends Tool {
         this.selectFlaechen.on('select', this.flaecheSelected.bind(this));
     }
 
+    /*
     private linieSelected(event: SelectEvent) {
         this.selectFlaechen.getFeatures().clear();
         let auswahl = (this.selectLinien as SelectInteraction).getFeatures();
@@ -201,59 +218,82 @@ class QuerModifyTool extends Tool {
             }.bind(this))
         }
         this.featureSelected();
-    }
+    }*/
 
     private flaecheSelected(event: SelectEvent) {
         this.selectLinien.getFeatures().clear();
         let auswahl = (this.selectFlaechen as SelectInteraction).getFeatures();
-        console.log(auswahl.getArray())
-        if (auswahl.getLength() > 0) {
-            auswahl.forEach(function (feat: Feature) {
-                this.selectLinien.getFeatures().push((feat as Querschnitt).trenn);
-            }.bind(this))
-        }
-        document.forms.namedItem("qsMultiMod").style.display = 'none';
+        auswahl.forEach(function (feat: Querschnitt) {
+            this.selectLinien.getFeatures().push(feat.trenn);
+        }.bind(this))
+
         this.featureSelected();
     }
 
     private featureSelected() {
-        let selection = this.selectFlaechen.getFeatures().getArray();
+        let selection = this.selectFlaechen.getFeatures().getArray() as Querschnitt[];
+
+        this.selectLinien.getFeatures().clear()
+        this.selectFlaechen.getFeatures().forEach(function (feature: Feature) {
+            (this as QuerModifyTool).selectLinien.getFeatures().push((feature as Querschnitt).trenn)
+        }.bind(this));
+
         if (selection.length == 1) {
             this.singleSelect(selection);
         } else if (selection.length > 1) {
             this.multiSelect(selection);
+        } else {
+            this.info.hideInfoBox();
+            this.setModifyActive(false);
+            $("#modify").show("fast");
+            $(this.multiEditForm).hide("fast");
         }
     }
 
     private singleSelect(selection: Feature[]) {
-        let auswahl = selection[0] as Querschnitt;
-        let trennlinie = auswahl.trenn;
-        this.selectLinien.getFeatures().push(trennlinie);
-        (this.info as QuerInfoTool).featureSelect(this.selectFlaechen, true);
+        console.log("singleSelect")
+        $(this.multiEditForm).hide("fast");
+
+        this.setModifyActive(true);
+        this.info.featureSelect(this.selectFlaechen, true);
     }
 
-    private multiSelect(selection: Feature[]) {
+    private multiSelect(selection: Querschnitt[]) {
+        console.log("multiSelect")
         this.info.hideInfoBox();
-        let art = 'diff';
-        let ober = 'diff';
-        if ((selection[0] as Querschnitt).getArt() != null)
-            art = (selection[0] as Querschnitt).getArt().substr(-32);
-        if ((selection[0] as Querschnitt).getArtober() != null)
-            ober = ((selection[0] as Querschnitt) as Querschnitt).getArtober().substr(-32);
-        for (let i = 1; i < selection.length; i++) {
-            let feat = selection[i] as Querschnitt;
-            if (feat.getArt() != null || art != feat.getArt().substr(-32))
-                art = 'diff';
-            if (feat.getArt() != null || ober != feat.getArtober().substr(-32))
-                ober = 'diff';
+        this.setModifyActive(false);
+        $("#modify").hide("fast");
+
+        let art = selection[0].getArt();
+        let ober = selection[0].getArtober();
+        console.log(art)
+        for (let querschnitt of selection) {
+            console.log(querschnitt.getArt());
+            if (art != querschnitt.getArt())
+                art = null;
+            if (ober != querschnitt.getArtober())
+                ober = null;
+            if (art == null && ober == null)
+                break;
         }
-        document.forms.namedItem("qsMultiMod").qsmm_anzahl.value = selection.length;
-        document.forms.namedItem("qsMultiMod").qsmm_art.value = (art == 'diff') ? '' : art;
-        document.forms.namedItem("qsMultiMod").qsmm_ober.value = (ober == 'diff') ? '' : ober;
-        document.forms.namedItem("qsMultiMod").style.display = 'block';
+        this.multiCountInput.value = selection.length.toString();
+        $(this.multiArtSelect).val(art);
+        $(this.multiOberSelect).val(ober);
+
+        console.log($(this.multiArtSelect));
+        $(this.multiArtSelect).trigger("chosen:updated");
+        $(this.multiOberSelect).trigger("chosen:updated");
+
+        $(this.multiEditForm).show("fast");
     }
 
-    createSnap() {
+    private setModifyActive(status: boolean) {
+        this.snapStation.setActive(status);
+        this.snapTrenn.setActive(status);
+        this.modify.setActive(status);
+    }
+
+    private createSnap() {
         this.snapTrenn = new Snap({
             source: this.daten.vectorTrenn,
             edge: false
@@ -265,115 +305,92 @@ class QuerModifyTool extends Tool {
         });
     }
 
-    _getSelection() {
-        let selection = this.selectLinien.getFeatures();
-        if (this.selectLinien.getFeatures().getLength() <= 0)
+    private updateMultiArt() {
+        let querschnitte = this.selectFlaechen.getFeatures().getArray() as Querschnitt[];
+        let art = this.multiArtSelect.value;
+
+        for (let querschnitt of querschnitte) {
+            querschnitt.updateArtEinzeln(art);
+        }
+    }
+
+
+    private updateMultiOber() {
+        let querschnitte = this.selectFlaechen.getFeatures().getArray() as Querschnitt[];
+        let artober = this.multiOberSelect.value;
+
+        for (let querschnitt of querschnitte) {
+            querschnitt.updateOberEinzeln(artober);
+        }
+    }
+
+    /*
+    private _getSelection(): Querschnitt {
+        let selection = this.selectFlaechen.getFeatures();
+        if (this.selectFlaechen.getFeatures().getLength() <= 0)
             return;
-        return selection.item(0).get('objekt');
+        return selection.item(0) as Querschnitt;
     }
-
-    updateInfo() {
+    
+    private updateInfoBreite(test) {
         let querschnitt = this._getSelection();
-
-        let art = (document.getElementById('info_art') as HTMLInputElement).value;
-        let artober = (document.getElementById('info_ober') as HTMLInputElement).value;
-
-        querschnitt.updateArt(art, artober);
-    }
-
-    updateMultiArt() {
-        let querschnitte = this.selectFlaechen.getFeatures().getArray();
-        let art = (document.getElementById('qsmm_art') as HTMLInputElement).value;
-
-        for (let querschnitt of querschnitte) {
-            querschnitt.get('objekt').updateArtEinzeln(art);
-        }
-    }
-
-
-    updateMultiOber() {
-        let querschnitte = this.selectFlaechen.getFeatures().getArray();
-        let artober = (document.getElementById('qsmm_ober') as HTMLInputElement).value;
-
-        for (let querschnitt of querschnitte) {
-            querschnitt.get('objekt').updateOberEinzeln(artober);
-        }
-    }
-
-    updateInfoBreite(test) {
-        let querschnitt = this._getSelection();
+        let form = $(this.info.getForm());
 
         let max_diff_vst = null, max_diff_bst = null;
-        if ((document.getElementById('modify_fit') as HTMLInputElement).checked && querschnitt.station.getQuerschnitt(this.streifen, this.streifennr + 1) != null) {
-            max_diff_vst = querschnitt.station.getQuerschnitt(this.streifen, this.streifennr + 1).breite / 100;
-            max_diff_bst = querschnitt.station.getQuerschnitt(this.streifen, this.streifennr + 1).bisBreite / 100;
+        if ((document.getElementById('modify_fit') as HTMLInputElement).checked && querschnitt.getStation().getQuerschnitt(this.streifen, this.streifennr + 1) != null) {
+            max_diff_vst = querschnitt.getStation().getQuerschnitt(this.streifen, this.streifennr + 1).getBreite() / 100;
+            max_diff_bst = querschnitt.getStation().getQuerschnitt(this.streifen, this.streifennr + 1).getBisBreite() / 100;
         }
 
-        if (querschnitt.breite != Number((document.getElementById('info_breite') as HTMLInputElement).value)) {
-            let diff = (Math.round(Number((document.getElementById('info_breite') as HTMLInputElement).value)) - querschnitt.breite) / 100;
+        if (querschnitt.getBreite() != Number((form.children('#breite').val())) - querschnitt.getBreite()) / 100;
             if (max_diff_vst !== null && diff > max_diff_vst) {
                 diff = (max_diff_vst);
             }
-            querschnitt.breite += diff * 100;
-            if (querschnitt.streifen == 'L') {
-                querschnitt.XVstL -= diff;
+            querschnitt.setBreite(querschnitt.getBreite() + diff * 100);
+            if (querschnitt.getStreifen() == 'L') {
+                querschnitt.setXVstL(querschnitt.getXVstL() - diff);
                 querschnitt.editBreite('Vst', -diff, (document.getElementById('modify_fit') as HTMLInputElement).checked);
             }
-            else if (querschnitt.streifen == 'R') {
-                querschnitt.XVstR += diff;
+            else if (querschnitt.getStreifen() == 'R') {
+                querschnitt.setXVstR(querschnitt.getXVstL() + diff);
                 querschnitt.editBreite('Vst', diff, (document.getElementById('modify_fit') as HTMLInputElement).checked);
             }
 
         }
-        else if (querschnitt.bisBreite != Number((document.getElementById('info_bisbreite') as HTMLInputElement).value)) {
-            let diff = (Math.round(Number((document.getElementById('info_bisbreite') as HTMLInputElement).value)) - querschnitt.bisBreite) / 100;
+        else if (querschnitt.getBisBreite() != Number((document.getElementById('info_bisbreite') as HTMLInputElement).value)) {
+            let diff = (Math.round(Number((document.getElementById('info_bisbreite') as HTMLInputElement).value)) - querschnitt.getBisBreite()) / 100;
             if (max_diff_bst !== null && diff > max_diff_bst) {
                 diff = (max_diff_bst);
             }
-            querschnitt.bisBreite += diff * 100;
-            if (querschnitt.streifen == 'L') {
-                querschnitt.XBstL -= diff;
+            querschnitt.setBisBreite(querschnitt.getBisBreite() + diff * 100);
+            if (querschnitt.getStreifen() == 'L') {
+                querschnitt.setXBstL(querschnitt.getXBstL() - diff);
                 querschnitt.editBreite('Bst', -diff, (document.getElementById('modify_fit') as HTMLInputElement).checked);
             }
-            else if (querschnitt.streifen == 'R') {
-                querschnitt.XBstR += diff;
+            else if (querschnitt.getStreifen() == 'R') {
+                querschnitt.setXBstR(querschnitt.getXBstR() + diff);
                 querschnitt.editBreite('Bst', diff, (document.getElementById('modify_fit') as HTMLInputElement).checked);
             }
         }
-    }
-    streifen(streifen: any, arg1: any) {
-        throw new Error("Method not implemented.");
-    }
+    }*/
 
     start() {
-        document.forms.namedItem("modify").style.display = 'block';
+        $("#modify").show("fast");
         this.map.addInteraction(this.selectLinien);
         this.map.addInteraction(this.selectFlaechen);
         this.map.addInteraction(this.modify);
         this.map.addInteraction(this.snapTrenn);
-
-        (document.getElementById('info_art') as HTMLInputElement).disabled = false;
-        (document.getElementById('info_ober') as HTMLInputElement).disabled = false;
-        (document.getElementById('info_breite') as HTMLInputElement).disabled = false;
-        (document.getElementById('info_bisbreite') as HTMLInputElement).disabled = false;
     }
 
     stop() {
-        document.forms.namedItem("modify").style.display = 'none';
+        $("#modify").hide("fast");
+        this.info.hideInfoBox();
         this.map.removeInteraction(this.selectLinien);
         this.map.removeInteraction(this.selectFlaechen);
         this.map.removeInteraction(this.modify);
         this.map.removeInteraction(this.snapTrenn);
         this.map.removeInteraction(this.snapStation);
 
-        (document.getElementById('info_art') as HTMLInputElement).disabled = true;
-        (document.getElementById('info_ober') as HTMLInputElement).disabled = true;
-        (document.getElementById('info_breite') as HTMLInputElement).disabled = true;
-        (document.getElementById('info_bisbreite') as HTMLInputElement).disabled = true;
-
-        document.forms.namedItem("info").style.display = 'none';
-        document.forms.namedItem("qsMultiMod").style.display = 'none';
+        $(this.multiEditForm).hide("hide");
     }
 }
-
-export default QuerModifyTool;

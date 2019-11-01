@@ -35,7 +35,7 @@ class QuerAddTool extends Tool {
                 this.disableMenu();
                 return
             }
-            console.log(this);
+            //console.log(this);
             (this._info as QuerInfoTool).getInfoFieldForFeature(e.selected[0].get("objekt"))
             document.forms.namedItem("hinzu").getElementsByTagName("input")[0].style.backgroundColor = "#ffcc00";
             document.forms.namedItem("hinzu").getElementsByTagName("input")[0].disabled = false;
@@ -60,7 +60,7 @@ class QuerAddTool extends Tool {
         this.disableMenu()
         document.forms.namedItem("hinzu").style.display = 'none';
         this._map.removeInteraction(this._select);
-        document.forms.namedItem("info").style.display = "none";
+        this._info.hideInfoBox();
     }
 
 

@@ -20,7 +20,6 @@ import CircleStyle from 'ol/style/Circle';
 export default class InfoTool extends Tool {
     protected map: Map;
     private layer: Layer;
-    private sidebar: HTMLElement;
     private infoField: HTMLFormElement;
     protected select: SelectInteraction;
 
@@ -28,9 +27,6 @@ export default class InfoTool extends Tool {
         super();
         this.map = map;
         this.layer = layer;
-        this.sidebar = document.getElementById(sidebar);
-
-        this.infoField = HTML.createToolForm(this.sidebar, false, "info")
 
         this.select = new SelectInteraction({
             layers: [this.layer],
@@ -38,29 +34,32 @@ export default class InfoTool extends Tool {
             style: InfoTool.selectStyle
         });
         this.select.on('select', this.featureSelectedEvent.bind(this))
+
+        this.infoField = HTML.createToolForm(document.getElementById(sidebar), false)
     }
 
     /**
      * Wird ausgelöst beim Auswählen einer Aufstellvorrichtung
      * @param {SelectEvent} event 
      */
-    featureSelectedEvent(event: SelectEvent, changeable: boolean = false) {
+    private featureSelectedEvent(event: SelectEvent, changeable: boolean = false) {
         this.featureSelect(this.select, changeable);
+        console.log("Select");
     }
 
-    featureSelect(select: SelectInteraction = this.select, changeable: boolean = false) {
+    public featureSelect(select: SelectInteraction = this.select, changeable: boolean = false) {
         let auswahl = select.getFeatures();
+        console.log(auswahl.getArray())
 
         if (auswahl.getLength() == 0) {
             this.hideInfoBox();
             return;
         }
-
+        this.infoField.innerHTML = "";
         this.getInfoFieldForFeature(auswahl.item(0), changeable)
     }
 
-    getInfoFieldForFeature(feature: Feature, changeable: boolean = false) {
-        this.infoField.innerHTML = "";
+    public getInfoFieldForFeature(feature: Feature, changeable: boolean = false) {
         (feature as InfoToolSelectable).getInfoForm(this.infoField, changeable);
         if (changeable) {
             let button = $(this.infoField).children("input[type=button]");
@@ -72,18 +71,18 @@ export default class InfoTool extends Tool {
         this.showInfoBox();
     }
 
-    showInfoBox() {
+    public showInfoBox() {
         $(this.infoField).show("fast")
     }
 
-    hideInfoBox() {
+    public hideInfoBox() {
         $(this.infoField).hide("fast", "linear", function () {
             this.infoField.innerHTML = "";
         }.bind(this))
 
     }
 
-    static selectStyle(feat: Feature): Style {
+    public static selectStyle(feat: Feature): Style {
         let typ = feat.getGeometry().getType();
         if (typ == GeometryType.LINE_STRING || typ == GeometryType.MULTI_LINE_STRING) {
             return new Style({
@@ -119,15 +118,19 @@ export default class InfoTool extends Tool {
 
     }
 
-    start() {
+    getForm(): HTMLFormElement {
+        return this.infoField;
+    }
+
+    public start() {
         this.map.addInteraction(this.select);
     }
 
-    stop() {
+    public stop() {
         this.map.removeInteraction(this.select);
-        this.infoField.style.display = "none";
+        this.select.getFeatures().clear();
+        this.hideInfoBox();
     }
-
 }
 
 export interface InfoToolSelectable extends Feature {

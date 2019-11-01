@@ -40,9 +40,9 @@ export default class StrassenAusPunkt extends PunktObjekt {
         return "Otstrauspkt";
     }
 
-    public static createForm(formId: string, ausstattung?: StrassenAusPunkt, changeable: boolean = false): HTMLFormElement {
+    public static createForm(formId: string, ausstattung?: StrassenAusPunkt, changeable: boolean = false, showForm:boolean = true): HTMLFormElement {
         let sidebar = document.getElementById("sidebar");
-        let form = HTML.createToolForm(sidebar, true, formId);
+        let form = HTML.createToolForm(sidebar, showForm, formId);
 
         // Art
         StrassenAusPunkt.createFields(form, formId, ausstattung, changeable);
@@ -93,7 +93,7 @@ export default class StrassenAusPunkt extends PunktObjekt {
     }
 
     static _loadAbschnittER_Callback(xml: XMLDocument, callback?: (...args: any[]) => void, ...args: any[]) {
-        console.log(callback);
+        //console.log(callback);
         let straus = xml.getElementsByTagName("Otstrauspkt");
         for (let i = 0; i < straus.length; i++) {
             let f = StrassenAusPunkt.fromXML(straus[i]);

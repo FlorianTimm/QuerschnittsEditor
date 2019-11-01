@@ -35,10 +35,6 @@ sidebar>* {
     max-width: 200px;
 }
 
-#qsMultiMod select, #qsMultiMod input {
-    width: 100%;
-}
-
 form table {
     width: 100%;
     max-width: 100%;
@@ -62,7 +58,7 @@ form table, th, td {
     font-family: sans-serif;
 }
 
-form#info, form#modify, form#qsMultiMod {
+form#modify {
     display: none;
 }
 
@@ -184,32 +180,6 @@ form#suche {
     background: rgba(255, 255, 255, 0.8);
     padding: 3px;
     overflow-x: hidden;
-}
-
-.tool_form {
-    overflow-x: inherit;
-    text-align: left;
-}
-
-.tool_form input[type=text], .tool_form select, .tool_form .chosen-container {
-    margin-bottom: 4px;
-    width: 95%;
-}
-
-.tool_form .chosen-container {
-    font-size: 9pt;
-}
-
-.tool_form label.label_text, .tool_form label.label_select {
-    font-size: 8pt;
-}
-
-.ui-front {
-    z-index: 1050 !important;
-}
-
-.ui-dialog {
-    z-index: 1100 !important;
 }
 
 /* Tooltip fürs Messen */
