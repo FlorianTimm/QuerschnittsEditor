@@ -6,10 +6,15 @@
  */
 
 import PublicWFS from '../PublicWFS';
+import HTML from '../HTML';
+import { type } from 'os';
 
-class Klartext {
+export default class Klartext {
     private static instance: Klartext;
     private _klartexte: { [klartextBezeichnung: string]: { [oid: string]: { kt: string, beschreib: string, objektId: string } } };
+    private openRequests: { [klartext: string]: boolean } = {};
+    //{ callback: (klartext: {}, ...args: any[]) => void, args: any[] }
+    private requestCallbacks: { [klartext: string]: Callback[] } = {};
 
     private constructor() {
         this._klartexte = {};
@@ -21,15 +26,27 @@ class Klartext {
         return this.instance;
     }
 
-    load(klartext: string, whenReady?: (klartext: {}, ...args: any[]) => void, ...args: any[]) {
+    public load(klartext: string, whenReady?: (klartext: {}, ...args: any[]) => void, ...args: any[]) {
         if (!(klartext in this._klartexte)) {
-            PublicWFS.doQuery(klartext, '', this._read.bind(this), undefined, klartext, whenReady, ...args);
+            if (!(klartext in this.openRequests)) {
+                this.openRequests[klartext] = true;
+                if (whenReady != undefined) {
+                    if (this.requestCallbacks[klartext] == undefined)
+                        this.requestCallbacks[klartext] = [];
+                    this.requestCallbacks[klartext].push({ callback: whenReady, args: args });
+                }
+                PublicWFS.doQuery(klartext, '', this.read.bind(this), undefined, klartext);
+            } else {
+                if (whenReady != undefined)
+                    this.requestCallbacks[klartext].push({ callback: whenReady, args: args });
+            }
+
         } else if (whenReady != undefined) {
             whenReady(this._klartexte[klartext], ...args);
         }
     }
 
-    _read(xml: Document, klartext: string, whenReady?: (klartext: {}, ...args: any[]) => void, ...args: any[]) {
+    private read(xml: Document, klartext: string) {
         if (!(klartext in this._klartexte)) {
             this._klartexte[klartext] = {}
 
@@ -49,10 +66,17 @@ class Klartext {
                 }
             }
         }
-        if (whenReady != undefined) whenReady(this._klartexte[klartext], ...args);
+        delete (this.openRequests[klartext]);
+        if (this.requestCallbacks[klartext] == undefined || this.requestCallbacks[klartext].length == 0)
+            return;
+        let callback: Callback;
+        while (callback = this.requestCallbacks[klartext].pop()) {
+            callback.callback(this._klartexte[klartext], ...callback.args);
+        }
+
     }
 
-    get(klartext: string, bezeichnung: string) {
+    public get(klartext: string, bezeichnung: string) {
         if (bezeichnung == null) return null;
         let bez = bezeichnung.substr(-32);
         if (!(klartext in this._klartexte)) {
@@ -65,7 +89,7 @@ class Klartext {
         return null;
     }
 
-    getAll(klartext: string): { [klartextBezeichnung: string]: { [objektId: string]: { kt: string, beschreib: string, objektId: string } } } {
+    public getAll(klartext: string): { [klartextBezeichnung: string]: { [objektId: string]: { kt: string, beschreib: string, objektId: string } } } {
         if (!(klartext in this._klartexte)) {
             this.load(klartext);
             return null;
@@ -73,7 +97,7 @@ class Klartext {
         return this._klartexte;
     }
 
-    getAllArray(klartext: string): { kt: string, beschreib: string, objektId: string }[] {
+    public getAllArray(klartext: string): { kt: string, beschreib: string, objektId: string }[] {
         if (!(klartext in this._klartexte)) {
             this.load(klartext);
             return null;
@@ -87,7 +111,7 @@ class Klartext {
         return arr;
     }
 
-    getAllSorted(klartext: string): { kt: string, beschreib: string, objektId: string }[] {
+    public getAllSorted(klartext: string): { kt: string, beschreib: string, objektId: string }[] {
         let sortable = this.getAllArray(klartext)
         if (sortable == null) return null;
         //console.log(klartext)
@@ -112,6 +136,31 @@ class Klartext {
 
         return sortable;
     }
+
+    static createKlartextSelectForm(klartext: string, form: HTMLFormElement, beschriftung: string, id: string, value?: string, platzhalter?: string) {
+        let field = HTML.createSelectForm(form, beschriftung, id, platzhalter);
+        Klartext.klartext2select(klartext, field, value);
+        return field;
+    }
+
+    static klartext2select(klartext: string, selectInput: HTMLSelectElement, value?: string) {
+        Klartext.getInstanz().load(klartext, Klartext.klartext2select_callback, klartext, selectInput, value);
+    }
+
+    private static klartext2select_callback(klartexteObjekt: {}, klartext: string, selectInput: HTMLSelectElement, value: string = null) {
+        let arten = Klartext.getInstanz().getAllSorted(klartext);
+
+        for (let a of arten) {
+            let isSelected = (value != undefined && value.substr(-32) == a.objektId);
+            HTML.createSelectNode(selectInput, a.beschreib, a.objektId, isSelected);
+        }
+        if (value == undefined || value == null) selectInput.value = null;
+
+        $(selectInput).chosen({ width: "95%", search_contains: true, no_results_text: "Keine Übereinstimmung gefunden für ", placeholder_text_single: "Wert auswählen...", });
+    }
 }
 
-export default Klartext;
+class Callback {
+    public callback: (klartext: {}, ...args: any[]) => void;
+    public args: any[];
+}

@@ -34,7 +34,7 @@ class QuerPartTool extends Tool {
         this.info = info;
 
         this.select = new SelectInteraction({
-            layers: [this.daten.l_achse],
+            layers: [this.daten.layerAchse],
             style: new Style({
                 stroke: new Stroke({
                     color: 'rgba(0, 50, 255, 0.5)',
@@ -115,7 +115,7 @@ class QuerPartTool extends Tool {
         if (this.select.getFeatures().getArray().length > 0) {
             achse = this.select.getFeatures().item(0);
         } else {
-            achse = this.daten.v_achse.getClosestFeatureToCoordinate(event.coordinate);
+            achse = this.daten.vectorAchse.getClosestFeatureToCoordinate(event.coordinate);
         }
 
         if (achse == null) {
@@ -173,10 +173,13 @@ class QuerPartTool extends Tool {
         let absid = this.feat_teilung.get("abschnittid");
         let station = this.feat_teilung.get("station");
 
-        console.log(this.daten.getAbschnitt(absid));
+        //console.log(this.daten.getAbschnitt(absid));
 
         let sta = this.daten.getAbschnitt(absid).getStationByStation(station);
         sta.teilen(station);
+        this.feat_teilung.set('isset', false);
+        (this.feat_teilung.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
+        (document.getElementById("teilen_button") as HTMLInputElement).disabled = true;
     }
 
     start() {
@@ -194,7 +197,7 @@ class QuerPartTool extends Tool {
         this.map.un("singleclick", this.part_click);
         (this.feat_station.getGeometry() as LineString).setCoordinates([0, 0]);
         (this.feat_teilung.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
-        document.forms.namedItem("info").style.display = "none";
+        this.info.hideInfoBox();
         this.map.removeLayer(this.l_overlay);
     }
 }

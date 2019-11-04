@@ -1,5 +1,0 @@
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-	<soap:Body>
-		<ns3:expandProjektAbsObjResponse xmlns:ns3="http://ttsib.novasib.de/PublicServices" xmlns:ns2="http://interfaceTypes.ttsib5.novasib.de/"/>
-	</soap:Body>
-</soap:Envelope>

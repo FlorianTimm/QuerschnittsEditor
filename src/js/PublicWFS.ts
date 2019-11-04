@@ -5,11 +5,10 @@ var CONFIG = require('./config.json');
 /**
  * Schnittstelle zum PublicWFS
  * @author Florian Timm, LGV HH 
- * @version 2019.06.06
+ * @version 2019.10.29
  * @copyright MIT
  */
 export default class PublicWFS {
-
     static doSoapRequest(
         xml: string,
         callbackSuccess: (xml: Document, ...args: any[]) => void,
@@ -71,7 +70,7 @@ export default class PublicWFS {
         xmlhttp.onreadystatechange = function () {
             if (xmlhttp.readyState != 4) return;
             if (xmlhttp.status == 200) {
-                abschnitt.inER[objekt] = true;
+                abschnitt.addOKinER(objekt);
                 if (callbackSuccess != undefined) {
                     callbackSuccess(xmlhttp.responseXML, ...args)
                 } else {
@@ -94,12 +93,12 @@ export default class PublicWFS {
             '                   <int:ProjektNr>' + ereignisraum_nr + '</int:ProjektNr>\n' +
             '            </projekt>\n' +
             '            <abschnitte>\n' +
-            '                   <int:vonKartenblatt>' + abschnitt.vtknr + '</int:vonKartenblatt>\n' +
-            '                   <int:vonNkLfd>' + abschnitt.vnklfd + '</int:vonNkLfd>\n' +
-            '                   <int:vonZusatz>' + abschnitt.vzusatz + '</int:vonZusatz>\n' +
-            '                   <int:nachKartenblatt>' + abschnitt.ntknr + '</int:nachKartenblatt>\n' +
-            '                   <int:nachNkLfd>' + abschnitt.nnklfd + '</int:nachNkLfd>\n' +
-            '                   <int:nachZusatz>' + abschnitt.nzusatz + '</int:nachZusatz>\n' +
+            '                   <int:vonKartenblatt>' + abschnitt.getVtknr() + '</int:vonKartenblatt>\n' +
+            '                   <int:vonNkLfd>' + abschnitt.getVnklfd() + '</int:vonNkLfd>\n' +
+            '                   <int:vonZusatz>' + abschnitt.getVzusatz() + '</int:vonZusatz>\n' +
+            '                   <int:nachKartenblatt>' + abschnitt.getNtknr() + '</int:nachKartenblatt>\n' +
+            '                   <int:nachNkLfd>' + abschnitt.getNnklfd() + '</int:nachNkLfd>\n' +
+            '                   <int:nachZusatz>' + abschnitt.getNzusatz() + '</int:nachZusatz>\n' +
             '            </abschnitte>\n' +
             '            <objektKlassen>\n' +
             '                   <int:objektKlasse>' + objekt + '</int:objektKlasse>\n' +

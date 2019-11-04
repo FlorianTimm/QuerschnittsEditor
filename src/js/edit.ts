@@ -1,7 +1,7 @@
 /**
  * Startscript edit.html
  * @author Florian Timm, LGV HH 
- * @version 2019.06.06
+ * @version 2019.10.29
  * @copyright MIT
  */
 
@@ -24,10 +24,9 @@ import Map from './openLayers/Map';
 import PublicWFS from './PublicWFS';
 import AvAdd from './Tools/Aufstellvorrichtung/AvAdd';
 import AvAdd2ER from './Tools/Aufstellvorrichtung/AvAdd2ER';
-import AvDelete from './Tools/Aufstellvorrichtung/AvDelete';
-import AvMove from './Tools/Aufstellvorrichtung/AvMove';
 import AvVzAdd from './Tools/Aufstellvorrichtung/AvVzAdd';
 import InfoTool from './Tools/InfoTool';
+import MoveTool from './Tools/MoveTool';
 import QuerAdd2ER from './Tools/Querschnitt/QuerAdd2ER';
 import QuerAddTool from './Tools/Querschnitt/QuerAddTool';
 import QuerDelTool from './Tools/Querschnitt/QuerDelTool';
@@ -36,8 +35,7 @@ import QuerModifyTool from './Tools/Querschnitt/QuerModifyTool';
 import QuerPartTool from './Tools/Querschnitt/QuerPartTool';
 import SAPAdd from './Tools/StrassenAusPunkt/SAPAdd';
 import SAPAdd2ER from './Tools/StrassenAusPunkt/SAPAdd2ER';
-import SAPDelete from './Tools/StrassenAusPunkt/SAPDelete';
-import SAPMove from './Tools/StrassenAusPunkt/SAPMove';
+import DeleteTool from './Tools/DeleteTool';
 
 var CONFIG: [string, string] = require('./config.json');
 
@@ -51,8 +49,8 @@ var er = decodeURI(urlParamER[1])
 var ernr = decodeURI(urlParamERNR[1])
 console.log("Ereignisraum: " + ernr);
 
-let daten: Daten, infoTool: QuerInfoTool, editTool: QuerModifyTool, delTool: QuerDelTool, partTool: QuerPartTool, addTool: QuerAddTool, vsInfoTool: InfoTool, avAdd: AvAdd, avAdd2ER: AvAdd2ER, qsAdd2ER: QuerAdd2ER, avMove: AvMove, vzAdd: AvVzAdd, measure: Measure, avDel: AvDelete;
-let sapInfoTool: InfoTool, sapAdd: SAPAdd, sapMove: SAPMove, sapAdd2ER: SAPAdd2ER, sapDel: SAPDelete;
+let daten: Daten, infoTool: QuerInfoTool, editTool: QuerModifyTool, delTool: QuerDelTool, partTool: QuerPartTool, addTool: QuerAddTool, vsInfoTool: InfoTool, avAdd: AvAdd, avAdd2ER: AvAdd2ER, qsAdd2ER: QuerAdd2ER, avMove: MoveTool, vzAdd: AvVzAdd, measure: Measure, avDel: DeleteTool;
+let sapInfoTool: InfoTool, sapAdd: SAPAdd, sapMove: MoveTool, sapAdd2ER: SAPAdd2ER, sapDel: DeleteTool;
 
 window.addEventListener('load', function () {
     proj4.defs("EPSG:31467", "+proj=tmerc +lat_0=0 +lon_0=9 +k=1 +x_0=3500000 +y_0=0 +ellps=bessel +towgs84=598.1,73.7,418.2,0.202,0.045,-2.455,6.7 +units=m +no_defs");
@@ -63,84 +61,35 @@ window.addEventListener('load', function () {
     var map = createMap();
     //console.log(map.getControls());
 
-    if (document.location.hash != "") {
-        let hash = document.location.hash.replace("#", "").split('&')
-
-        let layer: string = null, x: number = null, y: number = null, zoom: number = null;
-
-        for (let i = 0; i < hash.length; i++) {
-            let t = hash[i].split("=");
-            switch (t[0]) {
-                case "zoom":
-                    zoom = parseInt(t[1]);
-                    break;
-                case "x":
-                    x = parseFloat(t[1]);
-                    break;
-                case "y":
-                    y = parseFloat(t[1]);
-                    break;
-                case "layer":
-                    layer = t[1];
-                    break;
-            }
-        }
-
-        if (zoom != null) {
-            map.getView().setZoom(zoom);
-        }
-
-        if (x != null && y != null) {
-            map.getView().setCenter([x, y]);
-        }
-
-        if (layer != null) {
-            let selection = layer.split(',');
-            map.getLayers().forEach(function (layer, id, array) {
-                if (layer.get('switchable') == true) {
-                    if (selection.indexOf(id + "") != -1) {
-                        layer.setVisible(true);
-                    } else {
-                        layer.setVisible(false);
-                    }
-                }
-            });
-        }
-    }
-    map.getLayers().forEach(function (layer, id, array) {
-        if (layer.get('switchable') == undefined || layer.get('switchable') == true) {
-            layer.on("propertychange", recreateHash)
-        }
-    });
-    map.firstHash = true;
-
-    map.on("moveend", recreateHash);
+    let foundHash = checkHash(map);
 
     daten = new Daten(map, er, ernr);
 
-    infoTool = new QuerInfoTool(map, daten);
+    infoTool = new QuerInfoTool(map, daten.layerTrenn, daten.layerQuer, "sidebar");
     infoTool.start();
     editTool = new QuerModifyTool(map, infoTool);
     delTool = new QuerDelTool(map, infoTool);
     addTool = new QuerAddTool(map, infoTool);
     partTool = new QuerPartTool(map, daten, infoTool);
-    qsAdd2ER = new QuerAdd2ER(map, daten);
+    qsAdd2ER = new QuerAdd2ER(map);
 
-    vsInfoTool = new InfoTool(map, daten.l_aufstell, "sidebar");
-    avAdd = new AvAdd(map, daten);
-    vzAdd = new AvVzAdd(map, daten);
-    avMove = new AvMove(map, vsInfoTool);
+    vsInfoTool = new InfoTool(map, daten.layerAufstell, "sidebar");
+    avAdd = new AvAdd(map);
+    vzAdd = new AvVzAdd(map);
+    avMove = new MoveTool(map, vsInfoTool, daten.layerAufstell);
     avAdd2ER = new AvAdd2ER(map, daten);
-    avDel = new AvDelete(map, daten, daten.l_aufstell, "sidebar");
+    avDel = new DeleteTool(map, daten.layerAufstell, "sidebar", "Otaufstvor");
 
-    sapInfoTool = new InfoTool(map, daten.l_straus, "sidebar");
+    sapInfoTool = new InfoTool(map, daten.layerStraus, "sidebar");
     sapAdd = new SAPAdd(map);
-    sapMove = new SAPMove(map, vsInfoTool);
+    sapMove = new MoveTool(map, vsInfoTool, daten.layerStraus);
     sapAdd2ER = new SAPAdd2ER(map);
-    sapDel = new SAPDelete(map, daten.l_straus, "sidebar");
+    sapDel = new DeleteTool(map, daten.layerStraus, "sidebar", "Otstrauspkt");
 
     measure = new Measure(map);
 
+
+    daten.loadER(!foundHash);
 
     document.getElementById("befehl_modify").addEventListener('change', befehl_changed);
     document.getElementById("befehl_delete").addEventListener('change', befehl_changed);
@@ -165,30 +114,7 @@ window.addEventListener('load', function () {
 
     document.getElementById("befehl_messen").addEventListener('change', befehl_changed);
 
-    document.getElementById("zoomToExtent").addEventListener('click', function () {
-        let minX = null, maxX = null, minY = null, maxY = null;
-        let features = daten.l_achse.getSource().getFeatures();
-        if (features.length == 0) {
-            PublicWFS.showMessage("(noch) keine Geometrien geladen", true);
-            return;
-        }
-        for (let f of features) {
-            let p = f.getGeometry().getExtent();
-
-            if (minX == null || minX > p[0]) minX = p[0];
-            if (minY == null || minY > p[1]) minY = p[1];
-            if (maxX == null || maxX < p[2]) maxX = p[2];
-            if (maxY == null || maxY < p[3]) maxY = p[3];
-        }
-        map.getView().fit([minX, minY, maxX, maxY], { padding: [20, 240, 20, 20] })
-
-        //map.getView().fit(daten.l_achse.getExtent());
-
-        /*
-        let extent = Daten.calcAbschnitteExtent(daten.l_achse.getSource().getFeatures());
-        map.getView().fit(extent, { padding: [20, 240, 20, 20] })
-        */
-    })
+    document.getElementById("zoomToExtent").addEventListener('click', Daten.getInstanz().zoomToExtent.bind(daten))
 
 
     document.getElementById("loadExtent").addEventListener('click', function () {
@@ -210,6 +136,59 @@ window.addEventListener('load', function () {
     })
 });
 
+
+function checkHash(map: Map) {
+    let foundHash = false;
+    if (document.location.hash != "") {
+        let hash = document.location.hash.replace("#", "").split('&');
+        let layer: string = null, x: number = null, y: number = null, zoom: number = null;
+        for (let i = 0; i < hash.length; i++) {
+            let t = hash[i].split("=");
+            switch (t[0]) {
+                case "zoom":
+                    zoom = parseInt(t[1]);
+                    break;
+                case "x":
+                    x = parseFloat(t[1]);
+                    break;
+                case "y":
+                    y = parseFloat(t[1]);
+                    break;
+                case "layer":
+                    layer = t[1];
+                    break;
+            }
+        }
+        if (zoom != null) {
+            map.getView().setZoom(zoom);
+        }
+        if (x != null && y != null) {
+            map.getView().setCenter([x, y]);
+        }
+        if (layer != null) {
+            let selection = layer.split(',');
+            map.getLayers().forEach(function (layer, id, array) {
+                if (layer.get('switchable') == true) {
+                    if (selection.indexOf(id + "") != -1) {
+                        layer.setVisible(true);
+                    }
+                    else {
+                        layer.setVisible(false);
+                    }
+                }
+            });
+        }
+        foundHash = true;
+    }
+    map.getLayers().forEach(function (layer, id, array) {
+        if (layer.get('switchable') == undefined || layer.get('switchable') == true) {
+            layer.on("propertychange", recreateHash);
+        }
+    });
+    map.firstHash = true;
+    map.on("moveend", recreateHash);
+    return foundHash;
+}
 
 function recreateHash(event: MapEvent) {
     //console.log(event)
@@ -325,7 +304,7 @@ function createMap() {
                 })
             }),
             new TileLayer({
-                name: 'LGV DOP10',
+                name: 'LGV DOP 2017',
                 visible: true,
                 switchable: true,
                 opacity: 0.7,
@@ -339,14 +318,14 @@ function createMap() {
                 })
             }),
             new TileLayer({
-                name: 'LGV DOP20',
+                name: 'LGV DOP 2018',
                 visible: false,
                 switchable: true,
                 opacity: 0.7,
                 source: new TileWMS({
-                    url: 'http://geodienste.hamburg.de/HH_WMS_DOP20',
+                    url: 'https://geodienste.hamburg.de/HH_WMS_DOP_hochaufloesend',
                     params: {
-                        'LAYERS': '1',
+                        'LAYERS': 'DOP5',
                         'FORMAT': 'image/png'
                     },
                     attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
@@ -419,7 +398,7 @@ function openTab(evt: MouseEvent) {
     (evt.currentTarget as HTMLElement).className += " active";
     document.getElementById(tabName).getElementsByTagName('input')[0].click();
     Daten.getInstanz().modus = (evt.currentTarget as HTMLElement).dataset.tab.replace("tab_", "")
-    Daten.getInstanz().l_achse.changed();
+    Daten.getInstanz().layerAchse.changed();
 }
 
 window.addEventListener('load', function () {
@@ -433,4 +412,51 @@ window.addEventListener('load', function () {
 
 
 
+/*
+document.onkeyup = function (e: KeyboardEvent) {
+    if ($(e.target).closest("input")[0]) {
+        return;
+    }
+    console.log(e.code);
+    console.log(Daten.getInstanz().modus);
 
+
+    let modus = Daten.getInstanz().modus;
+
+    if (modus == "Otaufstvor") {
+        if (e.altKey && e.code == "KeyI") {
+            (document.getElementById("befehl_vsinfo") as HTMLInputElement).checked = true;
+        } else if (e.altKey && e.code == "KeyR") {
+            (document.getElementById("befehl_avadd2er") as HTMLInputElement).checked = true;
+        } else if (e.altKey && e.code == "KeyH") {
+            (document.getElementById("befehl_avadd") as HTMLInputElement).checked = true;
+        } else if (e.altKey && e.code == "KeyL") {
+            (document.getElementById("befehl_avdel") as HTMLInputElement).checked = true;
+        } else if (e.altKey && e.code == "KeyS") {
+            (document.getElementById("befehl_vzadd") as HTMLInputElement).checked = true;
+        } else if (e.altKey && e.code == "KeyV") {
+            (document.getElementById("befehl_avmove") as HTMLInputElement).checked = true;
+        }
+    } else if (modus == "Querschnitt") {
+
+    } else if (modus == "Otstrauspkt") {
+        if (e.altKey && e.code == "KeyI") {
+            (document.getElementById("befehl_sapinfo") as HTMLInputElement).checked = true;
+        } else if (e.altKey && e.code == "KeyR") {
+            (document.getElementById("befehl_sapadd2er") as HTMLInputElement).checked = true;
+        } else if (e.altKey && e.code == "KeyH") {
+            (document.getElementById("befehl_sapadd") as HTMLInputElement).checked = true;
+        } else if (e.altKey && e.code == "KeyL") {
+            (document.getElementById("befehl_sapdel") as HTMLInputElement).checked = true;
+        } else if (e.altKey && e.code == "KeyV") {
+            (document.getElementById("befehl_sapmove") as HTMLInputElement).checked = true;
+        }
+    }
+    befehl_changed();
+};
+$("span.hotkey_alt").each(function () {
+    let t = $(this).text();
+    $(this).parent().prop('title', 'Alt + ' + t.toUpperCase() + '')
+});
+$("span.hotkey_alt").parent().tooltip({ track: true })
+*/

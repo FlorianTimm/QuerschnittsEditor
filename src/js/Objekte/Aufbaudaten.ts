@@ -1,67 +1,108 @@
-import Objekt from "./Objekt";
+import Objekt from "./prototypes/Objekt";
+import SekundaerObjekt from "./prototypes/SekundaerObjekt";
 
 var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
 
 /**
 * Aufbaudaten
 * @author Florian Timm, LGV HH 
-* @version 2019.08.22
+* @version 2019.10.29
 * @copyright MIT
 */
-export default class Aufbau extends Objekt {
-	schichtnr: number = null;
-	parent: string = null;
-	teilnr: number = null;
-	teilbreite: string = null;
-	decksch: string = null;
-	baujahr: string = null;
-	dicke: number = null;
-	baumonat: number = null;
-	korngr: string = null;
-	unscharf: string = null;
-	kennz: string = null;
-	art1: string = null;
-	art2: string = null;
-	art3: string = null;
-	artneu: string = null;
-	material1: string = null;
-	material2: string = null;
-	material3: string = null;
-	bindemit1: string = null;
-	bindemit2: string = null;
-	detaila: string = null;
-	detailb: string = null;
-	detailc: string = null;
-	detaild: string = null;
-	umweltr: string = null;
+export default class Aufbau extends SekundaerObjekt {
+	getObjektKlassenName(): string {
+		return "Otschicht";
+	}    
+	
+	protected abschnittOderAst: string = null;
+    protected vst: number = null;
+    protected bst: number = null;
+	private schichtnr: number = null;
+	private teilnr: number = null;
+	private teilbreite: string = null;
+	private decksch: string = null;
+	private baujahr: string = null;
+	private dicke: number = null;
+	private baumonat: number = null;
+	private korngr: string = null;
+	private unscharf: string = null;
+	private kennz: string = null;
+	private art1: string = null;
+	private art2: string = null;
+	private art3: string = null;
+	private artneu: string = null;
+	private material1: string = null;
+	private material2: string = null;
+	private material3: string = null;
+	private bindemit1: string = null;
+	private bindemit2: string = null;
+	private detaila: string = null;
+	private detailb: string = null;
+	private detailc: string = null;
+	private detaild: string = null;
+	private umweltr: string = null;
 
-	private constructor() {
-		super();
-	}
-
-	static fromXML(xml: Element): Aufbau {
+	public static fromXML(xml: Element): Aufbau {
 		//console.log(xml);
 		let r = new Aufbau();
 		r.setDataFromXML("AUFBAUDATEN", xml)
 		return r;
 	}
 
-	public createXML(deleteParentId?: boolean): string {
+	public createXML(changes?: { [tag: string]: number | string }, removeIds?: boolean): string {
 		let r = '<Otschicht>\n';
 
 		for (let tag in CONFIG_WFS["AUFBAUDATEN"]) {
-			console.log(tag);
-			if (this[tag] === null) continue;
-			if (CONFIG_WFS["AUFBAUDATEN"][tag].art == 0 || CONFIG_WFS["AUFBAUDATEN"][tag].art == 1) {
-				// Kein Klartext
-				r += '<' + tag + '>' + this[tag] + '</' + tag + '>\n';
-			} else if (CONFIG_WFS["AUFBAUDATEN"][tag].art == 2) {
-				// Klartext
-				r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS["AUFBAUDATEN"][tag].kt + '" />\n';
+			for (let change in changes) {
+				if (CONFIG_WFS.AUFBAUDATEN[change].art == 0 || CONFIG_WFS.AUFBAUDATEN[change].art == 1) {
+					// Kein Klartext
+					r += '<' + change + '>' + changes[change] + '</' + change + '>\n';
+				} else if (CONFIG_WFS.AUFBAUDATEN[change].art == 2) {
+					// Klartext
+					r += '<' + change + ' xlink:href="' + changes[change] + '" typeName="' + CONFIG_WFS.AUFBAUDATEN[change].kt + '" />\n';
+				}
 			}
+
+			for (let tag in CONFIG_WFS.AUFBAUDATEN) {
+				//console.log(tag);
+				if (changes != undefined && tag in changes) continue;
+				else if (removeIds == true && (tag == "objektId" || tag == "fid")) continue;
+				else if (this[tag] === null || this[tag] === undefined) continue;
+				else if (CONFIG_WFS.AUFBAUDATEN[tag].art == 0 || CONFIG_WFS.AUFBAUDATEN[tag].art == 1) {
+					// Kein Klartext
+					r += '<' + tag + '>' + this[tag] + '</' + tag + '>\n';
+				} else if (CONFIG_WFS.AUFBAUDATEN[tag].art == 2) {
+					// Klartext
+					r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS.AUFBAUDATEN[tag].kt + '" />\n';
+				}
+			}
+			r += '</Otschicht>\n';
+			console.log(r);
+			return r;
 		}
-		r += '</Otschicht>\n';
-		console.log(r);
-		return r;
+	}
+
+	// Getter
+
+	getSchichtnr(): number {
+		return this.schichtnr;
+	}
+
+	// Setter
+	
+    public getVst() {
+		return this.vst;
+	}
+
+	public getBst() {
+		return this.bst;
+    }
+    
+	public setVst(vst: number) {
+		this.vst = vst;
+	}
+
+	public setBst(bst: number) {
+		this.bst = bst;
 	}
 }

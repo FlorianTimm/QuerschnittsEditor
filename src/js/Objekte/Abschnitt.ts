@@ -7,45 +7,43 @@ import Aufbaudaten from './Aufbaudaten';
 import Daten from '../Daten';
 import QuerStation from './QuerStation';
 import { MultiLineString } from 'ol/geom';
+import Aufbau from './Aufbaudaten';
 
 var CONFIG: { [index: string]: string } = require('../config.json');
 
 /**
  * Straßenabschnitt
  * @author Florian Timm, LGV HH 
- * @version 2019.08.19
+ * @version 2019.10.29
  * @copyright MIT
  */
 export default class Abschnitt extends Feature {
     private daten: Daten;
-    fid: string = null;
-    abschnittid: string = null;
-    vnk: string = null;
-    nnk: string = null;
-    vtknr: any;
-    vnklfd: number;
-    vzusatz: any;
-    ntknr: any;
-    nnklfd: number;
-    nzusatz: any;
-    len: number = null;
-    inER: {} = {};
+    private fid: string = null;
+    private abschnittid: string = null;
+    private vnk: string = null;
+    private nnk: string = null;
+    private vtknr: any;
+    private vnklfd: number;
+    private vzusatz: any;
+    private ntknr: any;
+    private nnklfd: number;
+    private nzusatz: any;
+    private len: number = null;
+    private inER: { [ok: string]: boolean } = {};
 
     private _faktor: any = null;
-    private _station: {} = {};
-    private _aufstell: {} = {};
-    private _querschnitte: {} = {};
-
+    private _station: { [vst: number]: QuerStation } = {};
 
     private _feature: any;
-    private _aufbaudaten: any;
+    public aufbaudatenLoaded: boolean = false;
 
     constructor() {
         super();
         this.daten = Daten.getInstanz();
     }
 
-    getFaktor() {
+    public getFaktor() {
         if (this._faktor == null)
             this._faktor = this.len / Vektor.line_len((this.getGeometry() as MultiLineString).getCoordinates());
         return this._faktor;
@@ -62,7 +60,7 @@ export default class Abschnitt extends Feature {
     static loadFromAbschnittWFS(abschnittid: string) {
         let r = new Abschnitt();
         r.abschnittid = abschnittid;
-        AbschnittWFS.getById(abschnittid, r._loadCallback.bind(r));
+        AbschnittWFS.getById(abschnittid, r.loadCallback.bind(r));
         return r;
     }
 
@@ -73,27 +71,27 @@ export default class Abschnitt extends Feature {
         PublicWFS.doQuery('VI_STRASSENNETZ', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>ABSCHNITT_ID</PropertyName>' +
             '<Literal>' + r.abschnittid + '</Literal></PropertyIsEqualTo>' +
-            '</Filter>', r._loadCallback.bind(r));
+            '</Filter>', r.loadCallback.bind(r));
 
         return r;
     }
 
-    _loadCallback(xml: Document) {
+    private loadCallback(xml: Document) {
         let netz = xml.getElementsByTagName('VI_STRASSENNETZ');
 
         if (netz.length > 0) {
-            this._fromXML(netz[0]);
+            this.fromXML(netz[0]);
         }
     }
 
     static fromXML(xml: Element) {
         //console.log(xml);
         let r = new Abschnitt();
-        r._fromXML(xml);
+        r.fromXML(xml);
         return r;
     }
 
-    private _fromXML(xml: Element) {
+    private fromXML(xml: Element) {
         //console.log(xml)
 
         this.len = Number(xml.getElementsByTagName('LEN')[0].firstChild.textContent);
@@ -120,30 +118,30 @@ export default class Abschnitt extends Feature {
         this.setGeometry(new LineString(ak));
     }
 
-    _readData(xmlhttp: XMLHttpRequest) {
+    private readData(xmlhttp: XMLHttpRequest) {
         if (xmlhttp.responseXML == undefined) {
             PublicWFS.showMessage('Abschnitt nicht gefunden', true);
             return;
         }
     }
 
-    getFeature() {
+    public getFeature() {
         return this._feature;
     }
 
-    addStation(station: QuerStation): void {
-        this._station[station.vst] = station;
+    public addStation(station: QuerStation): void {
+        this._station[station.getVst()] = station;
     }
 
-    getStation(station: number): QuerStation {
+    public getStation(station: number): QuerStation {
         return this._station[station];
     }
 
-    existsStation(station: number): boolean {
+    public existsStation(station: number): boolean {
         return station in this._station;
     }
 
-    getStationByStation(station: number): QuerStation {
+    public getStationByStation(station: number): QuerStation {
         let r = null;
         for (var a in this._station) {
             if (parseInt(a) > station) break;
@@ -152,25 +150,26 @@ export default class Abschnitt extends Feature {
         return r;
     }
 
-    getStationByVST(vst: number): QuerStation {
+    public getStationByVST(vst: number): QuerStation {
         for (let a in this._station) {
-            if (this._station[a].vst == vst)
+            if (this._station[a].getVst() == vst)
                 return this._station[a];
         }
         return null;
     }
 
-    getStationByBST(bst: number): QuerStation {
+    public getStationByBST(bst: number): QuerStation {
         for (let a in this._station) {
-            if (this._station[a].bst == bst)
+            if (this._station[a].getBst() == bst)
                 return this._station[a];
         }
         return null;
     }
 
-    getAufbauDaten(callbackSuccess: (...args: any[]) => void, callbackError: (...args: any[]) => void, ...args: any[]) {
+    public getAufbauDaten(callbackSuccess?: (...args: any[]) => void, callbackError?: (...args: any[]) => void, reload: boolean = false, ...args: any[]) {
         //console.log(callbackSuccess);
-        if (this._aufbaudaten == null) {
+
+        if (!this.aufbaudatenLoaded || reload) {
             let xml = PublicWFS.doQuery('Otschicht', '<Filter><And>' +
                 '<PropertyIsEqualTo>' +
                 '<PropertyName>projekt/@xlink:href</PropertyName>' +
@@ -180,55 +179,81 @@ export default class Abschnitt extends Feature {
                 '<PropertyName>abschnittOderAst/@xlink:href</PropertyName>' +
                 '<Literal>S' + this.abschnittid + '</Literal>' +
                 '</PropertyIsEqualTo>' +
-                '</And></Filter>', this._parseAufbaudaten.bind(this), callbackError, callbackSuccess, ...args);
+                '</And></Filter>', this.parseAufbaudaten.bind(this), callbackError, callbackSuccess, ...args);
         }
     }
 
-    private _parseAufbaudaten(xml: Document, callbackSuccess?: (...args: any[]) => void, ...args: any[]) {
+    private parseAufbaudaten(xml: Document, callbackSuccess?: (...args: any[]) => void, ...args: any[]) {
         let aufbau = xml.getElementsByTagName('Otschicht');
+        let aufbaudaten: { [fid: string]: { [schichtnr: number]: Aufbau } } = {};
+
         for (let i = 0; i < aufbau.length; i++) {
             let a = Aufbaudaten.fromXML(aufbau[i]);
-            if (a.parent == null) continue;
-            let quer = this.daten.querschnitteFID[a.parent.replace('#', '')];
-            if (quer._aufbaudaten == null) {
-                quer._aufbaudaten = {};
-            }
-
-            quer._aufbaudaten[a.schichtnr] = a;
+            if (a.getParent == null) continue;
+            let fid = a.getParent().replace('#', '');
+            if (!(fid in aufbaudaten)) aufbaudaten[fid] = {};
+            aufbaudaten[fid][a.getSchichtnr()] = a;
         }
+
+        for (let stationNr in this._station) {
+            for (let querschnitt in this._station[stationNr]) {
+                for (let streifen of this._station[stationNr].getAllQuerschnitte()) {
+                    if (streifen.getFid() in aufbaudaten) {
+                        streifen.setAufbauGesamt(aufbaudaten[streifen.getFid()])
+                    } else {
+                        streifen.setAufbauGesamt({});
+                    }
+                }
+            }
+        }
+
+
         if (callbackSuccess != undefined) {
             callbackSuccess(...args);
         }
     }
 
-    writeQuerAufbau() {
-        let xml = '<wfs:Delete typeName="Dotquer">\n' +
-            '	<ogc:Filter>\n' +
-            '		<ogc:And>\n' +
-            '			<ogc:PropertyIsEqualTo>\n' +
-            '				<ogc:PropertyName>abschnittId</ogc:PropertyName>\n' +
-            '				<ogc:Literal>' + this.abschnittid + '</ogc:Literal>\n' +
-            '			</ogc:PropertyIsEqualTo>\n' +
-            '			<ogc:PropertyIsEqualTo>\n' +
-            '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
-            '				<ogc:Literal>' + this.daten.ereignisraum + '</ogc:Literal>\n' +
-            '			</ogc:PropertyIsEqualTo>\n' +
-            '		</ogc:And>\n' +
-            '	</ogc:Filter>\n' +
-            '</wfs:Delete>';
+    // Getter
+    public getAbschnittid(): string {
+        return this.abschnittid;
+    }
 
-        for (let station_key in this._station) {
-            let station = this._station[station_key];
-            for (let streifen_key in station._querschnitte) {
-                let streifen = station._querschnitte[streifen_key];
-                console.log(streifen);
-                for (let querschnitt_key in streifen) {
-                    xml += streifen[querschnitt_key].createInsertXML();
-                }
-            }
-        }
-        //PublicWFS.doTransaction(xml, callback())
+    isOKinER(ok: string): boolean {
+        return ok in this.inER && this.inER[ok];
+    }
 
-        console.log(xml);
+    getVnk() {
+        return this.vnk;
+    }
+
+    getNnk() {
+        return this.nnk;
+    }
+
+    getVtknr() {
+        return this.vtknr;
+    }
+
+    getNtknr() {
+        return this.ntknr;
+    }
+
+    getVzusatz() {
+        return this.vzusatz;
+    }
+
+    getNzusatz() {
+        return this.nzusatz;
+    }
+    getVnklfd() {
+        return this.vnklfd;
+    }
+    getNnklfd() {
+        return this.nnklfd;
+    }
+
+    //Setter
+    addOKinER(ok: string, value: boolean = true) {
+        this.inER[ok] = value;
     }
 }

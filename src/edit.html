@@ -41,69 +41,69 @@
                     for="befehl_qsadd2er">&nbsp;zum
                     ER hinzufügen</label><br />
                 <input type="radio" name="befehl" id="befehl_modify" value="modify" /><label
-                    for="befehl_modify">&nbsp;&Auml;ndern</label><br />
+                    for="befehl_modify">&nbsp;Fl&auml;che &auml;ndern</label><br />
                 <input type="radio" name="befehl" id="befehl_delete" value="delete" /><label
-                    for="befehl_delete">&nbsp;L&ouml;schen</label><br />
-                <input type="radio" name="befehl" id="befehl_part" value="part" /><label
-                    for="befehl_part">&nbsp;Teilen</label><br />
+                    for="befehl_delete">&nbsp;Fl&auml;che l&ouml;schen</label><br />
                 <input type="radio" name="befehl" id="befehl_add" value="add" /><label
-                    for="befehl_add">&nbsp;Hinzufügen</label><br />
+                    for="befehl_add">&nbsp;Fl&auml;che hinzufügen</label><br />
+                <input type="radio" name="befehl" id="befehl_part" value="part" /><label
+                    for="befehl_part">&nbsp;Querschnitt teilen</label><br />
             </div>
             <div id="tab_Otaufstvor" class="tabcontent">
                 <input type="radio" name="befehl" id="befehl_vsinfo" value="vsinfo" /><label
-                    for="befehl_vsinfo">&nbsp;Info</label><br />
+                    for="befehl_vsinfo">&nbsp;<span class="hotkey_alt">I</span>nfo</label><br />
                 <input type="radio" name="befehl" id="befehl_avadd2er" value="avadd2er" /><label
                     for="befehl_avadd2er">&nbsp;zum
-                    ER hinzufügen</label><br />
+                    E<span class="hotkey_alt">R</span> hinzufügen</label><br />
                 <input type="radio" name="befehl" id="befehl_avadd" value="avadd" /><label
                     for="befehl_avadd">&nbsp;Aufstellv.
-                    hinzuf&uuml;gen</label><br />
+                    <span class="hotkey_alt">h</span>inzuf&uuml;gen</label><br />
                 <input type="radio" name="befehl" id="befehl_avdel" value="avdel" /><label
                     for="befehl_avdel">&nbsp;Aufstellv.
-                    l&ouml;schen</label><br />
+                    <span class="hotkey_alt">l</span>&ouml;schen</label><br />
                 <input type="radio" name="befehl" id="befehl_vzadd" value="vzadd" /><label
-                    for="befehl_vzadd">&nbsp;Schild
-                    hinzuf&uuml;gen</label><br />
+                    for="befehl_vzadd">&nbsp;<span class="hotkey_alt">S</span>childer
+                    &auml;ndern</label><br />
                 <input type="radio" name="befehl" id="befehl_avmove" value="avmove" /><label
-                    for="befehl_avmove">&nbsp;Verschieben</label><br />
+                    for="befehl_avmove">&nbsp;<span class="hotkey_alt">V</span>erschieben</label><br />
             </div>
             <div id="tab_Otstrauspkt" class="tabcontent">
                 <input type="radio" name="befehl" id="befehl_sapinfo" value="sapinfo" /><label
-                    for="befehl_sapinfo">&nbsp;Info</label><br />
+                    for="befehl_sapinfo">&nbsp;<span class="hotkey_alt">I</span>nfo</label><br />
                 <input type="radio" name="befehl" id="befehl_sapadd2er" value="sapadd2er" /><label
                     for="befehl_sapadd2er">&nbsp;zum
-                    ER hinzufügen</label><br />
+                    E<span class="hotkey_alt">R</span> hinzufügen</label><br />
                 <input type="radio" name="befehl" id="befehl_sapadd" value="sapadd" /><label
                     for="befehl_sapadd">&nbsp;Ausstatt.
-                    hinzuf&uuml;gen</label><br />
+                    <span class="hotkey_alt">h</span>inzuf&uuml;gen</label><br />
                 <input type="radio" name="befehl" id="befehl_sapdel" value="sapdel" /><label
                     for="befehl_sapdel">&nbsp;Ausstatt.
-                    l&ouml;schen</label><br />
+                    <span class="hotkey_alt">l</span>&ouml;schen</label><br />
                 <input type="radio" name="befehl" id="befehl_sapmove" value="sapmove" /><label
-                    for="befehl_sapmove">&nbsp;Verschieben</label><br />
+                    for="befehl_sapmove">&nbsp;<span class="hotkey_alt">V</span>erschieben</label><br />
             </div>
             <div id="steuerung_sonstige">
                 <input type="radio" name="befehl" id="befehl_messen" value="messen" /><label
                     for="befehl_messen">&nbsp;Messen</label><br />
             </div>
-            <button type="button" id="zoomToExtent">Auf Ausdehnung zoomen</button>
+            <button type="button" id="zoomToExtent" disabled="disabled">Auf Ausdehnung zoomen</button>
             <button type="button" id="loadExtent">Abschnitte laden</button>
         </form>
 
-        <form id="loeschen" name="loeschen">
+        <form id="loeschen" name="loeschen" class="tool_form">
             <input type="button" onclick="delQuerschnittButton()" value="Querschnitt l&ouml;schen"
                 disabled="disabled" />
         </form>
 
-        <form id="hinzu" name="hinzu">
+        <form id="hinzu" name="hinzu" class="tool_form">
             <input type="button" id="addQuerschnittButton" value="Querschnitt hinzuf&uuml;gen" disabled="disabled" />
         </form>
 
-        <form id="quer_del" name="quer_del">
+        <form id="quer_del" name="quer_del" class="tool_form">
             <input type="button" id="delQuerschnittButton" value="Querschnitt l&ouml;schen" disabled="disabled" />
         </form>
 
-        <form id="teilen" name="teilen">
+        <form id="teilen" name="teilen" class="tool_form">
             <table>
                 <tr>
                     <td>VNK:</td>
@@ -121,111 +121,19 @@
             <input type="button" id="teilen_button" value="Querschnitt teilen" disabled="disabled" />
         </form>
 
-        <form id="avadd" name="avadd">
-            <label for="avadd_art">Art</label><br />
-            <select id="avadd_art"></select>
-            <br />
-            <label for="avadd_lage">Lage</label><br />
-            <select id="avadd_lage"></select>
-            <br />
-            <label for="avadd_quelle">Quelle</label><br />
-            <select id="avadd_quelle"></select>
-            <br />
-            <label for="avadd_extid">ext. Nr.:</label><br />
-            <input type="text" id="avadd_extid" />
-            <br />
-            <label for="avadd_vnk">VNK</label><br />
-            <input type="text" id="avadd_vnk" disabled="disabled" />
-            <br />
-            <label for="avadd_nnk">NNK</label><br />
-            <input type="text" id="avadd_nnk" disabled="disabled" />
-            <br />
-            <label for="avadd_station">Station</label><br />
-            <input type="text" id="avadd_station" disabled="disabled" />
-            <br />
-            <label for="avadd_abstand">Abstand</label><br />
-            <input type="text" id="avadd_abstand" disabled="disabled" />
-            <br />
-
-            <input type="button" id="avadd_button" value="Aufstellvor. hinzu." disabled="disabled" />
-        </form>
-
-        <form id="sapadd" name="sapadd">
-            <label for="sapadd_art">Art</label><br />
-            <select id="sapadd_art"></select>
-            <br />
-            <label for="sapadd_quelle">Quelle</label><br />
-            <select id="sapadd_quelle"></select>
-            <br />
-            <label for="sapadd_lage">Lage</label><br />
-            <select id="sapadd_lage"></select>
-            <br />
-            <label for="sapadd_vnk">VNK</label><br />
-            <input type="text" id="sapadd_vnk" disabled="disabled" />
-            <br />
-            <label for="sapadd_nnk">NNK</label><br />
-            <input type="text" id="sapadd_nnk" disabled="disabled" />
-            <br />
-            <label for="sapadd_station">Station</label><br />
-            <input type="text" id="sapadd_station" disabled="disabled" />
-            <br />
-            <label for="sapadd_abstand">Abstand</label><br />
-            <input type="text" id="sapadd_abstand" disabled="disabled" />
-            <br />
-
-            <input type="button" id="sapadd_button" value="Aufstellvor. hinzu." disabled="disabled" />
-        </form>
-
-        <form id="modify" name="modify">
+        <form id="modify" name="modify" class="tool_form">
             Nachfolgende Querschnitte:<br />
-            <input type="radio" name="typ" id="modify_move" value="move" checked="checked" /><label
+            <input type="radio" name="typ" id="modify_move" class="label_radio" value="move" checked="checked" /><label
                 for="modify_move">&nbsp;...verschieben</label><br />
-            <input type="radio" name="typ" id="modify_fit" value="fit" /><label
+            <input type="radio" name="typ" id="modify_fit" class="label_radio" value="fit" /><label
                 for="modify_fit">&nbsp;...anpassen</label><br />
             <br />
             <input type="checkbox" name="modify_glue" id="modify_glue" />
             <label for="modify_glue">&nbsp;angrenzende Querschnitte mitziehen</label><br />
         </form>
 
-        <form id="info" name="info">
-            <table>
-                <tr>
-                    <td>VNK:</td>
-                    <td id="info_vnk"></td>
-                </tr>
-                <tr>
-                    <td>NNK:</td>
-                    <td id="info_nnk"></td>
-                </tr>
-                <tr>
-                    <td>Station</td>
-                    <td id="info_station"></td>
-                </tr>
-                <tr>
-                    <td>Streifen:</td>
-                    <td id="info_streifen"></td>
-                </tr>
-                <tr>
-                    <td>Art:</td>
-                    <td><select id="info_art" disabled="disabled"></select></td>
-                </tr>
-                <tr>
-                    <td>Art der Oberfl&auml;che:</td>
-                    <td><select id="info_ober" disabled="disabled"></select></td>
-                </tr>
-                <tr>
-                    <td>Von Breite:</td>
-                    <td><input type="number" id="info_breite" min="0" max="10000" step="10" disabled="disabled" /></td>
-                </tr>
-                <tr>
-                    <td>Bis Breite:</td>
-                    <td><input type="number" id="info_bisbreite" min="0" max="10000" step="10" disabled="disabled" />
-                    </td>
-                </tr>
-            </table>
-        </form>
-
-        <form id="qsMultiMod" name="qsMultiMod">
+        <!--
+        <form id="qsMultiMod" name="qsMultiMod" class="tool_form">
             <table>
                 <tr>
                     <td>Anzahl</td>
@@ -240,7 +148,7 @@
                     <td><select id="qsmm_ober"></select></td>
                 </tr>
             </table>
-        </form>
+        </form>-->
 
         <!--<form style="background-color: rgba(255,180,180,0.8);">Bekannte Fehler:
             <ul>

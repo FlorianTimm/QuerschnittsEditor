@@ -35,10 +35,6 @@ sidebar>* {
     max-width: 200px;
 }
 
-#qsMultiMod select, #qsMultiMod input, #info input, #info select, #avadd select {
-    width: 100%;
-}
-
 form table {
     width: 100%;
     max-width: 100%;
@@ -62,11 +58,11 @@ form table, th, td {
     font-family: sans-serif;
 }
 
-form#info, form#modify, form#qsMultiMod {
+form#modify {
     display: none;
 }
 
-form#hinzu, form#quer_del, form#avadd, form#sapadd, form#loeschen, form#teilen {
+form#hinzu, form#quer_del, form#loeschen, form#teilen {
     text-align: center;
     display: none;
 }
@@ -186,33 +182,6 @@ form#suche {
     overflow-x: hidden;
 }
 
-form#avadd , form#sapadd {
-    overflow-x: inherit;
-    text-align: left;
-}
-
-form#avadd input, form#avadd select, form#avadd .chosen-container,
-form#sapadd input, form#sapadd select, form#sapadd .chosen-container {
-    margin-bottom: 4px;
-    width: 95%;
-}
-
-form#avadd .chosen-container, form#sapadd .chosen-container {
-    font-size: 9pt;
-}
-
-form#avadd label, form#sapadd label {
-    font-size: 8pt;
-}
-
-.ui-front {
-    z-index: 1050 !important;
-}
-
-.ui-dialog {
-    z-index: 1100 !important;
-}
-
 /* Tooltip fürs Messen */
 
 .tooltip {
@@ -276,4 +245,13 @@ div#zurueck a {
 
 div#zurueck a:hover {
     background-color: rgba(0, 60, 136, 0.7);
+}
+
+span.hotkey_alt {
+    text-decoration: underline;
+    text-decoration-color: red;
+}
+
+div.chosen-disabled {
+    opacity: 0.7 !important;
 }

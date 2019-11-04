@@ -6,11 +6,12 @@ import Daten from '../../Daten';
 import QuerInfoTool from './QuerInfoTool';
 import Tool from '../prototypes/Tool';
 import { SelectEvent } from 'ol/interaction/Select';
+import InfoTool from '../InfoTool';
 
 /**
  * Funktion zum Hinzufügen von Querschnittsflächen
  * @author Florian Timm, LGV HH 
- * @version 2019.05.20
+ * @version 2019.10.29
  * @copyright MIT
  */
 class QuerAddTool extends Tool {
@@ -25,28 +26,29 @@ class QuerAddTool extends Tool {
         this._daten = Daten.getInstanz();
         this._info = info;
         this._select = new SelectInteraction({
-            layers: [this._daten.l_trenn],
-            style: new Style({
-                stroke: new Stroke({
-                    color: 'rgba(255, 0, 0, 0.5)',
-                    width: 5
-                })
-            })
+            layers: [this._daten.layerTrenn],
+            style: InfoTool.selectStyle
         });
 
         this._select.on('select', function (e: SelectEvent) {
             if (e.selected.length == 0) {
-                document.forms.namedItem("hinzu").getElementsByTagName("input")[0].style.backgroundColor = "";
-                document.forms.namedItem("hinzu").getElementsByTagName("input")[0].disabled = true;
+                this.disableMenu();
                 return
             }
-            console.log(this);
-            this._info.logAuswahl(this._select);
+            //console.log(this);
+            (this._info as QuerInfoTool).getInfoFieldForFeature(e.selected[0].get("objekt"))
             document.forms.namedItem("hinzu").getElementsByTagName("input")[0].style.backgroundColor = "#ffcc00";
             document.forms.namedItem("hinzu").getElementsByTagName("input")[0].disabled = false;
         }.bind(this));
 
         document.getElementById("addQuerschnittButton").addEventListener('click', this.addQuerschnitt.bind(this));
+    }
+
+
+    private disableMenu() {
+        document.forms.namedItem("hinzu").getElementsByTagName("input")[0].style.backgroundColor = "";
+        document.forms.namedItem("hinzu").getElementsByTagName("input")[0].disabled = true;
+        (this._info as QuerInfoTool).hideInfoBox();
     }
 
     start() {
@@ -55,9 +57,10 @@ class QuerAddTool extends Tool {
     }
 
     stop() {
+        this.disableMenu()
         document.forms.namedItem("hinzu").style.display = 'none';
         this._map.removeInteraction(this._select);
-        document.forms.namedItem("info").style.display = "none";
+        this._info.hideInfoBox();
     }
 
 
@@ -65,22 +68,22 @@ class QuerAddTool extends Tool {
         let selection = this._select.getFeatures();
         if (this._select.getFeatures().getLength() <= 0) return;
         let querschnitt = <Querschnitt>selection.item(0).get('objekt');
-        querschnitt.station.abschnitt.getAufbauDaten(this.addQuerschnittCallback.bind(this), undefined);
+        querschnitt.getStation().getAbschnitt().getAufbauDaten(this.addQuerschnittCallback.bind(this));
     }
 
     addQuerschnittCallback() {
         let selection = this._select.getFeatures();
         if (this._select.getFeatures().getLength() <= 0) return;
         let querschnitt = <Querschnitt>selection.item(0).get('objekt');
-        let gesStreifen = querschnitt.station.getStreifen(querschnitt.streifen);
+        let gesStreifen = querschnitt.getStation().getStreifen(querschnitt.getStreifen());
 
         let querschnittNeu = new Querschnitt();
-        querschnittNeu.breite = 275;
-        querschnittNeu.bisBreite = 275;
+        querschnittNeu.setBreite(275);
+        querschnittNeu.setBisBreite(275);
 
         let strArray = []
         for (let nnr in gesStreifen) {
-            if (Number(nnr) <= querschnitt.streifennr) continue;
+            if (Number(nnr) <= querschnitt.getStreifennr()) continue;
             strArray.push(gesStreifen[nnr]);
         }
 
@@ -88,47 +91,47 @@ class QuerAddTool extends Tool {
             gesStreifen[quer.streifennr + 1] = quer;
             quer.streifennr = quer.streifennr + 1;
             if (quer.streifen == 'L') {
-                quer.XBstR -= querschnittNeu.bisBreite / 100;
-                quer.XVstR -= querschnittNeu.breite / 100;
-                quer.XBstL -= querschnittNeu.bisBreite / 100;
-                quer.XVstL -= querschnittNeu.breite / 100;
+                quer.XBstR -= querschnittNeu.getBisBreite() / 100;
+                quer.XVstR -= querschnittNeu.getBreite() / 100;
+                quer.XBstL -= querschnittNeu.getBisBreite() / 100;
+                quer.XVstL -= querschnittNeu.getBreite() / 100;
             } else if (quer.streifen == 'R') {
-                quer.XBstL += querschnittNeu.bisBreite / 100;
-                quer.XVstL += querschnittNeu.breite / 100;
-                quer.XBstR += querschnittNeu.bisBreite / 100;
-                quer.XVstR += querschnittNeu.breite / 100;
+                quer.XBstL += querschnittNeu.getBisBreite() / 100;
+                quer.XVstL += querschnittNeu.getBreite() / 100;
+                quer.XBstR += querschnittNeu.getBisBreite() / 100;
+                quer.XVstR += querschnittNeu.getBreite() / 100;
             }
             //quer.createGeom();
-            querschnitt.station.addQuerschnitt(quer);
+            querschnitt.getStation().addQuerschnitt(quer);
         }
 
-        if (querschnitt.streifen == 'L') {
-            querschnittNeu.XBstR = querschnitt.XBstL;
-            querschnittNeu.XVstR = querschnitt.XVstL;
-            querschnittNeu.XBstL = querschnittNeu.XBstR - querschnittNeu.bisBreite / 100;
-            querschnittNeu.XVstL = querschnittNeu.XVstR - querschnittNeu.breite / 100;
-        } else if (querschnitt.streifen == 'R') {
-            querschnittNeu.XBstL = querschnitt.XBstR;
-            querschnittNeu.XVstL = querschnitt.XVstR;
-            querschnittNeu.XBstR = querschnittNeu.XBstL + querschnittNeu.bisBreite / 100;
-            querschnittNeu.XVstR = querschnittNeu.XVstL + querschnittNeu.breite / 100;
+        if (querschnitt.getStreifen() == 'L') {
+            querschnittNeu.setXBstR(querschnitt.getXBstL());
+            querschnittNeu.setXVstR(querschnitt.getXVstL());
+            querschnittNeu.setXBstL(querschnittNeu.getXBstR() - querschnittNeu.getBisBreite() / 100);
+            querschnittNeu.setXVstL(querschnittNeu.getXVstR() - querschnittNeu.getBreite() / 100);
+        } else if (querschnitt.getStreifen() == 'R') {
+            querschnittNeu.setXBstL(querschnitt.getXBstR());
+            querschnittNeu.setXVstL(querschnitt.getXVstR());
+            querschnittNeu.setXBstR(querschnittNeu.getXBstL() + querschnittNeu.getBisBreite() / 100);
+            querschnittNeu.setXVstR(querschnittNeu.getXVstL() + querschnittNeu.getBreite() / 100);
         }
 
-        querschnittNeu.projekt = querschnitt.projekt;
-        querschnittNeu.streifen = querschnitt.streifen;
-        querschnittNeu.streifennr = querschnitt.streifennr + 1;
-        querschnittNeu.art = querschnitt.art;
-        querschnittNeu.artober = querschnitt.artober;
-        querschnittNeu.station = querschnitt.station;
-        querschnittNeu.vst = querschnitt.vst;
-        querschnittNeu.bst = querschnitt.bst;
-        querschnittNeu.abschnittId = querschnitt.abschnittId;
-        gesStreifen[querschnittNeu.streifennr] = querschnittNeu;
+        querschnittNeu.setProjekt(querschnitt.getProjekt());
+        querschnittNeu.setStreifen(querschnitt.getStreifen());
+        querschnittNeu.setStreifennr(querschnitt.getStreifennr() + 1);
+        querschnittNeu.setArt(querschnitt.getArt());
+        querschnittNeu.setArtober(querschnitt.getArtober());
+        querschnittNeu.setStation(querschnitt.getStation());
+        querschnittNeu.setVst(querschnitt.getVst());
+        querschnittNeu.setBst(querschnitt.getBst());
+        querschnittNeu.setAbschnittId(querschnitt.getAbschnittId());
+        gesStreifen[querschnittNeu.getStreifennr()] = querschnittNeu;
         //querschnittNeu.createGeom();
-        querschnitt.station.addQuerschnitt(querschnittNeu);
+        querschnitt.getStation().addQuerschnitt(querschnittNeu);
 
         this._select.getFeatures().clear();
-        querschnitt.station.rewrite();
+        querschnitt.getStation().rewrite();
     }
 
 }

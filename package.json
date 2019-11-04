@@ -7,9 +7,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "startServer": "parcel watch --out-dir \"//gv-srv-w00118/GlassFish Docroot/querOO\" --hmr-hostname localhost --public-url . src/*.html",
     "buildServer": "parcel build --out-dir \"//gv-srv-w00118/GlassFish Docroot/querschnitt\" --public-url . src/*.html",
-	"build2beta": "parcel build --out-dir \"//gv-srv-w00118/GlassFish Docroot/querBeta\" --public-url . src/*.html",
+    "build2beta": "parcel build --out-dir \"//gv-srv-w00118/GlassFish Docroot/querBeta\" --public-url . src/*.html",
     "start": "parcel src/*.html",
-    "build": "parcel build --public-url . src/*.html"
+    "build": "parcel build --public-url . src/*.html",
+    "validate-typescript": "tsc --noEmit"
   },
   "repository": {
     "type": "git",
@@ -29,23 +30,23 @@
   "dependencies": {
     "@types/chosen-js": "^1.8.1",
     "@types/jquery": "^3.3.31",
-    "@types/jqueryui": "^1.12.7",
-    "@types/node": "^12.7.2",
-    "@types/ol": "^5.3.5",
+    "@types/jqueryui": "^1.12.8",
+    "@types/node": "^12.11.7",
+    "@types/ol": "^5.3.6",
     "@types/proj4": "^2.5.0",
     "babel-polyfill": "^6.26.0",
     "chosen-js": "^1.8.7",
-    "core-js": "^3.0.1",
+    "core-js": "^3.3.5",
     "jquery": "^3.4.1",
     "jquery-ui": "^1.12.1",
     "jquery-ui-bundle": "^1.12.1-migrate",
-    "ol": "^5.3.3",
+    "ol": "^6.1.0",
     "proj4": "^2.5.0",
     "regenerator-runtime": "^0.13.2",
     "src": "^1.1.2"
   },
   "devDependencies": {
     "cssnano": "^4.1.10",
-    "typescript": "^3.5.3"
+    "typescript": "^3.6.4"
   }
 }

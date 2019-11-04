@@ -1,10 +1,3 @@
-/**
- * Daten
- * @author Florian Timm, LGV HH 
- * @version 2019.06.06
- * @copyright MIT
- */
-
 import { Vector as VectorSource } from 'ol/source';
 import { Style, Stroke, Fill, Text, Icon, Circle } from 'ol/style';
 import Point from 'ol/geom/Point';
@@ -23,58 +16,119 @@ import StrassenAusPunkt from './Objekte/StrassenAusPunkt';
 
 var CONFIG = require('./config.json');
 
-class Daten {
-    private static daten = null;
+/**
+ * Daten
+ * @author Florian Timm, LGV HH 
+ * @version 2019.10.29
+ * @copyright MIT
+ */
 
-    map: Map;
-    modus: string = "Otaufstvor"
-    ereignisraum: string;
-    ereignisraum_nr: string;
-    querschnitteFID: {};
+export default class Daten {
+    private static daten: Daten = null;
+
+    public modus: string = "Otaufstvor"
+    public ereignisraum: string;
+    public ereignisraum_nr: string;
+    //public querschnitteFID: { [oid: string]: Abschnitt };
+    public layerAufstell: VectorLayer;
+    public vectorAchse: VectorSource;
+    public layerAchse: VectorLayer;
+    public vectorStation: VectorSource;
+    public layerStation: VectorLayer;
+    public vectorTrenn: VectorSource;
+    public layerTrenn: VectorLayer;
+    public vectorQuer: VectorSource;
+    public layerQuer: VectorLayer;
+    public layerStraus: VectorLayer;
+
     private klartexte: Klartext;
-    abschnitte: {};
-    l_aufstell: VectorLayer;
-    v_achse: VectorSource;
-    l_achse: VectorLayer;
-    v_station: VectorSource;
-    l_station: VectorLayer;
-    v_trenn: VectorSource;
-    l_trenn: VectorLayer;
-    v_quer: VectorSource;
-    l_quer: VectorLayer;
-    l_straus: VectorLayer;
-
+    private abschnitte: {};
+    private map: Map;
+    private warteAufObjektklassen: number;
 
     constructor(map: Map, ereignisraum: string, ereignisraum_nr: string) {
         Daten.daten = this;
         this.map = map;
         this.ereignisraum = ereignisraum;
         this.ereignisraum_nr = ereignisraum_nr;
-        this.querschnitteFID = {};
+        //this.querschnitteFID = {};
 
         this.klartexte = Klartext.getInstanz();
-        this.klartexte.load("Itquerart", this._showArt.bind(this));
-        this.klartexte.load("Itquerober", this._showArtOber.bind(this));
+        this.klartexte.load("Itquerart", this.showArt.bind(this));
+        this.klartexte.load("Itquerober", this.showArtOber.bind(this));
 
-        this._createLayerFlaechen();
-        this._createLayerTrennLinien();
-        this._createLayerStationen();
-        this._createLayerAchsen();
+        this.createLayerFlaechen();
+        this.createLayerTrennLinien();
+        this.createLayerStationen();
+        this.createLayerAchsen();
 
         this.abschnitte = {};
 
-        Querschnitt.loadER();
-        this.l_aufstell = Aufstellvorrichtung.createLayer(this.map);
-        this.l_straus = StrassenAusPunkt.createLayer(this.map);
-        Aufstellvorrichtung.loadER(this);
-        StrassenAusPunkt.loadER();
+
+        this.layerAufstell = Aufstellvorrichtung.createLayer(this.map);
+        this.layerStraus = StrassenAusPunkt.createLayer(this.map);
     }
 
-    static getInstanz() {
+    /**
+     * Lädt Daten aus den ERs
+     */
+    public loadER(zoomToExtentWhenReady?: boolean) {
+        if (zoomToExtentWhenReady == undefined) zoomToExtentWhenReady = true;
+
+        this.warteAufObjektklassen = 3;
+        Querschnitt.loadER(this.loadErCallback.bind(this), zoomToExtentWhenReady);
+        Aufstellvorrichtung.loadER(this.loadErCallback.bind(this, zoomToExtentWhenReady));
+        StrassenAusPunkt.loadER(this.loadErCallback.bind(this, zoomToExtentWhenReady));
+    }
+
+    private loadErCallback(zoomToExtentWhenReady?: boolean) {
+        this.warteAufObjektklassen -= 1;
+        console.log(this.warteAufObjektklassen)
+        if (this.warteAufObjektklassen <= 0) {
+            console.log("ERs geladen");
+            (document.getElementById("zoomToExtent") as HTMLButtonElement).disabled = false;
+            if (zoomToExtentWhenReady != false)
+                this.zoomToExtent();
+        }
+    }
+
+    public zoomToExtent() {
+        let minX = null, maxX = null, minY = null, maxY = null;
+        let features = this.vectorAchse.getFeatures();
+        if (features.length == 0) {
+            PublicWFS.showMessage("Keine Daten geladen<br /><br />[ ER enthält keine bearbeitbaren Objekte ]", true);
+            return;
+        }
+
+        for (let f of features) {
+            let geo = f.getGeometry()
+            if (geo == undefined) {
+                console.log("Geometrien noch nicht geladen, prüfe in 500ms")
+                setTimeout(this.zoomToExtent.bind(this), 500);
+                return;
+            }
+            let p = geo.getExtent();
+
+            if (minX == null || minX > p[0]) minX = p[0];
+            if (minY == null || minY > p[1]) minY = p[1];
+            if (maxX == null || maxX < p[2]) maxX = p[2];
+            if (maxY == null || maxY < p[3]) maxY = p[3];
+        }
+        this.map.getView().fit([minX, minY, maxX, maxY], { padding: [20, 240, 20, 20] })
+
+        //map.getView().fit(daten.l_achse.getExtent());
+
+        /*
+        let extent = Daten.calcAbschnitteExtent(daten.l_achse.getSource().getFeatures());
+        map.getView().fit(extent, { padding: [20, 240, 20, 20] })
+        */
+    }
+
+    public static getInstanz(): Daten {
         return Daten.daten;
     }
 
-    private _showArt(art) {
+    private showArt(art) {
         let arten = this.klartexte.getAllSorted("Itquerart");
         for (let a of arten) {
             let option = document.createElement('option');
@@ -83,12 +137,11 @@ class Daten {
             let v = document.createAttribute('value');
             v.value = a.objektId;
             option.setAttributeNode(v);
-            document.forms.namedItem("info").info_art.appendChild(option);
             document.forms.namedItem("qsMultiMod").qsmm_art.appendChild(option.cloneNode(true));
         }
     }
 
-    private _showArtOber(artober) {
+    private showArtOber(artober) {
         let arten = this.klartexte.getAllSorted("Itquerober");
         for (let a of arten) {
             let option = document.createElement('option');
@@ -97,25 +150,24 @@ class Daten {
             let v = document.createAttribute('value');
             v.value = a.objektId;
             option.setAttributeNode(v);
-            document.forms.namedItem("info").info_ober.appendChild(option);
             document.forms.namedItem("qsMultiMod").qsmm_ober.appendChild(option.cloneNode(true));
         }
     }
 
-    getAbschnitt(absId: string): Abschnitt {
+    public getAbschnitt(absId: string): Abschnitt {
         if (!(absId in this.abschnitte)) {
             this.abschnitte[absId] = Abschnitt.load(absId);
-            this.v_achse.addFeature(this.abschnitte[absId]);
+            this.vectorAchse.addFeature(this.abschnitte[absId]);
         }
         //console.log(this.abschnitte[absId]);
         return this.abschnitte[absId];
     }
 
-    loadExtent() {
+    public loadExtent() {
         document.body.style.cursor = 'wait'
         let extent = this.map.getView().calculateExtent();
         if ("ABSCHNITT_WFS_URL" in CONFIG) {
-            AbschnittWFS.getByExtent(extent, this._loadExtent_Callback.bind(this));
+            AbschnittWFS.getByExtent(extent, this.loadExtent_Callback.bind(this));
         } else {
             let filter = '<Filter>\n' +
                 '	<BBOX>\n' +
@@ -126,31 +178,31 @@ class Daten {
                 '	</BBOX>\n' +
                 '</Filter>\n' +
                 '<maxFeatures>100</maxFeatures>\n';
-            PublicWFS.doQuery('VI_STRASSENNETZ', filter, this._loadExtent_Callback.bind(this));
+            PublicWFS.doQuery('VI_STRASSENNETZ', filter, this.loadExtent_Callback.bind(this));
         }
     }
 
-    private _loadExtent_Callback(xml: XMLDocument) {
+    private loadExtent_Callback(xml: XMLDocument) {
         let netz = xml.getElementsByTagName("VI_STRASSENNETZ");
         for (let i = 0; i < netz.length; i++) {
             let abschnitt = Abschnitt.fromXML(netz[i]);
-            if (!(abschnitt.abschnittid in this.abschnitte)) {
-                this.abschnitte[abschnitt.abschnittid] = abschnitt;
-                this.v_achse.addFeature(this.abschnitte[abschnitt.abschnittid]);
+            if (!(abschnitt.getAbschnittid() in this.abschnitte)) {
+                this.abschnitte[abschnitt.getAbschnittid()] = abschnitt;
+                this.vectorAchse.addFeature(this.abschnitte[abschnitt.getAbschnittid()]);
             }
         }
         document.body.style.cursor = '';
     }
 
-    private _createLayerAchsen() {
-        this.v_achse = new VectorSource({
+    private createLayerAchsen() {
+        this.vectorAchse = new VectorSource({
             features: []
         });
         let achsen_style = function (feature: Abschnitt, resolution: number) {
             let styles = [];
             // Linienfarbe - rot, wenn in ER
             let color = '#222';
-            if (Daten.getInstanz().modus in feature.inER) color = '#d00';
+            if (feature.isOKinER(Daten.getInstanz().modus)) color = '#d00';
 
             // Linie + Beschriftung
             styles.push(new Style({
@@ -165,7 +217,7 @@ class Daten {
                     stroke: new Stroke({
                         color: '#fff', width: 2
                     }),
-                    text: feature.vnk + ' - ' + feature.nnk,
+                    text: feature.getVnk() + ' - ' + feature.getNnk(),
                     placement: 'line',
                     offsetY: -7
                 })
@@ -225,21 +277,21 @@ class Daten {
             }
             return styles;
         };
-        this.l_achse = new VectorLayer({
+        this.layerAchse = new VectorLayer({
             daten: this,
-            source: this.v_achse,
+            source: this.vectorAchse,
             opacity: 0.6,
             style: achsen_style
         });
-        this.map.addLayer(this.l_achse);
+        this.map.addLayer(this.layerAchse);
     }
 
-    private _createLayerStationen() {
-        this.v_station = new VectorSource({
+    private createLayerStationen() {
+        this.vectorStation = new VectorSource({
             features: []
         });
-        this.l_station = new VectorLayer({
-            source: this.v_station,
+        this.layerStation = new VectorLayer({
+            source: this.vectorStation,
             opacity: 0.6,
             style: new Style({
                 stroke: new Stroke({
@@ -248,15 +300,15 @@ class Daten {
                 }),
             })
         });
-        this.map.addLayer(this.l_station);
+        this.map.addLayer(this.layerStation);
     }
 
-    private _createLayerTrennLinien() {
-        this.v_trenn = new VectorSource({
+    private createLayerTrennLinien() {
+        this.vectorTrenn = new VectorSource({
             features: []
         });
-        this.l_trenn = new VectorLayer({
-            source: this.v_trenn,
+        this.layerTrenn = new VectorLayer({
+            source: this.vectorTrenn,
             opacity: 0.6,
             style: new Style({
                 stroke: new Stroke({
@@ -265,19 +317,19 @@ class Daten {
                 })
             })
         });
-        this.map.addLayer(this.l_trenn);
+        this.map.addLayer(this.layerTrenn);
     }
 
-    private _createLayerFlaechen() {
+    private createLayerFlaechen() {
         // Layer mit Querschnittsflächen
-        this.v_quer = new VectorSource({
+        this.vectorQuer = new VectorSource({
             features: []
         });
 
         let createStyle: (feature: Feature, resolution: number) => Style =
             function (feature: Feature, resolution: number) {
-                let kt_art = Daten.getInstanz().klartexte.get('Itquerart', feature.get('objekt').art)
-                let kt_ober = Daten.getInstanz().klartexte.get('Itquerober', feature.get('objekt').artober)
+                let kt_art = Daten.getInstanz().klartexte.get('Itquerart', (feature as Querschnitt).getArt())
+                let kt_ober = Daten.getInstanz().klartexte.get('Itquerober', (feature as Querschnitt).getArtober())
 
                 // leere Arten filtern
                 let art = 0
@@ -353,15 +405,15 @@ class Daten {
                 })
             }
 
-        this.l_quer = new VectorLayer({
-            source: this.v_quer,
+        this.layerQuer = new VectorLayer({
+            source: this.vectorQuer,
             //opacity: 0.40,
             style: createStyle
         });
-        this.map.addLayer(this.l_quer);
+        this.map.addLayer(this.layerQuer);
     }
 
-    searchForStreet(event?: Event) {
+    public searchForStreet(event?: Event) {
         console.log(document.forms.namedItem("suche").suche.value);
         let wert = document.forms.namedItem("suche").suche.value;
         if (wert == "") return;
@@ -374,7 +426,7 @@ class Daten {
                 console.log(found1)
                 let vnk = found1[1];
                 let nnk = found1[2];
-                AbschnittWFS.getByVNKNNK(vnk, nnk, this._loadSearch_Callback.bind(this));
+                AbschnittWFS.getByVNKNNK(vnk, nnk, this.loadSearch_Callback.bind(this));
                 return;
             }
 
@@ -385,10 +437,10 @@ class Daten {
                 let klasse = found2[1];
                 let nummer = found2[2];
                 let buchstabe = (found2.length > 2) ? found2[3] : '';
-                AbschnittWFS.getByWegenummer(klasse, nummer, buchstabe, this._loadSearch_Callback.bind(this));
+                AbschnittWFS.getByWegenummer(klasse, nummer, buchstabe, this.loadSearch_Callback.bind(this));
                 return;
             }
-            AbschnittWFS.getByStrName(wert, this._loadSearch_Callback.bind(this));
+            AbschnittWFS.getByStrName(wert, this.loadSearch_Callback.bind(this));
         } else {
             PublicWFS.showMessage("Straßennamen-Suche ist nur über den AbschnittWFS möglich");
             /*let filter = '<Filter><Like><PropertyName><PropertyName><Literal><Literal></Like></Filter>'
@@ -396,16 +448,16 @@ class Daten {
         }
     }
 
-    private _loadSearch_Callback(xml) {
+    private loadSearch_Callback(xml) {
         let netz = xml.getElementsByTagName("VI_STRASSENNETZ");
         let geladen = [];
         for (let abschnittXML of netz) {
             //console.log(abschnittXML)
             let abschnitt = Abschnitt.fromXML(abschnittXML);
             geladen.push(abschnitt);
-            if (!(abschnitt.abschnittid in this.abschnitte)) {
-                this.abschnitte[abschnitt.abschnittid] = abschnitt;
-                this.v_achse.addFeature(this.abschnitte[abschnitt.abschnittid]);
+            if (!(abschnitt.getAbschnittid() in this.abschnitte)) {
+                this.abschnitte[abschnitt.getAbschnittid()] = abschnitt;
+                this.vectorAchse.addFeature(this.abschnitte[abschnitt.getAbschnittid()]);
             }
         }
         if (geladen.length > 0) {
@@ -417,7 +469,7 @@ class Daten {
         document.body.style.cursor = '';
     }
 
-    static calcAbschnitteExtent(abschnitte) {
+    public static calcAbschnitteExtent(abschnitte: Abschnitt[]) {
         let minX = null, maxX = null, minY = null, maxY = null;
         for (let i = 0; i < abschnitte.length; i++) {
             let f = abschnitte[i];
@@ -432,5 +484,3 @@ class Daten {
         return [minX, minY, maxX, maxY];
     }
 }
-
-export default Daten;

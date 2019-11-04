@@ -11,7 +11,7 @@ import Abschnitt from '../../Objekte/Abschnitt';
 /**
  * Funktion zum Hinzufügen von Aufstellvorrichtungen zum Ereignisraum
  * @author Florian Timm, LGV HH 
- * @version 2019.05.20
+ * @version 2019.10.29
  * @copyright MIT
  */
 class AvAdd2ER extends Tool {
@@ -25,7 +25,7 @@ class AvAdd2ER extends Tool {
         this.map = map;
 
         this.select = new SelectInteraction({
-            layers: [this.daten.l_achse],
+            layers: [this.daten.layerAchse],
             hitTolerance: 10,
             style: new Style({
                 stroke: new Stroke({
@@ -42,16 +42,16 @@ class AvAdd2ER extends Tool {
         if (this.select.getFeatures().getArray().length == 0) return;
 
         let abschnitt = this.select.getFeatures().getArray()[0] as Abschnitt;
-        if ("Otaufstvor" in abschnitt.inER && abschnitt.inER["Otaufstvor"]) return;
+        if (abschnitt.isOKinER("Otaufstvor")) return;
         document.body.style.cursor = 'wait'
         PublicWFS.addInER(abschnitt, "Otaufstvor", this.daten.ereignisraum_nr, this._onSelect_Callback.bind(this), undefined, abschnitt);
     }
 
-    _onSelect_Callback(xml, abschnitt: Abschnitt) {
-        abschnitt.inER["Otaufstvor"] = true;
-        Aufstellvorrichtung.loadAbschnittER(this.daten, abschnitt, PublicWFS.showMessage, "Erfolgreich in ER kopiert");
+    _onSelect_Callback(xml: XMLDocument, abschnitt: Abschnitt) {
+        abschnitt.addOKinER("Otaufstvor");
+        Aufstellvorrichtung.loadAbschnittER(abschnitt, PublicWFS.showMessage, "Erfolgreich in ER kopiert");
         this.select.getFeatures().clear();
-        this.daten.l_achse.changed();
+        this.daten.layerAchse.changed();
     }
 
     start() {
