@@ -6,11 +6,11 @@ import Abschnitt from '../Objekte/Abschnitt';
 import Aufbau from '../Objekte/Aufbaudaten';
 import PublicWFS from '../PublicWFS';
 import Vektor from '../Vektor';
-import Objekt from './Objekt';
 import QuerStation from './QuerStation';
 import Klartext from './Klartext';
 import HTML from '../HTML';
 import { InfoToolEditable } from '../Tools/InfoTool';
+import PrimaerObjekt from './prototypes/PrimaerObjekt';
 
 /**
 * @author Florian Timm, LGV HH 
@@ -19,7 +19,7 @@ import { InfoToolEditable } from '../Tools/InfoTool';
 */
 
 
-export default class Querschnitt extends Objekt implements InfoToolEditable {
+export default class Querschnitt extends PrimaerObjekt implements InfoToolEditable {
     getObjektKlassenName(): string {
         return "Dotquer"
     }

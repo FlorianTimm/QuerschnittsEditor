@@ -13,7 +13,7 @@ import 'chosen-js/chosen.css';
 import Daten from "../Daten";
 import Klartext from './Klartext';
 import Abschnitt from './Abschnitt';
-import PunktObjekt from './PunktObjekt';
+import PunktObjekt from './prototypes/PunktObjekt';
 import HTML from '../HTML';
 
 var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');

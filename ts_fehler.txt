@@ -1,0 +1,1 @@
+src/js/edit.ts(74,36): error TS2554: Expected 1 arguments, but got 2.

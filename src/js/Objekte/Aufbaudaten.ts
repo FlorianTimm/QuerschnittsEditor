@@ -1,4 +1,5 @@
-import Objekt from "./Objekt";
+import Objekt from "./prototypes/Objekt";
+import SekundaerObjekt from "./prototypes/SekundaerObjekt";
 
 var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
 
@@ -8,15 +9,15 @@ var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number
 * @version 2019.10.29
 * @copyright MIT
 */
-export default class Aufbau extends Objekt {
-	getInfoForm(sidebar: HTMLElement, changeable?: boolean): void {
-		throw new Error("Method not implemented.");
-	}
+export default class Aufbau extends SekundaerObjekt {
 	getObjektKlassenName(): string {
 		return "Otschicht";
-	}
+	}    
+	
+	protected abschnittOderAst: string = null;
+    protected vst: number = null;
+    protected bst: number = null;
 	private schichtnr: number = null;
-	private parent: string = null;
 	private teilnr: number = null;
 	private teilbreite: string = null;
 	private decksch: string = null;
@@ -40,10 +41,6 @@ export default class Aufbau extends Objekt {
 	private detailc: string = null;
 	private detaild: string = null;
 	private umweltr: string = null;
-
-	private constructor() {
-		super();
-	}
 
 	public static fromXML(xml: Element): Aufbau {
 		//console.log(xml);
@@ -87,17 +84,25 @@ export default class Aufbau extends Objekt {
 
 	// Getter
 
-	getParent(): string {
-		return this.parent;
-	}
-
 	getSchichtnr(): number {
 		return this.schichtnr;
 	}
 
 	// Setter
+	
+    public getVst() {
+		return this.vst;
+	}
 
-	setParent(parent: string) {
-		this.parent = parent;
+	public getBst() {
+		return this.bst;
+    }
+    
+	public setVst(vst: number) {
+		this.vst = vst;
+	}
+
+	public setBst(bst: number) {
+		this.bst = bst;
 	}
 }

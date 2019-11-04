@@ -119,7 +119,7 @@ class AvVzAdd extends Tool {
      * @param {MouseEvent} event Event-Objekt
      */
     newSchild(event: MouseEvent) {
-        let schild = new Zeichen(this._daten);
+        let schild = new Zeichen();
         schild.setStvoznr((event.target as HTMLInputElement).value);
         this._createSchildForm(schild);
     }
@@ -359,7 +359,7 @@ class AvVzAdd extends Tool {
             let eintraege = $(forms[i]).children(".schildText");
             if (eintraege.length == 0) break;
             let eintrag = eintraege[0];
-            let schild = new Zeichen(this._daten);
+            let schild = new Zeichen();
             schild.setObjektId(forms[i].dataset.oid);
             schild.setSort(i + 1);
             schild.setStvoznr(($(eintrag).children().children("select[name='stvoznr']")[0] as HTMLInputElement).value);

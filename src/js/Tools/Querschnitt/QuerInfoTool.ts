@@ -7,7 +7,6 @@ import Querschnitt from 'src/js/Objekte/Querschnittsdaten';
 import InfoTool from '../InfoTool';
 import Map from '../../openLayers/Map';
 import { Layer } from 'ol/layer';
-import { Feature } from 'ol';
 
 /**
  * Funktion zum Anzeigen von Informationen über Aufstellvorrichtungen
@@ -29,7 +28,6 @@ class QuerInfoTool extends InfoTool {
             style: InfoTool.selectStyle
         });
 
-        //this.selectLinie.on('select', this.featureSelectedLinie.bind(this));
         this.select.on("select", this.featureSelectedFlaeche.bind(this))
     }
 
@@ -40,15 +38,6 @@ class QuerInfoTool extends InfoTool {
             this.selectLinie.getFeatures().push(feature.trenn)
         }.bind(this));
     }
-
-    /* private featureSelectedLinie(e: SelectEvent) {
-         console.log("Select Linie")
-         this.select.getFeatures().clear()
-         if (e.selected != undefined && e.selected.length == 1) {
-             this.select.getFeatures().push((this.selectLinie.getFeatures().item(0).get("objekt") as Querschnitt))
-         }
-         this.featureSelect(this.select);
-     }*/
 
     start() {
         super.start()

@@ -71,7 +71,7 @@ window.addEventListener('load', function () {
     delTool = new QuerDelTool(map, infoTool);
     addTool = new QuerAddTool(map, infoTool);
     partTool = new QuerPartTool(map, daten, infoTool);
-    qsAdd2ER = new QuerAdd2ER(map, daten);
+    qsAdd2ER = new QuerAdd2ER(map);
 
     vsInfoTool = new InfoTool(map, daten.layerAufstell, "sidebar");
     avAdd = new AvAdd(map);

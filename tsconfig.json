@@ -1,16 +1,18 @@
 {
-    "compilerOptions": {
-      "baseUrl": "./",
-      "typeRoots": [
-        "node_modules/@types",
-        "node_modules/@hanreev/types-ol"
-      ],
-      "types": [
-        "ol",
-        "node",
-        "jquery",
-        "proj4",
-        "jqueryui"
-      ]
-    }
+  "compilerOptions": {
+    "baseUrl": "./",
+    "esModuleInterop": true,
+    "typeRoots": [
+      "node_modules/@types",
+      "node_modules/@hanreev/types-ol"
+    ],
+    "types": [
+      "ol",
+      "node",
+      "jquery",
+      "proj4",
+      "jqueryui"
+    ],
+    "outDir": "ts_out/"
   }
+}

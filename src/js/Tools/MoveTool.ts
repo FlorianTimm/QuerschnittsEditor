@@ -11,7 +11,7 @@ import InfoTool from './InfoTool';
 import Tool from './prototypes/Tool';
 import { ModifyInteraction } from '../openLayers/Interaction';
 import { Coordinate } from 'ol/coordinate';
-import PunktObjekt from '../Objekte/PunktObjekt';
+import PunktObjekt from '../Objekte/prototypes/PunktObjekt';
 import { SelectEvent } from 'ol/interaction/Select';
 import { ModifyEvent } from 'ol/interaction/Modify';
 import Abschnitt from '../Objekte/Abschnitt';

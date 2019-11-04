@@ -7,7 +7,7 @@ import { SelectEvent } from 'ol/interaction/Select';
 import { InfoToolSelectable } from './InfoTool';
 import VectorSource from 'ol/source/Vector';
 import PublicWFS from '../PublicWFS';
-import PunktObjekt from 'src/js/Objekte/PunktObjekt';
+import PunktObjekt from 'src/js/Objekte/prototypes/PunktObjekt';
 import HTML from '../HTML';
 
 /**

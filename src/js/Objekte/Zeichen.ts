@@ -1,5 +1,5 @@
 import Daten from "../Daten";
-import Objekt from "./Objekt";
+import SekundaerObjekt from "./prototypes/SekundaerObjekt";
 
 var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
 
@@ -10,11 +10,7 @@ var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number
 * @copyright MIT
 */
 
-class Zeichen extends Objekt {
-    getInfoForm(sidebar: HTMLElement, changeable?: boolean): void {
-        throw new Error("Method not implemented.");
-    }
-    _daten: Daten;
+class Zeichen extends SekundaerObjekt {
     private hasSekObj: string = null;
     private stvoznr: string = null;
     private sort: number = null;
@@ -40,18 +36,13 @@ class Zeichen extends Objekt {
     private zuordnung: string = null;
     private ausfuehr: string = null;
 
-    constructor(daten: Daten) {
-        super();
-        this._daten = daten;
-    }
-
     getObjektKlassenName(): string {
         return "Otvzeichlp"
     }
 
-    static fromXML(xml: Element, daten: Daten) {
+    static fromXML(xml: Element) {
         //console.log(xml);
-        let r = new Zeichen(daten);
+        let r = new Zeichen();
         for (var tag in CONFIG_WFS["ZEICHEN"]) {
             if (xml.getElementsByTagName(tag).length <= 0) continue;
             if (CONFIG_WFS["ZEICHEN"][tag].art == 0) {

@@ -11,7 +11,7 @@ import Daten from "../Daten";
 import PublicWFS from '../PublicWFS';
 import Abschnitt from './Abschnitt';
 import Klartext from './Klartext';
-import PunktObjekt from './PunktObjekt';
+import PunktObjekt from './prototypes/PunktObjekt';
 import Zeichen from './Zeichen';
 import HTML from "../HTML";
 
@@ -139,7 +139,7 @@ export default class Aufstellvorrichtung extends PunktObjekt {
         for (let i = 0; i < zeichenXML.length; i++) {
             let eintrag = zeichenXML.item(i);
             if (!(eintrag.getElementsByTagName("enr").length > 0)) {
-                zeichen.push(Zeichen.fromXML(eintrag, this.daten));
+                zeichen.push(Zeichen.fromXML(eintrag));
             }
         }
         this.zeichen = zeichen;
