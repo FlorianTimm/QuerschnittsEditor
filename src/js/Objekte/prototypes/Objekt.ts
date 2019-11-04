@@ -26,28 +26,29 @@ export default abstract class Objekt extends Feature {
 	protected behoerde: string = null;
 	protected stand: string = null;
 	protected fid: string = null;
-	protected inER: {} = {};
+	protected inER: { [objektklasse: string]: boolean } = {};
 	protected abschnitt: Abschnitt = null;
 	protected projekt: string = null;
 	protected abschnittId: string = null;
 
 	abstract getObjektKlassenName(): string;
+	abstract getWFSKonfigName(): string;
 
 	constructor() {
 		super({ geom: null });
 	}
 
-	public setDataFromXML(objekt: string, xml: Element) {
+	public setDataFromXML(xml: Element) {
 		this.fid = xml.getAttribute('fid');
-		for (var tag in CONFIG_WFS[objekt]) {
+		for (var tag in CONFIG_WFS[this.getWFSKonfigName()]) {
 			if (xml.getElementsByTagName(tag).length <= 0) continue;
-			if (CONFIG_WFS[objekt][tag].art == 0) {
+			if (CONFIG_WFS[this.getWFSKonfigName()][tag].art == 0) {
 				// Kein Klartext
 				this[tag] = xml.getElementsByTagName(tag)[0].firstChild.textContent;
-			} else if (CONFIG_WFS[objekt][tag].art == 1) {
+			} else if (CONFIG_WFS[this.getWFSKonfigName()][tag].art == 1) {
 				// Kein Klartext
 				this[tag] = Number(xml.getElementsByTagName(tag)[0].firstChild.textContent);
-			} else if (CONFIG_WFS[objekt][tag].art == 2) {
+			} else if (CONFIG_WFS[this.getWFSKonfigName()][tag].art == 2) {
 				// Klartext, xlink wird gespeichert
 				this[tag] = xml.getElementsByTagName(tag)[0].getAttribute('xlink:href');
 			}
@@ -76,6 +77,54 @@ export default abstract class Objekt extends Feature {
 			'	</ogc:Filter>\n' +
 			'</wfs:Update>';
 		return xml;
+	}
+
+	public createInsertXML(changes?: { [tag: string]: number | string }, removeIds?: boolean) {
+		let r = '<wfs:Insert>\n';
+		r += this.createXML(changes, removeIds);
+		r += '</wfs:Insert>\n';
+		return r;
+	}
+
+	public createXML(changes?: { [tag: string]: number | string }, removeIds?: boolean) {
+		let r = '<' + this.getObjektKlassenName() + '>\n';
+
+		for (let change in changes) {
+			if (CONFIG_WFS[this.getWFSKonfigName()][change].art == 0 || CONFIG_WFS[this.getWFSKonfigName()][change].art == 1) {
+				// Kein Klartext
+				r += '<' + change + '>' + changes[change] + '</' + change + '>\n';
+			} else if (CONFIG_WFS[this.getWFSKonfigName()][change].art == 2) {
+				// Klartext
+				r += '<' + change + ' xlink:href="' + changes[change] + '" typeName="' + CONFIG_WFS[this.getWFSKonfigName()][change].kt + '" />\n';
+			}
+		}
+
+		for (let tag in CONFIG_WFS[this.getWFSKonfigName()]) {
+			//console.log(tag);
+			if (changes != undefined && tag in changes) continue;
+			else if (removeIds == true && (tag == "objektId" || tag == "fid")) continue;
+			else if (this.get(tag) === null || this.get(tag) === undefined) continue;
+			else if (CONFIG_WFS[this.getWFSKonfigName()][tag].art == 0 || CONFIG_WFS[this.getWFSKonfigName()][tag].art == 1) {
+				// Kein Klartext
+				r += '<' + tag + '>' + this.get(tag) + '</' + tag + '>\n';
+			} else if (CONFIG_WFS[this.getWFSKonfigName()][tag].art == 2) {
+				// Klartext
+				r += '<' + tag + ' xlink:href="' + this.get(tag) + '" typeName="' + CONFIG_WFS[this.getWFSKonfigName()][tag].kt + '" />\n';
+			}
+		}
+
+		r += '</' + this.getObjektKlassenName() + '>\n';
+		return r;
+	}
+
+
+	isOKinER(ok: string): boolean {
+		return ok in this.inER && this.inER[ok];
+	}
+
+	//Setter
+	addOKinER(ok: string, value: boolean = true) {
+		this.inER[ok] = value;
 	}
 
 

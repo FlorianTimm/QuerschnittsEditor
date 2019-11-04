@@ -12,8 +12,8 @@ export default class Vektor {
      * @param {Array<Array<number>>} line Linie des Abschnittes auf dem stationiert werden soll
      * @param {Array<number>} point Punkt, der stationiert werden soll
      */
-    static get_pos(line: number[][], point: number[]) {
-        let posi = []
+    static get_pos(line: number[][], point: number[]): [number, number, number, string, number, number[], number[]] {
+        let posi: [number, number, number, string, number, number[], number[]][] = []
         let sum = 0
 
         for (var i = 0; i < line.length - 1; i++) {
@@ -59,7 +59,7 @@ export default class Vektor {
         return posi.sort(Vektor.sort_posi)[0]
     }
 
-    static sort_posi(a: number[], b: number[]): -1 | 0 | 1 {
+    static sort_posi(a: [number, number, number, string, number, number[], number[]], b: [number, number, number, string, number, number[], number[]]): -1 | 0 | 1 {
         if (a[0] != b[0]) {
             return (a[0] < b[0]) ? -1 : 1;
         }
@@ -72,7 +72,7 @@ export default class Vektor {
         return 0;
     }
 
-    static add3(v) {
+    static add3(v: number[]) {
         let r = v
         r.push(0)
         return r
@@ -98,7 +98,7 @@ export default class Vektor {
     static diff(v1: number[], v2: number[]) {
         let r = []
         if (v1.length != v2.length) {
-            console.log("Ungleiche Länge:\n\tv1: " + v1.length + "\n\tv2: "+ v2.length)
+            console.log("Ungleiche Länge:\n\tv1: " + v1.length + "\n\tv2: " + v2.length)
             return null
         }
         for (var i = 0; i < v1.length; i++) {

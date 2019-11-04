@@ -39,8 +39,8 @@ export default abstract class PunktObjekt extends PrimaerObjekt implements InfoT
         PublicWFS.doTransaction(xml);
     }
 
-    setDataFromXML(objekt: string, xml: Element) {
-        super.setDataFromXML(objekt, xml);
+    setDataFromXML(xml: Element) {
+        super.setDataFromXML(xml);
         let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(',');
         this.setGeometry(new Point([parseFloat(koords[0]), parseFloat(koords[1])]));
         this.abschnitt = Daten.getInstanz().getAbschnitt(this.abschnittId);
@@ -56,7 +56,7 @@ export default abstract class PunktObjekt extends PrimaerObjekt implements InfoT
             source: source,
             opacity: 0.7,
         });
-        layer.setStyle(function (feature: PunktObjekt, zoom) {
+        layer.setStyle(function (feature: PunktObjekt, zoom: number) {
             let color1 = feature.colorFunktion1();
             let color2 = feature.colorFunktion2();
 

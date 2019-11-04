@@ -15,6 +15,7 @@ import { SelectEvent } from "ol/interaction/Select";
  * @version 2019.10.29
  * @copyright MIT
  */
+
 class QuerDelTool extends Tool {
     private map: Map;
     private daten: Daten;
@@ -56,7 +57,6 @@ class QuerDelTool extends Tool {
                 quer.setXBstR(quer.getXBstR() - querschnitt.getBisBreite() / 100);
                 quer.setXVstR(quer.getXVstR() - querschnitt.getBreite() / 100);
             }
-            //querschnitt.getStation().addQuerschnitt(quer);
         }
 
         this.selectLinien.getFeatures().clear();
@@ -71,15 +71,6 @@ class QuerDelTool extends Tool {
             condition: never,
             style: InfoTool.selectStyle
         });
-        /*this.selectLinien.info = this.info;
-        this.selectLinien.on('select', function (e) {
-            this.select_fl.getFeatures().clear();
-            let auswahl = (this.select as SelectInteraction).getFeatures();
-            if (auswahl.getLength() > 0) {
-                this.select_fl.getFeatures().push(auswahl.item(0).get("objekt"))
-            }
-            this.featureSelected()
-        }.bind(this));*/
     }
 
     private createFlaechenSelect() {
@@ -89,14 +80,16 @@ class QuerDelTool extends Tool {
             style: InfoTool.selectStyle
         });
 
-        this.selectFlaechen.on('select', function (e, zwei) {
-            this.selectLinien.getFeatures().clear();
-            let auswahl = (this.selectFlaechen as SelectInteraction).getFeatures();
-            auswahl.forEach(function (feat: Querschnitt) {
-                this.selectLinien.getFeatures().push(feat.trenn);
-            }.bind(this))
-            this.featureSelected()
-        }.bind(this));
+        this.selectFlaechen.on('select', this.flaecheSelected.bind(this));
+    }
+
+    private flaecheSelected(event: SelectEvent) {
+        this.selectLinien.getFeatures().clear();
+        let auswahl = (this.selectFlaechen as SelectInteraction).getFeatures();
+        auswahl.forEach(function (feat: Querschnitt) {
+            this.selectLinien.getFeatures().push(feat.trenn);
+        }.bind(this))
+        this.featureSelected()
     }
 
     featureSelected() {

@@ -1,4 +1,5 @@
 import Control from 'ol/control/Control.js';
+import { Options as ControlOptions } from 'ol/control/Control.js';
 import '../css/layerswitch.css';
 import { Layer } from 'ol/layer';
 
@@ -10,7 +11,7 @@ import { Layer } from 'ol/layer';
  */
 
 class LayerSwitch extends Control {
-	constructor(opt_options?) {
+	constructor(opt_options?: ControlOptions) {
 		var options = opt_options || {};
 		var element = document.createElement('div');
 		super({

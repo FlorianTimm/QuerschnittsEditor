@@ -37,7 +37,7 @@ import SAPAdd from './Tools/StrassenAusPunkt/SAPAdd';
 import SAPAdd2ER from './Tools/StrassenAusPunkt/SAPAdd2ER';
 import DeleteTool from './Tools/DeleteTool';
 
-var CONFIG: [string, string] = require('./config.json');
+var CONFIG: { [name: string]: string } = require('./config.json');
 
 let urlParamER: RegExpExecArray = new RegExp('[\?&]er=([^&#]*)').exec(window.location.href);
 let urlParamERNR: RegExpExecArray = new RegExp('[\?&]ernr=([^&#]*)').exec(window.location.href);
@@ -198,14 +198,15 @@ function recreateHash(event: MapEvent) {
         hash += "&x=" + Math.round(view.getCenter()[0]);
         hash += "&y=" + Math.round(view.getCenter()[1]);
 
-        let visible = []
-        event.target.getLayers().forEach(function (layer: { get: (arg0: string) => boolean; getVisible: () => void; }, id: any, array: any) {
-            if (layer.get('switchable') == true) {
-                if ((layer as Layer).getVisible()) {
-                    visible.push(id);
+        let visible: number[] = []
+        event.target.getLayers().forEach(
+            function (layer: Layer, id: number, array: any) {
+                if (layer.get('switchable') == true) {
+                    if ((layer as Layer).getVisible()) {
+                        visible.push(id);
+                    }
                 }
-            }
-        });
+            });
 
         hash += "&layer=" + visible.join(',');
         document.location.hash = hash;

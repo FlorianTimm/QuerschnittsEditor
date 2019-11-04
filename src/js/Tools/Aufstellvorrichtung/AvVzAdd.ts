@@ -350,7 +350,7 @@ class AvVzAdd extends Tool {
      */
     _save(event: MouseEvent) {
         let neu: Zeichen[] = [];
-        let alt = {};
+        let alt: { [objektid: string]: Zeichen } = {};
 
         // Alle Schilder-Formulare auf Änderungen prüfen
         let forms = this._popup.getElementsByTagName("form");

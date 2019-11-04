@@ -16,6 +16,9 @@ import Zeichen from './Zeichen';
 import HTML from "../HTML";
 
 export default class Aufstellvorrichtung extends PunktObjekt {
+    getWFSKonfigName(): string {
+        return "AUFSTELL";
+    }
     private daten: Daten;
     private zeichen: Zeichen[] = null;
     private hasSekObj: number;
@@ -107,7 +110,7 @@ export default class Aufstellvorrichtung extends PunktObjekt {
 
     public static fromXML(xml: Element) {
         let r = new Aufstellvorrichtung();
-        r.setDataFromXML("AUFSTELL", xml);
+        r.setDataFromXML(xml);
         return r;
     }
 
@@ -148,7 +151,7 @@ export default class Aufstellvorrichtung extends PunktObjekt {
         }
     }
 
-    public static createForm(formId: string, aufstell?: Aufstellvorrichtung, changeable: boolean = false, showForm:boolean = true): HTMLFormElement {
+    public static createForm(formId: string, aufstell?: Aufstellvorrichtung, changeable: boolean = false, showForm: boolean = true): HTMLFormElement {
         let sidebar = document.getElementById("sidebar");
         let form = HTML.createToolForm(sidebar, showForm, formId);
 

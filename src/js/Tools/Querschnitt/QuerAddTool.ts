@@ -88,18 +88,18 @@ class QuerAddTool extends Tool {
         }
 
         for (let quer of strArray) {
-            gesStreifen[quer.streifennr + 1] = quer;
-            quer.streifennr = quer.streifennr + 1;
-            if (quer.streifen == 'L') {
-                quer.XBstR -= querschnittNeu.getBisBreite() / 100;
-                quer.XVstR -= querschnittNeu.getBreite() / 100;
-                quer.XBstL -= querschnittNeu.getBisBreite() / 100;
-                quer.XVstL -= querschnittNeu.getBreite() / 100;
-            } else if (quer.streifen == 'R') {
-                quer.XBstL += querschnittNeu.getBisBreite() / 100;
-                quer.XVstL += querschnittNeu.getBreite() / 100;
-                quer.XBstR += querschnittNeu.getBisBreite() / 100;
-                quer.XVstR += querschnittNeu.getBreite() / 100;
+            gesStreifen[quer.getStreifennr() + 1] = quer;
+            quer.setStreifennr(quer.getStreifennr() + 1);
+            if (quer.getStreifen() == 'L') {
+                quer.setXBstR(quer.getXBstR() - querschnittNeu.getBisBreite() / 100);
+                quer.setXVstR(quer.getXVstR() - querschnittNeu.getBreite() / 100);
+                quer.setXBstL(quer.getXBstL() - querschnittNeu.getBisBreite() / 100);
+                quer.setXVstL(quer.getXVstL() - querschnittNeu.getBreite() / 100);
+            } else if (quer.getStreifen() == 'R') {
+                quer.setXBstL(quer.getXBstL() + querschnittNeu.getBisBreite() / 100);
+                quer.setXVstL(quer.getXVstL() + querschnittNeu.getBreite() / 100);
+                quer.setXBstR(quer.getXBstR() + querschnittNeu.getBisBreite() / 100);
+                quer.setXVstR(quer.getXVstR() + querschnittNeu.getBreite() / 100);
             }
             //quer.createGeom();
             querschnitt.getStation().addQuerschnitt(quer);

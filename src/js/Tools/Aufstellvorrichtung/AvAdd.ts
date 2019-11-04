@@ -25,8 +25,8 @@ export default class AvAdd extends AddTool {
 
     protected part_click(event: MapBrowserEvent) {
         let daten = this.calcStation(event);
-        (document.getElementById("avadd_vnk") as HTMLInputElement).value = daten['achse'].vnk;
-        (document.getElementById("avadd_nnk") as HTMLInputElement).value = daten['achse'].nnk;
+        (document.getElementById("avadd_vnk") as HTMLInputElement).value = daten['achse'].getVnk();
+        (document.getElementById("avadd_nnk") as HTMLInputElement).value = daten['achse'].getNnk();
         (document.getElementById("avadd_station") as HTMLInputElement).value = String(this.station);
         (document.getElementById("avadd_abstand") as HTMLInputElement).value = daten['pos'][3] + ' ' + daten['pos'][4].toFixed(1);
         (document.getElementById("avadd_button") as HTMLInputElement).disabled = false;
@@ -41,8 +41,8 @@ export default class AvAdd extends AddTool {
         (this.feat_station_line.getGeometry() as LineString).setCoordinates([daten['pos'][6], daten['pos'][5]]);
 
         if (this.abschnitt == null) {
-            (document.getElementById("avadd_vnk") as HTMLInputElement).value = daten['achse'].vnk;
-            (document.getElementById("avadd_nnk") as HTMLInputElement).value = daten['achse'].nnk;
+            (document.getElementById("avadd_vnk") as HTMLInputElement).value = daten['achse'].getVnk();
+            (document.getElementById("avadd_nnk") as HTMLInputElement).value = daten['achse'].getNnk();
             (document.getElementById("avadd_station") as HTMLInputElement).value = String(Math.round(daten['pos'][2] * daten['achse'].getFaktor()));
             (document.getElementById("avadd_abstand") as HTMLInputElement).value = daten['pos'][3] + ' ' + daten['pos'][4].toFixed(1)
         }

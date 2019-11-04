@@ -20,12 +20,8 @@ import PrimaerObjekt from './prototypes/PrimaerObjekt';
 
 
 export default class Querschnitt extends PrimaerObjekt implements InfoToolEditable {
-    getObjektKlassenName(): string {
-        return "Dotquer"
-    }
     private _daten: Daten;
     private _aufbaudaten: { [schicht: number]: Aufbau } = null;
-
 
     trenn: Feature;
 
@@ -56,6 +52,14 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
         this.trenn = new Feature({ geom: new MultiLineString([[[0, 0], [0, 0], [0, 0]]]), objekt: this });
         this._daten.vectorTrenn.addFeature(this.trenn);
+    }
+
+    getWFSKonfigName(): string {
+        return "QUERSCHNITT"
+    }
+
+    getObjektKlassenName(): string {
+        return "Dotquer"
     }
 
     static loadER(callback?: (xml: Document, ...args: any[]) => void, ...args: any[]) {
@@ -201,7 +205,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
     static fromXML(xml: Element, doNotAdd: boolean = false) {
         let r = new Querschnitt();
-        r.setDataFromXML('QUERSCHNITT', xml)
+        r.setDataFromXML(xml)
 
         if (doNotAdd) return r;  // Abbruch, falls nur die Daten geparst werden sollen
 
@@ -295,53 +299,6 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         this.setGeometry(new Polygon([g])) //setCoordinates([g])
     }
 
-    public createInsertXML(changes?: { [tag: string]: number | string }, removeIds?: boolean) {
-        let r = '<wfs:Insert>\n<Dotquer>\n';
-
-        for (let change in changes) {
-            if (CONFIG_WFS.QUERSCHNITT[change].art == 0 || CONFIG_WFS.QUERSCHNITT[change].art == 1) {
-                // Kein Klartext
-                r += '<' + change + '>' + changes[change] + '</' + change + '>\n';
-            } else if (CONFIG_WFS.QUERSCHNITT[change].art == 2) {
-                // Klartext
-                r += '<' + change + ' xlink:href="' + changes[change] + '" typeName="' + CONFIG_WFS.QUERSCHNITT[change].kt + '" />\n';
-            }
-        }
-
-        for (let tag in CONFIG_WFS.QUERSCHNITT) {
-            //console.log(tag);
-            if (changes != undefined && tag in changes) continue;
-            else if (removeIds == true && (tag == "objektId" || tag == "fid")) continue;
-            else if (this[tag] === null || this[tag] === undefined) continue;
-            else if (CONFIG_WFS.QUERSCHNITT[tag].art == 0 || CONFIG_WFS.QUERSCHNITT[tag].art == 1) {
-                // Kein Klartext
-                r += '<' + tag + '>' + this[tag] + '</' + tag + '>\n';
-            } else if (CONFIG_WFS.QUERSCHNITT[tag].art == 2) {
-                // Klartext
-                r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS.QUERSCHNITT[tag].kt + '" />\n';
-            }
-        }
-
-        r += '</Dotquer>\n';
-        r += '</wfs:Insert>\n';
-        return r;
-    }
-
-    private createAufbauDatenXML() {
-        let r = '';
-        if (this._aufbaudaten != null) {
-            r += '<wfs:Insert>\n'
-
-            for (let s in this._aufbaudaten) {
-                //console.log(this._aufbaudaten[s]);
-                r += this._aufbaudaten[s].createXML();
-            }
-            r += '</wfs:Insert>\n';
-
-        }
-        return r;
-    }
-
     private createUpdateBreiteXML() {
         return super.createUpdateXML({
             breite: Math.round(this.breite),
@@ -351,18 +308,6 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             XBstL: Math.round(this.XBstL * 100) / 100,
             XBstR: Math.round(this.XBstR * 100) / 100
         });
-    }
-
-
-    private updateArt(art: string, artober: string) {
-        this.art = art;
-        this.artober = artober;
-        this._daten.vectorQuer.changed();
-
-        PublicWFS.doTransaction(this.createUpdateXML({
-            art: this.art,
-            artober: this.artober
-        }));
     }
 
     public updateArtEinzeln(art: string) {

@@ -91,7 +91,7 @@ export default class QuerModifyTool extends Tool {
         this.modify.on('modifyend', this.modifyEnd.bind(this));
     }
 
-    private modifyStart(e) {
+    private modifyStart(e: ModifyEvent) {
         let auswahl = e.features.getArray()[0];
         e.target.geo_vorher = auswahl.getGeometry().clone();
         this.map.addInteraction(this.snapStation);

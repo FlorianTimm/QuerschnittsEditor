@@ -1,5 +1,5 @@
 import { Vector as VectorSource } from 'ol/source';
-import Draw from 'ol/interaction/Draw';
+import Draw, { DrawEvent } from 'ol/interaction/Draw';
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import { Vector as VectorLayer } from 'ol/layer';
 import Overlay from 'ol/Overlay';
@@ -9,6 +9,10 @@ import Map from '../openLayers/Map';
 import GeometryType from 'ol/geom/GeometryType';
 import OverlayPositioning from 'ol/OverlayPositioning';
 import Tool from './prototypes/Tool';
+import { EventsKey } from 'ol/events';
+import Geometry from 'ol/geom/Geometry';
+import { LineString } from 'ol/geom';
+import Event from 'ol/events/Event';
 var CONFIG = require('../config.json');
 
 /**
@@ -62,7 +66,7 @@ class Measure extends Tool {
             })
         });
 
-        let listener;
+        let listener: EventsKey;
 
         // Tooltip erzeugen
         let measureTooltipElement = document.createElement('div');
@@ -73,7 +77,7 @@ class Measure extends Tool {
             positioning: OverlayPositioning.BOTTOM_CENTER
         });
 
-        var formatLength = function (line) {
+        var formatLength = function (line: Geometry) {
             var length = getLength(line, { projection: CONFIG.EPSG_CODE });
             var output;
             if (length > 100) {
@@ -87,15 +91,15 @@ class Measure extends Tool {
         };
 
         this.draw.on('drawstart',
-            function (evt) {
+            function (evt: DrawEvent) {
                 // set sketch
                 this._source.clear();
 
                 /** @type {module:ol/coordinate~Coordinate|undefined} */
-                var tooltipCoord = evt.coordinate;
+                let tooltipCoord = (evt.feature.getGeometry() as LineString).getFirstCoordinate();
                 measureTooltipElement.className = 'tooltip tooltip-measure';
 
-                listener = evt.feature.getGeometry().on('change', function (evt) {
+                listener = evt.feature.getGeometry().on('change', function (evt: Event) {
                     var geom = evt.target;
                     var output = formatLength(geom);
                     tooltipCoord = geom.getLastCoordinate();

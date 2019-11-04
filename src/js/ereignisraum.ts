@@ -9,7 +9,14 @@ import PublicWFS from './PublicWFS';
 
 window.addEventListener('load', loadER);
 
-var er = []
+var er: {
+    fid: string,
+    nr: number,
+    kurzbez: string,
+    langbez: string,
+    ownerName: string,
+    anlagedat: string
+}[] = []
 var select: HTMLSelectElement = document.getElementById("er_select") as HTMLSelectElement;
 select.addEventListener("change", aenderung);
 
@@ -98,8 +105,8 @@ function readER(xml: Document) {
 function aenderung() {
     for (let projekt of er) {
         if (projekt.fid != select.value) continue;
-        (document.getElementById("ernr") as HTMLInputElement).value = projekt.nr;
-        document.getElementById("nummer").innerHTML = projekt.nr;
+        (document.getElementById("ernr") as HTMLInputElement).value = projekt.nr.toString();
+        document.getElementById("nummer").innerHTML = projekt.nr.toString();
         document.getElementById("kurzbez").innerHTML = projekt.kurzbez;
         document.getElementById("langbez").innerHTML = projekt.langbez;
         document.getElementById("bearbeiter").innerHTML = projekt.ownerName;

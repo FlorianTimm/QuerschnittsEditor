@@ -125,12 +125,12 @@ export default abstract class AddTool extends Tool {
         });
     }
 
-    part_get_station(event: MapBrowserEvent) {
-        let achse = null;
+    part_get_station(event: MapBrowserEvent): { achse: Abschnitt, pos: [number, number, number, string, number, number[], number[]] } {
+        let achse: Abschnitt = null;
         if (this.select.getFeatures().getArray().length > 0) {
-            achse = this.select.getFeatures().item(0);
+            achse = this.select.getFeatures().item(0) as Abschnitt;
         } else {
-            achse = Daten.getInstanz().vectorAchse.getClosestFeatureToCoordinate(event.coordinate);
+            achse = Daten.getInstanz().vectorAchse.getClosestFeatureToCoordinate(event.coordinate) as Abschnitt;
         }
 
         if (achse == null) {
@@ -139,7 +139,7 @@ export default abstract class AddTool extends Tool {
             return null;
         }
 
-        return { achse: achse, pos: Vektor.get_pos(achse.getGeometry().getCoordinates(), event.coordinate) };
+        return { achse: achse, pos: Vektor.get_pos((achse.getGeometry() as LineString).getCoordinates(), event.coordinate) };
     }
 
     protected abstract part_move(event: MapBrowserEvent): void;
@@ -164,7 +164,7 @@ export default abstract class AddTool extends Tool {
     public abstract getObjektklasse(): string;
 
     start() {
-        $(this.form).show( "fast");
+        $(this.form).show("fast");
         this.map.addInteraction(this.select);
         this.map.on("pointermove", this.part_move.bind(this));
         this.map.on("singleclick", this.part_click.bind(this));

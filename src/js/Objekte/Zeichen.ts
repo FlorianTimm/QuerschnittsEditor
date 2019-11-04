@@ -37,46 +37,19 @@ class Zeichen extends SekundaerObjekt {
     private ausfuehr: string = null;
 
     getObjektKlassenName(): string {
-        return "Otvzeichlp"
+        return "Otvzeichlp";
+    }
+
+    getWFSKonfigName():string {
+        return "ZEICHEN";
     }
 
     static fromXML(xml: Element) {
         //console.log(xml);
         let r = new Zeichen();
-        for (var tag in CONFIG_WFS["ZEICHEN"]) {
-            if (xml.getElementsByTagName(tag).length <= 0) continue;
-            if (CONFIG_WFS["ZEICHEN"][tag].art == 0) {
-                // Kein Klartext
-                r[tag] = xml.getElementsByTagName(tag)[0].firstChild.textContent;
-            } else if (CONFIG_WFS["ZEICHEN"][tag].art == 1) {
-                // Kein Klartext
-                r[tag] = Number(xml.getElementsByTagName(tag)[0].firstChild.textContent);
-            } else if (CONFIG_WFS["ZEICHEN"][tag].art == 2) {
-                // Klartext, xlink wird gespeichert
-                r[tag] = xml.getElementsByTagName(tag)[0].getAttribute('xlink:href');
-            }
-        }
+        r.setDataFromXML(xml)
         return r;
     }
-
-    createXML() {
-        let r = '<Otvzeichlp>\n';
-
-        for (let tag in CONFIG_WFS["ZEICHEN"]) {
-            //console.log(tag);
-            if (this[tag] === null) continue;
-            if (CONFIG_WFS["ZEICHEN"][tag].art == 0 || CONFIG_WFS["ZEICHEN"][tag].art == 1) {
-                // Kein Klartext
-                r += '<' + tag + '>' + this[tag] + '</' + tag + '>\n';
-            } else if (CONFIG_WFS["ZEICHEN"][tag].art == 2) {
-                // Klartext
-                r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS["ZEICHEN"][tag].kt + '" />' + this[tag];
-            }
-        }
-
-        r += '</Otvzeichlp>\n';
-    }
-
 
     // Getter
 

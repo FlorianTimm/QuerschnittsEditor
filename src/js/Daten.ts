@@ -14,7 +14,7 @@ import { VectorLayer } from './openLayers/Layer';
 import { LineString } from 'ol/geom';
 import StrassenAusPunkt from './Objekte/StrassenAusPunkt';
 
-var CONFIG = require('./config.json');
+var CONFIG: { [name: string]: string } = require('./config.json');
 
 /**
  * Daten
@@ -41,8 +41,7 @@ export default class Daten {
     public layerQuer: VectorLayer;
     public layerStraus: VectorLayer;
 
-    private klartexte: Klartext;
-    private abschnitte: {};
+    private abschnitte: { [absId: string]: Abschnitt };
     private map: Map;
     private warteAufObjektklassen: number;
 
@@ -51,11 +50,6 @@ export default class Daten {
         this.map = map;
         this.ereignisraum = ereignisraum;
         this.ereignisraum_nr = ereignisraum_nr;
-        //this.querschnitteFID = {};
-
-        this.klartexte = Klartext.getInstanz();
-        this.klartexte.load("Itquerart", this.showArt.bind(this));
-        this.klartexte.load("Itquerober", this.showArtOber.bind(this));
 
         this.createLayerFlaechen();
         this.createLayerTrennLinien();
@@ -126,32 +120,6 @@ export default class Daten {
 
     public static getInstanz(): Daten {
         return Daten.daten;
-    }
-
-    private showArt(art) {
-        let arten = this.klartexte.getAllSorted("Itquerart");
-        for (let a of arten) {
-            let option = document.createElement('option');
-            let t = document.createTextNode(a.beschreib);
-            option.appendChild(t);
-            let v = document.createAttribute('value');
-            v.value = a.objektId;
-            option.setAttributeNode(v);
-            document.forms.namedItem("qsMultiMod").qsmm_art.appendChild(option.cloneNode(true));
-        }
-    }
-
-    private showArtOber(artober) {
-        let arten = this.klartexte.getAllSorted("Itquerober");
-        for (let a of arten) {
-            let option = document.createElement('option');
-            let t = document.createTextNode(a.beschreib);
-            option.appendChild(t);
-            let v = document.createAttribute('value');
-            v.value = a.objektId;
-            option.setAttributeNode(v);
-            document.forms.namedItem("qsMultiMod").qsmm_ober.appendChild(option.cloneNode(true));
-        }
     }
 
     public getAbschnitt(absId: string): Abschnitt {
@@ -328,8 +296,8 @@ export default class Daten {
 
         let createStyle: (feature: Feature, resolution: number) => Style =
             function (feature: Feature, resolution: number) {
-                let kt_art = Daten.getInstanz().klartexte.get('Itquerart', (feature as Querschnitt).getArt())
-                let kt_ober = Daten.getInstanz().klartexte.get('Itquerober', (feature as Querschnitt).getArtober())
+                let kt_art = Klartext.getInstanz().get('Itquerart', (feature as Querschnitt).getArt())
+                let kt_ober = Klartext.getInstanz().get('Itquerober', (feature as Querschnitt).getArtober())
 
                 // leere Arten filtern
                 let art = 0
@@ -448,12 +416,13 @@ export default class Daten {
         }
     }
 
-    private loadSearch_Callback(xml) {
+    private loadSearch_Callback(xml: XMLDocument) {
         let netz = xml.getElementsByTagName("VI_STRASSENNETZ");
+        console.log(netz);
         let geladen = [];
-        for (let abschnittXML of netz) {
+        for (let i = 0; i < netz.length; i++) {
             //console.log(abschnittXML)
-            let abschnitt = Abschnitt.fromXML(abschnittXML);
+            let abschnitt = Abschnitt.fromXML(netz.item(i));
             geladen.push(abschnitt);
             if (!(abschnitt.getAbschnittid() in this.abschnitte)) {
                 this.abschnitte[abschnitt.getAbschnittid()] = abschnitt;

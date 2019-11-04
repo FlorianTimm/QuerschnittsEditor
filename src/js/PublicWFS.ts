@@ -1,4 +1,5 @@
 import Abschnitt from './Objekte/Abschnitt'
+import PrimaerObjekt from './Objekte/prototypes/PrimaerObjekt';
 var CONFIG = require('./config.json');
 
 
@@ -109,14 +110,15 @@ export default class PublicWFS {
         xmlhttp.send(xml);
     }
 
-    static addSekInER(objektPrim, objektTypePrim, objekt, ereignisraum_nr, callbackSuccess, callbackFailed, ...args) {
+    static addSekInER(objektPrim: PrimaerObjekt, objektTypePrim: string, objekt: string, ereignisraum_nr: string,
+        callbackSuccess: (xml: XMLDocument, ...args: any[]) => void, callbackFailed: (xml: XMLDocument, ...args: any[]) => void, ...args: any[]) {
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.open('POST', CONFIG.ER_WFS_URL, true);
 
         xmlhttp.onreadystatechange = function () {
             if (xmlhttp.readyState != 4) return;
             if (xmlhttp.status == 200) {
-                objektPrim.inER[objekt] = true;
+                objektPrim.addOKinER(objekt);
                 if (callbackSuccess != undefined) {
                     callbackSuccess(xmlhttp.responseXML, ...args)
                 } else {
@@ -139,7 +141,7 @@ export default class PublicWFS {
             '                   <int:ProjektNr>' + ereignisraum_nr + '</int:ProjektNr>\n' +
             '            </projekt>\n' +
             '            <primObjekte>\n' +
-            '                   <int:objektId>' + objektPrim.objektId + '</int:objektId>\n' +
+            '                   <int:objektId>' + objektPrim.getObjektId() + '</int:objektId>\n' +
             '                   <int:objektKlasse>' + objektTypePrim + '</int:objektKlasse>\n' +
             '            </primObjekte>\n' +
             '            <objektKlassen>\n' +

@@ -4,6 +4,8 @@ import StrassenAusPunkt from '../../Objekte/StrassenAusPunkt';
 import AddTool from '../prototypes/AddTool';
 import { Map, MapBrowserEvent } from 'ol';
 import Daten from '../../Daten';
+import Querschnitt from 'src/js/Objekte/Querschnittsdaten';
+import Abschnitt from 'src/js/Objekte/Abschnitt';
 
 var CONFIG = require('../../config.json');
 
@@ -23,10 +25,10 @@ export default class SAPAdd extends AddTool {
 
     protected part_click(event: MapBrowserEvent) {
         let daten = this.calcStation(event);
-        (document.getElementById("sapadd_vnk") as HTMLInputElement).value = daten['achse'].vnk;
-        (document.getElementById("sapadd_nnk") as HTMLInputElement).value = daten['achse'].nnk;
+        (document.getElementById("sapadd_vnk") as HTMLInputElement).value = (daten['achse'] as Abschnitt).getVnk();
+        (document.getElementById("sapadd_nnk") as HTMLInputElement).value = (daten['achse'] as Abschnitt).getNnk();
         (document.getElementById("sapadd_station") as HTMLInputElement).value = String(this.station);
-        (document.getElementById("sapadd_abstand") as HTMLInputElement).value = daten['pos'][3] + ' ' + daten['pos'][4].toFixed(1);
+        (document.getElementById("sapadd_abstand") as HTMLInputElement).value = daten['pos'][3] + ' ' + (daten['pos'][4] as number).toFixed(1);
         (document.getElementById("sapadd_button") as HTMLInputElement).disabled = false;
     }
 
@@ -35,8 +37,8 @@ export default class SAPAdd extends AddTool {
 
         if (daten == null || daten['pos'] == null) return;
 
-        (this.feat_station.getGeometry() as Point).setCoordinates(daten['pos'][6]);
-        (this.feat_station_line.getGeometry() as LineString).setCoordinates([daten['pos'][6], daten['pos'][5]]);
+        (this.feat_station.getGeometry() as Point).setCoordinates(daten['pos'][6] as number[]);
+        (this.feat_station_line.getGeometry() as LineString).setCoordinates([daten['pos'][6] as number[], daten['pos'][5] as number[]]);
 
         if (this.abschnitt == null) {
             this.refreshStationierung(daten);

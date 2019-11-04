@@ -20,6 +20,9 @@ var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number
 
 
 export default class StrassenAusPunkt extends PunktObjekt {
+    getWFSKonfigName(): string {
+        return "STAUSPKT";
+    }
     private hasSekObj: number;
     private art: string;
 
@@ -40,7 +43,7 @@ export default class StrassenAusPunkt extends PunktObjekt {
         return "Otstrauspkt";
     }
 
-    public static createForm(formId: string, ausstattung?: StrassenAusPunkt, changeable: boolean = false, showForm:boolean = true): HTMLFormElement {
+    public static createForm(formId: string, ausstattung?: StrassenAusPunkt, changeable: boolean = false, showForm: boolean = true): HTMLFormElement {
         let sidebar = document.getElementById("sidebar");
         let form = HTML.createToolForm(sidebar, showForm, formId);
 
@@ -107,7 +110,7 @@ export default class StrassenAusPunkt extends PunktObjekt {
 
     public static fromXML(xml: Element) {
         let r = new StrassenAusPunkt();
-        r.setDataFromXML("STAUSPKT", xml);
+        r.setDataFromXML(xml);
         return r;
     }
 
