@@ -2,6 +2,7 @@
   "compilerOptions": {
     "baseUrl": "./",
     "esModuleInterop": true,
+    "noImplicitAny": true,
     "typeRoots": [
       "node_modules/@types",
       "node_modules/@hanreev/types-ol"
