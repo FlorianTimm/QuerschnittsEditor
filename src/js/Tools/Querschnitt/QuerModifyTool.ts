@@ -99,8 +99,8 @@ export default class QuerModifyTool extends Tool {
         this.map.removeInteraction(this.snapStation);
         let auswahl = event.features.getArray()[0];
         let querschnitt = auswahl.get('objekt') as Querschnitt;
-        let nachher = (auswahl.getGeometry() as MultiLineString).getCoordinates();
-        let vorher = event.target.geo_vorher.getCoordinates();
+        let nachher: number[][][] = (auswahl.getGeometry() as MultiLineString).getCoordinates();
+        let vorher: number[][][] = event.target.geo_vorher.getCoordinates();
 
         for (let i = 0; i < vorher.length; i++) {
             for (let j = 0; j < vorher[i].length; j += vorher[i].length - 1) {
@@ -183,7 +183,7 @@ export default class QuerModifyTool extends Tool {
         }
         querschnitt.setX(Vst_or_Bst, streifen as 'R' | 'L', querschnitt.getX(Vst_or_Bst, streifen as 'R' | 'L') + diff);
         querschnitt[breite_or_bisBreite] = Math.round(100 * (querschnitt.getX(Vst_or_Bst, 'R') - querschnitt.getX(Vst_or_Bst, 'L')));
-        querschnitt.editBreite(Vst_or_Bst, diff, (document.getElementById('modify_fit') as HTMLInputElement).checked);
+        querschnitt.editBreiteOld(Vst_or_Bst, diff, (document.getElementById('modify_fit') as HTMLInputElement).checked);
         return diff;
     }
 
@@ -310,57 +310,7 @@ export default class QuerModifyTool extends Tool {
         }
     }
 
-    /*
-    private _getSelection(): Querschnitt {
-        let selection = this.selectFlaechen.getFeatures();
-        if (this.selectFlaechen.getFeatures().getLength() <= 0)
-            return;
-        return selection.item(0) as Querschnitt;
-    }
-    
-    private updateInfoBreite(test) {
-        let querschnitt = this._getSelection();
-        let form = $(this.info.getForm());
-
-        let max_diff_vst = null, max_diff_bst = null;
-        if ((document.getElementById('modify_fit') as HTMLInputElement).checked && querschnitt.getStation().getQuerschnitt(this.streifen, this.streifennr + 1) != null) {
-            max_diff_vst = querschnitt.getStation().getQuerschnitt(this.streifen, this.streifennr + 1).getBreite() / 100;
-            max_diff_bst = querschnitt.getStation().getQuerschnitt(this.streifen, this.streifennr + 1).getBisBreite() / 100;
-        }
-
-        if (querschnitt.getBreite() != Number((form.find('#breite').val())) - querschnitt.getBreite()) / 100;
-            if (max_diff_vst !== null && diff > max_diff_vst) {
-                diff = (max_diff_vst);
-            }
-            querschnitt.setBreite(querschnitt.getBreite() + diff * 100);
-            if (querschnitt.getStreifen() == 'L') {
-                querschnitt.setXVstL(querschnitt.getXVstL() - diff);
-                querschnitt.editBreite('Vst', -diff, (document.getElementById('modify_fit') as HTMLInputElement).checked);
-            }
-            else if (querschnitt.getStreifen() == 'R') {
-                querschnitt.setXVstR(querschnitt.getXVstL() + diff);
-                querschnitt.editBreite('Vst', diff, (document.getElementById('modify_fit') as HTMLInputElement).checked);
-            }
-
-        }
-        else if (querschnitt.getBisBreite() != Number((document.getElementById('info_bisbreite') as HTMLInputElement).value)) {
-            let diff = (Math.round(Number((document.getElementById('info_bisbreite') as HTMLInputElement).value)) - querschnitt.getBisBreite()) / 100;
-            if (max_diff_bst !== null && diff > max_diff_bst) {
-                diff = (max_diff_bst);
-            }
-            querschnitt.setBisBreite(querschnitt.getBisBreite() + diff * 100);
-            if (querschnitt.getStreifen() == 'L') {
-                querschnitt.setXBstL(querschnitt.getXBstL() - diff);
-                querschnitt.editBreite('Bst', -diff, (document.getElementById('modify_fit') as HTMLInputElement).checked);
-            }
-            else if (querschnitt.getStreifen() == 'R') {
-                querschnitt.setXBstR(querschnitt.getXBstR() + diff);
-                querschnitt.editBreite('Bst', diff, (document.getElementById('modify_fit') as HTMLInputElement).checked);
-            }
-        }
-    }*/
-
-    start() {
+    public start() {
         $("#modify").show("fast");
         this.map.addInteraction(this.selectLinien);
         this.map.addInteraction(this.selectFlaechen);

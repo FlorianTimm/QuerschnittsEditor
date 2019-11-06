@@ -156,12 +156,12 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         $(lage).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Breite
-        let breite = HTML.createTextInput(form, "Von Breite", "breite", querschnitt != undefined ? querschnitt.breite.toString() : undefined);
-        breite.disabled = true;
+        let breite = HTML.createNumberInput(form, "Von Breite", "breite", querschnitt != undefined ? querschnitt.breite.toString() : undefined, 10);
+        breite.disabled = !changeable;
 
         // BisBreite
-        let bisbreite = HTML.createTextInput(form, "Bis Breite", "bisbreite", querschnitt != undefined ? querschnitt.bisBreite.toString() : undefined);
-        bisbreite.disabled = true;
+        let bisbreite = HTML.createNumberInput(form, "Bis Breite", "bisbreite", querschnitt != undefined ? querschnitt.bisBreite.toString() : undefined, 10);
+        bisbreite.disabled = !changeable;
 
         // VNK
         let vnk = HTML.createTextInput(form, "VNK", "vnk", querschnitt != undefined ? querschnitt.getAbschnitt().getVnk() : undefined);
@@ -264,6 +264,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
         for (let j = 0; j < anzahl; j++) {
             let coord = Vektor.sum(this.station.getGeometry()[j], Vektor.multi(this.station.getVector()[j], this.station.getSegment()[j] * diff2 + abst2));
+            console.log(coord)
             if (isNaN(coord[0]) || isNaN(coord[1])) {
                 console.log("Fehler: keine Koordinaten");
                 continue;
@@ -320,22 +321,167 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
     public changeAttributes(form: HTMLFormElement) {
         let changes: { [attribut: string]: any } = {}
-        let art = $(form).children().children("#art").val()
-        if (art != this.getArt()) {
+        let art = $(form).children().children("#art").val() as string
+        if (art.substr(-32) != this.getArt().substr(-32)) {
             this.setArt(art as string)
             changes["art"] = art
         }
-        let ober = $(form).children().children("#ober").val()
-        if (ober != this.getArtober()) {
+        let ober = $(form).children().children("#ober").val() as string
+        if (ober.substr(-32) != this.getArtober().substr(-32)) {
             this.setArtober(ober as string)
             changes["artober"] = ober;
         }
-
         PublicWFS.doTransaction(this.createUpdateXML(changes));
+        this.updateInfoBreite(form);
     };
 
+    private updateInfoBreite(form: HTMLFormElement) {
+        let breite_neu = Number($(form).find('#breite').val());
+        let bisbreite_neu = Number($(form).find('#bisbreite').val());
+        if (breite_neu != this.getBreite() || bisbreite_neu != this.getBisBreite()) {
+            this.editBreite(breite_neu, bisbreite_neu, (document.getElementById('modify_fit') as HTMLInputElement).checked);
+        }
+    }
 
-    public editBreite(edit: 'Vst' | 'Bst', diff: number, fit: boolean) {
+    private editBreite(breiteVst: number, breiteBst: number, folgenden_anpassen: boolean = false) {
+        let diffVst = 0
+        let diffBst = 0
+        if (breiteVst < 0) breiteVst = 0;
+        if (breiteBst < 0) breiteBst = 0;
+        this.breite = breiteVst;
+        this.bisBreite = breiteBst;
+
+        if (this.streifen == "L") {
+            let xvstl_neu = this.XVstR - this.breite / 100
+            let xbstl_neu = this.XBstR - this.bisBreite / 100;
+            diffVst = xvstl_neu - this.XVstL;
+            diffBst = xbstl_neu - this.XBstL;
+            this.XVstL = xvstl_neu
+            this.XBstL = xbstl_neu
+        } else if (this.streifen == "R") {
+            let xvstr_neu = this.XVstL + this.breite / 100;
+            let xbstr_neu = this.XBstL + this.bisBreite / 100;
+            diffVst = xvstr_neu - this.XVstR;
+            diffBst = xbstr_neu - this.XBstR;
+            this.XVstR = xvstr_neu
+            this.XBstR = xbstr_neu
+        }
+
+        this.editNext(folgenden_anpassen, diffVst, diffBst);
+    }
+
+    private editNext(folgenden_anpassen: boolean = false, diffVst: number = 0, diffBst: number = 0) {
+        if (folgenden_anpassen) {
+            this.folgendeAnpassen()
+        } else {
+            this.folgendeVerschieben(diffVst, diffBst)
+        }
+    }
+
+    private folgendeAnpassen() {
+        let update = "";
+        let naechster = this.getStation().getQuerschnitt(this.streifen, this.streifennr + 1);
+        if (naechster != null) {
+            if (this.streifen == "L") {
+                // negative Breite verhindern
+                if (this.XVstL < naechster.XVstL) this.XVstL = naechster.XVstL;
+                if (this.XBstL < naechster.XBstL) this.XBstL = naechster.XBstL;
+
+                // Linke Begrenzung als rechte des nächsten übernehmen
+                naechster.XVstR = this.XVstL;
+                naechster.XBstR = this.XBstL;
+            } else if (this.streifen == "R") {
+                // negative Breite verhindern
+                if (this.XVstR > naechster.XVstR) this.XVstR = naechster.XVstR;
+                if (this.XBstR > naechster.XBstR) this.XBstR = naechster.XBstR;
+
+                // Rechte Begrenzung als linke des nächsten übernehmen
+                naechster.XVstL = this.XVstR;
+                naechster.XBstL = this.XBstR;
+            }
+            // Breite berechnen
+            naechster.breite = Math.abs(Math.round((naechster.XVstL - naechster.XVstR) * 100));
+            naechster.bisBreite = Math.abs(Math.round((naechster.XBstL - naechster.XBstR) * 100));
+
+            naechster.createGeom();
+            update += naechster.createUpdateBreiteXML();
+
+        }
+        update += this.createUpdateBreiteXML();
+        this.createGeom();
+        PublicWFS.doTransaction(update);
+    }
+
+    private folgendeVerschieben(diffVst: number, diffBst: number) {
+        let update = this.createUpdateBreiteXML();
+        this.createGeom();
+
+        let i = this.streifennr;
+        let naechster = null;
+        while ((naechster = this.getStation().getQuerschnitt(this.streifen, ++i)) != null) {
+            console.log(naechster);
+            naechster.verschieben(diffVst, diffBst);
+            naechster.createGeom();
+            update += naechster.createUpdateBreiteXML();
+        }
+        update += this.createUpdateBreiteXML();
+        this.createGeom();
+
+        this.getStation().getStreifen(this.streifen)
+        PublicWFS.doTransaction(update);
+    }
+
+    private verschieben(diffVst: number, diffBst: number) {
+        this.XVstL += diffVst;
+        this.XVstR += diffVst;
+        this.XBstR += diffBst;
+        this.XBstL += diffBst;
+    }
+
+    /*let max_diff_vst = null;
+    let max_diff_bst = null;
+    if ((document.getElementById('modify_fit') as HTMLInputElement).checked && this.station.getQuerschnitt(this.streifen, this.streifennr + 1) != null) {
+        max_diff_vst = this.station.getQuerschnitt(this.streifen, this.streifennr + 1).getBreite() / 100;
+        max_diff_bst = this.station.getQuerschnitt(this.streifen, this.streifennr + 1).getBisBreite() / 100;
+    }
+
+    if (this.breite != Number($(form).find('breite').val())) {
+        let diff = (Math.round(Number($(form).find('breite').val())) - this.getBreite()) / 100;
+
+        if (max_diff_vst !== null && diff > max_diff_vst) {
+            diff = (max_diff_vst);
+        }
+        this.setBreite(this.getBreite() + diff * 100);
+        if (this.getStreifen() == 'L') {
+            this.setXVstL(this.getXVstL() - diff);
+            this.editBreite('Vst', -diff, (document.getElementById('modify_fit') as HTMLInputElement).checked);
+        }
+        else if (this.getStreifen() == 'R') {
+            this.setXVstR(this.getXVstL() + diff);
+            this.editBreite('Vst', diff, (document.getElementById('modify_fit') as HTMLInputElement).checked);
+        }
+
+    }
+    else if (this.getBisBreite() != Number(($(form).find('bisbreite').val()))) {
+        let diff = (Math.round(Number($(form).find('bisbreite').val())) - this.getBisBreite()) / 100;
+        if (max_diff_bst !== null && diff > max_diff_bst) {
+            diff = (max_diff_bst);
+        }
+        this.setBisBreite(this.getBisBreite() + diff * 100);
+        if (this.getStreifen() == 'L') {
+            this.setXBstL(this.getXBstL() - diff);
+            this.editBreite('Bst', -diff, (document.getElementById('modify_fit') as HTMLInputElement).checked);
+        }
+        else if (this.getStreifen() == 'R') {
+            this.setXBstR(this.getXBstR() + diff);
+            this.editBreite('Bst', diff, (document.getElementById('modify_fit') as HTMLInputElement).checked);
+        }
+    }
+    console.log(this)
+}
+
+*/
+    public editBreiteOld(edit: 'Vst' | 'Bst', diff: number, fit: boolean) {
         let gesStreifen = this.station.getStreifen(this.streifen);
         let nr = this.streifennr;
 
@@ -372,7 +518,6 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
         PublicWFS.doTransaction(soap, undefined, undefined);
     }
-
     /**
      * setz die Attribute XVstL, XBstL, XVstR, XBstL
      */

@@ -88,6 +88,8 @@ export default class QuerStation {
 
     calcVector() {
         let anzahl = this.geo.length;
+        this.vector = [];
+        this.seg = [];
         if (anzahl >= 2) {
             let first = Vektor.einheit(Vektor.lot(Vektor.diff(this.geo[0], this.geo[1])));
             this.vector.push(first);

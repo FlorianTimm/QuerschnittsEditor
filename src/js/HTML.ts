@@ -39,8 +39,10 @@ export default class HTML {
         return HTML.createInputField("text", form, beschriftung, id, inhalt);
     }
 
-    static createNumberInput(form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string) {
-        return HTML.createInputField("number", form, beschriftung, id, inhalt);
+    static createNumberInput(form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string, schritte: number = 1) {
+        let input = HTML.createInputField("number", form, beschriftung, id, inhalt);
+        input.step = schritte.toString();
+        return input;
     }
 
     static createDateInput(form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string) {
