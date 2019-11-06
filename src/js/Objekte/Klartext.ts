@@ -137,17 +137,17 @@ export default class Klartext {
         return sortable;
     }
 
-    static createKlartextSelectForm(klartext: string, form: HTMLFormElement, beschriftung: string, id: string, value?: string, platzhalter?: string) {
+    static createKlartextSelectForm(klartext: string, form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, value?: string, platzhalter?: string) {
         let field = HTML.createSelectForm(form, beschriftung, id, platzhalter);
-        Klartext.klartext2select(klartext, field, value);
+        Klartext.klartext2select(klartext, field, value, platzhalter);
         return field;
     }
 
-    static klartext2select(klartext: string, selectInput: HTMLSelectElement, value?: string) {
-        Klartext.getInstanz().load(klartext, Klartext.klartext2select_callback, klartext, selectInput, value);
+    static klartext2select(klartext: string, selectInput: HTMLSelectElement, value?: string, platzhalter?: string) {
+        Klartext.getInstanz().load(klartext, Klartext.klartext2select_callback, klartext, selectInput, value, platzhalter);
     }
 
-    private static klartext2select_callback(klartexteObjekt: {}, klartext: string, selectInput: HTMLSelectElement, value: string = null) {
+    private static klartext2select_callback(klartexteObjekt: {}, klartext: string, selectInput: HTMLSelectElement, value: string = null, platzhalter: string = "Wert auswählen...") {
         let arten = Klartext.getInstanz().getAllSorted(klartext);
 
         for (let a of arten) {
@@ -156,7 +156,7 @@ export default class Klartext {
         }
         if (value == undefined || value == null) selectInput.value = null;
 
-        $(selectInput).chosen({ width: "95%", search_contains: true, no_results_text: "Keine Übereinstimmung gefunden für ", placeholder_text_single: "Wert auswählen...", });
+        $(selectInput).chosen({ width: "99%", search_contains: true, no_results_text: "Keine Übereinstimmung gefunden für ", placeholder_text_single: platzhalter });
     }
 }
 

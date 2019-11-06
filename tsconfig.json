@@ -3,6 +3,7 @@
     "baseUrl": "./",
     "esModuleInterop": true,
     "noImplicitAny": true,
+    "suppressImplicitAnyIndexErrors": true,
     "typeRoots": [
       "node_modules/@types",
       "node_modules/@hanreev/types-ol"

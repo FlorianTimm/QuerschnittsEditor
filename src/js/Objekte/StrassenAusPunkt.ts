@@ -117,32 +117,26 @@ export default class StrassenAusPunkt extends PunktObjekt {
     protected static createFields(form: HTMLFormElement, formId: string, ausstattung?: StrassenAusPunkt, changeable: boolean = false) {
         let art = Klartext.createKlartextSelectForm("Itstrauspktart", form, "Art", formId + "_art", ausstattung != undefined ? ausstattung.art : undefined);
         $(art).prop('disabled', !changeable).trigger("chosen:updated");
-        form.appendChild(document.createElement("br"));
 
         // Lage
         let lage = Klartext.createKlartextSelectForm("Itallglage", form, "Lage", formId + "_lage", ausstattung != undefined ? ausstattung.rlageVst : undefined);
         $(lage).prop('disabled', !changeable).trigger("chosen:updated");
-        form.appendChild(document.createElement("br"));
 
         // Quelle
         let quelle = Klartext.createKlartextSelectForm("Itquelle", form, "Quelle", formId + "_quelle", ausstattung != undefined ? ausstattung.quelle : undefined);
         $(quelle).prop('disabled', !changeable).trigger("chosen:updated");
-        form.appendChild(document.createElement("br"));
 
         // VNK
         let vnk = HTML.createTextInput(form, "VNK", formId + "_vnk", ausstattung != undefined ? ausstattung.abschnitt.getVnk() : undefined);
         vnk.disabled = true;
-        form.appendChild(document.createElement("br"));
 
         // NNK
         let nnk = HTML.createTextInput(form, "NNK", formId + "_nnk", ausstattung != undefined ? ausstattung.abschnitt.getNnk() : undefined);
         nnk.disabled = true;
-        form.appendChild(document.createElement("br"));
 
         // Station
         let station = HTML.createTextInput(form, "Station", formId + "_station", ausstattung != undefined ? ausstattung.vst.toString() : undefined);
         station.disabled = true;
-        form.appendChild(document.createElement("br"));
 
         // Abstand
         let abstTxt = "";
@@ -154,7 +148,6 @@ export default class StrassenAusPunkt extends PunktObjekt {
         }
         let abstand = HTML.createTextInput(form, "Abstand", formId + "_abstand", abstTxt);
         abstand.disabled = true;
-        form.appendChild(document.createElement("br"));
 
         // Button
         if (changeable) {
@@ -168,10 +161,10 @@ export default class StrassenAusPunkt extends PunktObjekt {
     }
 
     public changeAttributes(form: HTMLFormElement): void {
-        this.art = $(form).children("#sap_info_art").children("option:selected").val() as string;
-        this.rlageVst = $(form).children("#sap_info_lage").children("option:selected").val() as string;
-        this.quelle = $(form).children("#sap_info_quelle").children("option:selected").val() as string;
-        this.objektnr = $(form).children("#sap_info_extid").val() as string;
+        this.art = $(form).children().children("#sap_info_art").children("option:selected").val() as string;
+        this.rlageVst = $(form).children().children("#sap_info_lage").children("option:selected").val() as string;
+        this.quelle = $(form).children().children("#sap_info_quelle").children("option:selected").val() as string;
+        this.objektnr = $(form).children().children("#sap_info_extid").val() as string;
 
         let xml = this.createUpdateXML({
             'art/@xlink:href': this.art,

@@ -76,17 +76,14 @@ form.ui-state-highlight {
     width: auto !important;
 }
 
-div.form_group {
-    display: block;
-    float: left;
-    width: 225px;
-    height: 50px;
-}
-
-div.form_group input[type='text'] {
-    width: 200px;
-}
-
 .ui-dialog-content {
     overflow: visible !important;
+}
+
+#group_stvoznr_neu {
+    width: 400px;
+}
+
+#vz_popup .form_group {
+    padding-right: 10px;
 }

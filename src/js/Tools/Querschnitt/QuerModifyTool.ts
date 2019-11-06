@@ -135,7 +135,7 @@ export default class QuerModifyTool extends Tool {
                     if (streifen == 'L')
                         dist *= -1;
 
-                    let diff = dist - querschnitt['X' + edit + streifen];
+                    let diff = dist - querschnitt.getX(edit, streifen as 'L' | 'R');
 
                     diff = this._check_and_edit_querschnitt(querschnitt, diff, edit, edit_breite);
 
@@ -183,8 +183,8 @@ export default class QuerModifyTool extends Tool {
         if (((streifen == 'L') ? (diff) : (-diff)) * 100 > querschnitt[breite_or_bisBreite]) {
             diff = ((streifen == 'L') ? (querschnitt[breite_or_bisBreite]) : (-querschnitt[breite_or_bisBreite])) / 100;
         }
-        querschnitt['X' + Vst_or_Bst + streifen] += diff;
-        querschnitt[breite_or_bisBreite] = Math.round(100 * (querschnitt['X' + Vst_or_Bst + 'R'] - querschnitt['X' + Vst_or_Bst + 'L']));
+        querschnitt.setX(Vst_or_Bst, streifen as 'R' | 'L', querschnitt.getX(Vst_or_Bst, streifen as 'R' | 'L') + diff);
+        querschnitt[breite_or_bisBreite] = Math.round(100 * (querschnitt.getX(Vst_or_Bst, 'R') - querschnitt.getX(Vst_or_Bst, 'L')));
         querschnitt.editBreite(Vst_or_Bst, diff, (document.getElementById('modify_fit') as HTMLInputElement).checked);
         return diff;
     }
@@ -207,18 +207,6 @@ export default class QuerModifyTool extends Tool {
 
         this.selectFlaechen.on('select', this.flaecheSelected.bind(this));
     }
-
-    /*
-    private linieSelected(event: SelectEvent) {
-        this.selectFlaechen.getFeatures().clear();
-        let auswahl = (this.selectLinien as SelectInteraction).getFeatures();
-        if (auswahl.getLength() > 0) {
-            auswahl.forEach(function (feat: Feature) {
-                this.selectFlaechen.getFeatures().push(feat.get("objekt"));
-            }.bind(this))
-        }
-        this.featureSelected();
-    }*/
 
     private flaecheSelected(event: SelectEvent) {
         this.selectLinien.getFeatures().clear();
@@ -342,7 +330,7 @@ export default class QuerModifyTool extends Tool {
             max_diff_bst = querschnitt.getStation().getQuerschnitt(this.streifen, this.streifennr + 1).getBisBreite() / 100;
         }
 
-        if (querschnitt.getBreite() != Number((form.children('#breite').val())) - querschnitt.getBreite()) / 100;
+        if (querschnitt.getBreite() != Number((form.find('#breite').val())) - querschnitt.getBreite()) / 100;
             if (max_diff_vst !== null && diff > max_diff_vst) {
                 diff = (max_diff_vst);
             }

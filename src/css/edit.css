@@ -31,7 +31,9 @@ sidebar>* {
     margin-top: 10px;
     padding: 5px;
     width: 200px;
-    overflow-x: hidden;
+    /*overflow-x: hidden;*/
+    float: left;
+    clear: both;
     max-width: 200px;
 }
 
@@ -252,6 +254,3 @@ span.hotkey_alt {
     text-decoration-color: red;
 }
 
-div.chosen-disabled {
-    opacity: 0.7 !important;
-}

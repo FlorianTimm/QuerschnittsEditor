@@ -151,42 +151,34 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         // Art
         let art = Klartext.createKlartextSelectForm("Itquerart", form, "Art", "art", querschnitt != undefined ? querschnitt.art : undefined);
         $(art).prop('disabled', !changeable).trigger("chosen:updated");
-        form.appendChild(document.createElement("br"));
 
         // Lage
         let lage = Klartext.createKlartextSelectForm("Itquerober", form, "Lage", "ober", querschnitt != undefined ? querschnitt.artober : undefined);
         $(lage).prop('disabled', !changeable).trigger("chosen:updated");
-        form.appendChild(document.createElement("br"));
 
         // VNK
         let vnk = HTML.createTextInput(form, "VNK", "vnk", querschnitt != undefined ? querschnitt.getAbschnitt().getVnk() : undefined);
         vnk.disabled = true;
-        form.appendChild(document.createElement("br"));
 
         // NNK
         let nnk = HTML.createTextInput(form, "NNK", "nnk", querschnitt != undefined ? querschnitt.getAbschnitt().getNnk() : undefined);
         nnk.disabled = true;
-        form.appendChild(document.createElement("br"));
 
         // Station
         let station = HTML.createTextInput(form, "Station", "station", querschnitt != undefined ? querschnitt.vst + ' - ' + querschnitt.bst : undefined);
         station.disabled = true;
-        form.appendChild(document.createElement("br"));
 
         // Streifen
         let streifen = HTML.createTextInput(form, "Streifen", "streifen", querschnitt != undefined ? querschnitt.streifen + ' ' + querschnitt.streifennr : undefined);
         streifen.disabled = true;
-        form.appendChild(document.createElement("br"));
 
         // Breite
         let breite = HTML.createTextInput(form, "Von Breite", "breite", querschnitt != undefined ? querschnitt.breite.toString() : undefined);
         breite.disabled = true;
-        form.appendChild(document.createElement("br"));
 
         // BisBreite
         let bisbreite = HTML.createTextInput(form, "Bis Breite", "bisbreite", querschnitt != undefined ? querschnitt.bisBreite.toString() : undefined);
         bisbreite.disabled = true;
-        form.appendChild(document.createElement("br"));
 
         // Button
         if (changeable) {
@@ -329,21 +321,22 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
     public changeAttributes(form: HTMLFormElement) {
         let changes: { [attribut: string]: any } = {}
-        if ($(form).children("#art").val() != this.getArt()) {
-            this.setArt($(form).children("#art").val() as string)
-            changes["art"] = $(form).children("#art").val()
+        let art = $(form).children().children("#art").val()
+        if (art != this.getArt()) {
+            this.setArt(art as string)
+            changes["art"] = art
         }
-
-        if ($(form).children("#ober").val() != this.getArtober()) {
-            this.setArtober($(form).children("#ober").val() as string)
-            changes["artober"] = $(form).children("#ober").val()
+        let ober = $(form).children().children("#ober").val()
+        if (ober != this.getArtober()) {
+            this.setArtober(ober as string)
+            changes["artober"] = ober;
         }
 
         PublicWFS.doTransaction(this.createUpdateXML(changes));
     };
 
 
-    public editBreite(edit: string, diff: number, fit: boolean) {
+    public editBreite(edit: 'Vst' | 'Bst', diff: number, fit: boolean) {
         let gesStreifen = this.station.getStreifen(this.streifen);
         let nr = this.streifennr;
 
@@ -353,9 +346,9 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             // Anpassen
             if (this.streifen != 'M' && (this.streifennr + 1) in gesStreifen) {
                 if (this.streifen == 'L')
-                    gesStreifen[nr + 1]['X' + edit + 'R'] += diff;
+                    gesStreifen[nr + 1].setX(edit, 'R', gesStreifen[nr + 1].getX(edit, 'R') + diff);
                 else if (this.streifen == 'R')
-                    gesStreifen[nr + 1]['X' + edit + 'L'] += diff;
+                    gesStreifen[nr + 1].setX(edit, 'L', gesStreifen[nr + 1].getX(edit, 'L') + diff);
                 gesStreifen[nr + 1]['breite'] =
                     Math.round(100 * (gesStreifen[nr + 1]['XVstR'] - gesStreifen[nr + 1]['XVstL']));
                 gesStreifen[nr + 1]['bisBreite'] =
@@ -368,8 +361,8 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             for (var nnr in gesStreifen) {
                 if (Number(nnr) <= nr)
                     continue;
-                gesStreifen[nnr]['X' + edit + 'L'] += diff;
-                gesStreifen[nnr]['X' + edit + 'R'] += diff;
+                gesStreifen[nnr].setX(edit, 'L', gesStreifen[nnr].getX(edit, 'L') + diff);
+                gesStreifen[nnr].setX(edit, 'R', gesStreifen[nnr].getX(edit, 'R') + diff);
                 gesStreifen[nnr].createGeom();
                 soap += gesStreifen[nnr].createUpdateBreiteXML();
             }
@@ -379,6 +372,32 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         //console.log(soap);
 
         PublicWFS.doTransaction(soap, undefined, undefined);
+    }
+
+    /**
+     * setz die Attribute XVstL, XBstL, XVstR, XBstL
+     */
+    public setX(vstOrBst: 'Vst' | 'Bst', lMOderR: 'L' | 'R', value: number): void {
+        if (vstOrBst == 'Vst') {
+            if (lMOderR == 'L') this.setXVstL(value);
+            else if (lMOderR == 'R') this.setXVstR(value);
+        } else {
+            if (lMOderR == 'L') this.setXVstL(value);
+            else if (lMOderR == 'R') this.setXVstR(value);
+        }
+    }
+
+    /**
+     * liest die Attribute XVstL, XBstL, XVstR, XBstL
+     */
+    public getX(vstOrBst: 'Vst' | 'Bst', lMOderR: 'L' | 'R'): number {
+        if (vstOrBst == 'Vst') {
+            if (lMOderR == 'L') return this.getXVstL();
+            else if (lMOderR == 'R') return this.getXVstR();
+        } else {
+            if (lMOderR == 'L') return this.getXVstL();
+            else if (lMOderR == 'R') return this.getXVstR();
+        }
     }
 
     public delete() {

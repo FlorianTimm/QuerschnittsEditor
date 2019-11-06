@@ -62,7 +62,7 @@ export default class InfoTool extends Tool {
     public getInfoFieldForFeature(feature: Feature, changeable: boolean = false) {
         (feature as InfoToolSelectable).getInfoForm(this.infoField, changeable);
         if (changeable) {
-            let button = $(this.infoField).children("input[type=button]");
+            let button = $(this.infoField).find("input[type=button]");
             button.prop("disabled", false);
             button.on("click", function () {
                 (feature as InfoToolEditable).changeAttributes(this.infoField);

@@ -12,6 +12,7 @@ import { Map } from 'ol';
 import Zeichen from '../../Objekte/Zeichen';
 import { SelectEvent } from 'ol/interaction/Select';
 import Klartext from '../../Objekte/Klartext';
+import HTML from '../../HTML';
 var CONFIG = require('../../config.json');
 
 /**
@@ -52,7 +53,7 @@ class AvVzAdd extends Tool {
      * Listener für die Auswahl einer Aufstellvorrichtung
      * @param event Select-Event-Objekt
      */
-    _selected(event: SelectEvent) {
+    private _selected(event: SelectEvent) {
         // Filtern, wenn nichts ausgewählt wurde
         if (event.selected.length == 0) {
             return;
@@ -78,25 +79,9 @@ class AvVzAdd extends Tool {
         this._popup.appendChild(this._liste);
 
 
-        let stvoZNrNeu = document.createElement("select");
-        stvoZNrNeu.id = "schilder";
-        stvoZNrNeu.appendChild(document.createElement("option"));
-        for (let stvoznr of Klartext.getInstanz().getAllSorted("Itvzstvoznr")) {
-            let ele = document.createElement("option");
-            ele.value = stvoznr['objektId'];
-            ele.innerHTML = stvoznr['beschreib'];
-            stvoZNrNeu.appendChild(ele);
-        }
-        this._popup.appendChild(stvoZNrNeu);
+        let stvoZNrNeu = Klartext.createKlartextSelectForm('Itvzstvoznr', this._popup, 'Verkehrszeichen', 'stvoznr_neu')
 
         $(stvoZNrNeu).on("change", this.newSchild.bind(this));
-
-        $(stvoZNrNeu).chosen({
-            search_contains: true,
-            placeholder_text_single: "Schild hinzufügen...",
-            no_results_text: "Nichts gefunden!",
-            width: "600px"
-        });
 
         this._popup.appendChild(document.createElement("br"));
 
@@ -118,13 +103,13 @@ class AvVzAdd extends Tool {
      * Listener für das Hinzufügen eines neuen Verkehrszeichens
      * @param {MouseEvent} event Event-Objekt
      */
-    newSchild(event: MouseEvent) {
+    private newSchild(event: MouseEvent) {
         let schild = new Zeichen();
         schild.setStvoznr((event.target as HTMLInputElement).value);
         this._createSchildForm(schild);
     }
 
-    _zeichenGeladen(zeichen: Zeichen[]) {
+    private _zeichenGeladen(zeichen: Zeichen[]) {
         zeichen.sort(function (a: Zeichen, b: Zeichen) {
             if (a.getSort() != null && b.getSort() != null) {
                 return Number(a.getSort()) - Number(b.getSort());
@@ -139,71 +124,65 @@ class AvVzAdd extends Tool {
      * Erzeugt pro Schild ein Änderungsformular
      * @param {Zeichen} eintrag Schild, für welches das Formular erzeugt werden soll
      */
-    _createSchildForm(eintrag: Zeichen) {
+    private _createSchildForm(eintrag: Zeichen) {
         let div = document.createElement("form");
         this._liste.appendChild(div);
         div.dataset.oid = eintrag.getObjektId();
         div.classList.add('ui-state-default');
         div.classList.add('schild');
+
+        // Abbildung
         let img = document.createElement("img");
         img.classList.add('schildBild');
         img.style.height = "50px";
         img.src = "http://gv-srv-w00118:8080/schilder/" + Klartext.getInstanz().get("Itvzstvoznr", eintrag.getStvoznr())['kt'] + ".svg";
         img.title = Klartext.getInstanz().get("Itvzstvoznr", eintrag.getStvoznr())['beschreib'] + (eintrag.getVztext() != null) ? ("\n" + eintrag.getVztext()) : ('');
         div.appendChild(img);
+
+        //Formular
         let text = document.createElement("div");
         div.appendChild(text);
         text.classList.add('schildText');
 
-
         // StVOZNR
-        text.appendChild(this._createSelect(eintrag, 'Verkehrszeichen', 'stvoznr', 'Itvzstvoznr'));
+        let stvoznr = Klartext.createKlartextSelectForm('Itvzstvoznr', text, 'Verkehrszeichen', 'stvoznr', eintrag.getStvoznr())
+        $(stvoznr).on("change", function () {
+            let schild = Klartext.getInstanz().get("Itvzstvoznr", stvoznr.value)
+            img.src = "http://gv-srv-w00118:8080/schilder/" + schild['kt'] + ".svg";
+            img.title = schild['beschreib'];
+        });
 
         // Text
-        let text_group = document.createElement("div");
-        text_group.className = "form_group";
-        let text_label = document.createElement("label");
-        text_label.innerHTML = 'Text';
-        text_group.appendChild(text_label);
-        text_group.appendChild(document.createElement("br"));
-        text_group.innerHTML += '<input type="text" name="vztext" value="' + ((eintrag.getVztext() != null) ? (eintrag.getVztext()) : ('')) + '" />';
-        text.appendChild(text_group);
+        HTML.createTextInput(text, "Text", "vztext", ((eintrag.getVztext() !== null) ? (eintrag.getVztext()) : ('')))
 
         // Lage FB
         if (eintrag.getLageFb() == undefined) eintrag.setLageFb(CONFIG.LAGEFB);
-        text.appendChild(this._createSelect(eintrag, 'Lage', 'lageFb', 'Itvzlagefb'));
+        Klartext.createKlartextSelectForm('Itvzlagefb', text, 'Lage', 'lageFb', eintrag.getLageFb())
 
         // Lesbarkeit
-        text.appendChild(this._createSelect(eintrag, 'Lesbarkeit', 'lesbarkeit', 'Itvzlesbarkeit'));
+        if (eintrag.getLesbarkeit() == undefined) eintrag.setLesbarkeit(CONFIG.LESBARKEIT);
+        Klartext.createKlartextSelectForm('Itvzlesbarkeit', text, 'Lesbarkeit', 'lesbarkeit', eintrag.getLesbarkeit())
 
         // Beleuchtet
         if (eintrag.getBeleucht() == undefined) eintrag.setBeleucht(CONFIG.BELEUCHTET);
-        text.appendChild(this._createSelect(eintrag, 'Beleuchtung', 'beleucht', 'Itvzbeleucht'));
+        Klartext.createKlartextSelectForm('Itvzbeleucht', text, 'Beleuchtung', 'beleucht', eintrag.getBeleucht())
 
         //Einzelschild
         if (eintrag.getArt() == undefined) eintrag.setArt(CONFIG.EINZELSCHILD);
-        text.appendChild(this._createSelect(eintrag, 'Einzelschild', 'art', 'Itvzart'));
+        Klartext.createKlartextSelectForm('Itvzart', text, 'Art', 'art', eintrag.getArt())
 
         // Größe des Schilder
         if (eintrag.getGroesse() == undefined) eintrag.setGroesse(CONFIG.GROESSE);
-        text.appendChild(this._createSelect(eintrag, 'Gr&ouml;&szlig;e', 'groesse', 'Itvzgroesse'));
+        Klartext.createKlartextSelectForm('Itvzgroesse', text, 'Größe', 'groesse', eintrag.getGroesse())
 
         // Straßenbezug
         if (eintrag.getStrbezug() == undefined) eintrag.setStrbezug(CONFIG.STRASSENBEZUG);
-        text.appendChild(this._createSelect(eintrag, 'Stra&szlig;enbezug', 'strbezug', 'Itbesstrbezug'));
+        Klartext.createKlartextSelectForm('Itbesstrbezug', text, 'Straßenbezug', 'strbezug', eintrag.getStrbezug())
 
         // Aufstelldatum
-        let aufstellGroup = document.createElement("div");
-        aufstellGroup.className = "form_group";
-        let aufstell_label = document.createElement("label");
-        aufstell_label.innerHTML = 'Aufstelldatum';
-        aufstellGroup.appendChild(aufstell_label);
-        aufstellGroup.appendChild(document.createElement("br"));
-        let aufstellField = document.createElement("input");
+
+        let aufstellField = HTML.createTextInput(text, "Aufstelldatum", "aufstelldat", ((eintrag.getAufstelldat() != null) ? (eintrag.getAufstelldat()) : ('')));
         aufstellField.autocomplete = "off";
-        aufstellField.name = "aufstelldat";
-        aufstellField.value = ((eintrag.getAufstelldat() != null) ? (eintrag.getAufstelldat()) : (''));
-        aufstellGroup.appendChild(aufstellField);
 
         $.datepicker.regional['de'] = {
             closeText: 'Done',
@@ -229,24 +208,15 @@ class AvVzAdd extends Tool {
         $(aufstellField).datepicker('option', 'changeMonth', true);
         $(aufstellField).datepicker('option', 'changeYear', true);
 
-        text.appendChild(aufstellGroup);
-
-        // Externe Objektnr
-        let extnr_group = document.createElement("div");
-        extnr_group.className = "form_group";
-        let extnr_label = document.createElement("label");
-        extnr_label.innerHTML = 'Externe Objektnummer';
-        extnr_group.appendChild(extnr_label);
-        extnr_group.appendChild(document.createElement("br"));
-        extnr_group.innerHTML += '<input type="text" name="objektnr" value="' + ((eintrag.getObjektnr() != null) ? (eintrag.getObjektnr()) : ('')) + '" />';
-        text.appendChild(extnr_group);
+        HTML.createTextInput(text, 'Externe Objektnummer', "objektnr", ((eintrag.getObjektnr() != null) ? (eintrag.getObjektnr()) : ('')));
 
         // Erfassungsart
         if (eintrag.getErfart() == undefined) eintrag.setErfart(CONFIG.ERFASSUNG);
-        text.appendChild(this._createSelect(eintrag, 'Erfassung', 'erfart', 'Iterfart'));
+        Klartext.createKlartextSelectForm('Iterfart', text, 'Erfassung', 'erfart', eintrag.getErfart())
 
         // Quelle
-        text.appendChild(this._createSelect(eintrag, 'Quelle', 'quelle', 'Itquelle'));
+        if (eintrag.getQuelle() == undefined) eintrag.setQuelle(CONFIG.QUELLE);
+        Klartext.createKlartextSelectForm('Itquelle', text, 'Quelle', 'quelle', eintrag.getQuelle())
 
         // Löschen
         let del_group = document.createElement("div");
@@ -278,55 +248,6 @@ class AvVzAdd extends Tool {
         $(buttonLoeschen).button();
         del_group.appendChild(buttonLoeschen);
         text.appendChild(del_group);
-
-        $(function () {
-            let alle = $(text).children('div')
-            alle.first().children("select").chosen({
-                width: "200px",
-                search_contains: true,
-            }).change(function (event: any, data: { selected: any; }) {
-                img.src = "http://gv-srv-w00118:8080/schilder/" + Klartext.getInstanz().get("Itvzstvoznr", data.selected)['kt'] + ".svg";
-            }.bind(this));
-
-            alle.first().nextAll().children('select').chosen({
-                width: "200px",
-                search_contains: true,
-            });
-        }.bind(this));
-
-    }
-
-    /**
-     * Erzeugt HTML-Select-Feld für einen Eintrag 
-     * @param  {Zeichen} eintrag Verkehrszeichen
-     * @param  {string} label Beschriftung des Feldes
-     * @param  {string} id Bezeichner des Attributes des Eintrages
-     * @param  {string} klartext Bezeichnung des zugehörigen Klartextes
-     */
-    _createSelect(eintrag: Zeichen, label: string, id: string, klartext: string) {
-        let group = document.createElement("div");
-        group.className = "form_group";
-        let label_ele = document.createElement("label");
-        label_ele.innerHTML = label;
-        group.appendChild(label_ele);
-        group.appendChild(document.createElement("br"));
-        let select = document.createElement("select");
-        select.classList.add("big");
-        select.classList.add(id);
-        select.name = id;
-        select.id = id + "[" + eintrag.getObjektId() + "]";
-
-        for (let kt of Klartext.getInstanz().getAllSorted(klartext)) {
-            let option = document.createElement("option");
-            option.value = kt['objektId'];
-            option.innerHTML = kt['beschreib'];
-            if (eintrag[id] != null && eintrag[id].substr(-32) == kt['objektId']) {
-                option.setAttribute("selected", "selected");
-            }
-            select.appendChild(option);
-        }
-        group.appendChild(select);
-        return group;
     }
 
     /**
@@ -334,14 +255,6 @@ class AvVzAdd extends Tool {
      */
     static loadKlartexte() {
         Klartext.getInstanz().load('Itvzstvoznr');
-        Klartext.getInstanz().load('Itquelle');
-        Klartext.getInstanz().load('Iterfart');
-        Klartext.getInstanz().load('Itvzlagefb');
-        Klartext.getInstanz().load('Itvzlesbarkeit');
-        Klartext.getInstanz().load("Itvzart");
-        Klartext.getInstanz().load("Itvzbeleucht");
-        Klartext.getInstanz().load("Itvzgroesse");
-        Klartext.getInstanz().load("Itbesstrbezug");
     }
 
     /**
@@ -362,19 +275,19 @@ class AvVzAdd extends Tool {
             let schild = new Zeichen();
             schild.setObjektId(forms[i].dataset.oid);
             schild.setSort(i + 1);
-            schild.setStvoznr(($(eintrag).children().children("select[name='stvoznr']")[0] as HTMLInputElement).value);
-            schild.setVztext(($(eintrag).children().children("input[name='vztext']")[0] as HTMLInputElement).value);
+            schild.setStvoznr(($(eintrag).children().children("select#stvoznr")[0] as HTMLInputElement).value);
+            schild.setVztext(($(eintrag).children().children("input#vztext")[0] as HTMLInputElement).value);
             if (schild.getVztext() == "") schild.setVztext(null);
-            schild.setLageFb(($(eintrag).children().children("select[name='lageFb']")[0] as HTMLInputElement).value);
-            schild.setLesbarkeit(($(eintrag).children().children("select[name='lesbarkeit']")[0] as HTMLInputElement).value);
-            schild.setBeleucht(($(eintrag).children().children("select[name='beleucht']")[0] as HTMLInputElement).value);
-            schild.setArt(($(eintrag).children().children("select[name='art']")[0] as HTMLInputElement).value);
-            schild.setGroesse(($(eintrag).children().children("select[name='groesse']")[0] as HTMLInputElement).value);
-            schild.setStrbezug(($(eintrag).children().children("select[name='strbezug']")[0] as HTMLInputElement).value);
-            schild.setAufstelldat(($(eintrag).children().children("input[name='aufstelldat']")[0] as HTMLInputElement).value);
-            schild.setErfart(($(eintrag).children().children("select[name='erfart']")[0] as HTMLInputElement).value);
-            schild.setQuelle(($(eintrag).children().children("select[name='quelle']")[0] as HTMLInputElement).value);
-            schild.setObjektnr(($(eintrag).children().children("input[name='objektnr']")[0] as HTMLInputElement).value);
+            schild.setLageFb(($(eintrag).children().children("select#lageFb")[0] as HTMLInputElement).value);
+            schild.setLesbarkeit(($(eintrag).children().children("select#lesbarkeit")[0] as HTMLInputElement).value);
+            schild.setBeleucht(($(eintrag).children().children("select#beleucht")[0] as HTMLInputElement).value);
+            schild.setArt(($(eintrag).children().children("select#art")[0] as HTMLInputElement).value);
+            schild.setGroesse(($(eintrag).children().children("select#groesse")[0] as HTMLInputElement).value);
+            schild.setStrbezug(($(eintrag).children().children("select#strbezug")[0] as HTMLInputElement).value);
+            schild.setAufstelldat(($(eintrag).children().children("input#aufstelldat")[0] as HTMLInputElement).value);
+            schild.setErfart(($(eintrag).children().children("select#erfart")[0] as HTMLInputElement).value);
+            schild.setQuelle(($(eintrag).children().children("select#quelle")[0] as HTMLInputElement).value);
+            schild.setObjektnr(($(eintrag).children().children("input#objektnr")[0] as HTMLInputElement).value);
             if (schild.getObjektnr() == "") schild.setObjektnr(null);
             if (schild.getObjektId().length < 10) { // undefined
                 neu.push(schild);
@@ -403,7 +316,7 @@ class AvVzAdd extends Tool {
                     console.log("update stvoznr");
                 }
                 if (oldZeichen.getVztext() != modiZeichen.getVztext()) {
-                    upd += '<wfs:Property>\n<wfs:Name>vztext</wfs:Name>\n<wfs:Value>' + modiZeichen.getVztext() + '</wfs:Value>\n</wfs:Property>\n';
+                    upd += '<wfs:Property>\n<wfs:Name>vztext</wfs:Name>\n<wfs:Value>' + ((modiZeichen.getVztext() != null) ? modiZeichen.getVztext() : '') + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update text");
                 }
                 if (oldZeichen.getLageFb() == null || oldZeichen.getLageFb().substr(-32) != modiZeichen.getLageFb()) {
@@ -415,7 +328,7 @@ class AvVzAdd extends Tool {
                     console.log("update text");
                 }
                 if (oldZeichen.getBeleucht() == null || oldZeichen.getBeleucht().substr(-32) != modiZeichen.getBeleucht()) {
-                    upd += '<wfs:Property>\n<wfs:Name>beleucht/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getBeleucht + '</wfs:Value>\n</wfs:Property>\n';
+                    upd += '<wfs:Property>\n<wfs:Name>beleucht/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getBeleucht() + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update beleucht");
                 }
                 if (oldZeichen.getArt() == null || oldZeichen.getArt().substr(-32) != modiZeichen.getArt()) {
@@ -497,7 +410,7 @@ class AvVzAdd extends Tool {
                 '<projekt typeName="Projekt" xlink:href="#' + this._daten.ereignisraum + '"/>\n' +
                 '<sort>' + zeichen.getSort() + '</sort>\n' +
                 '<stvoznr xlink:href="#S' + zeichen.getStvoznr() + '" typeName="Itvzstvoznr" />\n' +
-                '<vztext>' + zeichen.getVztext() + '</vztext>\n' +
+                '<vztext>' + ((zeichen.getVztext() != null) ? zeichen.getVztext() : '') + '</vztext>\n' +
                 '<lageFb xlink:href="#S' + zeichen.getLageFb() + '" typeName="Itvzlagefb" />\n' +
                 '<lesbarkeit xlink:href="#S' + zeichen.getLesbarkeit() + '" typeName="Itvzlesbarkeit" />\n' +
                 '<beleucht xlink:href="#S' + zeichen.getBeleucht() + '" typeName="Itvzbeleucht" />\n' +

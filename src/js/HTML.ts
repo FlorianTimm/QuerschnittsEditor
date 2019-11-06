@@ -4,17 +4,24 @@ import "../css/html_forms.css";
 
 export default class HTML {
 
+    static createFormGroup(form: HTMLFormElement | HTMLDivElement, id?: string): HTMLDivElement {
+        let formGroup = document.createElement("div")
+        formGroup.className = "form_group";
+        form.appendChild(formGroup);
+        if (id != undefined) formGroup.id = id;
+        return formGroup
+    }
 
-    static createSelectForm(form: HTMLFormElement, beschriftung: string, id: string, platzhalter = "Bitte auswählen...") {
-        let label = HTML.createLabel(beschriftung, id, form);
+
+    static createSelectForm(form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, platzhalter = "Bitte auswählen...") {
+        let formGroup = HTML.createFormGroup(form, 'group_' + id);
+        let label = HTML.createLabel(beschriftung, id, formGroup, 'label_' + id);
         label.className = "label_select"
-        HTML.createBreak(form);
+        HTML.createBreak(formGroup);
         let select = document.createElement("select");
-        select.style.marginBottom = "4px";
-        select.style.width = "95%";
         select.id = id;
         select.dataset.placeholder = platzhalter;
-        form.appendChild(select);
+        formGroup.appendChild(select);
         return select;
     }
 
@@ -29,37 +36,39 @@ export default class HTML {
         return option;
     }
 
-    static createTextInput(form: HTMLFormElement, beschriftung: string, id: string, inhalt?: string) {
+    static createTextInput(form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string) {
         return HTML.createInputField("text", form, beschriftung, id, inhalt);
     }
 
-    static createNumberInput(form: HTMLFormElement, beschriftung: string, id: string, inhalt?: string) {
+    static createNumberInput(form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string) {
         return HTML.createInputField("number", form, beschriftung, id, inhalt);
     }
 
-    private static createInputField(type: "number" | "text", form: HTMLFormElement, beschriftung: string, id: string, inhalt?: string) {
-        let label = HTML.createLabel(beschriftung, id, form);
+    private static createInputField(type: "number" | "text", form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string) {
+        let formGroup = HTML.createFormGroup(form, 'group_' + id);
+        let label = HTML.createLabel(beschriftung, id, formGroup, 'label_' + id);
         label.className = "label_" + type;
-        HTML.createBreak(form);
+        HTML.createBreak(formGroup);
         let input = document.createElement("input");
         input.id = id;
         input.type = type;
-        form.appendChild(input);
+        formGroup.appendChild(input);
         if (inhalt != undefined)
             input.value = inhalt;
         return input;
     }
 
-    static createLabel(beschriftung: string, id: string, form: HTMLFormElement) {
+    static createLabel(beschriftung: string, forId: string, form: HTMLFormElement | HTMLDivElement, id?: string) {
         let label = document.createElement("label");
         label.style.fontSize = "8pt";
         label.textContent = beschriftung;
-        label.htmlFor = id;
+        label.htmlFor = forId;
+        if (id != undefined) label.id = id;
         form.appendChild(label);
         return label;
     }
 
-    static createBreak(form: HTMLFormElement) {
+    static createBreak(form: HTMLFormElement | HTMLDivElement) {
         form.appendChild(document.createElement("br"));
     }
 

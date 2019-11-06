@@ -167,37 +167,30 @@ export default class Aufstellvorrichtung extends PunktObjekt {
         // Art
         let art = Klartext.createKlartextSelectForm("Itaufstvorart", form, "Art", formId + "_art", aufstell != undefined ? aufstell.art : undefined);
         $(art).prop('disabled', !changeable).trigger("chosen:updated");
-        form.appendChild(document.createElement("br"));
 
         // Lage
         let lage = Klartext.createKlartextSelectForm("Itallglage", form, "Lage", formId + "_lage", aufstell != undefined ? aufstell.rlageVst : undefined);
         $(lage).prop('disabled', !changeable).trigger("chosen:updated");
-        form.appendChild(document.createElement("br"));
 
         // Quelle
         let quelle = Klartext.createKlartextSelectForm("Itquelle", form, "Quelle", formId + "_quelle", aufstell != undefined ? aufstell.quelle : undefined);
         $(quelle).prop('disabled', !changeable).trigger("chosen:updated");
-        form.appendChild(document.createElement("br"));
 
         // ext: Objektid
         let objektnr = HTML.createTextInput(form, "ext. Objektnummer", formId + "_extid", aufstell != undefined ? aufstell.objektnr : undefined);
         objektnr.disabled = !changeable;
-        form.appendChild(document.createElement("br"));
 
         // VNK
         let vnk = HTML.createTextInput(form, "VNK", formId + "_vnk", aufstell != undefined ? aufstell.getAbschnitt().getVnk() : undefined);
         vnk.disabled = true;
-        form.appendChild(document.createElement("br"));
 
         // NNK
         let nnk = HTML.createTextInput(form, "NNK", formId + "_nnk", aufstell != undefined ? aufstell.getAbschnitt().getNnk() : undefined);
         nnk.disabled = true;
-        form.appendChild(document.createElement("br"));
 
         // Station
         let station = HTML.createTextInput(form, "Station", formId + "_station", aufstell != undefined ? aufstell.vst.toString() : undefined);
         station.disabled = true;
-        form.appendChild(document.createElement("br"));
 
         // Abstand
         let abstTxt = "";
@@ -209,7 +202,6 @@ export default class Aufstellvorrichtung extends PunktObjekt {
         }
         let abstand = HTML.createTextInput(form, "Abstand", formId + "_abstand", abstTxt);
         abstand.disabled = true;
-        form.appendChild(document.createElement("br"));
 
         // Button
         if (changeable) {
@@ -235,11 +227,11 @@ export default class Aufstellvorrichtung extends PunktObjekt {
 
     public changeAttributes(form: HTMLFormElement): void {
         //console.log(this)
-        //console.log($(form).children("#av_info_art"))
-        this.setArt($(form).children("#av_info_art").children("option:selected").val() as string);
-        this.setRlageVst($(form).children("#av_info_lage").children("option:selected").val() as string);
-        this.setQuelle($(form).children("#av_info_quelle").children("option:selected").val() as string);
-        this.setObjektnr($(form).children("#av_info_extid").val() as string);
+        //console.log($(form).find("#av_info_art"))
+        this.setArt($(form).children().children("#av_info_art").children("option:selected").val() as string);
+        this.setRlageVst($(form).children().children("#av_info_lage").children("option:selected").val() as string);
+        this.setQuelle($(form).children().children("#av_info_quelle").children("option:selected").val() as string);
+        this.setObjektnr($(form).children().children("#av_info_extid").val() as string);
 
         //console.log(this)
 
