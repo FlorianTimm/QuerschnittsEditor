@@ -51,8 +51,8 @@ export default class Daten {
         this.ereignisraum = ereignisraum;
         this.ereignisraum_nr = ereignisraum_nr;
 
-        this.createLayerFlaechen();
-        this.createLayerTrennLinien();
+        this.createLayerQuerschnittsFlaechen();
+        this.createLayerQuerschnittsTrennLinien();
         this.createLayerStationen();
         this.createLayerAchsen();
 
@@ -271,7 +271,7 @@ export default class Daten {
         this.map.addLayer(this.layerStation);
     }
 
-    private createLayerTrennLinien() {
+    private createLayerQuerschnittsTrennLinien() {
         this.vectorTrenn = new VectorSource({
             features: []
         });
@@ -288,11 +288,14 @@ export default class Daten {
         this.map.addLayer(this.layerTrenn);
     }
 
-    private createLayerFlaechen() {
+    private createLayerQuerschnittsFlaechen() {
         // Layer mit Querschnittsflächen
         this.vectorQuer = new VectorSource({
             features: []
         });
+
+        Klartext.getInstanz().load("Itquerart");
+        Klartext.getInstanz().load("Itquerober");
 
         let createStyle: (feature: Feature, resolution: number) => Style =
             function (feature: Feature, resolution: number) {

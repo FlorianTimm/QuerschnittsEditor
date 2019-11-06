@@ -54,9 +54,9 @@ export default class StrassenAusPunkt extends PunktObjekt {
     }
 
     private static loadKlartexte() {
-        Klartext.getInstanz().load('Itstrauspktart');
-        Klartext.getInstanz().load('Itallglage');
-        Klartext.getInstanz().load('Itquelle');
+        //Klartext.getInstanz().load('Itstrauspktart');
+        //Klartext.getInstanz().load('Itallglage');
+        //Klartext.getInstanz().load('Itquelle');
     }
 
     public getInfoForm(ziel: HTMLFormElement, changeable: boolean = false): void {

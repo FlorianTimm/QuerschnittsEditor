@@ -10,7 +10,7 @@ import 'chosen-js/chosen.css';
 import Daten from "../Daten";
 import PublicWFS from '../PublicWFS';
 import Abschnitt from './Abschnitt';
-import Klartext from './Klartext';
+import Klartext, { KlartextMap } from './Klartext';
 import PunktObjekt from './prototypes/PunktObjekt';
 import Zeichen from './Zeichen';
 import HTML from "../HTML";
@@ -19,21 +19,12 @@ export default class Aufstellvorrichtung extends PunktObjekt {
     getWFSKonfigName(): string {
         return "AUFSTELL";
     }
-    private daten: Daten;
     private zeichen: Zeichen[] = null;
     private hasSekObj: number;
     private art: string;
 
     constructor() {
         super();
-        this.daten = Daten.getInstanz();
-        Aufstellvorrichtung.loadKlartexte();
-    }
-
-    static loadKlartexte() {
-        Klartext.getInstanz().load('Itaufstvorart');
-        Klartext.getInstanz().load('Itallglage');
-        Klartext.getInstanz().load('Itquelle');
     }
 
     public colorFunktion1(): import("ol/colorlike").ColorLike {
@@ -58,8 +49,10 @@ export default class Aufstellvorrichtung extends PunktObjekt {
         for (let eintrag of zeichen) {
             let img = document.createElement("img");
             img.style.height = "30px";
-            img.src = "http://gv-srv-w00118:8080/schilder/" + Klartext.getInstanz().get("Itvzstvoznr", eintrag.getStvoznr())['kt'] + ".svg";
-            img.title = Klartext.getInstanz().get("Itvzstvoznr", eintrag.getStvoznr())['beschreib'] + ((eintrag.getVztext() != null) ? ("\n" + eintrag.getVztext()) : (''))
+            Klartext.getInstanz().load("Itvzstvoznr", function (klartext: KlartextMap) {
+                img.src = "http://gv-srv-w00118:8080/schilder/" + klartext[eintrag.getStvoznr()].kt + ".svg";
+                img.title = klartext[eintrag.getStvoznr()]['beschreib'] + (eintrag.getVztext() != null) ? ("\n" + eintrag.getVztext()) : ('');
+            });
             div.appendChild(img);
         }
         ziel.appendChild(div);
@@ -126,7 +119,7 @@ export default class Aufstellvorrichtung extends PunktObjekt {
         }
     }
 
-    public reloadZeichen(callback: (...args: any[]) => void, ...args: any[]) {
+    public reloadZeichen(callback?: (...args: any[]) => void, ...args: any[]) {
         PublicWFS.doQuery('Otvzeichlp', '<Filter>\n' +
             '  <PropertyIsEqualTo>\n' +
             '    <PropertyName>parent/@xlink:href</PropertyName>\n' +
@@ -135,7 +128,7 @@ export default class Aufstellvorrichtung extends PunktObjekt {
             '</Filter>', this.parseZeichen.bind(this), undefined, callback, ...args);
     }
 
-    private parseZeichen(xml: XMLDocument, callback: (...args: any[]) => void, ...args: any[]) {
+    private parseZeichen(xml: XMLDocument, callback?: (...args: any[]) => void, ...args: any[]) {
         let zeichen: Zeichen[] = [];
         let zeichenXML = xml.getElementsByTagName('Otvzeichlp');
 
@@ -146,6 +139,9 @@ export default class Aufstellvorrichtung extends PunktObjekt {
             }
         }
         this.zeichen = zeichen;
+        if(this.hasSekObj == 0 && zeichen.length > 0) this.hasSekObj = 1 
+        console.log(this);
+        console.log(this.zeichen);
         if (callback != undefined) {
             callback(this.zeichen, ...args);
         }

@@ -33,7 +33,9 @@ export default abstract class AddTool extends Tool {
     protected feat_neu: Feature;
     protected feat_station_line: Feature;
 
-    protected form: HTMLFormElement;
+    protected form: HTMLFormElement = null;
+
+    protected abstract createForm(): void;
 
     constructor(map: Map) {
         super();
@@ -163,7 +165,8 @@ export default abstract class AddTool extends Tool {
     protected abstract loadERCallback(xml: XMLDocument, ...args: any[]): void;
     public abstract getObjektklasse(): string;
 
-    start() {
+    start() { 
+        if (this.form == null) this.createForm();
         $(this.form).show("fast");
         this.map.addInteraction(this.select);
         this.map.on("pointermove", this.part_move.bind(this));

@@ -131,6 +131,7 @@ class QuerAddTool extends Tool {
         querschnitt.getStation().addQuerschnitt(querschnittNeu);
 
         this._select.getFeatures().clear();
+        this._info.hideInfoBox();
         querschnitt.getStation().rewrite();
     }
 

@@ -12,15 +12,14 @@ export default class HTML {
         return formGroup
     }
 
-
-    static createSelectForm(form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, platzhalter = "Bitte auswählen...") {
+    static createSelectForm(form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, platzhalter?: string) {
         let formGroup = HTML.createFormGroup(form, 'group_' + id);
         let label = HTML.createLabel(beschriftung, id, formGroup, 'label_' + id);
         label.className = "label_select"
         HTML.createBreak(formGroup);
         let select = document.createElement("select");
         select.id = id;
-        select.dataset.placeholder = platzhalter;
+        if (platzhalter != undefined) select.dataset.placeholder = platzhalter;
         formGroup.appendChild(select);
         return select;
     }
@@ -42,6 +41,35 @@ export default class HTML {
 
     static createNumberInput(form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string) {
         return HTML.createInputField("number", form, beschriftung, id, inhalt);
+    }
+
+    static createDateInput(form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string) {
+        let aufstellField = HTML.createInputField("text", form, beschriftung, id, inhalt);
+
+        aufstellField.autocomplete = "off";
+        $.datepicker.regional['de'] = {
+            closeText: 'Done',
+            prevText: 'Prev',
+            nextText: 'Next',
+            currentText: 'heute',
+            monthNames: ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
+                'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
+            monthNamesShort: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun',
+                'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
+            dayNames: ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'],
+            dayNamesShort: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
+            dayNamesMin: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
+            weekHeader: 'KW',
+            dateFormat: 'dd.mm.yy',
+            firstDay: 0,
+            isRTL: false,
+            showMonthAfterYear: false,
+            yearSuffix: ''
+        };
+        $(aufstellField).datepicker($.datepicker.regional["de"]);
+        $(aufstellField).datepicker('option', 'dateFormat', 'yy-mm-dd');
+        $(aufstellField).datepicker('option', 'changeMonth', true);
+        $(aufstellField).datepicker('option', 'changeYear', true);
     }
 
     private static createInputField(type: "number" | "text", form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string) {

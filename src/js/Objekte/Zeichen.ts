@@ -58,6 +58,7 @@ class Zeichen extends SekundaerObjekt {
     }
 
     getStvoznr(): string {
+        if (this.stvoznr != null) return this.stvoznr.substr(-32);
         return this.stvoznr
     }
 

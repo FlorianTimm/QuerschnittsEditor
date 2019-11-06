@@ -100,16 +100,15 @@ export default abstract class Objekt extends Feature {
 		}
 
 		for (let tag in CONFIG_WFS[this.getWFSKonfigName()]) {
-			//console.log(tag);
 			if (changes != undefined && tag in changes) continue;
 			else if (removeIds == true && (tag == "objektId" || tag == "fid")) continue;
-			else if (this.get(tag) === null || this.get(tag) === undefined) continue;
+			else if (this[tag] === null || this[tag] === undefined) continue;
 			else if (CONFIG_WFS[this.getWFSKonfigName()][tag].art == 0 || CONFIG_WFS[this.getWFSKonfigName()][tag].art == 1) {
 				// Kein Klartext
-				r += '<' + tag + '>' + this.get(tag) + '</' + tag + '>\n';
+				r += '<' + tag + '>' + this[tag] + '</' + tag + '>\n';
 			} else if (CONFIG_WFS[this.getWFSKonfigName()][tag].art == 2) {
 				// Klartext
-				r += '<' + tag + ' xlink:href="' + this.get(tag) + '" typeName="' + CONFIG_WFS[this.getWFSKonfigName()][tag].kt + '" />\n';
+				r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS[this.getWFSKonfigName()][tag].kt + '" />\n';
 			}
 		}
 

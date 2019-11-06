@@ -80,7 +80,6 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     }
 
     static _loadER_Callback(xml: Document, callback: (...args: any[]) => void, ...args: any[]) {
-        let daten = Daten.getInstanz();
         let dotquer = xml.getElementsByTagName("Dotquer");
         let liste: Querschnitt[] = [];
         for (let i = 0; i < dotquer.length; i++) {
@@ -156,6 +155,14 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         let lage = Klartext.createKlartextSelectForm("Itquerober", form, "Lage", "ober", querschnitt != undefined ? querschnitt.artober : undefined);
         $(lage).prop('disabled', !changeable).trigger("chosen:updated");
 
+        // Breite
+        let breite = HTML.createTextInput(form, "Von Breite", "breite", querschnitt != undefined ? querschnitt.breite.toString() : undefined);
+        breite.disabled = true;
+
+        // BisBreite
+        let bisbreite = HTML.createTextInput(form, "Bis Breite", "bisbreite", querschnitt != undefined ? querschnitt.bisBreite.toString() : undefined);
+        bisbreite.disabled = true;
+
         // VNK
         let vnk = HTML.createTextInput(form, "VNK", "vnk", querschnitt != undefined ? querschnitt.getAbschnitt().getVnk() : undefined);
         vnk.disabled = true;
@@ -171,14 +178,6 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         // Streifen
         let streifen = HTML.createTextInput(form, "Streifen", "streifen", querschnitt != undefined ? querschnitt.streifen + ' ' + querschnitt.streifennr : undefined);
         streifen.disabled = true;
-
-        // Breite
-        let breite = HTML.createTextInput(form, "Von Breite", "breite", querschnitt != undefined ? querschnitt.breite.toString() : undefined);
-        breite.disabled = true;
-
-        // BisBreite
-        let bisbreite = HTML.createTextInput(form, "Bis Breite", "bisbreite", querschnitt != undefined ? querschnitt.bisBreite.toString() : undefined);
-        bisbreite.disabled = true;
 
         // Button
         if (changeable) {
@@ -382,8 +381,8 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             if (lMOderR == 'L') this.setXVstL(value);
             else if (lMOderR == 'R') this.setXVstR(value);
         } else {
-            if (lMOderR == 'L') this.setXVstL(value);
-            else if (lMOderR == 'R') this.setXVstR(value);
+            if (lMOderR == 'L') this.setXBstL(value);
+            else if (lMOderR == 'R') this.setXBstR(value);
         }
     }
 
@@ -395,8 +394,8 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             if (lMOderR == 'L') return this.getXVstL();
             else if (lMOderR == 'R') return this.getXVstR();
         } else {
-            if (lMOderR == 'L') return this.getXVstL();
-            else if (lMOderR == 'R') return this.getXVstR();
+            if (lMOderR == 'L') return this.getXBstL();
+            else if (lMOderR == 'R') return this.getXBstR();
         }
     }
 

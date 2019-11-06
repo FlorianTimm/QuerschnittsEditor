@@ -15,12 +15,16 @@ var CONFIG = require('../../config.json');
 export default class AvAdd extends AddTool {
     constructor(map: Map) {
         super(map);
-        this.form = Aufstellvorrichtung.createForm('avadd', undefined, true, false);
-        document.getElementById('avadd_button').addEventListener('click', this.addAufstellButton.bind(this));
+
     }
 
     getObjektklasse(): string {
         return 'Otaufstvor';
+    }
+
+    createForm() {
+        this.form = Aufstellvorrichtung.createForm('avadd', undefined, true, false);
+        document.getElementById('avadd_button').addEventListener('click', this.addAufstellButton.bind(this));
     }
 
     protected part_click(event: MapBrowserEvent) {
@@ -86,6 +90,5 @@ export default class AvAdd extends AddTool {
 
     protected loadERCallback(xml: XMLDocument, ...args: any[]): void {
         Aufstellvorrichtung.loadERCallback(xml, ...args)
-
     }
 }

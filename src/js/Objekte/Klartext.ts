@@ -7,13 +7,14 @@
 
 import PublicWFS from '../PublicWFS';
 import HTML from '../HTML';
-import { type } from 'os';
+
+export interface KlartextObjekt { kt: string, beschreib: string, objektId: string };
+export interface KlartextMap { [oid: string]: KlartextObjekt };
 
 export default class Klartext {
     private static instance: Klartext;
-    private _klartexte: { [klartextBezeichnung: string]: { [oid: string]: { kt: string, beschreib: string, objektId: string } } };
+    private _klartexte: { [klartextBezeichnung: string]: KlartextMap };
     private openRequests: { [klartext: string]: boolean } = {};
-    //{ callback: (klartext: {}, ...args: any[]) => void, args: any[] }
     private requestCallbacks: { [klartext: string]: Callback[] } = {};
 
     private constructor() {
@@ -26,7 +27,7 @@ export default class Klartext {
         return this.instance;
     }
 
-    public load(klartext: string, whenReady?: (klartext: {}, ...args: any[]) => void, ...args: any[]) {
+    public load(klartext: string, whenReady?: (klartext: KlartextMap, ...args: any[]) => void, ...args: any[]) {
         if (!(klartext in this._klartexte)) {
             if (!(klartext in this.openRequests)) {
                 this.openRequests[klartext] = true;
@@ -89,7 +90,7 @@ export default class Klartext {
         return null;
     }
 
-    public getAll(klartext: string): { [klartextBezeichnung: string]: { [objektId: string]: { kt: string, beschreib: string, objektId: string } } } {
+    public getAll(klartext: string): { [klartextBezeichnung: string]: KlartextMap } {
         if (!(klartext in this._klartexte)) {
             this.load(klartext);
             return null;
@@ -97,7 +98,7 @@ export default class Klartext {
         return this._klartexte;
     }
 
-    public getAllArray(klartext: string): { kt: string, beschreib: string, objektId: string }[] {
+    public getAllArray(klartext: string): KlartextObjekt[] {
         if (!(klartext in this._klartexte)) {
             this.load(klartext);
             return null;
@@ -111,11 +112,11 @@ export default class Klartext {
         return arr;
     }
 
-    public getAllSorted(klartext: string): { kt: string, beschreib: string, objektId: string }[] {
+    public getAllSorted(klartext: string): KlartextObjekt[] {
         let sortable = this.getAllArray(klartext)
         if (sortable == null) return null;
         //console.log(klartext)
-        sortable.sort(function (a: { kt: string, beschreib: string, objektId: string }, b: { kt: string, beschreib: string, objektId: string }) {
+        sortable.sort(function (a: KlartextObjekt, b: KlartextObjekt) {
             let a_pre = a.kt.match(/\d+/g);
             let b_pre = b.kt.match(/\d+/g);
 
@@ -147,14 +148,14 @@ export default class Klartext {
         Klartext.getInstanz().load(klartext, Klartext.klartext2select_callback, klartext, selectInput, value, platzhalter);
     }
 
-    private static klartext2select_callback(klartexteObjekt: {}, klartext: string, selectInput: HTMLSelectElement, value: string = null, platzhalter: string = "Wert auswählen...") {
+    private static klartext2select_callback(klartexteObjekt: {}, klartext: string, selectInput: HTMLSelectElement, value: string = null, platzhalter?: string) {
         let arten = Klartext.getInstanz().getAllSorted(klartext);
 
         for (let a of arten) {
             let isSelected = (value != undefined && value.substr(-32) == a.objektId);
             HTML.createSelectNode(selectInput, a.beschreib, a.objektId, isSelected);
         }
-        if (value == undefined || value == null) selectInput.value = null;
+        if (value == null && platzhalter != undefined) selectInput.value = null;
 
         $(selectInput).chosen({ width: "99%", search_contains: true, no_results_text: "Keine Übereinstimmung gefunden für ", placeholder_text_single: platzhalter });
     }

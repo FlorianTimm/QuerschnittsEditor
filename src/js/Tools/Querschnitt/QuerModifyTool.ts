@@ -35,9 +35,9 @@ export default class QuerModifyTool extends Tool {
     private selectFlaechen: SelectInteraction;
     private snapTrenn: Snap;
     private snapStation: Snap;
-    private streifen: 'M' | 'L' | 'R';
-    private streifennr: number;
-    private multiEditForm: HTMLFormElement;
+    //private streifen: 'M' | 'L' | 'R';
+    //private streifennr: number;
+    private multiEditForm: HTMLFormElement = null;
     private multiCountInput: HTMLInputElement;
     private multiArtSelect: HTMLSelectElement;
     private multiOberSelect: HTMLSelectElement;
@@ -54,8 +54,6 @@ export default class QuerModifyTool extends Tool {
         this.createSnap();
 
         document.getElementById('befehl_modify').addEventListener('change', this._switch.bind(this));
-
-        this.createMultiModForm();
     };
 
     private createMultiModForm() {
@@ -164,7 +162,7 @@ export default class QuerModifyTool extends Tool {
             }
         }
         //breiteNachfAnpassen(absid, station, streifen, nr, edit, diff);
-        this.info.featureSelect(this.selectFlaechen);
+        this.info.featureSelect(this.selectFlaechen, true);
     }
 
     _check_and_edit_querschnitt(querschnitt: Querschnitt, diff: number, Vst_or_Bst: 'Vst' | 'Bst', breite_or_bisBreite: 'breite' | 'bisBreite') {
@@ -368,6 +366,8 @@ export default class QuerModifyTool extends Tool {
         this.map.addInteraction(this.selectFlaechen);
         this.map.addInteraction(this.modify);
         this.map.addInteraction(this.snapTrenn);
+
+        if (this.multiEditForm = null) this.createMultiModForm();
     }
 
     stop() {
