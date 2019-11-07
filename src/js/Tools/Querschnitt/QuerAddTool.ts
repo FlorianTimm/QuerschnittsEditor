@@ -1,4 +1,3 @@
-import { Style, Stroke } from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
 import Querschnitt from '../../Objekte/Querschnittsdaten';
 import Map from 'ol/Map';
@@ -7,6 +6,11 @@ import QuerInfoTool from './QuerInfoTool';
 import Tool from '../prototypes/Tool';
 import { SelectEvent } from 'ol/interaction/Select';
 import InfoTool from '../InfoTool';
+import HTML from '../../HTML';
+
+import "../../import_jquery.js";
+import 'jquery-ui-bundle';
+import 'jquery-ui-bundle/jquery-ui.css'
 
 /**
  * Funktion zum Hinzufügen von Querschnittsflächen
@@ -19,6 +23,8 @@ class QuerAddTool extends Tool {
     private _info: QuerInfoTool;
     private _select: SelectInteraction;
     private _map: Map;
+    private form: HTMLFormElement = null;
+    button: HTMLInputElement;
 
     constructor(map: Map, info: QuerInfoTool) {
         super();
@@ -30,35 +36,44 @@ class QuerAddTool extends Tool {
             style: InfoTool.selectStyle
         });
 
-        this._select.on('select', function (e: SelectEvent) {
-            if (e.selected.length == 0) {
-                this.disableMenu();
-                return
-            }
-            //console.log(this);
-            (this._info as QuerInfoTool).getInfoFieldForFeature(e.selected[0].get("objekt"))
-            document.forms.namedItem("hinzu").getElementsByTagName("input")[0].style.backgroundColor = "#ffcc00";
-            document.forms.namedItem("hinzu").getElementsByTagName("input")[0].disabled = false;
-        }.bind(this));
-
-        document.getElementById("addQuerschnittButton").addEventListener('click', this.addQuerschnitt.bind(this));
+        this._select.on('select', this.selected.bind(this));
     }
 
+    private createForm() {
+        if (this.form != null) return;
+        this.form = HTML.createToolForm(document.getElementById('sidebar'), false, 'hinzu');
+        this.button = HTML.createButton(this.form, "Querschnitt hinzufügen", "addQuerschnittButton");
+        this.button.addEventListener('click', this.addQuerschnitt.bind(this));
+    }
+
+    private selected(e: SelectEvent) {
+        if (e.selected.length != 1) {
+            this.disableMenu();
+            return
+        }
+
+        (this._info as QuerInfoTool).getInfoFieldForFeature(e.selected[0].get("objekt"))
+        this.button.style.backgroundColor = "#ffcc00";
+        this.button.disabled = false;
+    }
 
     private disableMenu() {
-        document.forms.namedItem("hinzu").getElementsByTagName("input")[0].style.backgroundColor = "";
-        document.forms.namedItem("hinzu").getElementsByTagName("input")[0].disabled = true;
+        if (this.form != null) {
+            this.button.style.backgroundColor = "";
+            this.button.disabled = true;
+        }
         (this._info as QuerInfoTool).hideInfoBox();
     }
 
     start() {
-        document.forms.namedItem("hinzu").style.display = 'block';
+        this.createForm();
+        if (this.form != null) $(this.form).show("fast");
         this._map.addInteraction(this._select);
     }
 
     stop() {
+        if (this.form != null) $(this.form).hide("fast");
         this.disableMenu()
-        document.forms.namedItem("hinzu").style.display = 'none';
         this._map.removeInteraction(this._select);
         this._info.hideInfoBox();
     }
@@ -66,20 +81,56 @@ class QuerAddTool extends Tool {
 
     addQuerschnitt() {
         let selection = this._select.getFeatures();
-        if (this._select.getFeatures().getLength() <= 0) return;
+        if (this._select.getFeatures().getLength() != 1) return;
         let querschnitt = <Querschnitt>selection.item(0).get('objekt');
-        querschnitt.getStation().getAbschnitt().getAufbauDaten(this.addQuerschnittCallback.bind(this));
+        let streifen = querschnitt.getStreifen();
+        if (streifen == "M") {
+            this.askWhichSide(querschnitt);
+        } else {
+            this.loadAufbaudaten(querschnitt, streifen);
+        }
+
     }
 
-    addQuerschnittCallback() {
+    private askWhichSide(querschnitt: Querschnitt) {
+        let dialog = document.createElement("div");
+        document.body.appendChild(dialog);
+        dialog.innerHTML = "Auf welcher Seite soll der Querschnitt hinzugefügt werden?"
+        let jqueryDialog = $(dialog).dialog({
+            resizable: false,
+            height: "auto",
+            width: 400,
+            modal: true,
+            buttons: {
+                "Links": function (this: QuerAddTool) {
+                    this.loadAufbaudaten(querschnitt, "L");
+                    jqueryDialog.dialog("close");
+                }.bind(this),
+                "Rechts": function (this: QuerAddTool) {
+                    this.loadAufbaudaten(querschnitt, "R");
+                    jqueryDialog.dialog("close");
+                }.bind(this),
+                Cancel: function () {
+                    jqueryDialog.dialog("close");
+                }
+            }
+        });
+    }
+
+    private loadAufbaudaten(querschnitt: Querschnitt, seite: "R" | "L") {
+        querschnitt.getStation().getAbschnitt().getAufbauDaten(this.addQuerschnittCallback.bind(this), undefined, undefined, seite);
+    }
+
+    private addQuerschnittCallback(seite: 'L' | 'R') {
         let selection = this._select.getFeatures();
         if (this._select.getFeatures().getLength() <= 0) return;
         let querschnitt = <Querschnitt>selection.item(0).get('objekt');
-        let gesStreifen = querschnitt.getStation().getStreifen(querschnitt.getStreifen());
+        let gesStreifen = querschnitt.getStation().getStreifen(seite);
 
         let querschnittNeu = new Querschnitt();
         querschnittNeu.setBreite(275);
         querschnittNeu.setBisBreite(275);
+        querschnittNeu.setStreifen(seite)
 
         let strArray = []
         for (let nnr in gesStreifen) {
@@ -105,12 +156,12 @@ class QuerAddTool extends Tool {
             querschnitt.getStation().addQuerschnitt(quer);
         }
 
-        if (querschnitt.getStreifen() == 'L') {
+        if (seite == 'L') {
             querschnittNeu.setXBstR(querschnitt.getXBstL());
             querschnittNeu.setXVstR(querschnitt.getXVstL());
             querschnittNeu.setXBstL(querschnittNeu.getXBstR() - querschnittNeu.getBisBreite() / 100);
             querschnittNeu.setXVstL(querschnittNeu.getXVstR() - querschnittNeu.getBreite() / 100);
-        } else if (querschnitt.getStreifen() == 'R') {
+        } else if (seite == 'R') {
             querschnittNeu.setXBstL(querschnitt.getXBstR());
             querschnittNeu.setXVstL(querschnitt.getXVstR());
             querschnittNeu.setXBstR(querschnittNeu.getXBstL() + querschnittNeu.getBisBreite() / 100);
@@ -118,7 +169,7 @@ class QuerAddTool extends Tool {
         }
 
         querschnittNeu.setProjekt(querschnitt.getProjekt());
-        querschnittNeu.setStreifen(querschnitt.getStreifen());
+        querschnittNeu.setStreifen(seite);
         querschnittNeu.setStreifennr(querschnitt.getStreifennr() + 1);
         querschnittNeu.setArt(querschnitt.getArt());
         querschnittNeu.setArtober(querschnitt.getArtober());
@@ -126,7 +177,9 @@ class QuerAddTool extends Tool {
         querschnittNeu.setVst(querschnitt.getVst());
         querschnittNeu.setBst(querschnitt.getBst());
         querschnittNeu.setAbschnittId(querschnitt.getAbschnittId());
+        console.log(gesStreifen)
         gesStreifen[querschnittNeu.getStreifennr()] = querschnittNeu;
+        console.log(gesStreifen)
         //querschnittNeu.createGeom();
         querschnitt.getStation().addQuerschnitt(querschnittNeu);
 

@@ -4,6 +4,7 @@ import "../css/html_forms.css";
 
 export default class HTML {
 
+
     static createFormGroup(form: HTMLFormElement | HTMLDivElement, id?: string): HTMLDivElement {
         let formGroup = document.createElement("div")
         formGroup.className = "form_group";
@@ -22,6 +23,41 @@ export default class HTML {
         if (platzhalter != undefined) select.dataset.placeholder = platzhalter;
         formGroup.appendChild(select);
         return select;
+    }
+
+    static createButton(form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string) {
+        let formGroup = HTML.createFormGroup(form, 'group_' + id);
+        let input = document.createElement("input");
+        input.id = id;
+        input.type = "button";
+        formGroup.appendChild(input);
+        input.value = beschriftung;
+        return input;
+    }
+
+    static createCheckbox(form: HTMLFormElement | HTMLDivElement, name: string, id: string, beschriftung: string) {
+        let input = HTML.createSimpleInput(form, "checkbox", id, name);
+        let label = HTML.createLabel(beschriftung, id, form, 'label_' + id);
+        label.className = "label_checkbox"
+        return input;
+    }
+
+    private static createSimpleInput(form: HTMLFormElement | HTMLDivElement, type: string, id: string, name?: string, value?: string) {
+        let input = document.createElement("input");
+        input.id = id;
+        input.type = type;
+        if (name) input.name = name;
+        if (value) input.value = value;
+        form.appendChild(input);
+        return input;
+    }
+
+    static createRadio(form: HTMLFormElement | HTMLDivElement, name: string, value: string, id: string, beschriftung: string) {
+        let input = HTML.createSimpleInput(form, "radio", id, name, value);
+        let label = HTML.createLabel(beschriftung, id, form, 'label_' + id);
+        label.className = "label_radio"
+
+        return input;
     }
 
     public static createSelectNode(selectInput: HTMLSelectElement, text: string, value?: string, selected?: boolean) {
@@ -73,7 +109,7 @@ export default class HTML {
         $(aufstellField).datepicker('option', 'changeYear', true);
     }
 
-    private static createInputField(type: "number" | "text", form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string) {
+    private static createInputField(type: "number" | "text" | "button", form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string) {
         let formGroup = HTML.createFormGroup(form, 'group_' + id);
         let label = HTML.createLabel(beschriftung, id, formGroup, 'label_' + id);
         label.className = "label_" + type;

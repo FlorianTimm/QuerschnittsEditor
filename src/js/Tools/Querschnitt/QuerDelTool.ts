@@ -1,4 +1,4 @@
-import { Map, Feature } from "ol";
+import { Map, Feature, Collection } from "ol";
 import Daten from '../../Daten';
 import QuerInfoTool from "./QuerInfoTool";
 import Tool from '../prototypes/Tool';
@@ -36,13 +36,34 @@ class QuerDelTool extends Tool {
     }
 
     private querschnittLoeschenButton() {
-        let selection = this.selectFlaechen.getFeatures();
         if (this.selectLinien.getFeatures().getLength() <= 0) return;
-        if (!confirm("Wollen Sie die Fläche wirklich löschen?")) return;
 
+        let dialog = document.createElement("div");
+        document.body.appendChild(dialog);
+        dialog.innerHTML = "Wollen Sie die Fläche wirklich löschen?"
+        let jqueryDialog = $(dialog).dialog({
+            resizable: false,
+            height: "auto",
+            width: 400,
+            modal: true,
+            buttons: {
+                "Ja": function (this: QuerDelTool) {
+                    this.confirmedDelete();
+                    jqueryDialog.dialog("close");
+                }.bind(this),
+                Cancel: function () {
+                    jqueryDialog.dialog("close");
+                }
+            }
+        });
+    }
+
+    private confirmedDelete() {
+        let selection = this.selectFlaechen.getFeatures() as Collection<Querschnitt>;
         let querschnitt = <Querschnitt>selection.item(0);
+        if (querschnitt.getStreifen() == 'M') return; // Keine Mittelstreifen löschen
         let gesStreifen = querschnitt.getStation().getStreifen(querschnitt.getStreifen());
-        querschnitt.getStation().deleteStreifen(querschnitt.getStreifen(), querschnitt.getStreifennr())
+        querschnitt.getStation().deleteStreifen(querschnitt.getStreifen(), querschnitt.getStreifennr());
         for (let nr in gesStreifen) {
             let quer = gesStreifen[nr];
             quer.setStreifennr(quer.getStreifennr() - 1);
@@ -51,18 +72,17 @@ class QuerDelTool extends Tool {
                 quer.setXVstR(quer.getXVstR() + querschnitt.getBreite() / 100);
                 quer.setXBstL(quer.getXBstL() + querschnitt.getBisBreite() / 100);
                 quer.setXVstL(quer.getXVstL() + querschnitt.getBreite() / 100);
-            } else if (quer.getStreifen() == 'R') {
+            }
+            else if (quer.getStreifen() == 'R') {
                 quer.setXBstL(quer.getXBstL() - querschnitt.getBisBreite() / 100);
                 quer.setXVstL(quer.getXVstL() - querschnitt.getBreite() / 100);
                 quer.setXBstR(quer.getXBstR() - querschnitt.getBisBreite() / 100);
                 quer.setXVstR(quer.getXVstR() - querschnitt.getBreite() / 100);
             }
         }
-
         this.selectLinien.getFeatures().clear();
         this.selectFlaechen.getFeatures().clear();
         querschnitt.getStation().rewrite();
-
     }
 
     private createLinienSelect() {
@@ -86,7 +106,7 @@ class QuerDelTool extends Tool {
     private flaecheSelected(event: SelectEvent) {
         this.selectLinien.getFeatures().clear();
         let auswahl = (this.selectFlaechen as SelectInteraction).getFeatures();
-        auswahl.forEach(function (feat: Querschnitt) {
+        auswahl.forEach(function (this: QuerDelTool, feat: Querschnitt) {
             this.selectLinien.getFeatures().push(feat.trenn);
         }.bind(this))
         this.featureSelected()

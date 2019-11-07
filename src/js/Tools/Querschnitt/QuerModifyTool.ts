@@ -41,6 +41,7 @@ export default class QuerModifyTool extends Tool {
     private multiCountInput: HTMLInputElement;
     private multiArtSelect: HTMLSelectElement;
     private multiOberSelect: HTMLSelectElement;
+    private moveTypeForm: HTMLFormElement = null;
 
     constructor(map: Map, info: QuerInfoTool) {
         super();
@@ -55,6 +56,19 @@ export default class QuerModifyTool extends Tool {
 
         document.getElementById('befehl_modify').addEventListener('change', this._switch.bind(this));
     };
+
+    private createMoveTypeForm() {
+        if (this.moveTypeForm != null) return;
+        this.moveTypeForm = HTML.createToolForm(document.getElementById('sidebar'), false, 'modify');
+        this.moveTypeForm.innerHTML += "Nachfolgende Querschnitte:";
+        HTML.createBreak(this.moveTypeForm);
+        let radio = HTML.createFormGroup(this.moveTypeForm);
+        HTML.createRadio(radio, "typ", "move", "modify_move", "...verschieben");
+        HTML.createBreak(radio);
+        HTML.createRadio(radio, "typ", "fit", "modify_fit", "...anpassen");
+        HTML.createBreak(this.moveTypeForm);
+        HTML.createCheckbox(this.moveTypeForm, "modify_glue", "modify_glue", "angrenzende Querschnitte mitziehen");
+    }
 
     private createMultiModForm() {
         this.multiEditForm = HTML.createToolForm(document.getElementById("sidebar"), false, "qsMultiMod");
@@ -209,7 +223,7 @@ export default class QuerModifyTool extends Tool {
     private flaecheSelected(event: SelectEvent) {
         this.selectLinien.getFeatures().clear();
         let auswahl = (this.selectFlaechen as SelectInteraction).getFeatures();
-        auswahl.forEach(function (feat: Querschnitt) {
+        auswahl.forEach(function (this: QuerModifyTool, feat: Querschnitt) {
             this.selectLinien.getFeatures().push(feat.trenn);
         }.bind(this))
 
@@ -220,8 +234,8 @@ export default class QuerModifyTool extends Tool {
         let selection = this.selectFlaechen.getFeatures().getArray() as Querschnitt[];
 
         this.selectLinien.getFeatures().clear()
-        this.selectFlaechen.getFeatures().forEach(function (feature: Feature) {
-            (this as QuerModifyTool).selectLinien.getFeatures().push((feature as Querschnitt).trenn)
+        this.selectFlaechen.getFeatures().forEach(function (this: QuerModifyTool, feature: Feature) {
+            this.selectLinien.getFeatures().push((feature as Querschnitt).trenn)
         }.bind(this));
 
         if (selection.length == 1) {
@@ -231,7 +245,7 @@ export default class QuerModifyTool extends Tool {
         } else {
             this.info.hideInfoBox();
             this.setModifyActive(false);
-            $("#modify").show("fast");
+            $(this.moveTypeForm).show("fast");
             $(this.multiEditForm).hide("fast");
         }
     }
@@ -248,7 +262,7 @@ export default class QuerModifyTool extends Tool {
         console.log("multiSelect")
         this.info.hideInfoBox();
         this.setModifyActive(false);
-        $("#modify").hide("fast");
+        $(this.moveTypeForm).hide("fast");
 
         let art = selection[0].getArt();
         let ober = selection[0].getArtober();
@@ -311,7 +325,8 @@ export default class QuerModifyTool extends Tool {
     }
 
     public start() {
-        $("#modify").show("fast");
+        this.createMoveTypeForm();
+        $(this.moveTypeForm).show("fast");
         this.map.addInteraction(this.selectLinien);
         this.map.addInteraction(this.selectFlaechen);
         this.map.addInteraction(this.modify);
@@ -321,7 +336,7 @@ export default class QuerModifyTool extends Tool {
     }
 
     stop() {
-        $("#modify").hide("fast");
+        $(this.moveTypeForm).hide("fast");
         this.info.hideInfoBox();
         this.map.removeInteraction(this.selectLinien);
         this.map.removeInteraction(this.selectFlaechen);

@@ -62,7 +62,7 @@ export default class QuerStation {
     }
     getStreifen(streifen: 'M' | 'L' | 'R'): { [streifennr: number]: Querschnitt } {
         if (!(streifen in this._querschnitte))
-            return null;
+            return {};
         return this._querschnitte[streifen];
     }
 
