@@ -25,11 +25,10 @@ export default class AvAdd extends AddTool {
     createForm() {
         this.form = Aufstellvorrichtung.createForm('avadd', undefined, true, false);
         let input = document.createElement("input");
-        input.id = "avadd_button";
         input.type = "submit"
         input.value = "Hinzufügen"
         this.form.appendChild(input);
-        $(this.form).on("submit", function (event: Event) {
+        $(this.form).on("submit", function (this: AvAdd, event: Event) {
             event.preventDefault();
             this.addAufstellButton();
         }.bind(this));
@@ -37,11 +36,11 @@ export default class AvAdd extends AddTool {
 
     protected part_click(event: MapBrowserEvent) {
         let daten = this.calcStation(event);
-        (document.getElementById("avadd_vnk") as HTMLInputElement).value = daten['achse'].getVnk();
-        (document.getElementById("avadd_nnk") as HTMLInputElement).value = daten['achse'].getNnk();
-        (document.getElementById("avadd_station") as HTMLInputElement).value = String(this.station);
-        (document.getElementById("avadd_abstand") as HTMLInputElement).value = daten['pos'][3] + ' ' + daten['pos'][4].toFixed(1);
-        (document.getElementById("avadd_button") as HTMLInputElement).disabled = false;
+        $(this.form).find("#vnk").val(daten['achse'].getVnk());
+        $(this.form).find("#nnk").val(daten['achse'].getNnk());
+        $(this.form).find("#station").val(String(this.station));
+        $(this.form).find("#abstand").val(daten['pos'][3] + ' ' + daten['pos'][4].toFixed(1));
+        $(this.form).find("input[type='submit']").prop("disabled", "false");
     }
 
     protected part_move(event: MapBrowserEvent) {
@@ -53,10 +52,10 @@ export default class AvAdd extends AddTool {
         (this.feat_station_line.getGeometry() as LineString).setCoordinates([daten['pos'][6], daten['pos'][5]]);
 
         if (this.abschnitt == null) {
-            (document.getElementById("avadd_vnk") as HTMLInputElement).value = daten['achse'].getVnk();
-            (document.getElementById("avadd_nnk") as HTMLInputElement).value = daten['achse'].getNnk();
-            (document.getElementById("avadd_station") as HTMLInputElement).value = String(Math.round(daten['pos'][2] * daten['achse'].getFaktor()));
-            (document.getElementById("avadd_abstand") as HTMLInputElement).value = daten['pos'][3] + ' ' + daten['pos'][4].toFixed(1)
+            $(this.form).find("#vnk").val(daten['achse'].getVnk());
+            $(this.form).find("#nnk").val(daten['achse'].getNnk());
+            $(this.form).find("#station").val(String(Math.round(daten['pos'][2] * daten['achse'].getFaktor())));
+            $(this.form).find("#abstand").val(daten['pos'][3] + ' ' + daten['pos'][4].toFixed(1));
         }
     }
 
@@ -88,9 +87,9 @@ export default class AvAdd extends AddTool {
             '<detailgrad xlink:href="' + CONFIG.DETAIL_HOCH + '" typeName="Itobjdetailgrad" />\n' +
             '<erfart xlink:href="' + CONFIG.ERFASSUNG + '" typeName="Iterfart" />\n' +
             '<ADatum>' + (new Date()).toISOString().substring(0, 10) + '</ADatum>\n' +
-            '<rlageVst xlink:href="#S' + document.forms.namedItem("avadd").avadd_lage.value + '" typeName="Itallglage" />\n' +
-            '<art xlink:href="#S' + document.forms.namedItem("avadd").avadd_art.value + '" typeName="Itaufstvorart" />\n' +
-            '<quelle xlink:href="#S' + document.forms.namedItem("avadd").avadd_quelle.value + '" typeName="Itquelle" />\n' +
+            '<rlageVst xlink:href="#S' + $(this.form).find("#lage").val() + '" typeName="Itallglage" />\n' +
+            '<art xlink:href="#S' + $(this.form).find("#art").val() + '" typeName="Itaufstvorart" />\n' +
+            '<quelle xlink:href="#S' + $(this.form).find("#quelle").val() + '" typeName="Itquelle" />\n' +
             '</Otaufstvor> </wfs:Insert>';
         //console.log(soap)
         PublicWFS.doTransaction(soap, this.getInsertResults.bind(this));

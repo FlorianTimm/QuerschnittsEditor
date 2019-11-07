@@ -60,6 +60,7 @@ export default class InfoTool extends Tool {
     }
 
     public getInfoFieldForFeature(feature: Feature, changeable: boolean = false) {
+        this.infoField.innerHTML = "";
         (feature as InfoToolSelectable).getInfoForm(this.infoField, changeable);
         if (changeable) {
             // Button
@@ -68,7 +69,8 @@ export default class InfoTool extends Tool {
             input.type = "submit"
             input.value = "Speichern"
             this.infoField.appendChild(input);
-            $(this.infoField).on("submit", function (event: Event) {
+            $(this.infoField).off("submit");
+            $(this.infoField).on("submit", function (this: InfoTool, event: Event) {
                 event.preventDefault();
                 (feature as InfoToolEditable).changeAttributes(this.infoField);
             }.bind(this));
@@ -81,7 +83,8 @@ export default class InfoTool extends Tool {
     }
 
     public hideInfoBox() {
-        $(this.infoField).hide("fast", "linear", function () {
+        $(this.infoField).off("submit");
+        $(this.infoField).hide("fast", "linear", undefined, function (this: InfoTool) {
             this.infoField.innerHTML = "";
         }.bind(this))
 

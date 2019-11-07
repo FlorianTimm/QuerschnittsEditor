@@ -53,8 +53,6 @@ export default class QuerModifyTool extends Tool {
         this.createFlaechenSelect();
         this.createModify();
         this.createSnap();
-
-        document.getElementById('befehl_modify').addEventListener('change', this._switch.bind(this));
     };
 
     private createMoveTypeForm() {
@@ -63,7 +61,8 @@ export default class QuerModifyTool extends Tool {
         this.moveTypeForm.innerHTML += "Nachfolgende Querschnitte:";
         HTML.createBreak(this.moveTypeForm);
         let radio = HTML.createFormGroup(this.moveTypeForm);
-        HTML.createRadio(radio, "typ", "move", "modify_move", "...verschieben");
+        let verschieben = HTML.createRadio(radio, "typ", "move", "modify_move", "...verschieben");
+        verschieben.checked = true;
         HTML.createBreak(radio);
         HTML.createRadio(radio, "typ", "fit", "modify_fit", "...anpassen");
         HTML.createBreak(this.moveTypeForm);
@@ -71,6 +70,7 @@ export default class QuerModifyTool extends Tool {
     }
 
     private createMultiModForm() {
+        if (this.multiEditForm) return;
         this.multiEditForm = HTML.createToolForm(document.getElementById("sidebar"), false, "qsMultiMod");
 
         this.multiArtSelect = Klartext.createKlartextSelectForm("Itquerart", this.multiEditForm, "Art", 'qsmm_art', undefined, "- verschiedene -")
@@ -80,14 +80,6 @@ export default class QuerModifyTool extends Tool {
 
         $(this.multiArtSelect).on("change", this.updateMultiArt.bind(this));
         $(this.multiOberSelect).on("change", this.updateMultiOber.bind(this));
-    }
-
-    _switch() {
-        if ((document.getElementById('befehl_info') as HTMLInputElement).checked) {
-            this.start();
-        } else {
-            this.stop();
-        }
     }
 
     private createModify() {
@@ -260,6 +252,7 @@ export default class QuerModifyTool extends Tool {
 
     private multiSelect(selection: Querschnitt[]) {
         console.log("multiSelect")
+        this.createMultiModForm();
         this.info.hideInfoBox();
         this.setModifyActive(false);
         $(this.moveTypeForm).hide("fast");
