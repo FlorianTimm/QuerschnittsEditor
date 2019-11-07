@@ -4,8 +4,7 @@ import StrassenAusPunkt from '../../Objekte/StrassenAusPunkt';
 import AddTool from '../prototypes/AddTool';
 import { Map, MapBrowserEvent } from 'ol';
 import Daten from '../../Daten';
-import Querschnitt from 'src/js/Objekte/Querschnittsdaten';
-import Abschnitt from 'src/js/Objekte/Abschnitt';
+import Abschnitt from '../../Objekte/Abschnitt';
 
 var CONFIG = require('../../config.json');
 
@@ -19,22 +18,31 @@ var CONFIG = require('../../config.json');
 export default class SAPAdd extends AddTool {
     constructor(map: Map) {
         super(map);
-
-
     }
 
     protected createForm() {
-        this.form = StrassenAusPunkt.createForm("sapadd", undefined, true, false);
-        document.getElementById('sapadd_button').addEventListener('click', this.addSAPButton.bind(this));
+        this.form = StrassenAusPunkt.createForm(undefined, true, false);
+        let input = document.createElement("input");
+        input.type = "submit"
+        input.value = "Hinzufügen"
+        this.form.appendChild(input);
+        $(this.form).on("submit", this.addSAPButton.bind(this));
     }
 
     protected part_click(event: MapBrowserEvent) {
         let daten = this.calcStation(event);
-        (document.getElementById("sapadd_vnk") as HTMLInputElement).value = (daten['achse'] as Abschnitt).getVnk();
-        (document.getElementById("sapadd_nnk") as HTMLInputElement).value = (daten['achse'] as Abschnitt).getNnk();
-        (document.getElementById("sapadd_station") as HTMLInputElement).value = String(this.station);
-        (document.getElementById("sapadd_abstand") as HTMLInputElement).value = daten['pos'][3] + ' ' + (daten['pos'][4] as number).toFixed(1);
-        (document.getElementById("sapadd_button") as HTMLInputElement).disabled = false;
+        this.refreshStationierung(daten);
+        $(this.form).find("input[type='button']").prop("disabled", false);
+    }
+
+    private addSAPButton(event: Event) {
+        event.preventDefault();
+        // im ER?
+        if (!(this.abschnitt.isOKinER("Otstrauspkt"))) {
+            PublicWFS.addInER(this.abschnitt, "Otstrauspkt", Daten.getInstanz().ereignisraum_nr, this.addInER_Callback.bind(this));
+        } else {
+            this.wfsAddStrausPkt()
+        }
     }
 
     protected part_move(event: MapBrowserEvent) {
@@ -51,19 +59,10 @@ export default class SAPAdd extends AddTool {
     }
 
     private refreshStationierung(daten: { achse: any; pos: any; }) {
-        (document.getElementById("sapadd_vnk") as HTMLInputElement).value = daten['achse'].vnk;
-        (document.getElementById("sapadd_nnk") as HTMLInputElement).value = daten['achse'].nnk;
-        (document.getElementById("sapadd_station") as HTMLInputElement).value = String(Math.round(daten['pos'][2] * daten['achse'].getFaktor()));
-        (document.getElementById("sapadd_abstand") as HTMLInputElement).value = daten['pos'][3] + ' ' + daten['pos'][4].toFixed(1);
-    }
-
-    private addSAPButton() {
-        // im ER?
-        if (!(this.abschnitt.isOKinER("Otstrauspkt"))) {
-            PublicWFS.addInER(this.abschnitt, "Otstrauspkt", Daten.getInstanz().ereignisraum_nr, this.addInER_Callback.bind(this));
-        } else {
-            this.wfsAddStrausPkt()
-        }
+        $(this.form).find('#vnk').val((daten['achse'] as Abschnitt).getVnk());
+        $(this.form).find('#nnk').val((daten['achse'] as Abschnitt).getNnk());
+        $(this.form).find('#station').val(String(this.station));
+        $(this.form).find('#abstand').val(daten['pos'][3] + ' ' + (daten['pos'][4] as number).toFixed(1));
     }
 
     private addInER_Callback(xml: XMLDocument) {
@@ -84,9 +83,9 @@ export default class SAPAdd extends AddTool {
             '<detailgrad xlink:href="' + CONFIG.DETAIL_HOCH + '" typeName="Itobjdetailgrad" />\n' +
             '<erfart xlink:href="' + CONFIG.ERFASSUNG + '" typeName="Iterfart" />\n' +
             '<ADatum>' + (new Date()).toISOString().substring(0, 10) + '</ADatum>\n' +
-            '<rlageVst xlink:href="#S' + document.forms.namedItem("sapadd").sapadd_lage.value + '" typeName="Itallglage" />\n' +
-            '<art xlink:href="#S' + document.forms.namedItem("sapadd").sapadd_art.value + '" typeName="Itstrauspktart" />\n' +
-            '<quelle xlink:href="#S' + document.forms.namedItem("sapadd").sapadd_quelle.value + '" typeName="Itquelle" />\n' +
+            '<rlageVst xlink:href="#S' + $(this.form).find('#lage').val() + '" typeName="Itallglage" />\n' +
+            '<art xlink:href="#S' + $(this.form).find('#art').val() + '" typeName="Itstrauspktart" />\n' +
+            '<quelle xlink:href="#S' + $(this.form).find('#quelle').val() + '" typeName="Itquelle" />\n' +
             '</Otstrauspkt> </wfs:Insert>';
         PublicWFS.doTransaction(soap, this.getInsertResults.bind(this));
     }

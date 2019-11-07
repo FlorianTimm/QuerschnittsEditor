@@ -95,7 +95,7 @@ export default class MoveTool extends Tool {
             this.map.on("pointermove", this.move.bind(this));
         } else {
             console.log("unselect")
-            this.map.unset("pointermove", this.move.bind(this));
+            this.map.un("pointermove", this.move.bind(this));
             (this.feat_station_line.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
         }
         this.infoTool.featureSelect(this.select, true)
@@ -106,15 +106,13 @@ export default class MoveTool extends Tool {
     }
 
     private modifyEnd(event: ModifyEvent) {
-        this.map.unset("pointermove", this.move.bind(this));
+        this.map.un("pointermove", this.move.bind(this));
         let feat = this.select.getFeatures().item(0);
         (this.feat_station_line.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
         let daten = this.getStation((feat.getGeometry() as Point).getCoordinates());
 
         if (daten == null || daten['pos'] == null) return;
 
-
-        this.select.getFeatures().clear();
         (feat.getGeometry() as Point).setCoordinates(daten['pos'][6]);
 
         let station = Math.round(daten['pos'][2] * (feat as PunktObjekt).getAbschnitt().getFaktor());
@@ -157,7 +155,7 @@ export default class MoveTool extends Tool {
         this.map.removeInteraction(this.select);
         this.map.removeInteraction(this.modify);
         this.map.removeLayer(this.l_overlay);
-        this.map.unset("pointermove", this.move.bind(this));
+        this.map.un("pointermove", this.move.bind(this));
         (this.feat_station_line.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
     }
 }

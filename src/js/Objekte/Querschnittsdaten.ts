@@ -62,7 +62,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         return "Dotquer"
     }
 
-    static loadER(callback?: (xml: Document, ...args: any[]) => void, ...args: any[]) {
+    static loadER(callback?: (...args: any[]) => void, ...args: any[]) {
         document.body.style.cursor = 'wait';
         let daten = Daten.getInstanz();
         PublicWFS.doQuery('Dotquer', '<Filter>' +
@@ -156,11 +156,17 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         $(lage).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Breite
-        let breite = HTML.createNumberInput(form, "Von Breite", "breite", querschnitt != undefined ? querschnitt.breite.toString() : undefined, 10);
+        let breite = HTML.createNumberInput(form, "Von Breite", "breite", querschnitt != undefined ? querschnitt.breite.toString() : undefined);
+        breite.step= '1';
+        breite.max = '5000';
+        breite.min =  '0'
         breite.disabled = !changeable;
 
         // BisBreite
-        let bisbreite = HTML.createNumberInput(form, "Bis Breite", "bisbreite", querschnitt != undefined ? querschnitt.bisBreite.toString() : undefined, 10);
+        let bisbreite = HTML.createNumberInput(form, "Bis Breite", "bisbreite", querschnitt != undefined ? querschnitt.bisBreite.toString() : undefined);
+        bisbreite.step= '1';
+        bisbreite.max = '5000';
+        bisbreite.min =  '0'
         bisbreite.disabled = !changeable;
 
         // VNK
@@ -178,16 +184,6 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         // Streifen
         let streifen = HTML.createTextInput(form, "Streifen", "streifen", querschnitt != undefined ? querschnitt.streifen + ' ' + querschnitt.streifennr : undefined);
         streifen.disabled = true;
-
-        // Button
-        if (changeable) {
-            let input = document.createElement("input");
-            input.id = formId + "_button";
-            input.type = "button"
-            input.value = "Querschnitt speichern"
-            input.disabled = true;
-            form.appendChild(input);
-        }
     }
 
     public getInfoForm(ziel: HTMLFormElement, changeable: boolean = false): void {
@@ -264,7 +260,6 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
         for (let j = 0; j < anzahl; j++) {
             let coord = Vektor.sum(this.station.getGeometry()[j], Vektor.multi(this.station.getVector()[j], this.station.getSegment()[j] * diff2 + abst2));
-            console.log(coord)
             if (isNaN(coord[0]) || isNaN(coord[1])) {
                 console.log("Fehler: keine Koordinaten");
                 continue;
@@ -542,6 +537,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             if (lMOderR == 'L') return this.getXBstL();
             else if (lMOderR == 'R') return this.getXBstR();
         }
+        return 0;
     }
 
     public delete() {

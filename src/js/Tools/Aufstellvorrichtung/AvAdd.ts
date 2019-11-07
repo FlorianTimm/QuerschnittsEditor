@@ -24,7 +24,15 @@ export default class AvAdd extends AddTool {
 
     createForm() {
         this.form = Aufstellvorrichtung.createForm('avadd', undefined, true, false);
-        document.getElementById('avadd_button').addEventListener('click', this.addAufstellButton.bind(this));
+        let input = document.createElement("input");
+        input.id = "avadd_button";
+        input.type = "submit"
+        input.value = "Hinzufügen"
+        this.form.appendChild(input);
+        $(this.form).on("submit", function (event: Event) {
+            event.preventDefault();
+            this.addAufstellButton();
+        }.bind(this));
     }
 
     protected part_click(event: MapBrowserEvent) {

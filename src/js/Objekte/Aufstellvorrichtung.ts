@@ -23,10 +23,6 @@ export default class Aufstellvorrichtung extends PunktObjekt {
     private hasSekObj: number;
     private art: string;
 
-    constructor() {
-        super();
-    }
-
     public colorFunktion1(): import("ol/colorlike").ColorLike {
         if (this.hasSekObj > 0 || (this.zeichen != null && this.zeichen.length > 0)) {
             return 'rgba(250,120,0,0.8)';
@@ -107,6 +103,8 @@ export default class Aufstellvorrichtung extends PunktObjekt {
         return r;
     }
 
+    public getZeichen(callback: (zeichen: Zeichen[], ...args: any[]) => void, ...args: any[]): void;
+    public getZeichen(): Zeichen[];
     public getZeichen(callback?: (zeichen: Zeichen[], ...args: any[]) => void, ...args: any[]): void | Zeichen[] {
         if (this.zeichen == null && this.hasSekObj > 0) {
             this.reloadZeichen(callback, ...args);
@@ -139,7 +137,7 @@ export default class Aufstellvorrichtung extends PunktObjekt {
             }
         }
         this.zeichen = zeichen;
-        if(this.hasSekObj == 0 && zeichen.length > 0) this.hasSekObj = 1 
+        if (this.hasSekObj == 0 && zeichen.length > 0) this.hasSekObj = 1
         console.log(this);
         console.log(this.zeichen);
         if (callback != undefined) {
@@ -152,40 +150,40 @@ export default class Aufstellvorrichtung extends PunktObjekt {
         let form = HTML.createToolForm(sidebar, showForm, formId);
 
         // Art
-        Aufstellvorrichtung.createFields(form, formId, aufstell, changeable);
+        Aufstellvorrichtung.createFields(form, aufstell, changeable);
 
         return form;
     }
 
 
 
-    private static createFields(form: HTMLFormElement, formId: string, aufstell?: Aufstellvorrichtung, changeable: boolean = false) {
+    private static createFields(form: HTMLFormElement, aufstell?: Aufstellvorrichtung, changeable: boolean = false) {
         // Art
-        let art = Klartext.createKlartextSelectForm("Itaufstvorart", form, "Art", formId + "_art", aufstell != undefined ? aufstell.art : undefined);
+        let art = Klartext.createKlartextSelectForm("Itaufstvorart", form, "Art", "art", aufstell != undefined ? aufstell.art : undefined);
         $(art).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Lage
-        let lage = Klartext.createKlartextSelectForm("Itallglage", form, "Lage", formId + "_lage", aufstell != undefined ? aufstell.rlageVst : undefined);
+        let lage = Klartext.createKlartextSelectForm("Itallglage", form, "Lage", "lage", aufstell != undefined ? aufstell.rlageVst : undefined);
         $(lage).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Quelle
-        let quelle = Klartext.createKlartextSelectForm("Itquelle", form, "Quelle", formId + "_quelle", aufstell != undefined ? aufstell.quelle : undefined);
+        let quelle = Klartext.createKlartextSelectForm("Itquelle", form, "Quelle", "quelle", aufstell != undefined ? aufstell.quelle : undefined);
         $(quelle).prop('disabled', !changeable).trigger("chosen:updated");
 
         // ext: Objektid
-        let objektnr = HTML.createTextInput(form, "ext. Objektnummer", formId + "_extid", aufstell != undefined ? aufstell.objektnr : undefined);
+        let objektnr = HTML.createTextInput(form, "ext. Objektnummer", "extid", aufstell != undefined ? aufstell.objektnr : undefined);
         objektnr.disabled = !changeable;
 
         // VNK
-        let vnk = HTML.createTextInput(form, "VNK", formId + "_vnk", aufstell != undefined ? aufstell.getAbschnitt().getVnk() : undefined);
+        let vnk = HTML.createTextInput(form, "VNK", "vnk", aufstell != undefined ? aufstell.getAbschnitt().getVnk() : undefined);
         vnk.disabled = true;
 
         // NNK
-        let nnk = HTML.createTextInput(form, "NNK", formId + "_nnk", aufstell != undefined ? aufstell.getAbschnitt().getNnk() : undefined);
+        let nnk = HTML.createTextInput(form, "NNK", "nnk", aufstell != undefined ? aufstell.getAbschnitt().getNnk() : undefined);
         nnk.disabled = true;
 
         // Station
-        let station = HTML.createTextInput(form, "Station", formId + "_station", aufstell != undefined ? aufstell.vst.toString() : undefined);
+        let station = HTML.createTextInput(form, "Station", "station", aufstell != undefined ? aufstell.vst.toString() : undefined);
         station.disabled = true;
 
         // Abstand
@@ -196,18 +194,8 @@ export default class Aufstellvorrichtung extends PunktObjekt {
             else abstTxt = "M";
             abstTxt += " " + Math.abs(aufstell.rabstbaVst);
         }
-        let abstand = HTML.createTextInput(form, "Abstand", formId + "_abstand", abstTxt);
+        let abstand = HTML.createTextInput(form, "Abstand", "abstand", abstTxt);
         abstand.disabled = true;
-
-        // Button
-        if (changeable) {
-            let input = document.createElement("input");
-            input.id = formId + "_button";
-            input.type = "button"
-            input.value = "Ausstattung speichern"
-            input.disabled = true;
-            form.appendChild(input);
-        }
 
         if (aufstell != undefined) {
             let schilder = document.createElement("div");
@@ -218,18 +206,14 @@ export default class Aufstellvorrichtung extends PunktObjekt {
     }
 
     public getInfoForm(ziel: HTMLFormElement, changeable: boolean = false): void {
-        Aufstellvorrichtung.createFields(ziel, "av_info", this, changeable);
+        Aufstellvorrichtung.createFields(ziel, this, changeable);
     }
 
     public changeAttributes(form: HTMLFormElement): void {
-        //console.log(this)
-        //console.log($(form).find("#av_info_art"))
-        this.setArt($(form).children().children("#av_info_art").children("option:selected").val() as string);
-        this.setRlageVst($(form).children().children("#av_info_lage").children("option:selected").val() as string);
-        this.setQuelle($(form).children().children("#av_info_quelle").children("option:selected").val() as string);
-        this.setObjektnr($(form).children().children("#av_info_extid").val() as string);
-
-        //console.log(this)
+        this.setArt($(form).find("#art").children("option:selected").val() as string);
+        this.setRlageVst($(form).find("#lage").children("option:selected").val() as string);
+        this.setQuelle($(form).find("#quelle").children("option:selected").val() as string);
+        this.setObjektnr($(form).find("#extid").val() as string);
 
         let xml = this.createUpdateXML({
             'art/@xlink:href': this.getArt(),

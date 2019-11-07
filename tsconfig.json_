@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "esModuleInterop": true,
+    "noImplicitAny": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "typeRoots": [
+      "node_modules/@types",
+      "node_modules/@hanreev/types-ol"
+    ],
+    "types": [
+      "ol",
+      "node",
+      "jquery",
+      "proj4",
+      "jqueryui"
+    ],
+    "outDir": "ts_out/"
+  }
+}

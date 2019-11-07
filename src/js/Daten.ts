@@ -66,13 +66,11 @@ export default class Daten {
     /**
      * Lädt Daten aus den ERs
      */
-    public loadER(zoomToExtentWhenReady?: boolean) {
-        if (zoomToExtentWhenReady == undefined) zoomToExtentWhenReady = true;
-
+    public loadER(zoomToExtentWhenReady: boolean = true) {
         this.warteAufObjektklassen = 3;
         Querschnitt.loadER(this.loadErCallback.bind(this), zoomToExtentWhenReady);
-        Aufstellvorrichtung.loadER(this.loadErCallback.bind(this, zoomToExtentWhenReady));
-        StrassenAusPunkt.loadER(this.loadErCallback.bind(this, zoomToExtentWhenReady));
+        Aufstellvorrichtung.loadER(this.loadErCallback.bind(this), zoomToExtentWhenReady);
+        StrassenAusPunkt.loadER(this.loadErCallback.bind(this), zoomToExtentWhenReady);
     }
 
     private loadErCallback(zoomToExtentWhenReady?: boolean) {

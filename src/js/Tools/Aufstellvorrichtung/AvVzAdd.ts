@@ -101,9 +101,8 @@ class AvVzAdd extends Tool {
 
     /**
      * Listener für das Hinzufügen eines neuen Verkehrszeichens
-     * @param {MouseEvent} event Event-Objekt
      */
-    private newSchild(event: MouseEvent) {
+    private newSchild(event: JQueryEventObject) {
         let schild = new Zeichen();
         schild.setStvoznr((event.target as HTMLInputElement).value);
         this._createSchildForm(schild);
@@ -111,9 +110,10 @@ class AvVzAdd extends Tool {
 
     private _zeichenGeladen(zeichen: Zeichen[]) {
         zeichen.sort(function (a: Zeichen, b: Zeichen) {
-            if (a.getSort() != null && b.getSort() != null) {
-                return Number(a.getSort()) - Number(b.getSort());
-            }
+            if (a.getSort() == null && b.getSort() == null) return 0;
+            if (a.getSort() == null) return -1;
+            if (b.getSort() == null) return 1;
+            return Number(a.getSort()) - Number(b.getSort());
         });
         for (let eintrag of zeichen) {
             this._createSchildForm(eintrag);
@@ -410,7 +410,7 @@ class AvVzAdd extends Tool {
                 width: 400,
                 modal: true,
                 buttons: {
-                    "Daten schreiben": function () {
+                    "Daten schreiben": function (this: AvVzAdd) {
                         $((event.target as HTMLElement).parentElement.parentElement).remove();
                         console.log("bestätigt")
                         console.log(this)

@@ -6,7 +6,6 @@
  */
 
 import PublicWFS from '../PublicWFS';
-import { Point } from 'ol/geom';
 import "../import_jquery.js";
 import 'chosen-js';
 import 'chosen-js/chosen.css';
@@ -16,20 +15,12 @@ import Abschnitt from './Abschnitt';
 import PunktObjekt from './prototypes/PunktObjekt';
 import HTML from '../HTML';
 
-var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
-
-
 export default class StrassenAusPunkt extends PunktObjekt {
     getWFSKonfigName(): string {
         return "STAUSPKT";
     }
-    private hasSekObj: number;
-    private art: string;
-
-    constructor() {
-        super();
-        StrassenAusPunkt.loadKlartexte();
-    }
+    private hasSekObj: number = null;
+    private art: string = null;
 
     colorFunktion1(): import("ol/colorlike").ColorLike {
         return 'rgba(0,120,0,0.8)'
@@ -43,29 +34,22 @@ export default class StrassenAusPunkt extends PunktObjekt {
         return "Otstrauspkt";
     }
 
-    public static createForm(formId: string, ausstattung?: StrassenAusPunkt, changeable: boolean = false, showForm: boolean = true): HTMLFormElement {
+    public static createForm(ausstattung?: StrassenAusPunkt, changeable: boolean = false, showForm: boolean = true): HTMLFormElement {
         let sidebar = document.getElementById("sidebar");
-        let form = HTML.createToolForm(sidebar, showForm, formId);
+        let form = HTML.createToolForm(sidebar, showForm);
 
         // Art
-        StrassenAusPunkt.createFields(form, formId, ausstattung, changeable);
+        StrassenAusPunkt.createFields(form, ausstattung, changeable);
 
         return form;
     }
 
-    private static loadKlartexte() {
-        //Klartext.getInstanz().load('Itstrauspktart');
-        //Klartext.getInstanz().load('Itallglage');
-        //Klartext.getInstanz().load('Itquelle');
-    }
-
     public getInfoForm(ziel: HTMLFormElement, changeable: boolean = false): void {
-        StrassenAusPunkt.createFields(ziel, "sap_info", this, changeable);
+        StrassenAusPunkt.createFields(ziel, this, changeable);
     }
 
     static loadER(callback?: (...args: any) => void, ...args: any) {
         let daten = Daten.getInstanz();
-        StrassenAusPunkt.loadKlartexte();
         PublicWFS.doQuery('Otstrauspkt', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
             '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', StrassenAusPunkt.loadER_Callback, undefined, callback, ...args);
@@ -114,28 +98,28 @@ export default class StrassenAusPunkt extends PunktObjekt {
         return r;
     }
 
-    protected static createFields(form: HTMLFormElement, formId: string, ausstattung?: StrassenAusPunkt, changeable: boolean = false) {
-        let art = Klartext.createKlartextSelectForm("Itstrauspktart", form, "Art", formId + "_art", ausstattung != undefined ? ausstattung.art : undefined);
+    protected static createFields(form: HTMLFormElement, ausstattung?: StrassenAusPunkt, changeable: boolean = false) {
+        let art = Klartext.createKlartextSelectForm("Itstrauspktart", form, "Art", "art", ausstattung != undefined ? ausstattung.art : undefined);
         $(art).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Lage
-        let lage = Klartext.createKlartextSelectForm("Itallglage", form, "Lage", formId + "_lage", ausstattung != undefined ? ausstattung.rlageVst : undefined);
+        let lage = Klartext.createKlartextSelectForm("Itallglage", form, "Lage", "lage", ausstattung != undefined ? ausstattung.rlageVst : undefined);
         $(lage).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Quelle
-        let quelle = Klartext.createKlartextSelectForm("Itquelle", form, "Quelle", formId + "_quelle", ausstattung != undefined ? ausstattung.quelle : undefined);
+        let quelle = Klartext.createKlartextSelectForm("Itquelle", form, "Quelle", "quelle", ausstattung != undefined ? ausstattung.quelle : undefined);
         $(quelle).prop('disabled', !changeable).trigger("chosen:updated");
 
         // VNK
-        let vnk = HTML.createTextInput(form, "VNK", formId + "_vnk", ausstattung != undefined ? ausstattung.abschnitt.getVnk() : undefined);
+        let vnk = HTML.createTextInput(form, "VNK", "vnk", ausstattung != undefined ? ausstattung.abschnitt.getVnk() : undefined);
         vnk.disabled = true;
 
         // NNK
-        let nnk = HTML.createTextInput(form, "NNK", formId + "_nnk", ausstattung != undefined ? ausstattung.abschnitt.getNnk() : undefined);
+        let nnk = HTML.createTextInput(form, "NNK", "nnk", ausstattung != undefined ? ausstattung.abschnitt.getNnk() : undefined);
         nnk.disabled = true;
 
         // Station
-        let station = HTML.createTextInput(form, "Station", formId + "_station", ausstattung != undefined ? ausstattung.vst.toString() : undefined);
+        let station = HTML.createTextInput(form, "Station", "station", ausstattung != undefined ? ausstattung.vst.toString() : undefined);
         station.disabled = true;
 
         // Abstand
@@ -146,25 +130,15 @@ export default class StrassenAusPunkt extends PunktObjekt {
             else abstTxt = "M";
             abstTxt += " " + Math.abs(ausstattung.rabstbaVst);
         }
-        let abstand = HTML.createTextInput(form, "Abstand", formId + "_abstand", abstTxt);
+        let abstand = HTML.createTextInput(form, "Abstand", "abstand", abstTxt);
         abstand.disabled = true;
-
-        // Button
-        if (changeable) {
-            let input = document.createElement("input");
-            input.id = formId + "_button";
-            input.type = "button"
-            input.value = "Ausstattung speichern"
-            input.disabled = true;
-            form.appendChild(input);
-        }
     }
 
     public changeAttributes(form: HTMLFormElement): void {
-        this.art = $(form).children().children("#sap_info_art").children("option:selected").val() as string;
-        this.rlageVst = $(form).children().children("#sap_info_lage").children("option:selected").val() as string;
-        this.quelle = $(form).children().children("#sap_info_quelle").children("option:selected").val() as string;
-        this.objektnr = $(form).children().children("#sap_info_extid").val() as string;
+        this.art = $(form).find("#art").children("option:selected").val() as string;
+        this.rlageVst = $(form).find("#lage").children("option:selected").val() as string;
+        this.quelle = $(form).find("#quelle").children("option:selected").val() as string;
+        this.objektnr = $(form).find("#extid").val() as string;
 
         let xml = this.createUpdateXML({
             'art/@xlink:href': this.art,
