@@ -27,36 +27,12 @@ export default class AvAdd extends AddTool {
         let input = document.createElement("input");
         input.type = "submit"
         input.value = "Hinzufügen"
+        input.disabled = true;
         this.form.appendChild(input);
         $(this.form).on("submit", function (this: AvAdd, event: Event) {
             event.preventDefault();
             this.addAufstellButton();
         }.bind(this));
-    }
-
-    protected part_click(event: MapBrowserEvent) {
-        let daten = this.calcStation(event);
-        $(this.form).find("#vnk").val(daten['achse'].getVnk());
-        $(this.form).find("#nnk").val(daten['achse'].getNnk());
-        $(this.form).find("#station").val(String(this.station));
-        $(this.form).find("#abstand").val(daten['pos'][3] + ' ' + daten['pos'][4].toFixed(1));
-        $(this.form).find("input[type='submit']").prop("disabled", "false");
-    }
-
-    protected part_move(event: MapBrowserEvent) {
-        let daten = this.part_get_station(event);
-
-        if (daten == null || daten['pos'] == null) return;
-
-        (this.feat_station.getGeometry() as Point).setCoordinates(daten['pos'][6]);
-        (this.feat_station_line.getGeometry() as LineString).setCoordinates([daten['pos'][6], daten['pos'][5]]);
-
-        if (this.abschnitt == null) {
-            $(this.form).find("#vnk").val(daten['achse'].getVnk());
-            $(this.form).find("#nnk").val(daten['achse'].getNnk());
-            $(this.form).find("#station").val(String(Math.round(daten['pos'][2] * daten['achse'].getFaktor())));
-            $(this.form).find("#abstand").val(daten['pos'][3] + ' ' + daten['pos'][4].toFixed(1));
-        }
     }
 
     private addAufstellButton() {
@@ -82,7 +58,7 @@ export default class AvAdd extends AddTool {
             '<rabstbaVst>' + this.abstand + '</rabstbaVst>\n' +
             '<vabstVst>' + this.abstand + '</vabstVst>\n' +
             '<vabstBst>' + this.abstand + '</vabstBst>\n' +
-            '<objektnr>' + document.forms.namedItem("avadd").avadd_extid.value + '</objektnr>\n' +
+            '<objektnr>' + $(this.form).find("#extid").val() + '</objektnr>\n' +
             '<bemerkung>mit QuerschnittsEditor erfasst</bemerkung>\n' +
             '<detailgrad xlink:href="' + CONFIG.DETAIL_HOCH + '" typeName="Itobjdetailgrad" />\n' +
             '<erfart xlink:href="' + CONFIG.ERFASSUNG + '" typeName="Iterfart" />\n' +

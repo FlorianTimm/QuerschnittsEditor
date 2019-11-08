@@ -8,6 +8,7 @@ import Daten from '../Daten';
 import QuerStation from './QuerStation';
 import { MultiLineString } from 'ol/geom';
 import Aufbau from './Aufbaudaten';
+import VectorTileRenderType from 'ol/layer/VectorTileRenderType';
 
 var CONFIG: { [index: string]: string } = require('../config.json');
 
@@ -37,15 +38,18 @@ export default class Abschnitt extends Feature {
 
     private _feature: any;
     public aufbaudatenLoaded: boolean = false;
+    private segmente: Segment[];
 
     constructor() {
         super();
         this.daten = Daten.getInstanz();
     }
 
-    public getFaktor() {
-        if (this._faktor == null)
-            this._faktor = this.len / Vektor.line_len((this.getGeometry() as MultiLineString).getCoordinates());
+    public getFaktor(): number {
+        if (this._faktor == null) {
+            let seg = this.calcSegmente();
+        }
+
         return this._faktor;
     }
 
@@ -213,6 +217,107 @@ export default class Abschnitt extends Feature {
         }
     }
 
+
+
+
+    /**
+     * Berechnet eine Station
+     */
+    public calcStationierung(point: number[]): StationObj {
+        let posi: StationObj[] = [];
+
+        let segmente = this.calcSegmente()
+
+        for (let seg of segmente) {
+            let obj: StationObj = {};
+            obj.isEnthalten = true;
+
+            // Position des Fusspunktes auf dem Segment relativ zwischen 0 und 1
+            let faktor = (Vektor.skalar(Vektor.diff(point, seg.anfangsPkt), seg.vektor)) / (Vektor.skalar(seg.vektor, seg.vektor))
+
+            // Abstand und Lot berechnen
+            let fusspkt_genau = Vektor.sum(seg.anfangsPkt, Vektor.multi(seg.vektor, faktor))
+            let lot = Vektor.diff(point, fusspkt_genau)
+            obj.abstand = Math.round(Vektor.len(lot) * 10) / 10
+
+            // Mindest-Stationen
+            obj.station = Math.round((seg.vorherLaenge + faktor * seg.laenge) * this.getFaktor());
+            let minStation_genau = (seg.vorherLaenge) * this.getFaktor();
+            let maxStation_genau = (seg.vorherLaenge + seg.laenge) * this.getFaktor();
+
+            if (obj.station < minStation_genau || obj.station > maxStation_genau)
+                obj.isEnthalten = false;
+
+            let minStation = Math.ceil(minStation_genau);
+            let maxStation = Math.floor(maxStation_genau);
+
+            if (obj.station < minStation) obj.station = minStation;
+            if (obj.station > maxStation) obj.station = maxStation;
+
+            faktor = (obj.station - minStation_genau) / (maxStation_genau - minStation_genau)
+
+            obj.fusspkt = Vektor.sum(seg.anfangsPkt, Vektor.multi(seg.vektor, faktor))
+
+            obj.seite = 'M'
+            if (obj.abstand > 0.01) {
+                let c3 = Vektor.kreuz(Vektor.add3(seg.vektor), Vektor.add3(lot))[2]
+                if (c3 < 0) {
+                    obj.seite = 'R'
+                } else if (c3 > 0) {
+                    obj.seite = 'L'
+                }
+            }
+
+            obj.distanz = obj.abstand
+
+            obj.neuerPkt = Vektor.sum(obj.fusspkt, Vektor.multi(Vektor.einheit([lot[0], lot[1]]), obj.abstand))
+
+            posi.push(obj)
+        }
+        return posi.sort(Abschnitt.sortStationierungen)[0]
+    }
+
+    private static sortStationierungen(a: StationObj, b: StationObj): -1 | 0 | 1 {
+        if (a.isEnthalten != b.isEnthalten) {
+            if (a.isEnthalten) return -1;
+            if (b.isEnthalten) return 1;
+        }
+        if (a.distanz != b.distanz) {
+            return (a.distanz < b.distanz) ? -1 : 1;
+        }
+        if (a.station != b.station) {
+            return (a.station < b.station) ? -1 : 1;
+        }
+        return 0;
+    }
+
+    private calcSegmente(): Segment[] {
+        if (this.segmente) return this.segmente;
+
+        this.segmente = [];
+        let line = (this.getGeometry() as LineString).getCoordinates();
+        let vorherLaenge = 0;
+
+        for (var i = 0; i < line.length - 1; i++) {
+            let obj: StationObj = {};
+
+            obj.isEnthalten = true;
+
+            let anfangsPkt = line[i];
+            let endPkt = line[i + 1];
+            let linienVektor = Vektor.diff(endPkt, anfangsPkt)
+            let laenge = Vektor.len(linienVektor)
+
+            this.segmente.push(new Segment(anfangsPkt, endPkt, linienVektor, laenge, vorherLaenge))
+            vorherLaenge += laenge;
+        }
+
+        this._faktor = this.len / vorherLaenge;
+
+        return this.segmente;
+    }
+
+
     // Getter
     public getAbschnittid(): string {
         return this.abschnittid;
@@ -255,5 +360,31 @@ export default class Abschnitt extends Feature {
     //Setter
     addOKinER(ok: string, value: boolean = true) {
         this.inER[ok] = value;
+    }
+}
+
+export interface StationObj {
+    isEnthalten?: boolean,
+    distanz?: number,
+    station?: number,
+    seite?: 'M' | 'R' | 'L',
+    abstand?: number,
+    fusspkt?: number[],
+    neuerPkt?: number[]
+}
+
+export class Segment {
+    anfangsPkt: number[];
+    endPkt: number[];
+    vektor: number[];
+    laenge: number;
+    vorherLaenge: number
+
+    constructor(anfangsPkt: number[], endPkt: number[], vektor: number[], laenge: number, vorherLaenge: number) {
+        this.anfangsPkt = anfangsPkt;
+        this.endPkt = endPkt;
+        this.vektor = vektor;
+        this.laenge = laenge;
+        this.vorherLaenge = vorherLaenge;
     }
 }

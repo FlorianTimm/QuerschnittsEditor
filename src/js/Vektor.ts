@@ -1,3 +1,5 @@
+import { stat } from "fs";
+
 /**
  * Startscript edit.html
  * @author Florian Timm, LGV HH 
@@ -6,76 +8,12 @@
  */
 
 export default class Vektor {
-
-    /**
-     * Berechnet eine Station
-     * @param {Array<Array<number>>} line Linie des Abschnittes auf dem stationiert werden soll
-     * @param {Array<number>} point Punkt, der stationiert werden soll
-     */
-    static get_pos(line: number[][], point: number[]): [number, number, number, string, number, number[], number[]] {
-        let posi: [number, number, number, string, number, number[], number[]][] = []
-        let sum = 0
-
-        for (var i = 0; i < line.length - 1; i++) {
-            let l1 = line[i];
-            let l2 = line[i + 1];
-            let v = Vektor.diff(l2, l1)
-            let f = (Vektor.skalar(Vektor.diff(point, l1), v)) / (Vektor.skalar(v, v))
-            let y = Vektor.sum(l1, Vektor.multi(v, f))
-
-            let lot = Vektor.diff(point, y)
-            let dist = Vektor.len(lot)
-
-            let seite = 'M'
-            if (dist > 0.01) {
-                let c3 = Vektor.kreuz(Vektor.add3(v), Vektor.add3(lot))[2]
-                if (c3 < 0) {
-                    seite = 'R'
-                } else if (c3 > 0) {
-                    seite = 'L'
-                }
-            }
-
-            let r_dist = dist
-            let drin = 0
-            if (f < 0) {
-                f = 0
-                r_dist = Vektor.len(Vektor.diff(l1, point))
-                drin = 1
-                y = line[0];
-            } else if (f > 1) {
-                f = 1
-                r_dist = Vektor.len(Vektor.diff(l2, y))
-                drin = 1
-                y = line[line.length - 1];
-            }
-            let station = sum + f * (Vektor.len(v))
-
-            posi.push([drin, r_dist, station, seite, dist, y, Vektor.sum(y, [lot[0], lot[1]])])
-
-            sum += Vektor.len(v)
-        }
-        //console.log(posi.sort(sort_posi))
-        return posi.sort(Vektor.sort_posi)[0]
-    }
-
-    static sort_posi(a: [number, number, number, string, number, number[], number[]], b: [number, number, number, string, number, number[], number[]]): -1 | 0 | 1 {
-        if (a[0] != b[0]) {
-            return (a[0] < b[0]) ? -1 : 1;
-        }
-        if (a[1] != b[1]) {
-            return (a[1] < b[1]) ? -1 : 1;
-        }
-        if (a[2] != b[2]) {
-            return (a[2] < b[2]) ? -1 : 1;
-        }
-        return 0;
-    }
-
     static add3(v: number[]) {
-        let r = v
-        r.push(0)
-        return r
+        let neu = [];
+        for (let i of v)
+            neu.push(i);
+        neu.push(0)
+        return neu;
     }
 
     static len(v: number[]): number {
@@ -110,6 +48,7 @@ export default class Vektor {
     static sum(v1: number[], v2: number[]): number[] {
         let r = []
         if (v1.length != v2.length) {
+            console.log("Ungleiche Länge: " + v1.length + " und " + v2.length)
             return null // Ungleiche Länge
         }
         for (var i = 0; i < v1.length; i++) {

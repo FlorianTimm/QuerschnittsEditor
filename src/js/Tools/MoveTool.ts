@@ -14,7 +14,7 @@ import { Coordinate } from 'ol/coordinate';
 import PunktObjekt from '../Objekte/prototypes/PunktObjekt';
 import { SelectEvent } from 'ol/interaction/Select';
 import { ModifyEvent } from 'ol/interaction/Modify';
-import Abschnitt from '../Objekte/Abschnitt';
+import Abschnitt, { StationObj } from '../Objekte/Abschnitt';
 
 /**
  * Funktion zum Verschieben von Punktobjekten
@@ -125,7 +125,7 @@ export default class MoveTool extends Tool {
         (feat as PunktObjekt).updateStation(station, abstand);
     }
 
-    private getStation(coordinates: Coordinate) {
+    private getStation(coordinates: Coordinate): { achse: Abschnitt, pos: StationObj } {
         let achse: Abschnitt = null;
         if (this.select.getFeatures().getLength() > 0) {
             achse = (this.select.getFeatures().item(0) as PunktObjekt).getAbschnitt();
@@ -133,7 +133,7 @@ export default class MoveTool extends Tool {
             return null;
         }
 
-        return { achse: achse, pos: Vektor.get_pos((achse.getGeometry() as LineString).getCoordinates(), coordinates) };
+        return { achse: achse, pos: achse.calcStationierung(coordinates) };
     }
 
     private move(event: MapBrowserEvent) {

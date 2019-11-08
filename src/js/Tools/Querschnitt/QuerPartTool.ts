@@ -9,7 +9,7 @@ import Tool from '../prototypes/Tool';
 import QuerInfoTool from './QuerInfoTool';
 import Daten from '../../Daten';
 import { Map, MapBrowserPointerEvent } from 'ol';
-import Abschnitt from 'src/js/Objekte/Abschnitt';
+import Abschnitt, { StationObj } from 'src/js/Objekte/Abschnitt';
 
 /**
  * Funktion zum Teilen von Querschnittsflächen
@@ -111,7 +111,7 @@ class QuerPartTool extends Tool {
         document.getElementById('teilen_button').addEventListener('click', this.partQuerschnittButton.bind(this))
     }
 
-    part_get_station(event: MapBrowserPointerEvent): { achse: Abschnitt, pos: [number, number, number, string, number, number[], number[]] } {
+    part_get_station(event: MapBrowserPointerEvent): { achse: Abschnitt, pos: StationObj } {
         let achse: Abschnitt = null;
         if (this.select.getFeatures().getArray().length > 0) {
             achse = this.select.getFeatures().item(0) as Abschnitt;
@@ -125,7 +125,7 @@ class QuerPartTool extends Tool {
             return null;
         }
 
-        return { achse: achse, pos: Vektor.get_pos((achse.getGeometry() as LineString).getCoordinates(), event.coordinate) };
+        return { achse: achse, pos: achse.calcStationierung(event.coordinate) };
     }
 
 
@@ -135,23 +135,27 @@ class QuerPartTool extends Tool {
             let daten = this.part_get_station(event);
             if (daten['pos'] == null) return;
 
-            let vektor = Vektor.multi(Vektor.einheit(Vektor.diff(daten['pos'][6], daten['pos'][5])), 50);
-            let coord = [Vektor.diff(daten['pos'][5], vektor), Vektor.sum(daten['pos'][5], vektor)];
+            let vektor = Vektor.multi(Vektor.einheit(Vektor.diff(daten['pos'].neuerPkt, daten['pos'].fusspkt)), 50);
+            let coord = [Vektor.diff(daten['pos'].fusspkt, vektor), Vektor.sum(daten['pos'].fusspkt, vektor)];
 
             (this.feat_teilung.getGeometry() as LineString).setCoordinates(coord);
             this.feat_teilung.set("abschnittid", daten['achse'].getAbschnittid());
-            this.feat_teilung.set("station", Math.round(daten['pos'][2]));
+            this.feat_teilung.set("station", Math.round(daten['pos'].station));
 
             document.getElementById("teilen_vnk").innerHTML = daten['achse'].getVnk();
             document.getElementById("teilen_nnk").innerHTML = daten['achse'].getNnk();
-            document.getElementById("teilen_station").innerHTML = String(Math.round(daten['pos'][2]));
+            document.getElementById("teilen_station").innerHTML = String(Math.round(daten['pos'].station));
 
             (document.getElementById("teilen_button") as HTMLInputElement).disabled = false;
         } else {
-            this.feat_teilung.set('isset', false);
-            (this.feat_teilung.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
-            (document.getElementById("teilen_button") as HTMLInputElement).disabled = true;
+            this.restartSelection();
         }
+    }
+
+    private restartSelection() {
+        this.feat_teilung.set('isset', false);
+        (this.feat_teilung.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
+        (document.getElementById("teilen_button") as HTMLInputElement).disabled = true;
     }
 
     part_move(event: MapBrowserPointerEvent) {
@@ -160,13 +164,13 @@ class QuerPartTool extends Tool {
         //console.log(daten)
         if (daten['pos'] == null) return;
 
-        (this.feat_station.getGeometry() as LineString).setCoordinates(daten['pos'][6]);
-        (this.feat_station_line.getGeometry() as LineString).setCoordinates([daten['pos'][6], daten['pos'][5]]);
+        (this.feat_station.getGeometry() as LineString).setCoordinates(daten['pos'].neuerPkt);
+        (this.feat_station_line.getGeometry() as LineString).setCoordinates([daten['pos'].neuerPkt, daten['pos'].fusspkt]);
 
         if (!this.feat_teilung.get('isset')) {
             document.getElementById("teilen_vnk").innerHTML = daten['achse'].getVnk();
             document.getElementById("teilen_nnk").innerHTML = daten['achse'].getNnk();
-            document.getElementById("teilen_station").innerHTML = String(Math.round(daten['pos'][2]))
+            document.getElementById("teilen_station").innerHTML = String(Math.round(daten['pos'].station))
         }
     }
 
@@ -189,6 +193,7 @@ class QuerPartTool extends Tool {
         this.map.on("pointermove", this.part_move.bind(this));
         this.map.on("singleclick", this.part_click.bind(this));
         this.map.addLayer(this.l_overlay);
+        this.restartSelection();
     }
 
     stop() {

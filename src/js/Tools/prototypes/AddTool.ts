@@ -7,7 +7,7 @@ import { Point, LineString } from 'ol/geom';
 import Feature from 'ol/Feature';
 import Tool from '../prototypes/Tool';
 import { Map, MapBrowserEvent } from 'ol';
-import Abschnitt from '../../Objekte/Abschnitt';
+import Abschnitt, { StationObj } from '../../Objekte/Abschnitt';
 import Daten from '../../Daten';
 import PublicWFS from '../../PublicWFS';
 
@@ -50,12 +50,12 @@ export default abstract class AddTool extends Tool {
         let daten = this.part_get_station(event);
         if (daten['pos'] == null) return;
 
-        (this.feat_neu.getGeometry() as Point).setCoordinates(daten['pos'][6]);
+        (this.feat_neu.getGeometry() as Point).setCoordinates(daten['pos'].neuerPkt);
 
         this.abschnitt = daten['achse'];
-        this.station = Math.round(daten['pos'][2] * this.abschnitt.getFaktor());
-        this.abstand = Math.round(daten['pos'][4] * 10) / 10;
-        this.seite = daten['pos'][3]
+        this.station = daten['pos'].station;
+        this.abstand = daten['pos'].abstand;
+        this.seite = daten['pos'].seite
         if (this.seite == 'M') this.abstand = 0;
         if (this.seite == 'L') this.abstand = -this.abstand;
         return daten;
@@ -127,7 +127,7 @@ export default abstract class AddTool extends Tool {
         });
     }
 
-    part_get_station(event: MapBrowserEvent): { achse: Abschnitt, pos: [number, number, number, string, number, number[], number[]] } {
+    part_get_station(event: MapBrowserEvent): { achse: Abschnitt, pos: StationObj } {
         let achse: Abschnitt = null;
         if (this.select.getFeatures().getArray().length > 0) {
             achse = this.select.getFeatures().item(0) as Abschnitt;
@@ -141,11 +141,34 @@ export default abstract class AddTool extends Tool {
             return null;
         }
 
-        return { achse: achse, pos: Vektor.get_pos((achse.getGeometry() as LineString).getCoordinates(), event.coordinate) };
+        return { achse: achse, pos: achse.calcStationierung(event.coordinate) };
     }
 
-    protected abstract part_move(event: MapBrowserEvent): void;
-    protected abstract part_click(event: MapBrowserEvent): void;
+    protected part_click(event: MapBrowserEvent) {
+        let daten = this.calcStation(event);
+        this.refreshStationierung(daten);
+        $(this.form).find("input[type='submit']").prop("disabled", false);
+    }
+
+    private refreshStationierung(daten: { achse: Abschnitt; pos: StationObj; }) {
+        $(this.form).find("#vnk").val(daten.achse.getVnk());
+        $(this.form).find("#nnk").val(daten.achse.getNnk());
+        $(this.form).find("#station").val(String(daten.pos.station));
+        $(this.form).find("#abstand").val(daten.pos.seite + ' ' + daten.pos.abstand);
+    }
+
+    protected part_move(event: MapBrowserEvent) {
+        let daten = this.part_get_station(event);
+
+        if (daten == null || daten.pos == null) return;
+
+        (this.feat_station.getGeometry() as Point).setCoordinates(daten.pos.neuerPkt);
+        (this.feat_station_line.getGeometry() as LineString).setCoordinates([daten.pos.neuerPkt, daten.pos.fusspkt]);
+
+        if (this.abschnitt == null) {
+            this.refreshStationierung(daten)
+        }
+    }
 
     protected getInsertResults(xml: XMLDocument) {
         PublicWFS.showMessage("erfolgreich");
@@ -165,7 +188,7 @@ export default abstract class AddTool extends Tool {
     protected abstract loadERCallback(xml: XMLDocument, ...args: any[]): void;
     public abstract getObjektklasse(): string;
 
-    start() { 
+    start() {
         if (this.form == null) this.createForm();
         $(this.form).show("fast");
         this.map.addInteraction(this.select);

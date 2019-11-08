@@ -36,7 +36,9 @@ class QuerDelTool extends Tool {
     }
 
     private querschnittLoeschenButton() {
-        if (this.selectLinien.getFeatures().getLength() <= 0) return;
+        let selection = this.selectFlaechen.getFeatures() as Collection<Querschnitt>;
+        if (selection.getLength() <= 0) return;
+        let querschnitt = <Querschnitt>selection.item(0);
 
         let dialog = document.createElement("div");
         document.body.appendChild(dialog);
@@ -48,7 +50,7 @@ class QuerDelTool extends Tool {
             modal: true,
             buttons: {
                 "Ja": function (this: QuerDelTool) {
-                    this.confirmedDelete();
+                    this.confirmedDelete(querschnitt);
                     jqueryDialog.dialog("close");
                 }.bind(this),
                 Cancel: function () {
@@ -58,14 +60,16 @@ class QuerDelTool extends Tool {
         });
     }
 
-    private confirmedDelete() {
-        let selection = this.selectFlaechen.getFeatures() as Collection<Querschnitt>;
-        let querschnitt = <Querschnitt>selection.item(0);
+    private confirmedDelete(querschnitt: Querschnitt) {
         if (querschnitt.getStreifen() == 'M') return; // Keine Mittelstreifen löschen
+        querschnitt.getStreifennr
         let gesStreifen = querschnitt.getStation().getStreifen(querschnitt.getStreifen());
         querschnitt.getStation().deleteStreifen(querschnitt.getStreifen(), querschnitt.getStreifennr());
+
         for (let nr in gesStreifen) {
             let quer = gesStreifen[nr];
+            if (quer.getStreifennr() <= querschnitt.getStreifennr()) continue;
+
             quer.setStreifennr(quer.getStreifennr() - 1);
             if (quer.getStreifen() == 'L') {
                 quer.setXBstR(quer.getXBstR() + querschnitt.getBisBreite() / 100);
@@ -80,6 +84,7 @@ class QuerDelTool extends Tool {
                 quer.setXVstR(quer.getXVstR() - querschnitt.getBreite() / 100);
             }
         }
+
         this.selectLinien.getFeatures().clear();
         this.selectFlaechen.getFeatures().clear();
         querschnitt.getStation().rewrite();

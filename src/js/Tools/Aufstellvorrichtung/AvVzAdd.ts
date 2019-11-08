@@ -455,7 +455,6 @@ class AvVzAdd extends Tool {
         PublicWFS.showMessage("erfolgreich", false);
         console.log("reload");
         _auswahl.reloadZeichen();
-        Daten.getInstanz()
         this._select.getFeatures().clear();
     }
 

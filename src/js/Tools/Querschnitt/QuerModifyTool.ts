@@ -3,7 +3,7 @@ import Vektor from '../../Vektor';
 import { platformModifierKeyOnly, never } from 'ol/events/condition';
 import QuerInfoTool from './QuerInfoTool';
 import Daten from '../../Daten';
-import { Map, Feature } from 'ol';
+import { Map, Feature, MapBrowserEvent } from 'ol';
 import Tool from '../prototypes/Tool';
 import { SelectInteraction, ModifyInteraction } from '../../openLayers/Interaction'
 import { ModifyEvent } from 'ol/interaction/Modify';
@@ -130,8 +130,8 @@ export default class QuerModifyTool extends Tool {
                     }
 
                     // Berechnen des Abstandes des neuen Punktes
-                    let pos = Vektor.get_pos(querschnitt.getStation().getGeometry(), nachher[i][j]);
-                    let dist = Math.round(pos[4] * 100) / 100;
+                    let pos = querschnitt.getAbschnitt().calcStationierung(nachher[i][j]);
+                    let dist = Math.round(pos.abstand * 100) / 100;
 
                     // Streifen und Nr
                     let streifen = querschnitt.getStreifen();

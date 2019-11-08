@@ -44,6 +44,7 @@ class QuerAddTool extends Tool {
         this.form = HTML.createToolForm(document.getElementById('sidebar'), false, 'hinzu');
         this.button = HTML.createButton(this.form, "Querschnitt hinzufügen", "addQuerschnittButton");
         this.button.addEventListener('click', this.addQuerschnitt.bind(this));
+        this.button.disabled = true;
     }
 
     private selected(e: SelectEvent) {
@@ -89,7 +90,9 @@ class QuerAddTool extends Tool {
         } else {
             this.loadAufbaudaten(querschnitt, streifen);
         }
-
+        this._select.getFeatures().clear();
+        this._info.hideInfoBox();
+        this.disableMenu();
     }
 
     private askWhichSide(querschnitt: Querschnitt) {
@@ -118,15 +121,11 @@ class QuerAddTool extends Tool {
     }
 
     private loadAufbaudaten(querschnitt: Querschnitt, seite: "R" | "L") {
-        querschnitt.getStation().getAbschnitt().getAufbauDaten(this.addQuerschnittCallback.bind(this), undefined, undefined, seite);
+        querschnitt.getStation().getAbschnitt().getAufbauDaten(this.addQuerschnittCallback.bind(this), undefined, undefined, seite, querschnitt);
     }
 
-    private addQuerschnittCallback(seite: 'L' | 'R') {
-        let selection = this._select.getFeatures();
-        if (this._select.getFeatures().getLength() <= 0) return;
-        let querschnitt = <Querschnitt>selection.item(0).get('objekt');
+    private addQuerschnittCallback(seite: 'L' | 'R', querschnitt: Querschnitt) {
         let gesStreifen = querschnitt.getStation().getStreifen(seite);
-
         let querschnittNeu = new Querschnitt();
         querschnittNeu.setBreite(275);
         querschnittNeu.setBisBreite(275);
@@ -183,8 +182,6 @@ class QuerAddTool extends Tool {
         //querschnittNeu.createGeom();
         querschnitt.getStation().addQuerschnitt(querschnittNeu);
 
-        this._select.getFeatures().clear();
-        this._info.hideInfoBox();
         querschnitt.getStation().rewrite();
     }
 

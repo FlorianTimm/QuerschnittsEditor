@@ -1,10 +1,8 @@
-import { Point, LineString } from 'ol/geom';
 import PublicWFS from '../../PublicWFS';
 import StrassenAusPunkt from '../../Objekte/StrassenAusPunkt';
 import AddTool from '../prototypes/AddTool';
-import { Map, MapBrowserEvent } from 'ol';
+import { Map } from 'ol';
 import Daten from '../../Daten';
-import Abschnitt from '../../Objekte/Abschnitt';
 
 var CONFIG = require('../../config.json');
 
@@ -25,14 +23,9 @@ export default class SAPAdd extends AddTool {
         let input = document.createElement("input");
         input.type = "submit"
         input.value = "Hinzufügen"
+        input.disabled = true;
         this.form.appendChild(input);
         $(this.form).on("submit", this.addSAPButton.bind(this));
-    }
-
-    protected part_click(event: MapBrowserEvent) {
-        let daten = this.calcStation(event);
-        this.refreshStationierung(daten);
-        $(this.form).find("input[type='button']").prop("disabled", false);
     }
 
     private addSAPButton(event: Event) {
@@ -43,26 +36,6 @@ export default class SAPAdd extends AddTool {
         } else {
             this.wfsAddStrausPkt()
         }
-    }
-
-    protected part_move(event: MapBrowserEvent) {
-        let daten = this.part_get_station(event);
-
-        if (daten == null || daten['pos'] == null) return;
-
-        (this.feat_station.getGeometry() as Point).setCoordinates(daten['pos'][6] as number[]);
-        (this.feat_station_line.getGeometry() as LineString).setCoordinates([daten['pos'][6] as number[], daten['pos'][5] as number[]]);
-
-        if (this.abschnitt == null) {
-            this.refreshStationierung(daten);
-        }
-    }
-
-    private refreshStationierung(daten: { achse: any; pos: any; }) {
-        $(this.form).find('#vnk').val((daten['achse'] as Abschnitt).getVnk());
-        $(this.form).find('#nnk').val((daten['achse'] as Abschnitt).getNnk());
-        $(this.form).find('#station').val(String(this.station));
-        $(this.form).find('#abstand').val(daten['pos'][3] + ' ' + (daten['pos'][4] as number).toFixed(1));
     }
 
     private addInER_Callback(xml: XMLDocument) {

@@ -91,15 +91,15 @@ class Measure extends Tool {
         };
 
         this.draw.on('drawstart',
-            function (evt: DrawEvent) {
+            function (this: Measure, evt: DrawEvent) {
                 // set sketch
-                this._source.clear();
+                this.source.clear();
 
                 /** @type {module:ol/coordinate~Coordinate|undefined} */
                 let tooltipCoord = (evt.feature.getGeometry() as LineString).getFirstCoordinate();
                 measureTooltipElement.className = 'tooltip tooltip-measure';
 
-                listener = evt.feature.getGeometry().on('change', function (evt: Event) {
+                listener = evt.feature.getGeometry().on('change', function (this: Measure, evt: Event) {
                     var geom = evt.target;
                     var output = formatLength(geom);
                     tooltipCoord = geom.getLastCoordinate();

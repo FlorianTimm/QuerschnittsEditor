@@ -355,17 +355,12 @@ export default class QuerStation {
         for (let i = 0; i < liste.length; i++) {
             liste[i].check();
         }
+        PublicWFS.showMessage("Fertig", false)
     }
 
     public deleteStreifen(streifen: string, nummer: number) {
         this.daten.vectorTrenn.removeFeature(this._querschnitte[streifen][nummer].trenn)
         this.daten.vectorQuer.removeFeature(this._querschnitte[streifen][nummer])
-        let max = -1;
-        for (let i in this._querschnitte[streifen]) {
-            if (Number(i) > max) {
-                max = Number(i);
-            }
-        }
         delete this._querschnitte[streifen][nummer];
     }
 
