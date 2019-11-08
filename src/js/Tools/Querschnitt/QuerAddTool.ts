@@ -33,7 +33,8 @@ class QuerAddTool extends Tool {
         this._info = info;
         this._select = new SelectInteraction({
             layers: [this._daten.layerTrenn],
-            style: InfoTool.selectStyle
+            style: InfoTool.selectStyle,
+            hitTolerance: 10
         });
 
         this._select.on('select', this.selected.bind(this));

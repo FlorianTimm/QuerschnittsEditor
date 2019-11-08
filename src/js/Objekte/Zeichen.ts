@@ -1,7 +1,4 @@
-import Daten from "../Daten";
 import SekundaerObjekt from "./prototypes/SekundaerObjekt";
-
-var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
 
 /**
 * Zeichen

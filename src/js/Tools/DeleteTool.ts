@@ -40,7 +40,7 @@ export default class DeleteTool extends Tool {
         this._delField.appendChild(this._infoField);
 
         let button = document.createElement("button");
-        button.addEventListener("click", function (event: MouseEvent) {
+        button.addEventListener("click", function (this: DeleteTool, event: MouseEvent) {
             event.preventDefault();
             this._featureDelete()
         }.bind(this))

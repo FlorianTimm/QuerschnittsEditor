@@ -6,9 +6,7 @@ import Vektor from '../Vektor';
 import Aufbaudaten from './Aufbaudaten';
 import Daten from '../Daten';
 import QuerStation from './QuerStation';
-import { MultiLineString } from 'ol/geom';
 import Aufbau from './Aufbaudaten';
-import VectorTileRenderType from 'ol/layer/VectorTileRenderType';
 
 var CONFIG: { [index: string]: string } = require('../config.json');
 
@@ -47,7 +45,7 @@ export default class Abschnitt extends Feature {
 
     public getFaktor(): number {
         if (this._faktor == null) {
-            let seg = this.calcSegmente();
+            this.calcSegmente();
         }
 
         return this._faktor;
@@ -122,13 +120,6 @@ export default class Abschnitt extends Feature {
         this.setGeometry(new LineString(ak));
     }
 
-    private readData(xmlhttp: XMLHttpRequest) {
-        if (xmlhttp.responseXML == undefined) {
-            PublicWFS.showMessage('Abschnitt nicht gefunden', true);
-            return;
-        }
-    }
-
     public getFeature() {
         return this._feature;
     }
@@ -174,7 +165,7 @@ export default class Abschnitt extends Feature {
         //console.log(callbackSuccess);
 
         if (!this.aufbaudatenLoaded || reload) {
-            let xml = PublicWFS.doQuery('Otschicht', '<Filter><And>' +
+            PublicWFS.doQuery('Otschicht', '<Filter><And>' +
                 '<PropertyIsEqualTo>' +
                 '<PropertyName>projekt/@xlink:href</PropertyName>' +
                 '<Literal>' + this.daten.ereignisraum + '</Literal>' +
@@ -229,7 +220,7 @@ export default class Abschnitt extends Feature {
         let segmente = this.calcSegmente()
 
         for (let seg of segmente) {
-            let obj: StationObj = {};
+            let obj: StationObj = new StationObj();
             obj.isEnthalten = true;
 
             // Position des Fusspunktes auf dem Segment relativ zwischen 0 und 1
@@ -299,7 +290,7 @@ export default class Abschnitt extends Feature {
         let vorherLaenge = 0;
 
         for (var i = 0; i < line.length - 1; i++) {
-            let obj: StationObj = {};
+            let obj = new StationObj();
 
             obj.isEnthalten = true;
 
@@ -363,14 +354,14 @@ export default class Abschnitt extends Feature {
     }
 }
 
-export interface StationObj {
-    isEnthalten?: boolean,
-    distanz?: number,
-    station?: number,
-    seite?: 'M' | 'R' | 'L',
-    abstand?: number,
-    fusspkt?: number[],
-    neuerPkt?: number[]
+export class StationObj {
+    isEnthalten: boolean = false;
+    distanz: number = 0;
+    station: number = 0;
+    seite: 'M' | 'R' | 'L' = 'M';
+    abstand: number = 0;
+    fusspkt: number[] = [];
+    neuerPkt: number[] = [];
 }
 
 export class Segment {

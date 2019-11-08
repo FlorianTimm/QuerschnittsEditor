@@ -2,12 +2,10 @@ import { Map, Feature, Collection } from "ol";
 import Daten from '../../Daten';
 import QuerInfoTool from "./QuerInfoTool";
 import Tool from '../prototypes/Tool';
-import { Fill, Stroke, Style } from 'ol/style';
 import { never } from 'ol/events/condition';
 import { SelectInteraction } from '../../openLayers/Interaction'
 import Querschnitt from "src/js/Objekte/Querschnittsdaten";
 import InfoTool from "../InfoTool";
-import { SelectEvent } from "ol/interaction/Select";
 
 /**
  * Funktion zum Löschen von Querschnitten
@@ -108,11 +106,11 @@ class QuerDelTool extends Tool {
         this.selectFlaechen.on('select', this.flaecheSelected.bind(this));
     }
 
-    private flaecheSelected(event: SelectEvent) {
+    private flaecheSelected() {
         this.selectLinien.getFeatures().clear();
         let auswahl = (this.selectFlaechen as SelectInteraction).getFeatures();
-        auswahl.forEach(function (this: QuerDelTool, feat: Querschnitt) {
-            this.selectLinien.getFeatures().push(feat.trenn);
+        auswahl.forEach(function (this: QuerDelTool, feat: Feature) {
+            this.selectLinien.getFeatures().push((feat as Querschnitt).trenn);
         }.bind(this))
         this.featureSelected()
     }

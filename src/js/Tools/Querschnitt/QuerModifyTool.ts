@@ -1,14 +1,12 @@
 import { Snap } from 'ol/interaction';
-import Vektor from '../../Vektor';
 import { platformModifierKeyOnly, never } from 'ol/events/condition';
 import QuerInfoTool from './QuerInfoTool';
 import Daten from '../../Daten';
-import { Map, Feature, MapBrowserEvent } from 'ol';
+import { Map, Feature } from 'ol';
 import Tool from '../prototypes/Tool';
 import { SelectInteraction, ModifyInteraction } from '../../openLayers/Interaction'
 import { ModifyEvent } from 'ol/interaction/Modify';
 import Querschnitt from 'src/js/Objekte/Querschnittsdaten';
-import { SelectEvent } from 'ol/interaction/Select';
 import InfoTool from '../InfoTool';
 import { MultiLineString } from 'ol/geom';
 import HTML from '../../HTML';
@@ -37,11 +35,11 @@ export default class QuerModifyTool extends Tool {
     private snapStation: Snap;
     //private streifen: 'M' | 'L' | 'R';
     //private streifennr: number;
-    private multiEditForm: HTMLFormElement = null;
+    private multiEditForm: HTMLFormElement;
     private multiCountInput: HTMLInputElement;
     private multiArtSelect: HTMLSelectElement;
     private multiOberSelect: HTMLSelectElement;
-    private moveTypeForm: HTMLFormElement = null;
+    private moveTypeForm: HTMLFormElement;
 
     constructor(map: Map, info: QuerInfoTool) {
         super();
@@ -56,7 +54,7 @@ export default class QuerModifyTool extends Tool {
     };
 
     private createMoveTypeForm() {
-        if (this.moveTypeForm != null) return;
+        if (this.moveTypeForm) return;
         this.moveTypeForm = HTML.createToolForm(document.getElementById('sidebar'), false, 'modify');
         this.moveTypeForm.innerHTML += "Nachfolgende Querschnitte:";
         HTML.createBreak(this.moveTypeForm);
@@ -212,11 +210,11 @@ export default class QuerModifyTool extends Tool {
         this.selectFlaechen.on('select', this.flaecheSelected.bind(this));
     }
 
-    private flaecheSelected(event: SelectEvent) {
+    private flaecheSelected() {
         this.selectLinien.getFeatures().clear();
         let auswahl = (this.selectFlaechen as SelectInteraction).getFeatures();
-        auswahl.forEach(function (this: QuerModifyTool, feat: Querschnitt) {
-            this.selectLinien.getFeatures().push(feat.trenn);
+        auswahl.forEach(function (this: QuerModifyTool, feat: Feature) {
+            this.selectLinien.getFeatures().push((feat as Querschnitt).trenn);
         }.bind(this))
 
         this.featureSelected();
@@ -231,7 +229,7 @@ export default class QuerModifyTool extends Tool {
         }.bind(this));
 
         if (selection.length == 1) {
-            this.singleSelect(selection);
+            this.singleSelect();
         } else if (selection.length > 1) {
             this.multiSelect(selection);
         } else {
@@ -242,7 +240,7 @@ export default class QuerModifyTool extends Tool {
         }
     }
 
-    private singleSelect(selection: Feature[]) {
+    private singleSelect() {
         console.log("singleSelect")
         $(this.multiEditForm).hide("fast");
 

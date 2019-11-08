@@ -1,7 +1,7 @@
 import Control from 'ol/control/Control.js';
 import { Options as ControlOptions } from 'ol/control/Control.js';
 import '../css/layerswitch.css';
-import { Layer } from 'ol/layer';
+import BaseLayer from 'ol/layer/Base';
 
 /**
  * OpenLayers-Control zum Wechseln des Layers
@@ -26,11 +26,11 @@ class LayerSwitch extends Control {
 		element.className = 'layerswitch ol-unselectable ol-control';
 		element.appendChild(button);
 
-		element.addEventListener('mouseenter', function () {
+		element.addEventListener('mouseenter', function (this: LayerSwitch) {
 			//layerswi.style.height = "20em";
 			//layerswi.style.overflow = "auto";
 			let layers = (this as LayerSwitch).getMap().getLayers();
-			layers.forEach(function (layer: Layer, id: number) {
+			layers.forEach(function (layer: BaseLayer, id: number) {
 				if (layer.get('switchable') == true) {
 					let div_layer = document.createElement('div');
 					let bt_layer = document.createElement('button');

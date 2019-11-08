@@ -377,7 +377,7 @@ function createMap() {
     });
 }
 
-function openTab(evt: MouseEvent) {
+function openTab(evt: Event) {
     // Declare all variables
     let i: number, tabcontent: HTMLCollectionOf<Element>, tablinks: HTMLCollectionOf<Element>;
 

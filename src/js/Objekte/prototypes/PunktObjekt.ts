@@ -8,6 +8,7 @@ import { InfoToolEditable } from "../../Tools/InfoTool";
 import { Point } from "ol/geom";
 import Daten from "../../Daten";
 import PrimaerObjekt from "./PrimaerObjekt";
+import { FeatureLike } from 'ol/Feature';
 
 export default abstract class PunktObjekt extends PrimaerObjekt implements InfoToolEditable {
     protected vabstVst: number;
@@ -56,9 +57,10 @@ export default abstract class PunktObjekt extends PrimaerObjekt implements InfoT
             source: source,
             opacity: 0.7,
         });
-        layer.setStyle(function (feature: PunktObjekt, zoom: number) {
-            let color1 = feature.colorFunktion1();
-            let color2 = feature.colorFunktion2();
+        layer.setStyle(function (feat: FeatureLike, zoom: number) {
+            let pkt = feat as PunktObjekt;
+            let color1 = pkt.colorFunktion1();
+            let color2 = pkt.colorFunktion2();
 
             let text = new Text({
                 font: '13px Calibri,sans-serif',
@@ -71,10 +73,10 @@ export default abstract class PunktObjekt extends PrimaerObjekt implements InfoT
                 textAlign: 'left',
                 // get the text from the feature - `this` is ol.Feature
                 // and show only under certain resolution
-                text: ((zoom < 0.2) ? ("" + feature.vst) : '')
+                text: ((zoom < 0.2) ? ("" + pkt.vst) : '')
             });
 
-            let datum = new Date(feature.stand);
+            let datum = new Date(pkt.stand);
             //console.log(feature.stand);
             if ((Date.now() - datum.getTime()) > 3600000 * 24) {
                 return new Style({

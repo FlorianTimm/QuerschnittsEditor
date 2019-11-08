@@ -1,8 +1,7 @@
-import { Point, LineString } from 'ol/geom';
 import PublicWFS from '../../PublicWFS';
 import Aufstellvorrichtung from '../../Objekte/Aufstellvorrichtung';
 import AddTool from '../prototypes/AddTool';
-import { Map, MapBrowserEvent } from 'ol';
+import { Map } from 'ol';
 import Daten from '../../Daten';
 var CONFIG = require('../../config.json');
 

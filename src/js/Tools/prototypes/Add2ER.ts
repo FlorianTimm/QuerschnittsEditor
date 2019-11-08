@@ -1,7 +1,6 @@
 import { Style, Stroke } from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
 import PublicWFS from '../../PublicWFS';
-import StrassenAusPunkt from '../../Objekte/StrassenAusPunkt';
 import Tool from '../prototypes/Tool'
 import Daten from '../../Daten';
 import { Map } from 'ol';
@@ -13,7 +12,6 @@ export default abstract class Add2ER extends Tool {
     private map: Map;
     private select: SelectInteraction;
     private objektklasse: string;
-    private objektklasse4ER: string;
 
     protected abstract loadAbschnitt(abschnitt: Abschnitt): void;
 

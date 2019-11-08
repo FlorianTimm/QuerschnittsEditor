@@ -1,4 +1,3 @@
-var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
 import { Feature } from 'ol';
 import { MultiLineString, Polygon } from 'ol/geom';
 import Daten from '../Daten';
