@@ -47,7 +47,7 @@ class LayerSwitch extends Control {
 					trans.setAttribute('id', 'trans_' + id);
 					trans.dataset.layer = String(id);
 					div_zusatz.appendChild(trans);
-					trans.addEventListener('change', function (event) {
+					trans.addEventListener('change', function (__) {
 						layer.setOpacity(parseInt(trans.value) / 100);
 					});
 					div_layer.appendChild(div_zusatz)

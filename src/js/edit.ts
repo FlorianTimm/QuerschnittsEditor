@@ -167,7 +167,7 @@ function checkHash(map: Map) {
         }
         if (layer != null) {
             let selection = layer.split(',');
-            map.getLayers().forEach(function (layer, id, array) {
+            map.getLayers().forEach(function (layer, id,__) {
                 if (layer.get('switchable') == true) {
                     if (selection.indexOf(id + "") != -1) {
                         layer.setVisible(true);
@@ -180,7 +180,7 @@ function checkHash(map: Map) {
         }
         foundHash = true;
     }
-    map.getLayers().forEach(function (layer, id, array) {
+    map.getLayers().forEach(function (layer, __, ___) {
         if (layer.get('switchable') == undefined || layer.get('switchable') == true) {
             layer.on("propertychange", recreateHash);
         }
@@ -200,7 +200,7 @@ function recreateHash(event: MapEvent) {
 
         let visible: number[] = []
         event.target.getLayers().forEach(
-            function (layer: Layer, id: number, array: any) {
+            function (layer: Layer, id: number, __: any) {
                 if (layer.get('switchable') == true) {
                     if ((layer as Layer).getVisible()) {
                         visible.push(id);

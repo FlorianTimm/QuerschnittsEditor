@@ -383,7 +383,7 @@ export default class Daten {
         this.map.addLayer(this.layerQuer);
     }
 
-    public searchForStreet(event?: Event) {
+    public searchForStreet(__?: Event) {
         console.log(document.forms.namedItem("suche").suche.value);
         let wert = document.forms.namedItem("suche").suche.value;
         if (wert == "") return;

@@ -89,7 +89,7 @@ export default class MoveTool extends Tool {
         this.modify.on('modifyend', this.modifyEnd.bind(this));
     }
 
-    private selected(event: SelectEvent) {
+    private selected(__: SelectEvent) {
         if (this.select.getFeatures().getLength() > 0) {
             this.map.on("pointermove", this.move.bind(this));
         } else {
@@ -100,11 +100,11 @@ export default class MoveTool extends Tool {
         this.infoTool.featureSelect(this.select, true)
     }
 
-    private modifyStart(event: ModifyEvent) {
+    private modifyStart(__: ModifyEvent) {
         this.map.on("pointermove", this.move.bind(this));
     }
 
-    private modifyEnd(event: ModifyEvent) {
+    private modifyEnd(__: ModifyEvent) {
         this.map.un("pointermove", this.move.bind(this));
         let feat = this.select.getFeatures().item(0);
         (this.feat_station_line.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);

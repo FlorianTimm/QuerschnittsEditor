@@ -148,7 +148,7 @@ export default class Klartext {
         Klartext.getInstanz().load(klartext, Klartext.klartext2select_callback, klartext, selectInput, value, platzhalter);
     }
 
-    private static klartext2select_callback(klartexteObjekt: {}, klartext: string, selectInput: HTMLSelectElement, value: string = null, platzhalter?: string) {
+    private static klartext2select_callback(__: {}, klartext: string, selectInput: HTMLSelectElement, value: string = null, platzhalter?: string) {
         let arten = Klartext.getInstanz().getAllSorted(klartext);
 
         for (let a of arten) {

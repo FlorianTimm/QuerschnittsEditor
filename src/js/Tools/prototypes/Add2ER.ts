@@ -33,7 +33,7 @@ export default abstract class Add2ER extends Tool {
         });
         this.select.on('select', this.onSelect.bind(this))
     }
-    onSelect(event: SelectEventType) {
+    onSelect(__: SelectEventType) {
         console.log("Auswahl");
         if (this.select.getFeatures().getArray().length == 0) return;
 
@@ -43,7 +43,7 @@ export default abstract class Add2ER extends Tool {
         PublicWFS.addInER(abschnitt, this.objektklasse, this.daten.ereignisraum_nr, this._onSelect_Callback.bind(this), undefined, abschnitt);
     }
 
-    _onSelect_Callback(xml: XMLDocument, abschnitt: Abschnitt) {
+    _onSelect_Callback(__: XMLDocument, abschnitt: Abschnitt) {
         abschnitt.addOKinER(this.objektklasse);
         this.loadAbschnitt(abschnitt);
         this.select.getFeatures().clear();

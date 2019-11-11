@@ -43,7 +43,7 @@ export default class AvAdd extends AddTool {
         }
     }
 
-    private addInER_Callback(xml: XMLDocument) {
+    private addInER_Callback(__: XMLDocument) {
         Aufstellvorrichtung.loadAbschnittER(this.abschnitt, this.wfsAddAufstell.bind(this))
     }
 

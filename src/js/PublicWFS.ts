@@ -192,7 +192,7 @@ export default class PublicWFS {
     }
 
     static _checkTransacktionFailed(xml: XMLDocument,
-        callbackSuccess?: (xml: XMLDocument, ...args: any[]) => void,
+        __?: (xml: XMLDocument, ...args: any[]) => void,
         callbackFailed?: (xml: XMLDocument, ...args: any[]) => void,
         ...args: any[]) {
 

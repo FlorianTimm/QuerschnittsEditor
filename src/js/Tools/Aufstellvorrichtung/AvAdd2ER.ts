@@ -37,7 +37,7 @@ class AvAdd2ER extends Tool {
         this.select.on('select', this.onSelect.bind(this))
     }
 
-    onSelect(event: SelectEventType) {
+    onSelect(__: SelectEventType) {
         console.log("Auswahl");
         if (this.select.getFeatures().getArray().length == 0) return;
 
@@ -47,7 +47,7 @@ class AvAdd2ER extends Tool {
         PublicWFS.addInER(abschnitt, "Otaufstvor", this.daten.ereignisraum_nr, this._onSelect_Callback.bind(this), undefined, abschnitt);
     }
 
-    _onSelect_Callback(xml: XMLDocument, abschnitt: Abschnitt) {
+    _onSelect_Callback(__: XMLDocument, abschnitt: Abschnitt) {
         abschnitt.addOKinER("Otaufstvor");
         Aufstellvorrichtung.loadAbschnittER(abschnitt, PublicWFS.showMessage, "Erfolgreich in ER kopiert");
         this.select.getFeatures().clear();
