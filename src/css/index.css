@@ -25,7 +25,13 @@ form {
     font-family: sans-serif;
 }
 
-form * {
+.chosen-container {
+    margin: 15px;
+    text-align: left;
+    font-size: 12pt;
+}
+
+form table {
     z-index: 20;
     margin: 10px;
     font-size: 17px;
