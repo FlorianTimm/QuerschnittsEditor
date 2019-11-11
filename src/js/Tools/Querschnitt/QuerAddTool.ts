@@ -104,6 +104,7 @@ class QuerAddTool extends Tool {
             resizable: false,
             height: "auto",
             width: 400,
+            title: "Querschnitt hinzufügen",
             modal: true,
             buttons: {
                 "Links": function (this: QuerAddTool) {

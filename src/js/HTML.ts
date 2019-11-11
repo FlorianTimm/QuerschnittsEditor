@@ -1,4 +1,3 @@
-
 import "./import_jquery.js";
 import "../css/html_forms.css";
 
@@ -126,7 +125,6 @@ export default class HTML {
 
     static createLabel(beschriftung: string, forId: string, form: HTMLFormElement | HTMLDivElement, id?: string) {
         let label = document.createElement("label");
-        label.style.fontSize = "8pt";
         label.textContent = beschriftung;
         label.htmlFor = forId;
         if (id != undefined) label.id = id;

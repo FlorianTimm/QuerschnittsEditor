@@ -7,10 +7,10 @@ import PublicWFS from "../../PublicWFS";
 import { InfoToolEditable } from "../../Tools/InfoTool";
 import { Point } from "ol/geom";
 import Daten from "../../Daten";
-import PrimaerObjekt from "./PrimaerObjekt";
+import PObjektMitDokument from "./PObjektMitDateien";
 import { FeatureLike } from 'ol/Feature';
 
-export default abstract class PunktObjekt extends PrimaerObjekt implements InfoToolEditable {
+export default abstract class PunktObjekt extends PObjektMitDokument implements InfoToolEditable {
     protected vabstVst: number;
     protected vabstBst: number;
     protected rlageVst: string;

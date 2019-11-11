@@ -254,3 +254,12 @@ span.hotkey_alt {
     text-decoration-color: red;
 }
 
+.tableWithBorder {
+    margin: 10px;
+    border-collapse: collapse;
+}
+
+.tableWithBorder td {
+    border: 1px solid #888888;
+    padding: 5px;
+}
