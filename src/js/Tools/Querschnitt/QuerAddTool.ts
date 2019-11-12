@@ -55,13 +55,11 @@ class QuerAddTool extends Tool {
         }
 
         (this._info as QuerInfoTool).getInfoFieldForFeature(e.selected[0].get("objekt"))
-        this.button.style.backgroundColor = "#ffcc00";
         this.button.disabled = false;
     }
 
     private disableMenu() {
         if (this.form != null) {
-            this.button.style.backgroundColor = "";
             this.button.disabled = true;
         }
         (this._info as QuerInfoTool).hideInfoBox();
