@@ -65,26 +65,29 @@ window.addEventListener('load', function () {
 
     daten = new Daten(map, er, ernr);
 
-    infoTool = new QuerInfoTool(map, daten.layerTrenn, daten.layerQuer, "sidebar");
+    let sidebar = document.getElementById("sidebar") as HTMLDivElement | null;
+    if (!sidebar) throw new Error("HTML Sidebar nicht gefunden")
+
+    infoTool = new QuerInfoTool(map, daten.layerTrenn, daten.layerQuer, sidebar);
     infoTool.start();
     editTool = new QuerModifyTool(map, infoTool);
     delTool = new QuerDelTool(map, infoTool);
     addTool = new QuerAddTool(map, infoTool);
-    partTool = new QuerPartTool(map, daten, infoTool);
+    partTool = new QuerPartTool(map, infoTool, sidebar);
     qsAdd2ER = new QuerAdd2ER(map);
 
-    vsInfoTool = new InfoTool(map, daten.layerAufstell, "sidebar");
+    vsInfoTool = new InfoTool(map, daten.layerAufstell, sidebar);
     avAdd = new AvAdd(map);
     vzAdd = new AvVzAdd(map);
     avMove = new MoveTool(map, vsInfoTool, daten.layerAufstell);
-    avAdd2ER = new AvAdd2ER(map, daten);
-    avDel = new DeleteTool(map, daten.layerAufstell, "sidebar", "Otaufstvor");
+    avAdd2ER = new AvAdd2ER(map);
+    avDel = new DeleteTool(map, daten.layerAufstell, sidebar, "Otaufstvor");
 
-    sapInfoTool = new InfoTool(map, daten.layerStraus, "sidebar");
+    sapInfoTool = new InfoTool(map, daten.layerStraus, sidebar);
     sapAdd = new SAPAdd(map);
     sapMove = new MoveTool(map, vsInfoTool, daten.layerStraus);
     sapAdd2ER = new SAPAdd2ER(map);
-    sapDel = new DeleteTool(map, daten.layerStraus, "sidebar", "Otstrauspkt");
+    sapDel = new DeleteTool(map, daten.layerStraus, sidebar, "Otstrauspkt");
 
     measure = new Measure(map);
 
@@ -167,7 +170,7 @@ function checkHash(map: Map) {
         }
         if (layer != null) {
             let selection = layer.split(',');
-            map.getLayers().forEach(function (layer, id,__) {
+            map.getLayers().forEach(function (layer, id, __) {
                 if (layer.get('switchable') == true) {
                     if (selection.indexOf(id + "") != -1) {
                         layer.setVisible(true);
@@ -354,6 +357,21 @@ function createMap() {
                     params: {
                         'LAYERS': 'querschnitte',
                         'STYLE': 'querschnitte_gruppiert',
+                        'FORMAT': 'image/png'
+                    },
+                    serverType: ('geoserver'),
+                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
+                })
+            }),
+            new TileLayer({
+                name: "Bezirks-Feinkartierung",
+                visible: false,
+                switchable: true,
+                opacity: 0.8,
+                source: new TileWMS({
+                    url: 'https://geodienste.hamburg.de/HH_WMS_Feinkartierung_Strasse?',
+                    params: {
+                        'LAYERS': 'b_altona_mr_feinkartierung_flaechen,b_harburg_mr_feinkartierung_flaechen,b_mitte_mr_feinkartierung_flaechen,b_eims_mr_feinkartierung_flaechen,b_wands_mr_feinkartierung_flaechen',
                         'FORMAT': 'image/png'
                     },
                     serverType: ('geoserver'),
