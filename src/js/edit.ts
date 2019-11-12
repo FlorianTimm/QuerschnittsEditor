@@ -362,6 +362,21 @@ function createMap() {
                     serverType: ('geoserver'),
                     attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
                 })
+            }),
+            new TileLayer({
+                name: "Bezirks-Feinkartierung",
+                visible: false,
+                switchable: true,
+                opacity: 0.8,
+                source: new TileWMS({
+                    url: 'https://geodienste.hamburg.de/HH_WMS_Feinkartierung_Strasse?',
+                    params: {
+                        'LAYERS': 'b_altona_mr_feinkartierung_flaechen,b_harburg_mr_feinkartierung_flaechen,b_mitte_mr_feinkartierung_flaechen,b_eims_mr_feinkartierung_flaechen,b_wands_mr_feinkartierung_flaechen',
+                        'FORMAT': 'image/png'
+                    },
+                    serverType: ('geoserver'),
+                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
+                })
             })
         ],
         target: 'map',
