@@ -6,6 +6,7 @@ import Daten from '../Daten';
 import Abschnitt from './Abschnitt';
 import Querschnitt from './Querschnittsdaten';
 import Aufbau from './Aufbaudaten';
+import { Point } from 'ol/geom';
 
 /**
 * Querschnitts-Station
@@ -26,12 +27,11 @@ export default class QuerStation {
     private linie: MultiLineString = null;
     private _querschnitte: { [streifen: string]: { [streifennr: number]: Querschnitt } } = {};
 
-    constructor(abschnitt: Abschnitt, vst: number, bst: number, geo: number[][]) {
+    constructor(abschnitt: Abschnitt, vst: number, bst: number) {
         this.daten = Daten.getInstanz();
         this.abschnitt = abschnitt;
         this.vst = vst;
         this.bst = bst;
-        this.geo = geo;
         this.abschnitt.addStation(this);
         this.calcVector();
     }
@@ -87,9 +87,11 @@ export default class QuerStation {
     }
 
     calcVector() {
-        let anzahl = this.geo.length;
+        //let anzahl = this.geo.length;
         this.vector = [];
         this.seg = [];
+        this.geo = [];
+        /*
         if (anzahl >= 2) {
             let first = Vektor.einheit(Vektor.lot(Vektor.diff(this.geo[0], this.geo[1])));
             this.vector.push(first);
@@ -120,7 +122,36 @@ export default class QuerStation {
             seg_len_add += Vektor.len(Vektor.diff(this.geo[i - 1], this.geo[i]));
             this.seg.push(seg_len_add / len);
             //console.log(seg_len_add/len)
+        }*/
+
+        let abs = this.getAbschnitt().getAbschnitt(this.getVst(), this.getBst());
+        let erster = abs[0]
+        let letzter = abs[abs.length - 1];
+        let laenge = letzter.vorherLaenge - erster.vorherLaenge + letzter.laenge
+
+        for (let a of abs) {
+            this.vector.push(a.anfangsVektor);
+            this.geo.push(a.anfangsPkt)
+            this.seg.push((a.vorherLaenge - erster.vorherLaenge) / laenge);
         }
+        this.vector.push(letzter.endVektor);
+        this.geo.push(letzter.endPkt)
+        this.seg.push(1);
+
+        // Trennlinien
+        let statTrenn = [];
+        statTrenn.push([Vektor.sum(letzter.endPkt, Vektor.multi(letzter.endVektor, 30)), Vektor.sum(letzter.endPkt, Vektor.multi(letzter.endVektor, -30))]);
+        this.daten.vectorStation.addFeature(new Feature({geom: new Point(letzter.endPkt)}));
+        if (this.vst == 0) {
+            statTrenn.push([Vektor.sum(erster.anfangsPkt, Vektor.multi(erster.anfangsVektor, 30)), Vektor.sum(erster.anfangsPkt, Vektor.multi(erster.anfangsVektor, -30))]);
+            this.daten.vectorStation.addFeature(new Feature({geom: new Point(erster.anfangsPkt)}));
+        }
+        this.linie = new MultiLineString(statTrenn);
+        let feat = new Feature({
+            geometry: this.linie,
+            objekt: this,
+        });
+        this.daten.vectorStation.addFeature(feat);
     }
     teilen(station: number) {
         if (this.vst < station && this.bst > station) {
@@ -295,7 +326,7 @@ export default class QuerStation {
 
 
         if (station != undefined) {
-            let neueStation = new QuerStation(this.abschnitt, station, this.bst, this.geo);
+            let neueStation = new QuerStation(this.abschnitt, station, this.bst);
             this.bst = station;
             this.abschnitt.addStation(neueStation);
             neueStation.reload();
@@ -349,7 +380,7 @@ export default class QuerStation {
                     this.geo.push([x, y]);
                 }
                 first = false;
-                this.calcVector()
+                //this.calcVector()
             }
         }
         for (let i = 0; i < liste.length; i++) {

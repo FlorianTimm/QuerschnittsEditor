@@ -9,6 +9,7 @@ import { Point } from "ol/geom";
 import Daten from "../../Daten";
 import PObjektMitDokument from "./PObjektMitDateien";
 import { FeatureLike } from 'ol/Feature';
+import Abschnitt from '../Abschnitt';
 
 export default abstract class PunktObjekt extends PObjektMitDokument implements InfoToolEditable {
     protected vabstVst: number;
@@ -44,9 +45,12 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
         super.setDataFromXML(xml);
         let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(',');
         this.setGeometry(new Point([parseFloat(koords[0]), parseFloat(koords[1])]));
-        this.abschnitt = Daten.getInstanz().getAbschnitt(this.abschnittId);
-        this.abschnitt.addOKinER(this.getObjektKlassenName());
         Daten.getInstanz().layerAchse.changed();
+
+        Abschnitt.getAbschnitt(this.abschnittId, function (this: PunktObjekt, abschnitt: Abschnitt) {
+            this.abschnitt = abschnitt
+            abschnitt.addOKinER(this.getObjektKlassenName());
+        }.bind(this))
     }
 
     static createLayer(map: Map) {

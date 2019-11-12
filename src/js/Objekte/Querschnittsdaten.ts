@@ -86,7 +86,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             liste.push(Querschnitt.fromXML(dotquer[i]));
         }
 
-        Querschnitt.checkQuerschnitte(liste);
+        //Querschnitt.checkQuerschnitte(liste);
 
         if (callback != undefined) {
             callback(...args);
@@ -156,16 +156,16 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
         // Breite
         let breite = HTML.createNumberInput(form, "Von Breite", "breite", querschnitt != undefined ? querschnitt.breite.toString() : undefined);
-        breite.step= '1';
+        breite.step = '1';
         breite.max = '5000';
-        breite.min =  '0'
+        breite.min = '0'
         breite.disabled = !changeable;
 
         // BisBreite
         let bisbreite = HTML.createNumberInput(form, "Bis Breite", "bisbreite", querschnitt != undefined ? querschnitt.bisBreite.toString() : undefined);
-        bisbreite.step= '1';
+        bisbreite.step = '1';
         bisbreite.max = '5000';
-        bisbreite.min =  '0'
+        bisbreite.min = '0'
         bisbreite.disabled = !changeable;
 
         // VNK
@@ -195,25 +195,33 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
         if (doNotAdd) return r;  // Abbruch, falls nur die Daten geparst werden sollen
 
-        r.abschnitt = r._daten.getAbschnitt(r.abschnittId);
-        r.abschnitt.addOKinER('Querschnitt');
+        Abschnitt.getAbschnitt(r.abschnittId, function (abschnitt: Abschnitt, r: Querschnitt) {
+            abschnitt.addOKinER('Querschnitt');
+            r.abschnitt = abschnitt;
+
+            if (!(r.abschnitt.existsStation(r.vst))) {
+                /*
+                let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(' ');
+                let geo = [];
+                for (let i = 0; i < koords.length; i++) {
+                    let k = koords[i].split(',')
+                    let x = Number(k[0]);
+                    let y = Number(k[1]);
+                    geo.push([x, y]);
+                }
+                */
+                r.station = new QuerStation(r.abschnitt, r.vst, r.bst);
+            } else {
+                r.station = r.abschnitt.getStation(r.vst);
+            }
+            r.station.addQuerschnitt(r);
+            r.createGeom();
+        }, r);
+
 
         //console.log(abschnitt);
-        if (!(r.abschnitt.existsStation(r.vst))) {
-            let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(' ');
-            let geo = [];
-            for (let i = 0; i < koords.length; i++) {
-                let k = koords[i].split(',')
-                let x = Number(k[0]);
-                let y = Number(k[1]);
-                geo.push([x, y]);
-            }
-            r.station = new QuerStation(r.abschnitt, r.vst, r.bst, geo);
-        } else {
-            r.station = r.abschnitt.getStation(r.vst);
-        }
-        r.station.addQuerschnitt(r);
-        r.createGeom();
+
+
         return r;
     }
 

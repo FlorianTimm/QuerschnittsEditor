@@ -42,7 +42,6 @@ export default class Daten {
     public layerQuer: VectorLayer;
     public layerStraus: VectorLayer;
 
-    private abschnitte: { [absId: string]: Abschnitt };
     private map: Map;
     private warteAufObjektklassen: number;
 
@@ -56,9 +55,6 @@ export default class Daten {
         this.createLayerQuerschnittsTrennLinien();
         this.createLayerStationen();
         this.createLayerAchsen();
-
-        this.abschnitte = {};
-
 
         this.layerAufstell = Aufstellvorrichtung.createLayer(this.map);
         this.layerStraus = StrassenAusPunkt.createLayer(this.map);
@@ -121,15 +117,6 @@ export default class Daten {
         return Daten.daten;
     }
 
-    public getAbschnitt(absId: string): Abschnitt {
-        if (!(absId in this.abschnitte)) {
-            this.abschnitte[absId] = Abschnitt.load(absId);
-            this.vectorAchse.addFeature(this.abschnitte[absId]);
-        }
-        //console.log(this.abschnitte[absId]);
-        return this.abschnitte[absId];
-    }
-
     public loadExtent() {
         document.body.style.cursor = 'wait'
         let extent = this.map.getView().calculateExtent();
@@ -152,11 +139,7 @@ export default class Daten {
     private loadExtent_Callback(xml: XMLDocument) {
         let netz = xml.getElementsByTagName("VI_STRASSENNETZ");
         for (let i = 0; i < netz.length; i++) {
-            let abschnitt = Abschnitt.fromXML(netz[i]);
-            if (!(abschnitt.getAbschnittid() in this.abschnitte)) {
-                this.abschnitte[abschnitt.getAbschnittid()] = abschnitt;
-                this.vectorAchse.addFeature(this.abschnitte[abschnitt.getAbschnittid()]);
-            }
+            Abschnitt.fromXML(netz[i]);
         }
         document.body.style.cursor = '';
     }
@@ -265,7 +248,7 @@ export default class Daten {
                 stroke: new Stroke({
                     color: '#000000',
                     width: 1
-                }),
+                })
             })
         });
         this.map.addLayer(this.layerStation);
@@ -426,11 +409,9 @@ export default class Daten {
             //console.log(abschnittXML)
             let abschnitt = Abschnitt.fromXML(netz.item(i));
             geladen.push(abschnitt);
-            if (!(abschnitt.getAbschnittid() in this.abschnitte)) {
-                this.abschnitte[abschnitt.getAbschnittid()] = abschnitt;
-                this.vectorAchse.addFeature(this.abschnitte[abschnitt.getAbschnittid()]);
-            }
         }
+
+        // auf die Abschnitte zoomen
         if (geladen.length > 0) {
             let extent = Daten.calcAbschnitteExtent(geladen);
             this.map.getView().fit(extent, { padding: [20, 240, 20, 20] })

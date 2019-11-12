@@ -10,6 +10,11 @@ import Aufbau from './Aufbaudaten';
 
 var CONFIG: { [index: string]: string } = require('../config.json');
 
+interface Callback {
+    callback: (abschnitt: Abschnitt, ...args: any[]) => void;
+    args: any[];
+}
+
 /**
  * Straßenabschnitt
  * @author Florian Timm, LGV HH 
@@ -17,6 +22,9 @@ var CONFIG: { [index: string]: string } = require('../config.json');
  * @copyright MIT
  */
 export default class Abschnitt extends Feature {
+    private static abschnitte: { [absid: number]: Abschnitt } = {}
+    private static waitForAbschnitt: { [absid: number]: Callback[] } = {}
+
     private daten: Daten;
     private fid: string = null;
     private abschnittid: string = null;
@@ -43,30 +51,47 @@ export default class Abschnitt extends Feature {
         this.daten = Daten.getInstanz();
     }
 
+    public static getAbschnitt(absId: string, callback: (abs: Abschnitt, ...args: any[]) => void, ...args: any[]) {
+        if (absId in this.abschnitte) {
+            callback(this.abschnitte[absId], ...args);
+            return;
+        } else {
+            let laedtSchon = true;
+            if (!(absId in Abschnitt.waitForAbschnitt)) {
+                Abschnitt.waitForAbschnitt[absId] = [];
+                laedtSchon = false;
+            }
+            Abschnitt.waitForAbschnitt[absId].push({ callback, args })
+
+            if (!laedtSchon)
+                Abschnitt.load(absId);
+        }
+
+    }
+
     public getFaktor(): number {
         if (this._faktor == null) {
             this.calcSegmente();
         }
-
         return this._faktor;
     }
 
-    static load(abschnittid: string) {
+    private static load(abschnittid: string) {
         if ("ABSCHNITT_WFS_URL" in CONFIG) {
-            return Abschnitt.loadFromAbschnittWFS(abschnittid);
+            Abschnitt.loadFromAbschnittWFS(abschnittid);
         } else {
-            return Abschnitt.loadFromPublicWFS(abschnittid);
+            Abschnitt.loadFromPublicWFS(abschnittid);
         }
     }
 
-    static loadFromAbschnittWFS(abschnittid: string) {
+    private static loadFromAbschnittWFS(abschnittid: string) {
         let r = new Abschnitt();
         r.abschnittid = abschnittid;
         AbschnittWFS.getById(abschnittid, r.loadCallback.bind(r));
         return r;
     }
 
-    static loadFromPublicWFS(abschnittid: string) {
+    private static loadFromPublicWFS(abschnittid: string) {
         let r = new Abschnitt();
         r.abschnittid = abschnittid;
 
@@ -74,8 +99,6 @@ export default class Abschnitt extends Feature {
             '<PropertyIsEqualTo><PropertyName>ABSCHNITT_ID</PropertyName>' +
             '<Literal>' + r.abschnittid + '</Literal></PropertyIsEqualTo>' +
             '</Filter>', r.loadCallback.bind(r));
-
-        return r;
     }
 
     private loadCallback(xml: Document) {
@@ -94,8 +117,6 @@ export default class Abschnitt extends Feature {
     }
 
     private fromXML(xml: Element) {
-        //console.log(xml)
-
         this.len = Number(xml.getElementsByTagName('LEN')[0].firstChild.textContent);
         this.abschnittid = xml.getElementsByTagName('ABSCHNITT_ID')[0].firstChild.textContent;
         this.fid = "S" + this.abschnittid;
@@ -118,6 +139,16 @@ export default class Abschnitt extends Feature {
         }
         //console.log(ak);
         this.setGeometry(new LineString(ak));
+        Daten.getInstanz().vectorAchse.addFeature(this);
+        Abschnitt.abschnitte[this.abschnittid] = this;
+
+        if (this.abschnittid in Abschnitt.waitForAbschnitt) {
+            let callback: Callback;
+            while (callback = Abschnitt.waitForAbschnitt[this.abschnittid].pop()) {
+                callback.callback(this, ...callback.args);
+            }
+        }
+
     }
 
     public getFeature() {
@@ -268,6 +299,38 @@ export default class Abschnitt extends Feature {
         return posi.sort(Abschnitt.sortStationierungen)[0]
     }
 
+    public getAbschnitt(vst: number, bst: number) {
+        let segmente = this.calcSegmente();
+        let r: Segment[] = []
+
+        vst = vst * this.getFaktor();
+        bst = bst * this.getFaktor();
+
+        for (let seg of segmente) {
+            if (seg.vorherLaenge >= vst && seg.vorherLaenge + seg.laenge <= bst) {
+                console.log("mitte" + seg.vorherLaenge)
+                r.push(seg);
+            } else if (seg.vorherLaenge < vst && seg.vorherLaenge + seg.laenge > vst) {
+                let faktor = (vst - seg.vorherLaenge) / seg.laenge
+                let anfPkt = Vektor.sum(seg.anfangsPkt, Vektor.multi(seg.lot, faktor));
+                let segmentNeu = new Segment(anfPkt, seg.endPkt, faktor * seg.laenge + seg.vorherLaenge);
+                segmentNeu.anfangsVektor = seg.lot;
+                segmentNeu.endVektor = seg.endVektor;
+                console.log("anfang" + seg.vorherLaenge)
+                r.push(segmentNeu)
+            } else if (seg.vorherLaenge < bst && seg.vorherLaenge + seg.laenge > bst) {
+                let faktor = (bst - seg.vorherLaenge) / seg.laenge
+                let endPkt = Vektor.sum(seg.anfangsPkt, Vektor.multi(seg.lot, faktor));
+                let segmentNeu = new Segment(seg.anfangsPkt, endPkt, seg.vorherLaenge);
+                segmentNeu.anfangsVektor = seg.anfangsVektor;
+                segmentNeu.endVektor = seg.lot;
+                console.log("ende" + seg.vorherLaenge)
+                r.push(segmentNeu)
+            }
+        }
+        return r;
+    }
+
     private static sortStationierungen(a: StationObj, b: StationObj): -1 | 0 | 1 {
         if (a.isEnthalten != b.isEnthalten) {
             if (a.isEnthalten) return -1;
@@ -290,18 +353,20 @@ export default class Abschnitt extends Feature {
         let vorherLaenge = 0;
 
         for (var i = 0; i < line.length - 1; i++) {
-            let obj = new StationObj();
+            let seg = new Segment(line[i], line[i + 1], vorherLaenge);
 
-            obj.isEnthalten = true;
+            vorherLaenge += seg.laenge;
 
-            let anfangsPkt = line[i];
-            let endPkt = line[i + 1];
-            let linienVektor = Vektor.diff(endPkt, anfangsPkt)
-            let laenge = Vektor.len(linienVektor)
-
-            this.segmente.push(new Segment(anfangsPkt, endPkt, linienVektor, laenge, vorherLaenge))
-            vorherLaenge += laenge;
+            if (i > 0) {
+                let vorher = this.segmente[i - 1];
+                seg.anfangsVektor = Vektor.einheit(Vektor.lot(Vektor.sum(Vektor.einheit(vorher.vektor), Vektor.einheit(seg.vektor))));
+                this.segmente[i - 1].endVektor = seg.anfangsVektor;
+            } else {
+                seg.anfangsVektor = seg.lot;
+            }
+            this.segmente.push(seg)
         }
+        this.segmente[this.segmente.length - 1].endVektor = this.segmente[this.segmente.length - 1].lot;
 
         this._faktor = this.len / vorherLaenge;
 
@@ -368,14 +433,18 @@ export class Segment {
     anfangsPkt: number[];
     endPkt: number[];
     vektor: number[];
+    lot: number[]
+    anfangsVektor?: number[] = [0, 0];
+    endVektor?: number[] = [0, 0]
     laenge: number;
     vorherLaenge: number
 
-    constructor(anfangsPkt: number[], endPkt: number[], vektor: number[], laenge: number, vorherLaenge: number) {
+    constructor(anfangsPkt: number[], endPkt: number[], vorherLaenge: number) {
         this.anfangsPkt = anfangsPkt;
         this.endPkt = endPkt;
-        this.vektor = vektor;
-        this.laenge = laenge;
+        this.vektor = Vektor.diff(endPkt, anfangsPkt);
+        this.lot = Vektor.einheit(Vektor.lot(this.vektor))
+        this.laenge = Vektor.len(this.vektor);
         this.vorherLaenge = vorherLaenge;
     }
 }
