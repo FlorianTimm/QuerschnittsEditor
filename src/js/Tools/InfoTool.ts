@@ -24,7 +24,7 @@ export default class InfoTool extends Tool {
     private infoField: HTMLFormElement;
     protected select: SelectInteraction;
 
-    constructor(map: Map, layer: Layer, sidebar: string) {
+    constructor(map: Map, layer: Layer, sidebar: HTMLDivElement) {
         super();
         this.map = map;
         this.layer = layer;
@@ -36,7 +36,7 @@ export default class InfoTool extends Tool {
         });
         this.select.on('select', this.featureSelectedEvent.bind(this))
 
-        this.infoField = HTML.createToolForm(document.getElementById(sidebar), false)
+        this.infoField = HTML.createToolForm(sidebar, false)
     }
 
     /**

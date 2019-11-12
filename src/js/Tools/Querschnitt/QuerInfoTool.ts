@@ -17,7 +17,7 @@ class QuerInfoTool extends InfoTool {
     daten: Daten;
     protected selectLinie: SelectInteraction;
 
-    constructor(map: Map, layerLinie: Layer, layerFlaechen: Layer, sidebar: string) {
+    constructor(map: Map, layerLinie: Layer, layerFlaechen: Layer, sidebar: HTMLDivElement) {
         super(map, layerFlaechen, sidebar);
 
 

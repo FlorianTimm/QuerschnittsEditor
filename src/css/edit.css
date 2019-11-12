@@ -64,7 +64,7 @@ form#modify {
     display: none;
 }
 
-form#hinzu, form#quer_del, form#loeschen, form#teilen {
+form#hinzu, form#quer_del, form#loeschen {
     text-align: center;
     display: none;
 }
