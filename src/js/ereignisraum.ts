@@ -24,6 +24,7 @@ var er: {
 let select: HTMLSelectElement = document.getElementById("er_select") as HTMLSelectElement;
 select.addEventListener("change", aenderung);
 let jSelect = $(select).chosen({ placeholder_text_single: "Ereignisräume werden geladen..." });
+jSelect.on("change", aenderung);
 
 //?Service=WFS&Request=GetFeature&TypeName=Projekt&Filter=<Filter><PropertyIsEqualTo><PropertyName>status</PropertyName><Literal>1</Literal></PropertyIsEqualTo></Filter>
 
