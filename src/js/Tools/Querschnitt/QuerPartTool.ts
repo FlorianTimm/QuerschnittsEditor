@@ -162,15 +162,15 @@ class QuerPartTool extends Tool {
 
         let daten = this.part_get_station(event);
         //console.log(daten)
-        if (daten['pos'] == null) return;
+        if (daten.pos == null) return;
 
-        (this.feat_station.getGeometry() as LineString).setCoordinates(daten['pos'].neuerPkt);
-        (this.feat_station_line.getGeometry() as LineString).setCoordinates([daten['pos'].neuerPkt, daten['pos'].fusspkt]);
+        (this.feat_station.getGeometry() as LineString).setCoordinates(daten.pos.neuerPkt);
+        (this.feat_station_line.getGeometry() as LineString).setCoordinates([daten.pos.neuerPkt, daten.pos.fusspkt]);
 
         if (!this.feat_teilung.get('isset')) {
-            document.getElementById("teilen_vnk").innerHTML = daten['achse'].getVnk();
-            document.getElementById("teilen_nnk").innerHTML = daten['achse'].getNnk();
-            document.getElementById("teilen_station").innerHTML = String(Math.round(daten['pos'].station))
+            document.getElementById("teilen_vnk").innerHTML = daten.achse.getVnk();
+            document.getElementById("teilen_nnk").innerHTML = daten.achse.getNnk();
+            document.getElementById("teilen_station").innerHTML = String(Math.round(daten.pos.station))
         }
     }
 

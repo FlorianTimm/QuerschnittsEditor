@@ -1,6 +1,5 @@
 import { Circle, Style, Stroke, Fill } from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
-import Vektor from '../Vektor';
 import { Vector as VectorSource } from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
 import { LineString, Point } from 'ol/geom';
@@ -90,7 +89,7 @@ export default class MoveTool extends Tool {
         this.modify.on('modifyend', this.modifyEnd.bind(this));
     }
 
-    private selected(event: SelectEvent) {
+    private selected(__: SelectEvent) {
         if (this.select.getFeatures().getLength() > 0) {
             this.map.on("pointermove", this.move.bind(this));
         } else {
@@ -101,11 +100,11 @@ export default class MoveTool extends Tool {
         this.infoTool.featureSelect(this.select, true)
     }
 
-    private modifyStart(event: ModifyEvent) {
+    private modifyStart(__: ModifyEvent) {
         this.map.on("pointermove", this.move.bind(this));
     }
 
-    private modifyEnd(event: ModifyEvent) {
+    private modifyEnd(__: ModifyEvent) {
         this.map.un("pointermove", this.move.bind(this));
         let feat = this.select.getFeatures().item(0);
         (this.feat_station_line.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
@@ -113,11 +112,11 @@ export default class MoveTool extends Tool {
 
         if (daten == null || daten['pos'] == null) return;
 
-        (feat.getGeometry() as Point).setCoordinates(daten['pos'][6]);
+        (feat.getGeometry() as Point).setCoordinates(daten['pos'].neuerPkt);
 
-        let station = Math.round(daten['pos'][2] * (feat as PunktObjekt).getAbschnitt().getFaktor());
-        let abstand = Math.round(daten['pos'][4] * 10) / 10;
-        let seite = daten['pos'][3]
+        let station = daten.pos.station
+        let abstand = daten.pos.abstand;
+        let seite = daten.pos.seite
         if (seite == 'M') abstand = 0;
         else if (seite == 'L') abstand = -abstand;
         console.log(abstand);
@@ -142,7 +141,7 @@ export default class MoveTool extends Tool {
         if (daten == null || daten['pos'] == null) return;
 
         //this._select.getFeatures().item(0).getGeometry().setCoordinates(daten['pos'][6]);
-        (this.feat_station_line.getGeometry() as LineString).setCoordinates([daten['pos'][6], daten['pos'][5]]);
+        (this.feat_station_line.getGeometry() as LineString).setCoordinates([daten['pos'].fusspkt, daten['pos'].neuerPkt]);
     }
 
     public start() {

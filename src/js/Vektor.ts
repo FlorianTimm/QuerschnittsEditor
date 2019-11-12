@@ -1,5 +1,3 @@
-import { stat } from "fs";
-
 /**
  * Startscript edit.html
  * @author Florian Timm, LGV HH 
@@ -25,10 +23,8 @@ export default class Vektor {
     }
 
     static lot(v: number[]): number[] {
-        let r = []
         if (v.length != 2) {
-            console.log("Nur für 2D Vektoren")
-            return null
+            throw new Error("Lot kann nur von 2D-Vektoren bestimmt werden - Länge: " + v.length);
         }
         return [-v[1], v[0]]
     }
@@ -36,8 +32,7 @@ export default class Vektor {
     static diff(v1: number[], v2: number[]) {
         let r = []
         if (v1.length != v2.length) {
-            console.log("Ungleiche Länge:\n\tv1: " + v1.length + "\n\tv2: " + v2.length)
-            return null
+            throw new Error("Ungleiche Länge:\n\tv1: " + v1.length + "\n\tv2: " + v2.length)
         }
         for (var i = 0; i < v1.length; i++) {
             r.push(v1[i] - v2[i])
@@ -48,8 +43,7 @@ export default class Vektor {
     static sum(v1: number[], v2: number[]): number[] {
         let r = []
         if (v1.length != v2.length) {
-            console.log("Ungleiche Länge: " + v1.length + " und " + v2.length)
-            return null // Ungleiche Länge
+            throw new Error("Ungleiche Länge: " + v1.length + " und " + v2.length)
         }
         for (var i = 0; i < v1.length; i++) {
             r.push(v1[i] + v2[i])
@@ -60,7 +54,7 @@ export default class Vektor {
     static skalar(v1: number[], v2: number[]): number {
         let r = 0
         if (v1.length != v2.length) {
-            return null // Ungleiche Länge
+            throw new Error("Ungleiche Länge: " + v1.length + " und " + v2.length)
         }
         for (var i = 0; i < v1.length; i++) {
             r += v1[i] * v2[i]

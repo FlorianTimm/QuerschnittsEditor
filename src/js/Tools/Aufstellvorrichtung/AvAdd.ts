@@ -1,8 +1,7 @@
-import { Point, LineString } from 'ol/geom';
 import PublicWFS from '../../PublicWFS';
 import Aufstellvorrichtung from '../../Objekte/Aufstellvorrichtung';
 import AddTool from '../prototypes/AddTool';
-import { Map, MapBrowserEvent } from 'ol';
+import { Map } from 'ol';
 import Daten from '../../Daten';
 var CONFIG = require('../../config.json');
 
@@ -44,7 +43,7 @@ export default class AvAdd extends AddTool {
         }
     }
 
-    private addInER_Callback(xml: XMLDocument) {
+    private addInER_Callback(__: XMLDocument) {
         Aufstellvorrichtung.loadAbschnittER(this.abschnitt, this.wfsAddAufstell.bind(this))
     }
 

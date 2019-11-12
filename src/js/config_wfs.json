@@ -515,6 +515,91 @@
         },
         "stand": {
             "art": 0
+        },
+        "parent": {
+            "art": 2,
+            "kt": "Otaufstell"
+        }
+    },
+    "Otdokument": {
+        "projekt": {
+            "art": 2,
+            "kt": "Projekt"
+        },
+        "vst": {
+            "art": 1
+        },
+        "bst": {
+            "art": 1
+        },
+        "art": {
+            "art": 2,
+            "kt": "Itdokart"
+        },
+        "beschreib": {
+            "art": 0
+        },
+        "standort": {
+            "art": 0
+        },
+        "pfad": {
+            "art": 0
+        },
+        "checksumme": {
+            "art": 0
+        },
+        "kherk": {
+            "art": 2,
+            "kt": "Itherkkoord"
+        },
+        "baujahrGew": {
+            "art": 0
+        },
+        "abnahmeGew": {
+            "art": 0
+        },
+        "dauerGew": {
+            "art": 0
+        },
+        "ablaufGew": {
+            "art": 0
+        },
+        "objektId": {
+            "art": 0
+        },
+        "objektnr": {
+            "art": 0
+        },
+        "erfart": {
+            "art": 2,
+            "kt": "Iterfart"
+        },
+        "quelle": {
+            "art": 2,
+            "kt": "Itquelle"
+        },
+        "ADatum": {
+            "art": 0
+        },
+        "bemerkung": {
+            "art": 0
+        },
+        "detailgrad": {
+            "art": 2,
+            "kt": "Itobjdetailgrad"
+        },
+        "bearbeiter": {
+            "art": 0
+        },
+        "behoerde": {
+            "art": 0
+        },
+        "stand": {
+            "art": 0
+        },
+        "parent": {
+            "art": 2,
+            "kt": null
         }
     },
     "STAUSPKT": {

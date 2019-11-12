@@ -462,7 +462,7 @@ class AvVzAdd extends Tool {
      * Schließt das Popup mit den Schildern
      * @param {*} event 
      */
-    _closePopup(event: any) {
+    _closePopup(__: any) {
         //this._ausblenden.remove();
         document.body.removeChild(this._ausblenden);
         this._select.getFeatures().clear();

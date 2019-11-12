@@ -38,7 +38,7 @@ export default class SAPAdd extends AddTool {
         }
     }
 
-    private addInER_Callback(xml: XMLDocument) {
+    private addInER_Callback() {
         StrassenAusPunkt.loadAbschnittER(this.abschnitt, this.wfsAddStrausPkt.bind(this))
     }
 

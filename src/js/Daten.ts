@@ -13,6 +13,7 @@ import Event from 'ol/events/Event';
 import { VectorLayer } from './openLayers/Layer';
 import { LineString } from 'ol/geom';
 import StrassenAusPunkt from './Objekte/StrassenAusPunkt';
+import { FeatureLike } from 'ol/Feature';
 
 var CONFIG: { [name: string]: string } = require('./config.json');
 
@@ -164,11 +165,12 @@ export default class Daten {
         this.vectorAchse = new VectorSource({
             features: []
         });
-        let achsen_style = function (feature: Abschnitt, resolution: number) {
+        let achsen_style = function (feature: FeatureLike, resolution: number): Style[] {
+            let abschnitt = feature as Abschnitt;
             let styles = [];
             // Linienfarbe - rot, wenn in ER
             let color = '#222';
-            if (feature.isOKinER(Daten.getInstanz().modus)) color = '#d00';
+            if (abschnitt.isOKinER(Daten.getInstanz().modus)) color = '#d00';
 
             // Linie + Beschriftung
             styles.push(new Style({
@@ -183,7 +185,7 @@ export default class Daten {
                     stroke: new Stroke({
                         color: '#fff', width: 2
                     }),
-                    text: feature.getVnk() + ' - ' + feature.getNnk(),
+                    text: abschnitt.getVnk() + ' - ' + abschnitt.getNnk(),
                     placement: 'line',
                     offsetY: -7
                 })
@@ -192,7 +194,7 @@ export default class Daten {
             // Pfeile/Start/Endknoten ab bestimmten Maßstab
             if (resolution < 0.15) {
                 // Pfeile
-                var geometry = feature.getGeometry() as LineString;
+                var geometry = abschnitt.getGeometry() as LineString;
                 let first = true;
                 geometry.forEachSegment(function (start, end) {
                     if (first) {
@@ -295,84 +297,83 @@ export default class Daten {
         Klartext.getInstanz().load("Itquerart");
         Klartext.getInstanz().load("Itquerober");
 
-        let createStyle: (feature: Feature, resolution: number) => Style =
-            function (feature: Feature, resolution: number) {
-                let kt_art = Klartext.getInstanz().get('Itquerart', (feature as Querschnitt).getArt())
-                let kt_ober = Klartext.getInstanz().get('Itquerober', (feature as Querschnitt).getArtober())
+        let createStyle = function (feature: FeatureLike, resolution: number): Style {
+            let kt_art = Klartext.getInstanz().get('Itquerart', (feature as Querschnitt).getArt())
+            let kt_ober = Klartext.getInstanz().get('Itquerober', (feature as Querschnitt).getArtober())
 
-                // leere Arten filtern
-                let art = 0
-                if (!isNullOrUndefined(kt_art))
-                    art = Number(kt_art.kt);
+            // leere Arten filtern
+            let art = 0
+            if (!isNullOrUndefined(kt_art))
+                art = Number(kt_art.kt);
 
-                // leere Oberflächen filtern
-                let ober = 0
-                if (!isNullOrUndefined(kt_ober))
-                    ober = Number(kt_ober.kt);
+            // leere Oberflächen filtern
+            let ober = 0
+            if (!isNullOrUndefined(kt_ober))
+                ober = Number(kt_ober.kt);
 
-                // Farbe für Querschnittsfläche
-                let color = [255, 255, 255];
+            // Farbe für Querschnittsfläche
+            let color = [255, 255, 255];
 
-                if ((art >= 100 && art <= 110) || (art >= 113 && art <= 119) || (art >= 122 && art <= 161) || (art >= 163 && art <= 179) || art == 312)
-                    color = [33, 33, 33];	// Fahrstreifen
-                else if (art == 111)
-                    color = [66, 66, 66]; // 1. Überholfahrstreifen
-                else if (art == 112)
-                    color = [100, 100, 100]; // 2. Überholfahrstreifen
-                else if (art >= 180 && art <= 183)
-                    color = [50, 50, 100];	// Parkstreifen
-                else if (art >= 940 && art <= 942)
-                    color = [0xF9, 0x14, 0xB8]; // Busanlagen
-                else if (art == 210) color = [0x22, 0x22, 0xff];	// Gehweg
-                else if ((art >= 240 && art <= 243) || art == 162)
-                    color = [0x33, 0x33, 0x66];	// Radweg
-                else if (art == 250 || art == 251)
-                    color = [0xcc, 0x22, 0xcc];	// Fuß-Rad-Weg
-                else if (art == 220)
-                    color = [0xff, 0xdd, 0x00];	// paralleler Wirtschaftsweg
-                else if (art == 420 || art == 430 || art == 900)
-                    color = [0xff, 0xff, 0xff];	// Markierungen
-                else if (art == 310 || art == 311 || art == 313 || art == 320 || art == 330 || (art >= 910 && art <= 916))
-                    color = [0xee, 0xee, 0xee];	// Trenn-, Schutzstreifen und Schwellen
-                else if (art == 120 || art == 121)
-                    color = [0x1F, 0x22, 0x97];	// Rinne
-                else if (art == 301)
-                    color = [0x75, 0x9F, 0x1E];	// Banket
-                else if (art == 510 || art == 511 || art == 520)
-                    color = [0x12, 0x0a, 0x8f];	// Gräben und Mulden
-                else if (art == 700 || art == 710)
-                    color = [0x00, 0x44, 0x00];	// Böschungen
-                else if (art == 314 || art == 315)
-                    color = [0x8A, 0x60, 0xD8];	// Inseln
-                else if (art == 400 || art == 410 || art == 715)
-                    color = [0x8A, 0x60, 0xD8];	// Randstreifen und Sichtflächen
-                else if (art == 600 || art == 610 || art == 620 || art == 630 || art == 640)
-                    color = [0xC1, 0xBA, 0xC8];	// Borde und Kantsteine
-                else if (art == 340)
-                    color = [0, 0, 0];	// Gleiskörper
-                else if (art == 999)
-                    color = [0x88, 0x88, 0x88];	// Bestandsachse
-                else if (art == 990 || art == 720)
-                    color = [0xFC, 0x8A, 0x57];	// sonstige Streifenart
+            if ((art >= 100 && art <= 110) || (art >= 113 && art <= 119) || (art >= 122 && art <= 161) || (art >= 163 && art <= 179) || art == 312)
+                color = [33, 33, 33];	// Fahrstreifen
+            else if (art == 111)
+                color = [66, 66, 66]; // 1. Überholfahrstreifen
+            else if (art == 112)
+                color = [100, 100, 100]; // 2. Überholfahrstreifen
+            else if (art >= 180 && art <= 183)
+                color = [50, 50, 100];	// Parkstreifen
+            else if (art >= 940 && art <= 942)
+                color = [0xF9, 0x14, 0xB8]; // Busanlagen
+            else if (art == 210) color = [0x22, 0x22, 0xff];	// Gehweg
+            else if ((art >= 240 && art <= 243) || art == 162)
+                color = [0x33, 0x33, 0x66];	// Radweg
+            else if (art == 250 || art == 251)
+                color = [0xcc, 0x22, 0xcc];	// Fuß-Rad-Weg
+            else if (art == 220)
+                color = [0xff, 0xdd, 0x00];	// paralleler Wirtschaftsweg
+            else if (art == 420 || art == 430 || art == 900)
+                color = [0xff, 0xff, 0xff];	// Markierungen
+            else if (art == 310 || art == 311 || art == 313 || art == 320 || art == 330 || (art >= 910 && art <= 916))
+                color = [0xee, 0xee, 0xee];	// Trenn-, Schutzstreifen und Schwellen
+            else if (art == 120 || art == 121)
+                color = [0x1F, 0x22, 0x97];	// Rinne
+            else if (art == 301)
+                color = [0x75, 0x9F, 0x1E];	// Banket
+            else if (art == 510 || art == 511 || art == 520)
+                color = [0x12, 0x0a, 0x8f];	// Gräben und Mulden
+            else if (art == 700 || art == 710)
+                color = [0x00, 0x44, 0x00];	// Böschungen
+            else if (art == 314 || art == 315)
+                color = [0x8A, 0x60, 0xD8];	// Inseln
+            else if (art == 400 || art == 410 || art == 715)
+                color = [0x8A, 0x60, 0xD8];	// Randstreifen und Sichtflächen
+            else if (art == 600 || art == 610 || art == 620 || art == 630 || art == 640)
+                color = [0xC1, 0xBA, 0xC8];	// Borde und Kantsteine
+            else if (art == 340)
+                color = [0, 0, 0];	// Gleiskörper
+            else if (art == 999)
+                color = [0x88, 0x88, 0x88];	// Bestandsachse
+            else if (art == 990 || art == 720)
+                color = [0xFC, 0x8A, 0x57];	// sonstige Streifenart
 
-                color.push(0.4);
+            color.push(0.4);
 
-                return new Style({
-                    fill: new Fill({
-                        color: color
+            return new Style({
+                fill: new Fill({
+                    color: color
+                }),
+                text: new Text({
+                    font: '12px Calibri,sans-serif',
+                    fill: new Fill({ color: '#000' }),
+                    stroke: new Stroke({
+                        color: '#fff', width: 2
                     }),
-                    text: new Text({
-                        font: '12px Calibri,sans-serif',
-                        fill: new Fill({ color: '#000' }),
-                        stroke: new Stroke({
-                            color: '#fff', width: 2
-                        }),
-                        // get the text from the feature - `this` is ol.Feature
-                        // and show only under certain resolution
-                        text: ((resolution < 0.05) ? (art + " - " + ober) : '')
-                    })
+                    // get the text from the feature - `this` is ol.Feature
+                    // and show only under certain resolution
+                    text: ((resolution < 0.05) ? (art + " - " + ober) : '')
                 })
-            }
+            })
+        }
 
         this.layerQuer = new VectorLayer({
             source: this.vectorQuer,
@@ -382,7 +383,7 @@ export default class Daten {
         this.map.addLayer(this.layerQuer);
     }
 
-    public searchForStreet(event?: Event) {
+    public searchForStreet(__?: Event) {
         console.log(document.forms.namedItem("suche").suche.value);
         let wert = document.forms.namedItem("suche").suche.value;
         if (wert == "") return;

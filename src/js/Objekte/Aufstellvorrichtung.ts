@@ -14,6 +14,7 @@ import Klartext, { KlartextMap } from './Klartext';
 import PunktObjekt from './prototypes/PunktObjekt';
 import Zeichen from './Zeichen';
 import HTML from "../HTML";
+import Dokument from "./Dokument.js";
 
 export default class Aufstellvorrichtung extends PunktObjekt {
     getWFSKonfigName(): string {
@@ -202,7 +203,45 @@ export default class Aufstellvorrichtung extends PunktObjekt {
             schilder.style.marginTop = "10px";
             form.appendChild(schilder);
             aufstell.getZeichen(aufstell.vzAddHTML.bind(aufstell), schilder);
+
+            aufstell.getDokumente(aufstell.dokuAdd.bind(aufstell), form);
         }
+    }
+
+    private dokuAdd(doku: Dokument[], ziel: HTMLElement) {
+        if (doku.length == 0) return;
+        let button = document.createElement('input');
+        button.type = "button";
+        button.value = "Dokumente anzeigen";
+        ziel.appendChild(button);
+
+        button.addEventListener("click", this.showDokuPopup.bind(this))
+    }
+
+    private showDokuPopup(__: Event) {
+        this.getDokumente(function (this: Aufstellvorrichtung, doks: Dokument[]) {
+            let dialog = document.createElement("table");
+            dialog.className = "tableWithBorder"
+            for(let dok of doks){
+                dialog.innerHTML += "<tr><td>" + dok.getBeschreib() + "</td><td>" + dok.getPfad() + "</td></tr>"
+            }
+            document.body.appendChild(dialog);
+            let jqueryDialog = $(dialog).dialog({
+                resizable: false,
+                height: "auto",
+                title: "Dokumente",
+                width: 400,
+                modal: true,
+                buttons: {
+                   /* "Speichern": function (this: Aufstellvorrichtung) {
+                        jqueryDialog.dialog("close");
+                    }.bind(this),*/
+                    Cancel: function () {
+                        jqueryDialog.dialog("close");
+                    }
+                }
+            });
+        }.bind(this));
     }
 
     public getInfoForm(ziel: HTMLFormElement, changeable: boolean = false): void {

@@ -6,6 +6,10 @@
  */
 
 import PublicWFS from './PublicWFS';
+import "./import_jquery.js";
+import 'chosen-js';
+import 'chosen-js/chosen.css';
+import '../css/index.css';
 
 window.addEventListener('load', loadER);
 
@@ -17,8 +21,9 @@ var er: {
     ownerName: string,
     anlagedat: string
 }[] = []
-var select: HTMLSelectElement = document.getElementById("er_select") as HTMLSelectElement;
+let select: HTMLSelectElement = document.getElementById("er_select") as HTMLSelectElement;
 select.addEventListener("change", aenderung);
+let jSelect = $(select).chosen({ placeholder_text_single: "Ereignisräume werden geladen..." });
 
 //?Service=WFS&Request=GetFeature&TypeName=Projekt&Filter=<Filter><PropertyIsEqualTo><PropertyName>status</PropertyName><Literal>1</Literal></PropertyIsEqualTo></Filter>
 
@@ -100,6 +105,7 @@ function readER(xml: Document) {
         select.innerHTML = ""
         select.appendChild(option);
     }
+    jSelect.trigger("chosen:updated")
 }
 
 function aenderung() {

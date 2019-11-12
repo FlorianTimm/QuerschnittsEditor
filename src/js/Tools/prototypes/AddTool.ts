@@ -1,6 +1,5 @@
 import { Circle, Style, Stroke, Fill } from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
-import Vektor from '../../Vektor';
 import VectorSource from 'ol/source/Vector';
 import { Vector as VectorLayer } from 'ol/layer';
 import { Point, LineString } from 'ol/geom';
@@ -48,7 +47,7 @@ export default abstract class AddTool extends Tool {
     calcStation(event: MapBrowserEvent) {
         this.feat_neu.set('isset', true);
         let daten = this.part_get_station(event);
-        if (daten['pos'] == null) return;
+        if (daten['pos'] == null) return null;
 
         (this.feat_neu.getGeometry() as Point).setCoordinates(daten['pos'].neuerPkt);
 
@@ -93,17 +92,16 @@ export default abstract class AddTool extends Tool {
         }));
         this.v_overlay.addFeature(this.feat_station);
         this.feat_neu = new Feature({ geometry: new Point([0, 0]) });
-        this.feat_neu.setStyle(function (feature, zoom) {
-            return new Style({
-                image: new Circle({
-                    radius: 3,
-                    fill: new Fill({ color: 'black' }),
-                    stroke: new Stroke({
-                        color: 'rgba(50,50,250,0.9)', width: 3
-                    })
+        this.feat_neu.setStyle(new Style({
+            image: new Circle({
+                radius: 3,
+                fill: new Fill({ color: 'black' }),
+                stroke: new Stroke({
+                    color: 'rgba(50,50,250,0.9)', width: 3
                 })
-            });
-        });
+            })
+
+        }));
         this.v_overlay.addFeature(this.feat_neu);
         this.feat_station_line = new Feature({ geometry: new LineString([[0, 0], [0, 0]]) });
         this.feat_station_line.setStyle(new Style({
@@ -146,6 +144,7 @@ export default abstract class AddTool extends Tool {
 
     protected part_click(event: MapBrowserEvent) {
         let daten = this.calcStation(event);
+        if (daten == null) return
         this.refreshStationierung(daten);
         $(this.form).find("input[type='submit']").prop("disabled", false);
     }

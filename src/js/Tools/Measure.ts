@@ -109,7 +109,7 @@ class Measure extends Tool {
             }.bind(this));
 
         this.draw.on('drawend',
-            function () {
+            function (this: Measure) {
                 measureTooltipElement.className = 'tooltip tooltip-static';
                 this.measureTooltip.setOffset([0, -7]);
                 unByKey(listener);

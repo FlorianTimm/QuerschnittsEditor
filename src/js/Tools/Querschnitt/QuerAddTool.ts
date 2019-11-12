@@ -33,7 +33,8 @@ class QuerAddTool extends Tool {
         this._info = info;
         this._select = new SelectInteraction({
             layers: [this._daten.layerTrenn],
-            style: InfoTool.selectStyle
+            style: InfoTool.selectStyle,
+            hitTolerance: 10
         });
 
         this._select.on('select', this.selected.bind(this));
@@ -54,13 +55,11 @@ class QuerAddTool extends Tool {
         }
 
         (this._info as QuerInfoTool).getInfoFieldForFeature(e.selected[0].get("objekt"))
-        this.button.style.backgroundColor = "#ffcc00";
         this.button.disabled = false;
     }
 
     private disableMenu() {
         if (this.form != null) {
-            this.button.style.backgroundColor = "";
             this.button.disabled = true;
         }
         (this._info as QuerInfoTool).hideInfoBox();
@@ -103,6 +102,7 @@ class QuerAddTool extends Tool {
             resizable: false,
             height: "auto",
             width: 400,
+            title: "Querschnitt hinzufügen",
             modal: true,
             buttons: {
                 "Links": function (this: QuerAddTool) {

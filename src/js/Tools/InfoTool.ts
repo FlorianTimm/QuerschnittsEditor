@@ -9,6 +9,7 @@ import HTML from '../HTML';
 import { Style, Stroke, Fill } from 'ol/style';
 import GeometryType from 'ol/geom/GeometryType';
 import CircleStyle from 'ol/style/Circle';
+import { FeatureLike } from 'ol/Feature';
 
 /**
  * Funktion zum Anzeigen von Informationen zu Aufstellvorrichtungen und Schildern
@@ -42,7 +43,7 @@ export default class InfoTool extends Tool {
      * Wird ausgelöst beim Auswählen einer Aufstellvorrichtung
      * @param {SelectEvent} event 
      */
-    private featureSelectedEvent(event: SelectEvent, changeable: boolean = false) {
+    private featureSelectedEvent(__: SelectEvent, changeable: boolean = false) {
         this.featureSelect(this.select, changeable);
         console.log("Select");
     }
@@ -90,7 +91,7 @@ export default class InfoTool extends Tool {
 
     }
 
-    public static selectStyle(feat: Feature): Style {
+    public static selectStyle(feat: FeatureLike, __: number): Style {
         let typ = feat.getGeometry().getType();
         if (typ == GeometryType.LINE_STRING || typ == GeometryType.MULTI_LINE_STRING) {
             return new Style({

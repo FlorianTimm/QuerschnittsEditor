@@ -1,4 +1,3 @@
-var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
 import { Feature } from 'ol';
 import { MultiLineString, Polygon } from 'ol/geom';
 import Daten from '../Daten';
@@ -146,7 +145,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
     }
 
-    private static createFields(form: HTMLFormElement, formId: string, querschnitt?: Querschnitt, changeable: boolean = false) {
+    private static createFields(form: HTMLFormElement, __: string, querschnitt?: Querschnitt, changeable: boolean = false) {
         // Art
         let art = Klartext.createKlartextSelectForm("Itquerart", form, "Art", "art", querschnitt != undefined ? querschnitt.art : undefined);
         $(art).prop('disabled', !changeable).trigger("chosen:updated");

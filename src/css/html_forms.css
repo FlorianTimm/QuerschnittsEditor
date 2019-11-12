@@ -9,7 +9,7 @@
     float: left;
 }
 
-.form_group input[type="text"], .form_group input[type="number"], .form_group select {
+.form_group input[type="text"], .form_group input[type="number"], .form_group select, .tool_form input[type="button"] {
     width: 95%;
 }
 
