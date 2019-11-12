@@ -15,13 +15,13 @@ import Abschnitt from '../../Objekte/Abschnitt';
  * @copyright MIT
  */
 class AvAdd2ER extends Tool {
-    daten: Daten;
-    map: Map;
-    select: SelectInteraction;
+    private daten: Daten;
+    private map: Map;
+    private select: SelectInteraction;
 
-    constructor(map: Map, daten: Daten) {
+    constructor(map: Map) {
         super();
-        this.daten = daten;
+        this.daten = Daten.getInstanz();
         this.map = map;
 
         this.select = new SelectInteraction({
