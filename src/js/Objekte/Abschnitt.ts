@@ -7,6 +7,7 @@ import Aufbaudaten from './Aufbaudaten';
 import Daten from '../Daten';
 import QuerStation from './QuerStation';
 import Aufbau from './Aufbaudaten';
+import PunktObjekt from './prototypes/PunktObjekt';
 
 var CONFIG: { [index: string]: string } = require('../config.json');
 
@@ -44,7 +45,7 @@ export default class Abschnitt extends Feature {
 
     private _feature: any;
     public aufbaudatenLoaded: boolean = false;
-    private segmente: Segment[];
+    private punkte: LinienPunkt[];
 
     constructor() {
         super();
@@ -71,7 +72,7 @@ export default class Abschnitt extends Feature {
 
     public getFaktor(): number {
         if (this._faktor == null) {
-            this.calcSegmente();
+            this.calcPunkte();
         }
         return this._faktor;
     }
@@ -248,24 +249,25 @@ export default class Abschnitt extends Feature {
     public calcStationierung(point: number[]): StationObj {
         let posi: StationObj[] = [];
 
-        let segmente = this.calcSegmente()
+        let punkte = this.calcPunkte()
 
-        for (let seg of segmente) {
+        for (let i = 0; i < punkte.length - 1; i++) {
+            let pkt = punkte[i]
             let obj: StationObj = new StationObj();
             obj.isEnthalten = true;
 
             // Position des Fusspunktes auf dem Segment relativ zwischen 0 und 1
-            let faktor = (Vektor.skalar(Vektor.diff(point, seg.anfangsPkt), seg.vektor)) / (Vektor.skalar(seg.vektor, seg.vektor))
+            let faktor = (Vektor.skalar(Vektor.diff(point, pkt.pkt), pkt.vektorZumNaechsten)) / (Vektor.skalar(pkt.vektorZumNaechsten, pkt.vektorZumNaechsten))
 
             // Abstand und Lot berechnen
-            let fusspkt_genau = Vektor.sum(seg.anfangsPkt, Vektor.multi(seg.vektor, faktor))
+            let fusspkt_genau = Vektor.sum(pkt.pkt, Vektor.multi(pkt.vektorZumNaechsten, faktor))
             let lot = Vektor.diff(point, fusspkt_genau)
             obj.abstand = Math.round(Vektor.len(lot) * 10) / 10
 
             // Mindest-Stationen
-            obj.station = Math.round((seg.vorherLaenge + faktor * seg.laenge) * this.getFaktor());
-            let minStation_genau = (seg.vorherLaenge) * this.getFaktor();
-            let maxStation_genau = (seg.vorherLaenge + seg.laenge) * this.getFaktor();
+            obj.station = Math.round((pkt.vorherLaenge + faktor * pkt.laengeZumNaechsten) * this.getFaktor());
+            let minStation_genau = (pkt.vorherLaenge) * this.getFaktor();
+            let maxStation_genau = (pkt.vorherLaenge + pkt.laengeZumNaechsten) * this.getFaktor();
 
             if (obj.station < minStation_genau || obj.station > maxStation_genau)
                 obj.isEnthalten = false;
@@ -278,11 +280,11 @@ export default class Abschnitt extends Feature {
 
             faktor = (obj.station - minStation_genau) / (maxStation_genau - minStation_genau)
 
-            obj.fusspkt = Vektor.sum(seg.anfangsPkt, Vektor.multi(seg.vektor, faktor))
+            obj.fusspkt = Vektor.sum(pkt.pkt, Vektor.multi(pkt.vektorZumNaechsten, faktor))
 
             obj.seite = 'M'
             if (obj.abstand > 0.01) {
-                let c3 = Vektor.kreuz(Vektor.add3(seg.vektor), Vektor.add3(lot))[2]
+                let c3 = Vektor.kreuz(Vektor.add3(pkt.vektorZumNaechsten), Vektor.add3(lot))[2]
                 if (c3 < 0) {
                     obj.seite = 'R'
                 } else if (c3 > 0) {
@@ -300,34 +302,36 @@ export default class Abschnitt extends Feature {
     }
 
     public getAbschnitt(vst: number, bst: number) {
-        let segmente = this.calcSegmente();
-        let r: Segment[] = []
+        let punkte = this.calcPunkte();
+        let r: LinienPunkt[] = []
 
         vst = vst * this.getFaktor();
         bst = bst * this.getFaktor();
 
-        for (let seg of segmente) {
-            if (seg.vorherLaenge >= vst && seg.vorherLaenge + seg.laenge <= bst) {
-                console.log("mitte" + seg.vorherLaenge)
-                r.push(seg);
-            } else if (seg.vorherLaenge < vst && seg.vorherLaenge + seg.laenge > vst) {
-                let faktor = (vst - seg.vorherLaenge) / seg.laenge
-                let anfPkt = Vektor.sum(seg.anfangsPkt, Vektor.multi(seg.lot, faktor));
-                let segmentNeu = new Segment(anfPkt, seg.endPkt, faktor * seg.laenge + seg.vorherLaenge);
-                segmentNeu.anfangsVektor = seg.lot;
-                segmentNeu.endVektor = seg.endVektor;
-                console.log("anfang" + seg.vorherLaenge)
-                r.push(segmentNeu)
-            } else if (seg.vorherLaenge < bst && seg.vorherLaenge + seg.laenge > bst) {
-                let faktor = (bst - seg.vorherLaenge) / seg.laenge
-                let endPkt = Vektor.sum(seg.anfangsPkt, Vektor.multi(seg.lot, faktor));
-                let segmentNeu = new Segment(seg.anfangsPkt, endPkt, seg.vorherLaenge);
-                segmentNeu.anfangsVektor = seg.anfangsVektor;
-                segmentNeu.endVektor = seg.lot;
-                console.log("ende" + seg.vorherLaenge)
-                r.push(segmentNeu)
+        for (let i = 0; i < punkte.length - 1; i++) {
+            let pkt = punkte[i]
+            if (pkt.vorherLaenge >= vst && pkt.vorherLaenge <= bst) {
+                //console.log("mitte", pkt.vorherLaenge, pkt.pkt)
+                r.push(pkt);
+            } else if (pkt.vorherLaenge < vst && pkt.vorherLaenge + pkt.laengeZumNaechsten > vst) {
+                let faktor = (vst - pkt.vorherLaenge) / pkt.laengeZumNaechsten
+                //console.log(faktor)
+                let koord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.vektorZumNaechsten, faktor));
+                let pktNeu = new LinienPunkt(koord, Vektor.einheit(Vektor.lot(pkt.vektorZumNaechsten)), vst);
+                //console.log("anfang", pktNeu.vorherLaenge, pktNeu.pkt)
+                r.push(pktNeu)
+            }
+
+            if (pkt.vorherLaenge < bst && pkt.vorherLaenge + pkt.laengeZumNaechsten > bst) {
+                let faktor = (bst - pkt.vorherLaenge) / pkt.laengeZumNaechsten
+                //console.log(faktor)
+                let koord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.vektorZumNaechsten, faktor));
+                let pktNeu = new LinienPunkt(koord, Vektor.einheit(Vektor.lot(pkt.vektorZumNaechsten)), bst);
+                //console.log("ende", pktNeu.vorherLaenge, pktNeu.pkt)
+                r.push(pktNeu)
             }
         }
+        console.log(r)
         return r;
     }
 
@@ -345,32 +349,35 @@ export default class Abschnitt extends Feature {
         return 0;
     }
 
-    private calcSegmente(): Segment[] {
-        if (this.segmente) return this.segmente;
+    private calcPunkte(): LinienPunkt[] {
+        if (this.punkte) return this.punkte;
 
-        this.segmente = [];
+        this.punkte = [];
         let line = (this.getGeometry() as LineString).getCoordinates();
         let vorherLaenge = 0;
 
         for (var i = 0; i < line.length - 1; i++) {
-            let seg = new Segment(line[i], line[i + 1], vorherLaenge);
+            let pkt = new LinienPunkt(line[i], null, vorherLaenge, Vektor.diff(line[i + 1], line[i]));
 
-            vorherLaenge += seg.laenge;
+            vorherLaenge += pkt.laengeZumNaechsten;
 
-            if (i > 0) {
-                let vorher = this.segmente[i - 1];
-                seg.anfangsVektor = Vektor.einheit(Vektor.lot(Vektor.sum(Vektor.einheit(vorher.vektor), Vektor.einheit(seg.vektor))));
-                this.segmente[i - 1].endVektor = seg.anfangsVektor;
-            } else {
-                seg.anfangsVektor = seg.lot;
+            if (i == 0)
+                pkt.seitlicherVektorAmPunkt = Vektor.einheit(Vektor.lot(pkt.vektorZumNaechsten));
+            else {
+
+                let vorher = this.punkte[i - 1];
+                pkt.seitlicherVektorAmPunkt = Vektor.einheit(Vektor.lot(Vektor.sum(Vektor.einheit(vorher.vektorZumNaechsten), Vektor.einheit(pkt.vektorZumNaechsten))));
             }
-            this.segmente.push(seg)
+            this.punkte.push(pkt)
         }
-        this.segmente[this.segmente.length - 1].endVektor = this.segmente[this.segmente.length - 1].lot;
+
+
+        this.punkte.push(new LinienPunkt(line[line.length - 1], Vektor.einheit(Vektor.lot(this.punkte[this.punkte.length - 1].vektorZumNaechsten)), vorherLaenge))
 
         this._faktor = this.len / vorherLaenge;
+        console.log(this._faktor)
 
-        return this.segmente;
+        return this.punkte;
     }
 
 
@@ -429,22 +436,18 @@ export class StationObj {
     neuerPkt: number[] = [];
 }
 
-export class Segment {
-    anfangsPkt: number[];
-    endPkt: number[];
-    vektor: number[];
-    lot: number[]
-    anfangsVektor?: number[] = [0, 0];
-    endVektor?: number[] = [0, 0]
-    laenge: number;
-    vorherLaenge: number
+export class LinienPunkt {
+    pkt: number[];
+    seitlicherVektorAmPunkt: number[];
+    vorherLaenge: number;
+    vektorZumNaechsten: number[] | null = null;
+    laengeZumNaechsten: number | null = null;
 
-    constructor(anfangsPkt: number[], endPkt: number[], vorherLaenge: number) {
-        this.anfangsPkt = anfangsPkt;
-        this.endPkt = endPkt;
-        this.vektor = Vektor.diff(endPkt, anfangsPkt);
-        this.lot = Vektor.einheit(Vektor.lot(this.vektor))
-        this.laenge = Vektor.len(this.vektor);
+    constructor(pkt: number[], seitlicherVektorAmPunkt: number[], vorherLaenge: number, vektorZumNaechsten: number[] | null = null) {
+        this.pkt = pkt;
+        this.seitlicherVektorAmPunkt = seitlicherVektorAmPunkt;
         this.vorherLaenge = vorherLaenge;
+        this.vektorZumNaechsten = vektorZumNaechsten;
+        if (vektorZumNaechsten) this.laengeZumNaechsten = Vektor.len(vektorZumNaechsten);
     }
 }

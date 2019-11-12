@@ -200,16 +200,6 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             r.abschnitt = abschnitt;
 
             if (!(r.abschnitt.existsStation(r.vst))) {
-                /*
-                let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(' ');
-                let geo = [];
-                for (let i = 0; i < koords.length; i++) {
-                    let k = koords[i].split(',')
-                    let x = Number(k[0]);
-                    let y = Number(k[1]);
-                    geo.push([x, y]);
-                }
-                */
                 r.station = new QuerStation(r.abschnitt, r.vst, r.bst);
             } else {
                 r.station = r.abschnitt.getStation(r.vst);
@@ -263,10 +253,15 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         let abst2 = this.XVstL
         let diff2 = this.XBstL - abst2
 
-        let anzahl = this.station.getGeometry().length;
+        let punkte = this.station.getPunkte();
 
-        for (let j = 0; j < anzahl; j++) {
-            let coord = Vektor.sum(this.station.getGeometry()[j], Vektor.multi(this.station.getVector()[j], this.station.getSegment()[j] * diff2 + abst2));
+        let erster = punkte[0];
+        let letzter = punkte[punkte.length-1]
+
+        for (let i = 0; i < punkte.length; i++) {
+            let pkt = punkte [i]
+            let faktor = (pkt.vorherLaenge - erster.vorherLaenge) / (letzter.vorherLaenge - erster.vorherLaenge);
+            let coord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff2 + abst2)));
             if (isNaN(coord[0]) || isNaN(coord[1])) {
                 console.log("Fehler: keine Koordinaten");
                 continue;
@@ -275,8 +270,11 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             l.push(coord);
         }
 
-        for (let j = anzahl - 1; j >= 0; j--) {
-            let coord = Vektor.sum(this.station.getGeometry()[j], Vektor.multi(this.station.getVector()[j], this.station.getSegment()[j] * diff1 + abst1));
+
+        for (let i = punkte.length -1 ; i >= 0 ; i--) {
+            let pkt = punkte [i]
+            let faktor = (pkt.vorherLaenge - erster.vorherLaenge) / (letzter.vorherLaenge - erster.vorherLaenge);
+            let coord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff1 + abst1)));
             if (isNaN(coord[0]) || isNaN(coord[1])) {
                 console.log("Fehler: keine Koordinaten");
                 continue;
@@ -290,7 +288,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         else this.trenn.setGeometry(new MultiLineString([l, r]));
 
         g.push(g[0])
-        this.setGeometry(new Polygon([g])) //setCoordinates([g])
+        this.setGeometry(new Polygon([g])) //setCoordinates([g])*/
     }
 
     private createUpdateBreiteXML() {
