@@ -253,7 +253,6 @@ export default class QuerStation {
         }
         filter += '</Filter>';
         PublicWFS.doQuery('Dotquer', filter, this.neueQuerschnitteCallbackDotquer.bind(this), undefined, station);
-
     }
 
     private neueQuerschnitteCallbackDotquer(xml: Document, station?: number) {

@@ -14,6 +14,7 @@ import { VectorLayer } from './openLayers/Layer';
 import { LineString } from 'ol/geom';
 import StrassenAusPunkt from './Objekte/StrassenAusPunkt';
 import { FeatureLike } from 'ol/Feature';
+import WaitBlocker from './WaitBlocker';
 
 var CONFIG: { [name: string]: string } = require('./config.json');
 
@@ -44,6 +45,7 @@ export default class Daten {
 
     private map: Map;
     private warteAufObjektklassen: number;
+   
 
     constructor(map: Map, ereignisraum: string, ereignisraum_nr: string) {
         Daten.daten = this;
@@ -72,11 +74,10 @@ export default class Daten {
 
     private loadErCallback(zoomToExtentWhenReady?: boolean) {
         this.warteAufObjektklassen -= 1;
-        console.log(this.warteAufObjektklassen)
         if (this.warteAufObjektklassen <= 0) {
             console.log("ERs geladen");
             (document.getElementById("zoomToExtent") as HTMLButtonElement).disabled = false;
-            if (zoomToExtentWhenReady != false)
+            if (zoomToExtentWhenReady)
                 this.zoomToExtent();
         }
     }
@@ -91,11 +92,6 @@ export default class Daten {
 
         for (let f of features) {
             let geo = f.getGeometry()
-            if (geo == undefined) {
-                console.log("Geometrien noch nicht geladen, prüfe in 500ms")
-                setTimeout(this.zoomToExtent.bind(this), 500);
-                return;
-            }
             let p = geo.getExtent();
 
             if (minX == null || minX > p[0]) minX = p[0];
@@ -105,12 +101,6 @@ export default class Daten {
         }
         this.map.getView().fit([minX, minY, maxX, maxY], { padding: [20, 240, 20, 20] })
 
-        //map.getView().fit(daten.l_achse.getExtent());
-
-        /*
-        let extent = Daten.calcAbschnitteExtent(daten.l_achse.getSource().getFeatures());
-        map.getView().fit(extent, { padding: [20, 240, 20, 20] })
-        */
     }
 
     public static getInstanz(): Daten {
@@ -118,7 +108,7 @@ export default class Daten {
     }
 
     public loadExtent() {
-        document.body.style.cursor = 'wait'
+        WaitBlocker.warteAdd()
         let extent = this.map.getView().calculateExtent();
         if ("ABSCHNITT_WFS_URL" in CONFIG) {
             AbschnittWFS.getByExtent(extent, this.loadExtent_Callback.bind(this));
@@ -141,7 +131,7 @@ export default class Daten {
         for (let i = 0; i < netz.length; i++) {
             Abschnitt.fromXML(netz[i]);
         }
-        document.body.style.cursor = '';
+        WaitBlocker.warteSub()
     }
 
     private createLayerAchsen() {
@@ -371,7 +361,7 @@ export default class Daten {
         let wert = document.forms.namedItem("suche").suche.value;
         if (wert == "") return;
         if ("ABSCHNITT_WFS_URL" in CONFIG) {
-            document.body.style.cursor = 'wait'
+            WaitBlocker.warteAdd();
 
             const vnknnk = /(\d{7,9}[A-Z]?)[\s\-]+(\d{7,9}[A-Z]?)/gm;
             let found1 = vnknnk.exec(wert)
@@ -418,7 +408,7 @@ export default class Daten {
         } else {
             PublicWFS.showMessage("Kein Abschnitt gefunden!", true);
         }
-        document.body.style.cursor = '';
+        WaitBlocker.warteSub();
     }
 
     public static calcAbschnitteExtent(abschnitte: Abschnitt[]) {

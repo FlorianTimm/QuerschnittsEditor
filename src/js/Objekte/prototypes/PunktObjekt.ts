@@ -41,7 +41,7 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
         PublicWFS.doTransaction(xml);
     }
 
-    setDataFromXML(xml: Element) {
+    setDataFromXML(xml: Element, callback?: (...args: any[]) => void, ...args: any[]) {
         super.setDataFromXML(xml);
         let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(',');
         this.setGeometry(new Point([parseFloat(koords[0]), parseFloat(koords[1])]));
@@ -50,6 +50,7 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
         Abschnitt.getAbschnitt(this.abschnittId, function (this: PunktObjekt, abschnitt: Abschnitt) {
             this.abschnitt = abschnitt
             abschnitt.addOKinER(this.getObjektKlassenName());
+            if (callback) callback(...args);
         }.bind(this))
     }
 

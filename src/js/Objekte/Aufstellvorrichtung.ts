@@ -14,9 +14,11 @@ import Klartext, { KlartextMap } from './Klartext';
 import PunktObjekt from './prototypes/PunktObjekt';
 import Zeichen from './Zeichen';
 import HTML from "../HTML";
-import Dokument from "./Dokument.js";
+import Dokument from "./Dokument";
 
 export default class Aufstellvorrichtung extends PunktObjekt {
+    static loadErControlCounter: number = 0;
+
     getWFSKonfigName(): string {
         return "AUFSTELL";
     }
@@ -55,52 +57,43 @@ export default class Aufstellvorrichtung extends PunktObjekt {
         ziel.appendChild(div);
     }
 
-    public static loadER(callback?: (...args: any) => void, ...args: any) {
+    static loadER(callback?: (...args: any[]) => void, ...args: any[]) {
         let daten = Daten.getInstanz();
         PublicWFS.doQuery('Otaufstvor', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Aufstellvorrichtung.loadERCallback, undefined, callback, ...args);
-
+            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Aufstellvorrichtung.loadErCallback, undefined, callback, ...args);
     }
 
-    public static loadERCallback(xml: XMLDocument, callback?: (...args: any) => void, ...args: any) {
-        let aufstell = xml.getElementsByTagName("Otaufstvor");
-        for (let i = 0; i < aufstell.length; i++) {
-            let f = Aufstellvorrichtung.fromXML(aufstell[i]);
-            Daten.getInstanz().layerAufstell.getSource().addFeature(f);
-        }
-        if (callback != undefined)
-            callback(...args);
-    }
-
-    /**
-     * Lädt einen Abschnitt nach
-     * @param {Daten} daten 
-     * @param {Abschnitt} abschnitt 
-     */
-    public static loadAbschnittER(abschnitt: Abschnitt, callback: (...args: any[]) => void, ...args: any[]) {
-        //console.log(daten);
-        document.body.style.cursor = 'wait';
+    static loadAbschnittER(abschnitt: Abschnitt, callback?: (...args: any[]) => void, ...args: any[]) {
         PublicWFS.doQuery('Otaufstvor', '<Filter>' +
             '<And><PropertyIsEqualTo><PropertyName>abschnittId</PropertyName>' +
             '<Literal>' + abschnitt.getAbschnittid() + '</Literal></PropertyIsEqualTo><PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + Daten.getInstanz().ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>', Aufstellvorrichtung._loadAbschnittER_Callback, undefined, callback, ...args);
+            '<Literal>' + Daten.getInstanz().ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>', Aufstellvorrichtung.loadErCallback, undefined, callback, ...args);
     }
 
-    private static _loadAbschnittER_Callback(xml: XMLDocument, callback: (...args: any[]) => void, ...args: any[]) {
-        //console.log(daten);
-        let aufstell = xml.getElementsByTagName("Otaufstvor");
-        for (let i = 0; i < aufstell.length; i++) {
-            let f = Aufstellvorrichtung.fromXML(aufstell[i]);
+    public static loadErCallback(xml: XMLDocument, callback?: (...args: any[]) => void, ...args: any[]) {
+        let straus = xml.getElementsByTagName("Otaufstvor");
+        for (let i = 0; i < straus.length; i++) {
+            Aufstellvorrichtung.loadErControlCounter += 1
+            let f = Aufstellvorrichtung.fromXML(straus[i], Aufstellvorrichtung.loadErControlCallback, callback, ...args);
             Daten.getInstanz().layerAufstell.getSource().addFeature(f);
         }
-        callback(...args);
-        document.body.style.cursor = '';
+        if (straus.length == 0) Aufstellvorrichtung.loadErControlCheck(callback, ...args)
     }
 
-    public static fromXML(xml: Element) {
+    private static loadErControlCallback(callback?: (...args: any[]) => void, ...args: any[]) {
+        Aufstellvorrichtung.loadErControlCounter -= 1
+        Aufstellvorrichtung.loadErControlCheck(callback, ...args)
+    }
+
+    private static loadErControlCheck(callback?: (...args: any[]) => void, ...args: any[]) {
+        if (Aufstellvorrichtung.loadErControlCounter > 0) return;
+        if (callback) callback(...args)
+    }
+
+    public static fromXML(xml: Element, callback?: (...args: any[]) => void, ...args: any[]) {
         let r = new Aufstellvorrichtung();
-        r.setDataFromXML(xml);
+        r.setDataFromXML(xml, callback, ...args);
         return r;
     }
 
@@ -222,7 +215,7 @@ export default class Aufstellvorrichtung extends PunktObjekt {
         this.getDokumente(function (this: Aufstellvorrichtung, doks: Dokument[]) {
             let dialog = document.createElement("table");
             dialog.className = "tableWithBorder"
-            for(let dok of doks){
+            for (let dok of doks) {
                 dialog.innerHTML += "<tr><td>" + dok.getBeschreib() + "</td><td>" + dok.getPfad() + "</td></tr>"
             }
             document.body.appendChild(dialog);
@@ -233,9 +226,9 @@ export default class Aufstellvorrichtung extends PunktObjekt {
                 width: 400,
                 modal: true,
                 buttons: {
-                   /* "Speichern": function (this: Aufstellvorrichtung) {
-                        jqueryDialog.dialog("close");
-                    }.bind(this),*/
+                    /* "Speichern": function (this: Aufstellvorrichtung) {
+                         jqueryDialog.dialog("close");
+                     }.bind(this),*/
                     Cancel: function () {
                         jqueryDialog.dialog("close");
                     }

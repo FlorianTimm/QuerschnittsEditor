@@ -10,6 +10,7 @@ import Klartext from './Klartext';
 import HTML from '../HTML';
 import { InfoToolEditable } from '../Tools/InfoTool';
 import PrimaerObjekt from './prototypes/PrimaerObjekt';
+import WaitBlocker from '../WaitBlocker';
 
 /**
 * @author Florian Timm, LGV HH 
@@ -40,6 +41,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     private XBstR: number = null;
     private streifen: 'M' | 'L' | 'R' = null;
     private streifennr: number = null;
+    static loadErControlCounter: number = 0;
 
     constructor() {
         super();
@@ -62,7 +64,6 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     }
 
     static loadER(callback?: (...args: any[]) => void, ...args: any[]) {
-        document.body.style.cursor = 'wait';
         let daten = Daten.getInstanz();
         PublicWFS.doQuery('Dotquer', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
@@ -70,7 +71,6 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     }
 
     static loadAbschnittER(abschnitt: Abschnitt, callback: (...args: any[]) => void, ...args: any[]) {
-        document.body.style.cursor = 'wait';
         let daten = Daten.getInstanz();
         PublicWFS.doQuery('Dotquer', '<Filter>' +
             '<And><PropertyIsEqualTo><PropertyName>abschnittId</PropertyName>' +
@@ -82,28 +82,29 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         let dotquer = xml.getElementsByTagName("Dotquer");
         let liste: Querschnitt[] = [];
         for (let i = 0; i < dotquer.length; i++) {
-            //console.log(quer);
-            liste.push(Querschnitt.fromXML(dotquer[i]));
+            Querschnitt.loadErControlCounter += 1
+            liste.push(Querschnitt.fromXML(dotquer[i], undefined, Querschnitt.loadErControlCallback, callback, ...args));
         }
+        if (dotquer.length == 0) Querschnitt.loadErControlCheck(callback, ...args)
+    }
 
-        //Querschnitt.checkQuerschnitte(liste);
+    private static loadErControlCallback(callback?: (...args: any[]) => void, ...args: any[]) {
+        Querschnitt.loadErControlCounter -= 1
+        Querschnitt.loadErControlCheck(callback, ...args)
+    }
 
-        if (callback != undefined) {
-            callback(...args);
-        }
-        document.body.style.cursor = ''
+    private static loadErControlCheck(callback?: (...args: any[]) => void, ...args: any[]) {
+        if (Querschnitt.loadErControlCounter > 0) return;
+        if (callback) callback(...args)
     }
 
     static checkQuerschnitte(liste: Querschnitt[]) {
         liste.forEach(function (querschnitt: Querschnitt) {
             querschnitt.check()
         })
-
     }
 
     public check() {
-        //if (this.XVstL != null && this.XVstR != null && this.XBstL != null && this.XBstR != null) return;
-        //console.log(this);
         let m = this.station.getStreifen("M")
         let seite = this.station.getStreifen(this.streifen);
 
@@ -189,7 +190,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         Querschnitt.createFields(ziel, "info", this, changeable);
     }
 
-    static fromXML(xml: Element, doNotAdd: boolean = false) {
+    static fromXML(xml: Element, doNotAdd: boolean = false, callback?: (...args: any[]) => void, ...args: any[]) {
         let r = new Querschnitt();
         r.setDataFromXML(xml)
 
@@ -206,6 +207,8 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             }
             r.station.addQuerschnitt(r);
             r.createGeom();
+
+            if (callback) callback(...args)
         }, r);
 
 
@@ -256,10 +259,10 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         let punkte = this.station.getPunkte();
 
         let erster = punkte[0];
-        let letzter = punkte[punkte.length-1]
+        let letzter = punkte[punkte.length - 1]
 
         for (let i = 0; i < punkte.length; i++) {
-            let pkt = punkte [i]
+            let pkt = punkte[i]
             let faktor = (pkt.vorherLaenge - erster.vorherLaenge) / (letzter.vorherLaenge - erster.vorherLaenge);
             let coord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff2 + abst2)));
             if (isNaN(coord[0]) || isNaN(coord[1])) {
@@ -271,8 +274,8 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         }
 
 
-        for (let i = punkte.length -1 ; i >= 0 ; i--) {
-            let pkt = punkte [i]
+        for (let i = punkte.length - 1; i >= 0; i--) {
+            let pkt = punkte[i]
             let faktor = (pkt.vorherLaenge - erster.vorherLaenge) / (letzter.vorherLaenge - erster.vorherLaenge);
             let coord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff1 + abst1)));
             if (isNaN(coord[0]) || isNaN(coord[1])) {
