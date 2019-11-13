@@ -108,7 +108,7 @@ class QuerPartTool extends Tool {
             return null;
         }
 
-        return { achse: achse, pos: achse.calcStationierung(event.coordinate) };
+        return { achse: achse, pos: achse.getStationierung(event.coordinate, 2) };
     }
 
 

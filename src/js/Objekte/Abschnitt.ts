@@ -246,7 +246,7 @@ export default class Abschnitt extends Feature {
     /**
      * Berechnet eine Station
      */
-    public calcStationierung(point: number[]): StationObj {
+    public getStationierung(point: number[], anzNachKomma: number = 1): StationObj {
         let posi: StationObj[] = [];
 
         let punkte = this.calcPunkte()
@@ -254,7 +254,6 @@ export default class Abschnitt extends Feature {
         for (let i = 0; i < punkte.length - 1; i++) {
             let pkt = punkte[i]
             let obj: StationObj = new StationObj();
-            obj.isEnthalten = true;
 
             // Position des Fusspunktes auf dem Segment relativ zwischen 0 und 1
             let faktor = (Vektor.skalar(Vektor.diff(point, pkt.pkt), pkt.vektorZumNaechsten)) / (Vektor.skalar(pkt.vektorZumNaechsten, pkt.vektorZumNaechsten))
@@ -262,24 +261,21 @@ export default class Abschnitt extends Feature {
             // Abstand und Lot berechnen
             let fusspkt_genau = Vektor.sum(pkt.pkt, Vektor.multi(pkt.vektorZumNaechsten, faktor))
             let lot = Vektor.diff(point, fusspkt_genau)
-            obj.abstand = Math.round(Vektor.len(lot) * 10) / 10
+            obj.abstand = Math.round(Vektor.len(lot) * Math.pow(10, anzNachKomma)) / Math.pow(10, anzNachKomma)
 
             // Mindest-Stationen
-            obj.station = Math.round((pkt.vorherLaenge + faktor * pkt.laengeZumNaechsten) * this.getFaktor());
             let minStation_genau = (pkt.vorherLaenge) * this.getFaktor();
             let maxStation_genau = (pkt.vorherLaenge + pkt.laengeZumNaechsten) * this.getFaktor();
-
-            if (obj.station < minStation_genau || obj.station > maxStation_genau)
-                obj.isEnthalten = false;
-
             let minStation = Math.ceil(minStation_genau);
             let maxStation = Math.floor(maxStation_genau);
 
+            // Station berechnen und gegen Min/Max-Station prüfen
+            obj.station = Math.round((pkt.vorherLaenge + faktor * pkt.laengeZumNaechsten) * this.getFaktor());
             if (obj.station < minStation) obj.station = minStation;
             if (obj.station > maxStation) obj.station = maxStation;
 
+            // Position des Fußpunktes der gerundeten Station bestimmen
             faktor = (obj.station - minStation_genau) / (maxStation_genau - minStation_genau)
-
             obj.fusspkt = Vektor.sum(pkt.pkt, Vektor.multi(pkt.vektorZumNaechsten, faktor))
 
             obj.seite = 'M'
@@ -292,9 +288,8 @@ export default class Abschnitt extends Feature {
                 }
             }
 
-            obj.distanz = obj.abstand
-
             obj.neuerPkt = Vektor.sum(obj.fusspkt, Vektor.multi(Vektor.einheit([lot[0], lot[1]]), obj.abstand))
+            obj.distanz = Vektor.len(Vektor.diff(obj.neuerPkt, point))
 
             posi.push(obj)
         }
@@ -305,46 +300,36 @@ export default class Abschnitt extends Feature {
         let punkte = this.calcPunkte();
         let r: LinienPunkt[] = []
 
-        vst = vst * this.getFaktor();
-        bst = bst * this.getFaktor();
+        vst = vst / this.getFaktor();
+        bst = bst / this.getFaktor();
 
-        for (let i = 0; i < punkte.length - 1; i++) {
+        for (let i = 0; i < punkte.length; i++) {
             let pkt = punkte[i]
             if (pkt.vorherLaenge >= vst && pkt.vorherLaenge <= bst) {
-                //console.log("mitte", pkt.vorherLaenge, pkt.pkt)
                 r.push(pkt);
-            } else if (pkt.vorherLaenge < vst && pkt.vorherLaenge + pkt.laengeZumNaechsten > vst) {
+            } else if (pkt.laengeZumNaechsten && pkt.vorherLaenge < vst && pkt.vorherLaenge + pkt.laengeZumNaechsten > vst) {
                 let faktor = (vst - pkt.vorherLaenge) / pkt.laengeZumNaechsten
-                //console.log(faktor)
                 let koord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.vektorZumNaechsten, faktor));
                 let pktNeu = new LinienPunkt(koord, Vektor.einheit(Vektor.lot(pkt.vektorZumNaechsten)), vst);
-                //console.log("anfang", pktNeu.vorherLaenge, pktNeu.pkt)
                 r.push(pktNeu)
             }
 
-            if (pkt.vorherLaenge < bst && pkt.vorherLaenge + pkt.laengeZumNaechsten > bst) {
+            if (pkt.laengeZumNaechsten && pkt.vorherLaenge < bst && pkt.vorherLaenge + pkt.laengeZumNaechsten > bst) {
                 let faktor = (bst - pkt.vorherLaenge) / pkt.laengeZumNaechsten
-                //console.log(faktor)
                 let koord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.vektorZumNaechsten, faktor));
                 let pktNeu = new LinienPunkt(koord, Vektor.einheit(Vektor.lot(pkt.vektorZumNaechsten)), bst);
-                //console.log("ende", pktNeu.vorherLaenge, pktNeu.pkt)
                 r.push(pktNeu)
             }
         }
-        console.log(r)
         return r;
     }
 
     private static sortStationierungen(a: StationObj, b: StationObj): -1 | 0 | 1 {
-        if (a.isEnthalten != b.isEnthalten) {
-            if (a.isEnthalten) return -1;
-            if (b.isEnthalten) return 1;
-        }
-        if (a.distanz != b.distanz) {
+        if (Math.abs(a.distanz - b.distanz) > 1) {
             return (a.distanz < b.distanz) ? -1 : 1;
         }
-        if (a.station != b.station) {
-            return (a.station < b.station) ? -1 : 1;
+        if (a.abstand != b.abstand) {
+            return (a.abstand < b.abstand) ? -1 : 1;
         }
         return 0;
     }
@@ -371,11 +356,11 @@ export default class Abschnitt extends Feature {
             this.punkte.push(pkt)
         }
 
-
+        // letzten Punkt hinzufügen
         this.punkte.push(new LinienPunkt(line[line.length - 1], Vektor.einheit(Vektor.lot(this.punkte[this.punkte.length - 1].vektorZumNaechsten)), vorherLaenge))
 
+        // Längenfaktor berechnen
         this._faktor = this.len / vorherLaenge;
-        console.log(this._faktor)
 
         return this.punkte;
     }
@@ -427,7 +412,6 @@ export default class Abschnitt extends Feature {
 }
 
 export class StationObj {
-    isEnthalten: boolean = false;
     distanz: number = 0;
     station: number = 0;
     seite: 'M' | 'R' | 'L' = 'M';

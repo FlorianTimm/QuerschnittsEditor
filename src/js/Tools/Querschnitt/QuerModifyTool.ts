@@ -128,7 +128,7 @@ export default class QuerModifyTool extends Tool {
                     }
 
                     // Berechnen des Abstandes des neuen Punktes
-                    let pos = querschnitt.getAbschnitt().calcStationierung(nachher[i][j]);
+                    let pos = querschnitt.getAbschnitt().getStationierung(nachher[i][j]);
                     let dist = Math.round(pos.abstand * 100) / 100;
 
                     // Streifen und Nr
