@@ -10,7 +10,7 @@ import Querschnitt from '../../Objekte/Querschnittsdaten';
 import InfoTool from '../InfoTool';
 import { MultiLineString, Point, LineString } from 'ol/geom';
 import HTML from '../../HTML';
-import Klartext from '../../Objekte/Klartext';
+import KlartextManager from '../../Objekte/Klartext';
 
 import "../../import_jquery.js";
 import 'chosen-js';
@@ -79,8 +79,8 @@ export default class QuerModifyTool extends Tool {
         if (this.multiEditForm) return;
         this.multiEditForm = HTML.createToolForm(document.getElementById("sidebar"), false, "qsMultiMod");
 
-        this.multiArtSelect = Klartext.createKlartextSelectForm("Itquerart", this.multiEditForm, "Art", 'qsmm_art', undefined, "- verschiedene -")
-        this.multiOberSelect = Klartext.createKlartextSelectForm("Itquerober", this.multiEditForm, "Art der Oberfläche", 'qsmm_ober', undefined, "- verschiedene -")
+        this.multiArtSelect = KlartextManager.createKlartextSelectForm("Itquerart", this.multiEditForm, "Art", 'qsmm_art', undefined, "- verschiedene -")
+        this.multiOberSelect = KlartextManager.createKlartextSelectForm("Itquerober", this.multiEditForm, "Art der Oberfläche", 'qsmm_ober', undefined, "- verschiedene -")
         this.multiCountInput = HTML.createNumberInput(this.multiEditForm, "Anzahl", "qsmm_anzahl");
         this.multiCountInput.disabled = true;
 
@@ -366,14 +366,14 @@ export default class QuerModifyTool extends Tool {
         this.setModifyActive(false);
         $(this.moveTypeForm).hide("fast");
 
-        let art = selection[0].getArt();
-        let ober = selection[0].getArtober();
+        let art = selection[0].getArt().getXlink();
+        let ober = selection[0].getArtober().getXlink();
         console.log(art)
         for (let querschnitt of selection) {
             console.log(querschnitt.getArt());
-            if (art != querschnitt.getArt())
+            if (art != querschnitt.getArt().getXlink())
                 art = null;
-            if (ober != querschnitt.getArtober())
+            if (ober != querschnitt.getArtober().getXlink())
                 ober = null;
             if (art == null && ober == null)
                 break;

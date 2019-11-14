@@ -1,4 +1,5 @@
 import SekundaerObjekt from "./prototypes/SekundaerObjekt";
+import Klartext from "./Klartext";
 
 /**
 * Aufbaudaten
@@ -27,19 +28,19 @@ export default class Aufbau extends SekundaerObjekt {
 	private korngr: string = null;
 	private unscharf: string = null;
 	private kennz: string = null;
-	private art1: string = null;
-	private art2: string = null;
-	private art3: string = null;
-	private artneu: string = null;
-	private material1: string = null;
-	private material2: string = null;
-	private material3: string = null;
-	private bindemit1: string = null;
-	private bindemit2: string = null;
-	private detaila: string = null;
-	private detailb: string = null;
-	private detailc: string = null;
-	private detaild: string = null;
+	private art1: Klartext = null;
+	private art2: Klartext = null;
+	private art3: Klartext = null;
+	private artneu: Klartext = null;
+	private material1: Klartext = null;
+	private material2: Klartext = null;
+	private material3: Klartext = null;
+	private bindemit1: Klartext = null;
+	private bindemit2: Klartext = null;
+	private detaila: Klartext = null;
+	private detailb: Klartext = null;
+	private detailc: Klartext = null;
+	private detaild: Klartext = null;
 	private umweltr: string = null;
 
 	public static fromXML(xml: Element): Aufbau {

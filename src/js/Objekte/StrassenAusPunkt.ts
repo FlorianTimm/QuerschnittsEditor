@@ -10,7 +10,7 @@ import "../import_jquery.js";
 import 'chosen-js';
 import 'chosen-js/chosen.css';
 import Daten from "../Daten";
-import Klartext from './Klartext';
+import KlartextManager from './Klartext';
 import Abschnitt from './Abschnitt';
 import PunktObjekt from './prototypes/PunktObjekt';
 import HTML from '../HTML';
@@ -91,15 +91,15 @@ export default class StrassenAusPunkt extends PunktObjekt {
     }
 
     protected static createFields(form: HTMLFormElement, ausstattung?: StrassenAusPunkt, changeable: boolean = false) {
-        let art = Klartext.createKlartextSelectForm("Itstrauspktart", form, "Art", "art", ausstattung != undefined ? ausstattung.art : undefined);
+        let art = KlartextManager.createKlartextSelectForm("Itstrauspktart", form, "Art", "art", ausstattung != undefined ? ausstattung.art : undefined);
         $(art).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Lage
-        let lage = Klartext.createKlartextSelectForm("Itallglage", form, "Lage", "lage", ausstattung != undefined ? ausstattung.rlageVst : undefined);
+        let lage = KlartextManager.createKlartextSelectForm("Itallglage", form, "Lage", "lage", ausstattung != undefined ? ausstattung.rlageVst.getXlink() : undefined);
         $(lage).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Quelle
-        let quelle = Klartext.createKlartextSelectForm("Itquelle", form, "Quelle", "quelle", ausstattung != undefined ? ausstattung.quelle : undefined);
+        let quelle = KlartextManager.createKlartextSelectForm("Itquelle", form, "Quelle", "quelle", ausstattung != undefined ? ausstattung.quelle.getXlink() : undefined);
         $(quelle).prop('disabled', !changeable).trigger("chosen:updated");
 
         // VNK
@@ -128,8 +128,8 @@ export default class StrassenAusPunkt extends PunktObjekt {
 
     public changeAttributes(form: HTMLFormElement): void {
         this.art = $(form).find("#art").children("option:selected").val() as string;
-        this.rlageVst = $(form).find("#lage").children("option:selected").val() as string;
-        this.quelle = $(form).find("#quelle").children("option:selected").val() as string;
+        this.setRlageVst($(form).find("#lage").children("option:selected").val() as string);
+        this.setQuelle($(form).find("#quelle").children("option:selected").val() as string);
         this.objektnr = $(form).find("#extid").val() as string;
 
         let xml = this.createUpdateXML({

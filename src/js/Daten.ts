@@ -5,7 +5,7 @@ import Abschnitt from './Objekte/Abschnitt';
 import PublicWFS from './PublicWFS';
 import AbschnittWFS from './AbschnittWFS';
 import Querschnitt from './Objekte/Querschnittsdaten';
-import Klartext from './Objekte/Klartext';
+import KlartextManager from './Objekte/Klartext';
 import Aufstellvorrichtung from './Objekte/Aufstellvorrichtung';
 import { isNullOrUndefined } from 'util';
 import { Map, Feature } from 'ol';
@@ -15,6 +15,7 @@ import { LineString } from 'ol/geom';
 import StrassenAusPunkt from './Objekte/StrassenAusPunkt';
 import { FeatureLike } from 'ol/Feature';
 import WaitBlocker from './WaitBlocker';
+import Klartext from './Objekte/Klartext';
 
 var CONFIG: { [name: string]: string } = require('./config.json');
 
@@ -45,7 +46,7 @@ export default class Daten {
 
     private map: Map;
     private warteAufObjektklassen: number;
-   
+
 
     constructor(map: Map, ereignisraum: string, ereignisraum_nr: string) {
         Daten.daten = this;
@@ -267,22 +268,19 @@ export default class Daten {
             features: []
         });
 
-        Klartext.getInstanz().load("Itquerart");
-        Klartext.getInstanz().load("Itquerober");
-
         let createStyle = function (feature: FeatureLike, resolution: number): Style {
-            let kt_art = Klartext.getInstanz().get('Itquerart', (feature as Querschnitt).getArt())
-            let kt_ober = Klartext.getInstanz().get('Itquerober', (feature as Querschnitt).getArtober())
+            let kt_art = (feature as Querschnitt).getArt()
+            let kt_ober = (feature as Querschnitt).getArtober()
 
             // leere Arten filtern
             let art = 0
-            if (!isNullOrUndefined(kt_art))
-                art = Number(kt_art.kt);
+            if (kt_art)
+                art = Number(kt_art.getKt());
 
             // leere Oberflächen filtern
             let ober = 0
-            if (!isNullOrUndefined(kt_ober))
-                ober = Number(kt_ober.kt);
+            if (kt_ober)
+                ober = Number(kt_ober.getKt());
 
             // Farbe für Querschnittsfläche
             let color = [255, 255, 255];

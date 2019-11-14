@@ -6,7 +6,7 @@ import Aufbau from '../Objekte/Aufbaudaten';
 import PublicWFS from '../PublicWFS';
 import Vektor from '../Vektor';
 import QuerStation from './QuerStation';
-import Klartext from './Klartext';
+import Klartext, { KlartextMap } from './Klartext';
 import HTML from '../HTML';
 import { InfoToolEditable } from '../Tools/InfoTool';
 import PrimaerObjekt from './prototypes/PrimaerObjekt';
@@ -27,8 +27,8 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
     // SIB-Attribute
     private station: QuerStation = null;
-    private art: string = null;
-    private artober: string = null;
+    private art: Klartext = null;
+    private artober: Klartext = null;
     private breite: number = null;
     private bisBreite: number = null;
     private blpart: any = null;
@@ -148,11 +148,11 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
     private static createFields(form: HTMLFormElement, __: string, querschnitt?: Querschnitt, changeable: boolean = false) {
         // Art
-        let art = Klartext.createKlartextSelectForm("Itquerart", form, "Art", "art", querschnitt != undefined ? querschnitt.art : undefined);
+        let art = Klartext.createKlartextSelectForm("Itquerart", form, "Art", "art", querschnitt != undefined ? querschnitt.art.getXlink() : undefined);
         $(art).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Lage
-        let lage = Klartext.createKlartextSelectForm("Itquerober", form, "Lage", "ober", querschnitt != undefined ? querschnitt.artober : undefined);
+        let lage = Klartext.createKlartextSelectForm("Itquerober", form, "Lage", "ober", querschnitt != undefined ? querschnitt.artober.getXlink() : undefined);
         $(lage).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Breite
@@ -306,7 +306,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     }
 
     public updateArtEinzeln(art: string) {
-        this.art = art;
+        this.setArt(art);
         this._daten.vectorQuer.changed();
 
         PublicWFS.doTransaction(this.createUpdateXML({
@@ -315,7 +315,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     }
 
     public updateOberEinzeln(artober: string) {
-        this.artober = artober;
+        this.setArtober(artober);
         this._daten.vectorQuer.changed();
         PublicWFS.doTransaction(this.createUpdateXML({
             artober: this.artober
@@ -324,15 +324,15 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
     public changeAttributes(form: HTMLFormElement) {
         let changes: { [attribut: string]: any } = {}
-        let art = $(form).children().children("#art").val() as string
-        if (art.substr(-32) != this.getArt().substr(-32)) {
-            this.setArt(art as string)
-            changes["art"] = art
+        let artXlink = $(form).children().children("#art").val() as string
+        if (artXlink != this.getArt().getXlink()) {
+            this.setArt(artXlink as string)
+            changes["art"] = artXlink
         }
-        let ober = $(form).children().children("#ober").val() as string
-        if (ober.substr(-32) != this.getArtober().substr(-32)) {
-            this.setArtober(ober as string)
-            changes["artober"] = ober;
+        let oberXlink = $(form).children().children("#ober").val() as string
+        if (oberXlink != this.getArtober().getXlink()) {
+            this.setArtober(oberXlink as string)
+            changes["artober"] = oberXlink;
         }
         PublicWFS.doTransaction(this.createUpdateXML(changes));
         this.updateInfoBreite(form);
@@ -562,17 +562,12 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     public getStreifennr(): number {
         return this.streifennr
     }
-    public getArt(): string {
-        if (this.art != null)
-            return this.art.substr(-32);
-        else
-            return null
+    public getArt(): Klartext {
+        return this.art;
     }
-    public getArtober(): string {
-        if (this.artober != null)
-            return this.artober.substr(-32);
-        else
-            return null
+
+    public getArtober(): Klartext {
+        return this.artober;
     }
     public getXBstL(): number {
         return this.XBstL;
@@ -617,12 +612,12 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         this.bisBreite = bisBreite;
     }
 
-    public setArt(art: string) {
-        this.art = art;
+    public setArt(art: Klartext | string) {
+        this.art = Klartext.get("Itquerart", art);
     }
 
-    public setArtober(artober: string) {
-        this.artober = artober;
+    public setArtober(artober: Klartext | string) {
+        this.artober = Klartext.get("Itquerober", artober);
     }
 
     public setXVstR(XVstR: number) {

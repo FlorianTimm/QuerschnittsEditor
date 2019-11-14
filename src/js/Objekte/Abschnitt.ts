@@ -7,7 +7,6 @@ import Aufbaudaten from './Aufbaudaten';
 import Daten from '../Daten';
 import QuerStation from './QuerStation';
 import Aufbau from './Aufbaudaten';
-import PunktObjekt from './prototypes/PunktObjekt';
 
 var CONFIG: { [index: string]: string } = require('../config.json');
 
@@ -217,7 +216,7 @@ export default class Abschnitt extends Feature {
         for (let i = 0; i < aufbau.length; i++) {
             let a = Aufbaudaten.fromXML(aufbau[i]);
             if (a.getParent == null) continue;
-            let fid = a.getParent().replace('#', '');
+            let fid = a.getParent().getXlink();
             if (!(fid in aufbaudaten)) aufbaudaten[fid] = {};
             aufbaudaten[fid][a.getSchichtnr()] = a;
         }
@@ -294,6 +293,17 @@ export default class Abschnitt extends Feature {
             posi.push(obj)
         }
         return posi.sort(Abschnitt.sortStationierungen)[0]
+    }
+
+    getWinkel(station: number): number {
+        let punkte = this.calcPunkte()
+
+        for (let i = 0; i < punkte.length - 1; i++) {
+            let pkt = punkte[i]
+            if (station > pkt.vorherLaenge && station < pkt.vorherLaenge + pkt.laengeZumNaechsten)
+                return Vektor.winkel(pkt.vektorZumNaechsten)
+        }
+        return 0;
     }
 
     public getAbschnitt(vst: number, bst: number) {

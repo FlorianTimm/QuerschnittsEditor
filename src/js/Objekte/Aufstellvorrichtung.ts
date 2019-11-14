@@ -24,7 +24,7 @@ export default class Aufstellvorrichtung extends PunktObjekt {
     }
     private zeichen: Zeichen[] = null;
     private hasSekObj: number;
-    private art: string;
+    private art: Klartext;
 
     public colorFunktion1(): import("ol/colorlike").ColorLike {
         if (this.hasSekObj > 0 || (this.zeichen != null && this.zeichen.length > 0)) {
@@ -48,9 +48,9 @@ export default class Aufstellvorrichtung extends PunktObjekt {
         for (let eintrag of zeichen) {
             let img = document.createElement("img");
             img.style.height = "30px";
-            Klartext.getInstanz().load("Itvzstvoznr", function (klartext: KlartextMap) {
-                img.src = "http://gv-srv-w00118:8080/schilder/" + klartext[eintrag.getStvoznr()].kt + ".svg";
-                img.title = klartext[eintrag.getStvoznr()]['beschreib'] + (eintrag.getVztext() != null) ? ("\n" + eintrag.getVztext()) : ('');
+            Klartext.load("Itvzstvoznr", function (_: KlartextMap) {
+                img.src = "http://gv-srv-w00118:8080/schilder/" + eintrag.getStvoznr().getKt() + ".svg";
+                img.title = eintrag.getStvoznr().getBeschreib() + (eintrag.getVztext() ?? '');
             });
             div.appendChild(img);
         }
@@ -100,14 +100,14 @@ export default class Aufstellvorrichtung extends PunktObjekt {
     public getZeichen(callback: (zeichen: Zeichen[], ...args: any[]) => void, ...args: any[]): void;
     public getZeichen(): Zeichen[];
     public getZeichen(callback?: (zeichen: Zeichen[], ...args: any[]) => void, ...args: any[]): void | Zeichen[] {
-        if (this.zeichen == null && this.hasSekObj > 0) {
+        if (callback != undefined && this.zeichen == null && this.hasSekObj > 0) {
             this.reloadZeichen(callback, ...args);
+            return;
         } else if (this.hasSekObj > 0) {
-            if (callback != undefined) {
-                callback(this.zeichen, ...args);
-            } else {
-                return this.zeichen;
-            }
+            if (callback) callback(this.zeichen, ...args);
+            else return this.zeichen ?? [];
+        } else {
+            return [];
         }
     }
 
@@ -132,8 +132,7 @@ export default class Aufstellvorrichtung extends PunktObjekt {
         }
         this.zeichen = zeichen;
         if (this.hasSekObj == 0 && zeichen.length > 0) this.hasSekObj = 1
-        console.log(this);
-        console.log(this.zeichen);
+
         if (callback != undefined) {
             callback(this.zeichen, ...args);
         }
@@ -153,15 +152,15 @@ export default class Aufstellvorrichtung extends PunktObjekt {
 
     private static createFields(form: HTMLFormElement, aufstell?: Aufstellvorrichtung, changeable: boolean = false) {
         // Art
-        let art = Klartext.createKlartextSelectForm("Itaufstvorart", form, "Art", "art", aufstell != undefined ? aufstell.art : undefined);
+        let art = Klartext.createKlartextSelectForm("Itaufstvorart", form, "Art", "art", aufstell != undefined ? aufstell.art.getXlink() : undefined);
         $(art).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Lage
-        let lage = Klartext.createKlartextSelectForm("Itallglage", form, "Lage", "lage", aufstell != undefined ? aufstell.rlageVst : undefined);
+        let lage = Klartext.createKlartextSelectForm("Itallglage", form, "Lage", "lage", aufstell != undefined ? aufstell.rlageVst.getXlink() : undefined);
         $(lage).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Quelle
-        let quelle = Klartext.createKlartextSelectForm("Itquelle", form, "Quelle", "quelle", aufstell != undefined ? aufstell.quelle : undefined);
+        let quelle = Klartext.createKlartextSelectForm("Itquelle", form, "Quelle", "quelle", aufstell != undefined ? aufstell.quelle.getXlink() : undefined);
         $(quelle).prop('disabled', !changeable).trigger("chosen:updated");
 
         // ext: Objektid
@@ -257,21 +256,33 @@ export default class Aufstellvorrichtung extends PunktObjekt {
     }
 
     // Getter
-    public getArt() {
+    public getArt(): Klartext {
         return this.art;
     }
 
-    public getRlageVst() {
+    public getVabstVst(): number {
+        return this.vabstVst;
+    }
+
+    public getRlageVst(): Klartext {
         return this.rlageVst;
     }
 
     // Setter
-    public setArt(art: string) {
-        this.art = art;
+    public setArt(art: Klartext | string) {
+        if (art instanceof Klartext)
+            this.art = art;
+        else {
+            this.art = Klartext.get("Itaufstvorart", art)
+        }
     }
 
-    public setRlageVst(rlageVst: string) {
-        this.rlageVst = rlageVst;
+    public setRlageVst(rlageVst: Klartext | string) {
+        if (rlageVst instanceof Klartext)
+            this.rlageVst = rlageVst;
+        else {
+            this.rlageVst = Klartext.get("Itallglage", rlageVst)
+        }
     }
 
 
