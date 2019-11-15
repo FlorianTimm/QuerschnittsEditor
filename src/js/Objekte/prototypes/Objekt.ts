@@ -1,5 +1,6 @@
 import Abschnitt from "../Abschnitt";
 import { Feature } from "ol";
+import Klartext from "../Klartext";
 
 /**
  * Interface für SIB-Objekte
@@ -11,55 +12,64 @@ import { Feature } from "ol";
 var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../../config_wfs.json');
 
 export default abstract class Objekt extends Feature {
-	protected kherk: string = null;
+	protected kherk: Klartext = null;
 	protected baujahrGew: string = null;
 	protected abnahmeGew: string = null;
 	protected dauerGew: string = null;
 	protected ablaufGew: string = null;
 	protected objektId: string = null;
 	protected objektnr: string = null;
-	protected erfart: string = null;
-	protected quelle: string = null;
+	protected erfart: Klartext = null;
+	protected quelle: Klartext = null;
 	protected ADatum: string = null;
 	protected bemerkung: string = null;
 	protected bearbeiter: string = null;
 	protected behoerde: string = null;
 	protected stand: string = null;
 	protected fid: string = null;
-	protected inER: {} = {};
+	protected inER: { [objektklasse: string]: boolean } = {};
 	protected abschnitt: Abschnitt = null;
-	protected projekt: string = null;
+	protected projekt: Klartext = null;
 	protected abschnittId: string = null;
 
 	abstract getObjektKlassenName(): string;
+	abstract getWFSKonfigName(): string;
 
 	constructor() {
 		super({ geom: null });
 	}
 
-	public setDataFromXML(objekt: string, xml: Element) {
+	public setDataFromXML(xml: Element) {
 		this.fid = xml.getAttribute('fid');
-		for (var tag in CONFIG_WFS[objekt]) {
+		for (var tag in CONFIG_WFS[this.getWFSKonfigName()]) {
 			if (xml.getElementsByTagName(tag).length <= 0) continue;
-			if (CONFIG_WFS[objekt][tag].art == 0) {
+			if (CONFIG_WFS[this.getWFSKonfigName()][tag].art == 0) {
 				// Kein Klartext
 				this[tag] = xml.getElementsByTagName(tag)[0].firstChild.textContent;
-			} else if (CONFIG_WFS[objekt][tag].art == 1) {
+			} else if (CONFIG_WFS[this.getWFSKonfigName()][tag].art == 1) {
 				// Kein Klartext
 				this[tag] = Number(xml.getElementsByTagName(tag)[0].firstChild.textContent);
-			} else if (CONFIG_WFS[objekt][tag].art == 2) {
+			} else if (CONFIG_WFS[this.getWFSKonfigName()][tag].art == 2) {
 				// Klartext, xlink wird gespeichert
-				this[tag] = xml.getElementsByTagName(tag)[0].getAttribute('xlink:href');
+				let eintrag = xml.getElementsByTagName(tag)[0]
+				this[tag] = Klartext.get(
+					eintrag.getAttribute('typeName'),
+					eintrag.getAttribute('xlink:href'),
+					eintrag.getAttribute('luk')
+				);
 			}
 		}
 	}
 
-	protected createUpdateXML(updates: { [attribut: string]: any }): string {
+	protected createUpdateXML(updates: { [attribut: string]: Klartext | string | number }): string {
 		let xml = '<wfs:Update typeName="' + this.getObjektKlassenName() + '">\n'
 		for (let update in updates) {
+			let wert: string | number | Klartext = updates[update];
+			if (wert instanceof Klartext) wert = wert.getXlink();
+
 			xml += '	<wfs:Property>\n' +
 				'		<wfs:Name>' + update + '</wfs:Name>\n' +
-				'		<wfs:Value>' + updates[update] + '</wfs:Value>\n' +
+				'		<wfs:Value>' + wert + '</wfs:Value>\n' +
 				'	</wfs:Property>\n';
 		}
 		xml += '	<ogc:Filter>\n' +
@@ -78,10 +88,57 @@ export default abstract class Objekt extends Feature {
 		return xml;
 	}
 
+	public createInsertXML(changes?: { [tag: string]: number | string }, removeIds?: boolean) {
+		let r = '<wfs:Insert>\n';
+		r += this.createXML(changes, removeIds);
+		r += '</wfs:Insert>\n';
+		return r;
+	}
+
+	public createXML(changes?: { [tag: string]: number | string }, removeIds?: boolean) {
+		let r = '<' + this.getObjektKlassenName() + '>\n';
+
+		for (let change in changes) {
+			if (CONFIG_WFS[this.getWFSKonfigName()][change].art == 0 || CONFIG_WFS[this.getWFSKonfigName()][change].art == 1) {
+				// Kein Klartext
+				r += '<' + change + '>' + changes[change] + '</' + change + '>\n';
+			} else if (CONFIG_WFS[this.getWFSKonfigName()][change].art == 2) {
+				// Klartext
+				r += '<' + change + ' xlink:href="' + changes[change] + '" typeName="' + CONFIG_WFS[this.getWFSKonfigName()][change].kt + '" />\n';
+			}
+		}
+
+		for (let tag in CONFIG_WFS[this.getWFSKonfigName()]) {
+			if (changes != undefined && tag in changes) continue;
+			else if (removeIds == true && (tag == "objektId" || tag == "fid")) continue;
+			else if (this[tag] === null || this[tag] === undefined) continue;
+			else if (CONFIG_WFS[this.getWFSKonfigName()][tag].art == 0 || CONFIG_WFS[this.getWFSKonfigName()][tag].art == 1) {
+				// Kein Klartext
+				r += '<' + tag + '>' + this[tag] + '</' + tag + '>\n';
+			} else if (CONFIG_WFS[this.getWFSKonfigName()][tag].art == 2) {
+				// Klartext
+				r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS[this.getWFSKonfigName()][tag].kt + '" />\n';
+			}
+		}
+
+		r += '</' + this.getObjektKlassenName() + '>\n';
+		return r;
+	}
+
+
+	isOKinER(ok: string): boolean {
+		return ok in this.inER && this.inER[ok];
+	}
+
+	//Setter
+	addOKinER(ok: string, value: boolean = true) {
+		this.inER[ok] = value;
+	}
+
 
 	// Getter
 
-	public getProjekt(): string {
+	public getProjekt(): Klartext {
 		return this.projekt;
 	}
 
@@ -105,33 +162,33 @@ export default abstract class Objekt extends Feature {
 		return this.objektnr;
 	}
 
-	public getErfart(): string {
+	public getErfart(): Klartext {
 		return this.erfart;
 	}
 
-	public getQuelle(): string {
+	public getQuelle(): Klartext {
 		return this.quelle;
 	}
 
 	// Setter
-	public setProjekt(projekt: string) {
-		this.projekt = projekt;
+	public setProjekt(projekt: Klartext | string) {
+		this.projekt = Klartext.get("Projekt", projekt);
 	}
 
 	public setAbschnittId(abschnittId: string) {
 		this.abschnittId = abschnittId;
 	}
 
-	public setErfart(erfart: string) {
-		this.erfart = erfart;
+	public setErfart(erfart: Klartext | string) {
+		this.erfart = Klartext.get("Iterfart", erfart);
 	}
 
 	public setObjektId(objektId: string) {
 		this.objektId = objektId;
 	}
 
-	public setQuelle(quelle: string) {
-		this.quelle = quelle;
+	public setQuelle(quelle: Klartext | string) {
+		this.quelle = Klartext.get("Itquelle", quelle)
 	}
 
 	public setObjektnr(objektnr: string) {

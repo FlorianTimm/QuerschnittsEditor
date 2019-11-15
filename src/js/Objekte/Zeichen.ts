@@ -1,7 +1,5 @@
-import Daten from "../Daten";
 import SekundaerObjekt from "./prototypes/SekundaerObjekt";
-
-var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
+import Klartext, { KlartextMap } from "./Klartext";
 
 /**
 * Zeichen
@@ -12,71 +10,44 @@ var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number
 
 class Zeichen extends SekundaerObjekt {
     private hasSekObj: string = null;
-    private stvoznr: string = null;
+    private stvoznr: Klartext = null;
     private sort: number = null;
     private vztext: string = null;
-    private lageFb: string = null;
+    private lageFb: Klartext = null;
     private fsnummer: number = null;
-    private lesbarkeit: string = null;
-    private strbezug: string = null;
-    private bauart: string = null;
-    private groesse: string = null;
-    private art: string = null;
-    private hersteller: string = null;
+    private lesbarkeit: Klartext = null;
+    private strbezug: Klartext = null;
+    private bauart: Klartext = null;
+    private groesse: Klartext = null;
+    private art: Klartext = null;
+    private hersteller: Klartext = null;
     private herstdat: string = null;
     private aufstelldat: string = null;
     private aufhebdat: string = null;
-    private beleucht: string = null;
-    private sichtbar: string = null;
-    private lesbarT: string = null;
-    private lesbarN: string = null;
+    private beleucht: Klartext = null;
+    private sichtbar: Klartext = null;
+    private lesbarT: Klartext = null;
+    private lesbarN: Klartext = null;
     private unterhaltstat: string = null;
-    private verdeckbar: string = null;
+    private verdeckbar: Klartext = null;
     private aufnahme: string = null;
     private zuordnung: string = null;
-    private ausfuehr: string = null;
+    private ausfuehr: Klartext = null;
 
     getObjektKlassenName(): string {
-        return "Otvzeichlp"
+        return "Otvzeichlp";
+    }
+
+    getWFSKonfigName(): string {
+        return "ZEICHEN";
     }
 
     static fromXML(xml: Element) {
         //console.log(xml);
         let r = new Zeichen();
-        for (var tag in CONFIG_WFS["ZEICHEN"]) {
-            if (xml.getElementsByTagName(tag).length <= 0) continue;
-            if (CONFIG_WFS["ZEICHEN"][tag].art == 0) {
-                // Kein Klartext
-                r[tag] = xml.getElementsByTagName(tag)[0].firstChild.textContent;
-            } else if (CONFIG_WFS["ZEICHEN"][tag].art == 1) {
-                // Kein Klartext
-                r[tag] = Number(xml.getElementsByTagName(tag)[0].firstChild.textContent);
-            } else if (CONFIG_WFS["ZEICHEN"][tag].art == 2) {
-                // Klartext, xlink wird gespeichert
-                r[tag] = xml.getElementsByTagName(tag)[0].getAttribute('xlink:href');
-            }
-        }
+        r.setDataFromXML(xml)
         return r;
     }
-
-    createXML() {
-        let r = '<Otvzeichlp>\n';
-
-        for (let tag in CONFIG_WFS["ZEICHEN"]) {
-            //console.log(tag);
-            if (this[tag] === null) continue;
-            if (CONFIG_WFS["ZEICHEN"][tag].art == 0 || CONFIG_WFS["ZEICHEN"][tag].art == 1) {
-                // Kein Klartext
-                r += '<' + tag + '>' + this[tag] + '</' + tag + '>\n';
-            } else if (CONFIG_WFS["ZEICHEN"][tag].art == 2) {
-                // Klartext
-                r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS["ZEICHEN"][tag].kt + '" />' + this[tag];
-            }
-        }
-
-        r += '</Otvzeichlp>\n';
-    }
-
 
     // Getter
 
@@ -84,7 +55,7 @@ class Zeichen extends SekundaerObjekt {
         return this.sort;
     }
 
-    getStvoznr(): string {
+    getStvoznr(): Klartext {
         return this.stvoznr
     }
 
@@ -92,15 +63,15 @@ class Zeichen extends SekundaerObjekt {
         return this.vztext;
     }
 
-    getLageFb(): string {
+    getLageFb(): Klartext {
         return this.lageFb;
     }
 
-    getBeleucht(): string {
+    getBeleucht(): Klartext {
         return this.beleucht;
     }
 
-    getStrbezug(): string {
+    getStrbezug(): Klartext {
         return this.strbezug;
     }
 
@@ -108,26 +79,26 @@ class Zeichen extends SekundaerObjekt {
         return this.aufstelldat;
     }
 
-    getArt(): string {
+    getArt(): Klartext {
         return this.art;
     }
 
-    getGroesse(): string {
+    getGroesse(): Klartext {
         return this.groesse;
     }
 
-    getLesbarkeit(): string {
+    getLesbarkeit(): Klartext {
         return this.lesbarkeit;
     }
 
     // Setter
 
-    setGroesse(groesse: string) {
-        this.groesse = groesse;
+    setGroesse(groesse: Klartext | string) {
+        this.groesse = Klartext.get("Itvzgroesse", groesse);
     }
 
-    setStrbezug(strassenbezug: string) {
-        this.strbezug = strassenbezug;
+    setStrbezug(strassenbezug: Klartext | string) {
+        this.strbezug = Klartext.get("Itbesstrbezug", strassenbezug);
     }
 
     setSort(sort: number) {
@@ -138,28 +109,28 @@ class Zeichen extends SekundaerObjekt {
         this.vztext = vztext;
     }
 
-    setLesbarkeit(lesbarkeit: string) {
-        this.lesbarkeit = lesbarkeit;
+    setLesbarkeit(lesbarkeit: Klartext | string) {
+        this.lesbarkeit = Klartext.get("Itvzlesbarkeit", lesbarkeit);;
     }
 
     setAufstelldat(aufstelldat: string) {
         this.aufstelldat = aufstelldat;
     }
 
-    setStvoznr(stvoznr: string): void {
-        this.stvoznr = stvoznr;
+    setStvoznr(stvoznr: Klartext | string): void {
+        this.stvoznr = Klartext.get("Itvzstvoznr", stvoznr);
     }
 
-    setLageFb(lageFb: string): void {
-        this.lageFb = lageFb;
+    setLageFb(lageFb: Klartext | string): void {
+        this.lageFb = Klartext.get("Itvzlagefb", lageFb);
     }
 
-    setBeleucht(beleucht: string): void {
-        this.beleucht = beleucht;
+    setBeleucht(beleucht: Klartext | string): void {
+        this.beleucht = Klartext.get("Itvzbeleucht", beleucht);
     }
 
-    setArt(art: string): void {
-        this.art = art;
+    setArt(art: Klartext | string): void {
+        this.art = Klartext.get("Itvzart", art);
     }
 }
 

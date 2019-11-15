@@ -27,12 +27,12 @@ export default class DeleteTool extends Tool {
     protected _select: SelectInteraction;
     private objekt: string;
 
-    constructor(map: Map, layer: Layer, sidebar: string, objekt: string) {
+    constructor(map: Map, layer: Layer, sidebar: HTMLDivElement, objekt: string) {
         super();
         this._map = map;
         this._daten = Daten.getInstanz();
         this._layer = layer;
-        this._sidebar = document.getElementById(sidebar);
+        this._sidebar = sidebar;
         this.objekt = objekt;
 
         this._delField = HTML.createToolForm(this._sidebar, false);
@@ -40,7 +40,7 @@ export default class DeleteTool extends Tool {
         this._delField.appendChild(this._infoField);
 
         let button = document.createElement("button");
-        button.addEventListener("click", function (event: MouseEvent) {
+        button.addEventListener("click", function (this: DeleteTool, event: MouseEvent) {
             event.preventDefault();
             this._featureDelete()
         }.bind(this))

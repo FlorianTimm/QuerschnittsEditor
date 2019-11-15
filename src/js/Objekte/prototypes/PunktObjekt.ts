@@ -1,18 +1,24 @@
 import VectorSource from 'ol/source/Vector';
 import { Vector as VectorLayer } from 'ol/layer';
-import { Style, Stroke, Fill, Circle, Text, RegularShape } from 'ol/style';
+import { Style, Stroke, Fill, Circle, Text, RegularShape, Icon } from 'ol/style';
 import { Map } from 'ol';
 import { ColorLike } from "ol/colorlike";
 import PublicWFS from "../../PublicWFS";
 import { InfoToolEditable } from "../../Tools/InfoTool";
 import { Point } from "ol/geom";
 import Daten from "../../Daten";
-import PrimaerObjekt from "./PrimaerObjekt";
+import PObjektMitDokument from "./PObjektMitDateien";
+import { FeatureLike } from 'ol/Feature';
+import Abschnitt from '../Abschnitt';
+import Aufstellvorrichtung from '../Aufstellvorrichtung';
+import Klartext from '../Klartext';
+import { rotate } from 'ol/transform';
+import Zeichen from '../Zeichen';
 
-export default abstract class PunktObjekt extends PrimaerObjekt implements InfoToolEditable {
+export default abstract class PunktObjekt extends PObjektMitDokument implements InfoToolEditable {
     protected vabstVst: number;
     protected vabstBst: number;
-    protected rlageVst: string;
+    protected rlageVst: Klartext;
     protected rabstbaVst: number;
     protected labstbaVst: number;
 
@@ -39,13 +45,17 @@ export default abstract class PunktObjekt extends PrimaerObjekt implements InfoT
         PublicWFS.doTransaction(xml);
     }
 
-    setDataFromXML(objekt: string, xml: Element) {
-        super.setDataFromXML(objekt, xml);
+    setDataFromXML(xml: Element, callback?: (...args: any[]) => void, ...args: any[]) {
+        super.setDataFromXML(xml);
         let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(',');
         this.setGeometry(new Point([parseFloat(koords[0]), parseFloat(koords[1])]));
-        this.abschnitt = Daten.getInstanz().getAbschnitt(this.abschnittId);
-        this.abschnitt.addOKinER(this.getObjektKlassenName());
         Daten.getInstanz().layerAchse.changed();
+
+        Abschnitt.getAbschnitt(this.abschnittId, function (this: PunktObjekt, abschnitt: Abschnitt) {
+            this.abschnitt = abschnitt
+            abschnitt.addOKinER(this.getObjektKlassenName());
+            if (callback) callback(...args);
+        }.bind(this))
     }
 
     static createLayer(map: Map) {
@@ -56,9 +66,10 @@ export default abstract class PunktObjekt extends PrimaerObjekt implements InfoT
             source: source,
             opacity: 0.7,
         });
-        layer.setStyle(function (feature: PunktObjekt, zoom) {
-            let color1 = feature.colorFunktion1();
-            let color2 = feature.colorFunktion2();
+        layer.setStyle(function (feat: FeatureLike, resolution: number) {
+            let pkt = feat as PunktObjekt;
+            let color1 = pkt.colorFunktion1();
+            let color2 = pkt.colorFunktion2();
 
             let text = new Text({
                 font: '13px Calibri,sans-serif',
@@ -71,10 +82,11 @@ export default abstract class PunktObjekt extends PrimaerObjekt implements InfoT
                 textAlign: 'left',
                 // get the text from the feature - `this` is ol.Feature
                 // and show only under certain resolution
-                text: ((zoom < 0.2) ? ("" + feature.vst) : '')
+                text: ((resolution < 0.2) ? ("" + pkt.vst) : '')
             });
 
-            let datum = new Date(feature.stand);
+            let datum = new Date(pkt.stand);
+
             //console.log(feature.stand);
             if ((Date.now() - datum.getTime()) > 3600000 * 24) {
                 return new Style({
@@ -104,7 +116,13 @@ export default abstract class PunktObjekt extends PrimaerObjekt implements InfoT
                 });
             }
         }.bind(this));
+
+        layer.getStyle
         map.addLayer(layer);
         return layer;
+    }
+
+    setRlageVst(rlagevst: Klartext | string) {
+        this.rlageVst = Klartext.get("Itallglage", rlagevst);
     }
 }

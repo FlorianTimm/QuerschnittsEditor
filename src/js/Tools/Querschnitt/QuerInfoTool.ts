@@ -1,12 +1,11 @@
-import { Style, Stroke, Fill } from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
 import { never } from 'ol/events/condition';
 import Daten from '../../Daten';
-import { SelectEvent } from 'ol/interaction/Select';
 import Querschnitt from 'src/js/Objekte/Querschnittsdaten';
 import InfoTool from '../InfoTool';
 import Map from '../../openLayers/Map';
 import { Layer } from 'ol/layer';
+import { Feature } from 'ol';
 
 /**
  * Funktion zum Anzeigen von Informationen über Aufstellvorrichtungen
@@ -18,7 +17,7 @@ class QuerInfoTool extends InfoTool {
     daten: Daten;
     protected selectLinie: SelectInteraction;
 
-    constructor(map: Map, layerLinie: Layer, layerFlaechen: Layer, sidebar: string) {
+    constructor(map: Map, layerLinie: Layer, layerFlaechen: Layer, sidebar: HTMLDivElement) {
         super(map, layerFlaechen, sidebar);
 
 
@@ -31,11 +30,11 @@ class QuerInfoTool extends InfoTool {
         this.select.on("select", this.featureSelectedFlaeche.bind(this))
     }
 
-    private featureSelectedFlaeche(e: SelectEvent) {
+    private featureSelectedFlaeche() {
         console.log("Select Fläche")
         this.selectLinie.getFeatures().clear()
-        this.select.getFeatures().forEach(function (feature: Querschnitt) {
-            this.selectLinie.getFeatures().push(feature.trenn)
+        this.select.getFeatures().forEach(function (this: QuerInfoTool, feature: Feature) {
+            this.selectLinie.getFeatures().push((feature as Querschnitt).trenn)
         }.bind(this));
     }
 

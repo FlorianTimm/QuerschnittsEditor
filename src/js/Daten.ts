@@ -5,16 +5,16 @@ import Abschnitt from './Objekte/Abschnitt';
 import PublicWFS from './PublicWFS';
 import AbschnittWFS from './AbschnittWFS';
 import Querschnitt from './Objekte/Querschnittsdaten';
-import Klartext from './Objekte/Klartext';
 import Aufstellvorrichtung from './Objekte/Aufstellvorrichtung';
-import { isNullOrUndefined } from 'util';
 import { Map, Feature } from 'ol';
 import Event from 'ol/events/Event';
 import { VectorLayer } from './openLayers/Layer';
 import { LineString } from 'ol/geom';
 import StrassenAusPunkt from './Objekte/StrassenAusPunkt';
+import { FeatureLike } from 'ol/Feature';
+import WaitBlocker from './WaitBlocker';
 
-var CONFIG = require('./config.json');
+var CONFIG: { [name: string]: string } = require('./config.json');
 
 /**
  * Daten
@@ -29,7 +29,6 @@ export default class Daten {
     public modus: string = "Otaufstvor"
     public ereignisraum: string;
     public ereignisraum_nr: string;
-    //public querschnitteFID: { [oid: string]: Abschnitt };
     public layerAufstell: VectorLayer;
     public vectorAchse: VectorSource;
     public layerAchse: VectorLayer;
@@ -41,29 +40,20 @@ export default class Daten {
     public layerQuer: VectorLayer;
     public layerStraus: VectorLayer;
 
-    private klartexte: Klartext;
-    private abschnitte: {};
     private map: Map;
     private warteAufObjektklassen: number;
+
 
     constructor(map: Map, ereignisraum: string, ereignisraum_nr: string) {
         Daten.daten = this;
         this.map = map;
         this.ereignisraum = ereignisraum;
         this.ereignisraum_nr = ereignisraum_nr;
-        //this.querschnitteFID = {};
 
-        this.klartexte = Klartext.getInstanz();
-        this.klartexte.load("Itquerart", this.showArt.bind(this));
-        this.klartexte.load("Itquerober", this.showArtOber.bind(this));
-
-        this.createLayerFlaechen();
-        this.createLayerTrennLinien();
+        this.createLayerQuerschnittsFlaechen();
+        this.createLayerQuerschnittsTrennLinien();
         this.createLayerStationen();
         this.createLayerAchsen();
-
-        this.abschnitte = {};
-
 
         this.layerAufstell = Aufstellvorrichtung.createLayer(this.map);
         this.layerStraus = StrassenAusPunkt.createLayer(this.map);
@@ -72,22 +62,19 @@ export default class Daten {
     /**
      * Lädt Daten aus den ERs
      */
-    public loadER(zoomToExtentWhenReady?: boolean) {
-        if (zoomToExtentWhenReady == undefined) zoomToExtentWhenReady = true;
-
+    public loadER(zoomToExtentWhenReady: boolean = true) {
         this.warteAufObjektklassen = 3;
         Querschnitt.loadER(this.loadErCallback.bind(this), zoomToExtentWhenReady);
-        Aufstellvorrichtung.loadER(this.loadErCallback.bind(this, zoomToExtentWhenReady));
-        StrassenAusPunkt.loadER(this.loadErCallback.bind(this, zoomToExtentWhenReady));
+        Aufstellvorrichtung.loadER(this.loadErCallback.bind(this), zoomToExtentWhenReady);
+        StrassenAusPunkt.loadER(this.loadErCallback.bind(this), zoomToExtentWhenReady);
     }
 
     private loadErCallback(zoomToExtentWhenReady?: boolean) {
         this.warteAufObjektklassen -= 1;
-        console.log(this.warteAufObjektklassen)
         if (this.warteAufObjektklassen <= 0) {
             console.log("ERs geladen");
             (document.getElementById("zoomToExtent") as HTMLButtonElement).disabled = false;
-            if (zoomToExtentWhenReady != false)
+            if (zoomToExtentWhenReady)
                 this.zoomToExtent();
         }
     }
@@ -102,11 +89,6 @@ export default class Daten {
 
         for (let f of features) {
             let geo = f.getGeometry()
-            if (geo == undefined) {
-                console.log("Geometrien noch nicht geladen, prüfe in 500ms")
-                setTimeout(this.zoomToExtent.bind(this), 500);
-                return;
-            }
             let p = geo.getExtent();
 
             if (minX == null || minX > p[0]) minX = p[0];
@@ -116,55 +98,14 @@ export default class Daten {
         }
         this.map.getView().fit([minX, minY, maxX, maxY], { padding: [20, 240, 20, 20] })
 
-        //map.getView().fit(daten.l_achse.getExtent());
-
-        /*
-        let extent = Daten.calcAbschnitteExtent(daten.l_achse.getSource().getFeatures());
-        map.getView().fit(extent, { padding: [20, 240, 20, 20] })
-        */
     }
 
     public static getInstanz(): Daten {
         return Daten.daten;
     }
 
-    private showArt(art) {
-        let arten = this.klartexte.getAllSorted("Itquerart");
-        for (let a of arten) {
-            let option = document.createElement('option');
-            let t = document.createTextNode(a.beschreib);
-            option.appendChild(t);
-            let v = document.createAttribute('value');
-            v.value = a.objektId;
-            option.setAttributeNode(v);
-            document.forms.namedItem("qsMultiMod").qsmm_art.appendChild(option.cloneNode(true));
-        }
-    }
-
-    private showArtOber(artober) {
-        let arten = this.klartexte.getAllSorted("Itquerober");
-        for (let a of arten) {
-            let option = document.createElement('option');
-            let t = document.createTextNode(a.beschreib);
-            option.appendChild(t);
-            let v = document.createAttribute('value');
-            v.value = a.objektId;
-            option.setAttributeNode(v);
-            document.forms.namedItem("qsMultiMod").qsmm_ober.appendChild(option.cloneNode(true));
-        }
-    }
-
-    public getAbschnitt(absId: string): Abschnitt {
-        if (!(absId in this.abschnitte)) {
-            this.abschnitte[absId] = Abschnitt.load(absId);
-            this.vectorAchse.addFeature(this.abschnitte[absId]);
-        }
-        //console.log(this.abschnitte[absId]);
-        return this.abschnitte[absId];
-    }
-
     public loadExtent() {
-        document.body.style.cursor = 'wait'
+        WaitBlocker.warteAdd()
         let extent = this.map.getView().calculateExtent();
         if ("ABSCHNITT_WFS_URL" in CONFIG) {
             AbschnittWFS.getByExtent(extent, this.loadExtent_Callback.bind(this));
@@ -185,24 +126,21 @@ export default class Daten {
     private loadExtent_Callback(xml: XMLDocument) {
         let netz = xml.getElementsByTagName("VI_STRASSENNETZ");
         for (let i = 0; i < netz.length; i++) {
-            let abschnitt = Abschnitt.fromXML(netz[i]);
-            if (!(abschnitt.getAbschnittid() in this.abschnitte)) {
-                this.abschnitte[abschnitt.getAbschnittid()] = abschnitt;
-                this.vectorAchse.addFeature(this.abschnitte[abschnitt.getAbschnittid()]);
-            }
+            Abschnitt.fromXML(netz[i]);
         }
-        document.body.style.cursor = '';
+        WaitBlocker.warteSub()
     }
 
     private createLayerAchsen() {
         this.vectorAchse = new VectorSource({
             features: []
         });
-        let achsen_style = function (feature: Abschnitt, resolution: number) {
+        let achsen_style = function (feature: FeatureLike, resolution: number): Style[] {
+            let abschnitt = feature as Abschnitt;
             let styles = [];
             // Linienfarbe - rot, wenn in ER
             let color = '#222';
-            if (feature.isOKinER(Daten.getInstanz().modus)) color = '#d00';
+            if (abschnitt.isOKinER(Daten.getInstanz().modus)) color = '#d00';
 
             // Linie + Beschriftung
             styles.push(new Style({
@@ -217,7 +155,7 @@ export default class Daten {
                     stroke: new Stroke({
                         color: '#fff', width: 2
                     }),
-                    text: feature.getVnk() + ' - ' + feature.getNnk(),
+                    text: abschnitt.getVnk() + ' - ' + abschnitt.getNnk(),
                     placement: 'line',
                     offsetY: -7
                 })
@@ -226,7 +164,7 @@ export default class Daten {
             // Pfeile/Start/Endknoten ab bestimmten Maßstab
             if (resolution < 0.15) {
                 // Pfeile
-                var geometry = feature.getGeometry() as LineString;
+                var geometry = abschnitt.getGeometry() as LineString;
                 let first = true;
                 geometry.forEachSegment(function (start, end) {
                     if (first) {
@@ -297,13 +235,13 @@ export default class Daten {
                 stroke: new Stroke({
                     color: '#000000',
                     width: 1
-                }),
+                })
             })
         });
         this.map.addLayer(this.layerStation);
     }
 
-    private createLayerTrennLinien() {
+    private createLayerQuerschnittsTrennLinien() {
         this.vectorTrenn = new VectorSource({
             features: []
         });
@@ -320,90 +258,89 @@ export default class Daten {
         this.map.addLayer(this.layerTrenn);
     }
 
-    private createLayerFlaechen() {
+    private createLayerQuerschnittsFlaechen() {
         // Layer mit Querschnittsflächen
         this.vectorQuer = new VectorSource({
             features: []
         });
 
-        let createStyle: (feature: Feature, resolution: number) => Style =
-            function (feature: Feature, resolution: number) {
-                let kt_art = Daten.getInstanz().klartexte.get('Itquerart', (feature as Querschnitt).getArt())
-                let kt_ober = Daten.getInstanz().klartexte.get('Itquerober', (feature as Querschnitt).getArtober())
+        let createStyle = function (feature: FeatureLike, resolution: number): Style {
+            let kt_art = (feature as Querschnitt).getArt()
+            let kt_ober = (feature as Querschnitt).getArtober()
 
-                // leere Arten filtern
-                let art = 0
-                if (!isNullOrUndefined(kt_art))
-                    art = Number(kt_art.kt);
+            // leere Arten filtern
+            let art = 0
+            if (kt_art)
+                art = Number(kt_art.getKt());
 
-                // leere Oberflächen filtern
-                let ober = 0
-                if (!isNullOrUndefined(kt_ober))
-                    ober = Number(kt_ober.kt);
+            // leere Oberflächen filtern
+            let ober = 0
+            if (kt_ober)
+                ober = Number(kt_ober.getKt());
 
-                // Farbe für Querschnittsfläche
-                let color = [255, 255, 255];
+            // Farbe für Querschnittsfläche
+            let color = [255, 255, 255];
 
-                if ((art >= 100 && art <= 110) || (art >= 113 && art <= 119) || (art >= 122 && art <= 161) || (art >= 163 && art <= 179) || art == 312)
-                    color = [33, 33, 33];	// Fahrstreifen
-                else if (art == 111)
-                    color = [66, 66, 66]; // 1. Überholfahrstreifen
-                else if (art == 112)
-                    color = [100, 100, 100]; // 2. Überholfahrstreifen
-                else if (art >= 180 && art <= 183)
-                    color = [50, 50, 100];	// Parkstreifen
-                else if (art >= 940 && art <= 942)
-                    color = [0xF9, 0x14, 0xB8]; // Busanlagen
-                else if (art == 210) color = [0x22, 0x22, 0xff];	// Gehweg
-                else if ((art >= 240 && art <= 243) || art == 162)
-                    color = [0x33, 0x33, 0x66];	// Radweg
-                else if (art == 250 || art == 251)
-                    color = [0xcc, 0x22, 0xcc];	// Fuß-Rad-Weg
-                else if (art == 220)
-                    color = [0xff, 0xdd, 0x00];	// paralleler Wirtschaftsweg
-                else if (art == 420 || art == 430 || art == 900)
-                    color = [0xff, 0xff, 0xff];	// Markierungen
-                else if (art == 310 || art == 311 || art == 313 || art == 320 || art == 330 || (art >= 910 && art <= 916))
-                    color = [0xee, 0xee, 0xee];	// Trenn-, Schutzstreifen und Schwellen
-                else if (art == 120 || art == 121)
-                    color = [0x1F, 0x22, 0x97];	// Rinne
-                else if (art == 301)
-                    color = [0x75, 0x9F, 0x1E];	// Banket
-                else if (art == 510 || art == 511 || art == 520)
-                    color = [0x12, 0x0a, 0x8f];	// Gräben und Mulden
-                else if (art == 700 || art == 710)
-                    color = [0x00, 0x44, 0x00];	// Böschungen
-                else if (art == 314 || art == 315)
-                    color = [0x8A, 0x60, 0xD8];	// Inseln
-                else if (art == 400 || art == 410 || art == 715)
-                    color = [0x8A, 0x60, 0xD8];	// Randstreifen und Sichtflächen
-                else if (art == 600 || art == 610 || art == 620 || art == 630 || art == 640)
-                    color = [0xC1, 0xBA, 0xC8];	// Borde und Kantsteine
-                else if (art == 340)
-                    color = [0, 0, 0];	// Gleiskörper
-                else if (art == 999)
-                    color = [0x88, 0x88, 0x88];	// Bestandsachse
-                else if (art == 990 || art == 720)
-                    color = [0xFC, 0x8A, 0x57];	// sonstige Streifenart
+            if ((art >= 100 && art <= 110) || (art >= 113 && art <= 119) || (art >= 122 && art <= 161) || (art >= 163 && art <= 179) || art == 312)
+                color = [33, 33, 33];	// Fahrstreifen
+            else if (art == 111)
+                color = [66, 66, 66]; // 1. Überholfahrstreifen
+            else if (art == 112)
+                color = [100, 100, 100]; // 2. Überholfahrstreifen
+            else if (art >= 180 && art <= 183)
+                color = [50, 50, 100];	// Parkstreifen
+            else if (art >= 940 && art <= 942)
+                color = [0xF9, 0x14, 0xB8]; // Busanlagen
+            else if (art == 210) color = [0x22, 0x22, 0xff];	// Gehweg
+            else if ((art >= 240 && art <= 243) || art == 162)
+                color = [0x33, 0x33, 0x66];	// Radweg
+            else if (art == 250 || art == 251)
+                color = [0xcc, 0x22, 0xcc];	// Fuß-Rad-Weg
+            else if (art == 220)
+                color = [0xff, 0xdd, 0x00];	// paralleler Wirtschaftsweg
+            else if (art == 420 || art == 430 || art == 900)
+                color = [0xff, 0xff, 0xff];	// Markierungen
+            else if (art == 310 || art == 311 || art == 313 || art == 320 || art == 330 || (art >= 910 && art <= 916))
+                color = [0xee, 0xee, 0xee];	// Trenn-, Schutzstreifen und Schwellen
+            else if (art == 120 || art == 121)
+                color = [0x1F, 0x22, 0x97];	// Rinne
+            else if (art == 301)
+                color = [0x75, 0x9F, 0x1E];	// Banket
+            else if (art == 510 || art == 511 || art == 520)
+                color = [0x12, 0x0a, 0x8f];	// Gräben und Mulden
+            else if (art == 700 || art == 710)
+                color = [0x00, 0x44, 0x00];	// Böschungen
+            else if (art == 314 || art == 315)
+                color = [0x8A, 0x60, 0xD8];	// Inseln
+            else if (art == 400 || art == 410 || art == 715)
+                color = [0x8A, 0x60, 0xD8];	// Randstreifen und Sichtflächen
+            else if (art == 600 || art == 610 || art == 620 || art == 630 || art == 640)
+                color = [0xC1, 0xBA, 0xC8];	// Borde und Kantsteine
+            else if (art == 340)
+                color = [0, 0, 0];	// Gleiskörper
+            else if (art == 999)
+                color = [0x88, 0x88, 0x88];	// Bestandsachse
+            else if (art == 990 || art == 720)
+                color = [0xFC, 0x8A, 0x57];	// sonstige Streifenart
 
-                color.push(0.4);
+            color.push(0.4);
 
-                return new Style({
-                    fill: new Fill({
-                        color: color
+            return new Style({
+                fill: new Fill({
+                    color: color
+                }),
+                text: new Text({
+                    font: '12px Calibri,sans-serif',
+                    fill: new Fill({ color: '#000' }),
+                    stroke: new Stroke({
+                        color: '#fff', width: 2
                     }),
-                    text: new Text({
-                        font: '12px Calibri,sans-serif',
-                        fill: new Fill({ color: '#000' }),
-                        stroke: new Stroke({
-                            color: '#fff', width: 2
-                        }),
-                        // get the text from the feature - `this` is ol.Feature
-                        // and show only under certain resolution
-                        text: ((resolution < 0.05) ? (art + " - " + ober) : '')
-                    })
+                    // get the text from the feature - `this` is ol.Feature
+                    // and show only under certain resolution
+                    text: ((resolution < 0.05) ? (art + " - " + ober) : '')
                 })
-            }
+            })
+        }
 
         this.layerQuer = new VectorLayer({
             source: this.vectorQuer,
@@ -413,12 +350,12 @@ export default class Daten {
         this.map.addLayer(this.layerQuer);
     }
 
-    public searchForStreet(event?: Event) {
+    public searchForStreet(__?: Event) {
         console.log(document.forms.namedItem("suche").suche.value);
         let wert = document.forms.namedItem("suche").suche.value;
         if (wert == "") return;
         if ("ABSCHNITT_WFS_URL" in CONFIG) {
-            document.body.style.cursor = 'wait'
+            WaitBlocker.warteAdd();
 
             const vnknnk = /(\d{7,9}[A-Z]?)[\s\-]+(\d{7,9}[A-Z]?)/gm;
             let found1 = vnknnk.exec(wert)
@@ -448,25 +385,24 @@ export default class Daten {
         }
     }
 
-    private loadSearch_Callback(xml) {
+    private loadSearch_Callback(xml: XMLDocument) {
         let netz = xml.getElementsByTagName("VI_STRASSENNETZ");
+        console.log(netz);
         let geladen = [];
-        for (let abschnittXML of netz) {
+        for (let i = 0; i < netz.length; i++) {
             //console.log(abschnittXML)
-            let abschnitt = Abschnitt.fromXML(abschnittXML);
+            let abschnitt = Abschnitt.fromXML(netz.item(i));
             geladen.push(abschnitt);
-            if (!(abschnitt.getAbschnittid() in this.abschnitte)) {
-                this.abschnitte[abschnitt.getAbschnittid()] = abschnitt;
-                this.vectorAchse.addFeature(this.abschnitte[abschnitt.getAbschnittid()]);
-            }
         }
+
+        // auf die Abschnitte zoomen
         if (geladen.length > 0) {
             let extent = Daten.calcAbschnitteExtent(geladen);
             this.map.getView().fit(extent, { padding: [20, 240, 20, 20] })
         } else {
             PublicWFS.showMessage("Kein Abschnitt gefunden!", true);
         }
-        document.body.style.cursor = '';
+        WaitBlocker.warteSub();
     }
 
     public static calcAbschnitteExtent(abschnitte: Abschnitt[]) {

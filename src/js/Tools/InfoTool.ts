@@ -3,12 +3,13 @@ import Map from '../openLayers/Map';
 import { Layer } from 'ol/layer';
 import Tool from './prototypes/Tool';
 import { SelectEvent } from 'ol/interaction/Select';
-import { Feature } from 'ol';
+import { Feature, Overlay } from 'ol';
 import "../import_jquery.js";
 import HTML from '../HTML';
 import { Style, Stroke, Fill } from 'ol/style';
 import GeometryType from 'ol/geom/GeometryType';
 import CircleStyle from 'ol/style/Circle';
+import { FeatureLike } from 'ol/Feature';
 
 /**
  * Funktion zum Anzeigen von Informationen zu Aufstellvorrichtungen und Schildern
@@ -22,8 +23,9 @@ export default class InfoTool extends Tool {
     private layer: Layer;
     private infoField: HTMLFormElement;
     protected select: SelectInteraction;
+    protected lastFeature: InfoToolOverlay;
 
-    constructor(map: Map, layer: Layer, sidebar: string) {
+    constructor(map: Map, layer: Layer, sidebar: HTMLDivElement) {
         super();
         this.map = map;
         this.layer = layer;
@@ -35,36 +37,51 @@ export default class InfoTool extends Tool {
         });
         this.select.on('select', this.featureSelectedEvent.bind(this))
 
-        this.infoField = HTML.createToolForm(document.getElementById(sidebar), false)
+        this.infoField = HTML.createToolForm(sidebar, false)
     }
 
     /**
      * Wird ausgelöst beim Auswählen einer Aufstellvorrichtung
      * @param {SelectEvent} event 
      */
-    private featureSelectedEvent(event: SelectEvent, changeable: boolean = false) {
+    private featureSelectedEvent(__: SelectEvent, changeable: boolean = false) {
         this.featureSelect(this.select, changeable);
         console.log("Select");
     }
 
     public featureSelect(select: SelectInteraction = this.select, changeable: boolean = false) {
         let auswahl = select.getFeatures();
-        console.log(auswahl.getArray())
 
         if (auswahl.getLength() == 0) {
             this.hideInfoBox();
             return;
         }
         this.infoField.innerHTML = "";
-        this.getInfoFieldForFeature(auswahl.item(0), changeable)
+        let feat = auswahl.item(0);
+        this.getInfoFieldForFeature(feat, changeable)
+
+        // Overlays
+        this.removeOverlays()
+        if (!changeable && "showOverlay" in feat) {
+            this.lastFeature = feat as InfoToolOverlay
+            this.lastFeature.showOverlay(this.map)
+        }
+
     }
 
     public getInfoFieldForFeature(feature: Feature, changeable: boolean = false) {
+        this.infoField.innerHTML = "";
         (feature as InfoToolSelectable).getInfoForm(this.infoField, changeable);
         if (changeable) {
-            let button = $(this.infoField).children("input[type=button]");
-            button.prop("disabled", false);
-            button.on("click", function () {
+            // Button
+            let input = document.createElement("input");
+            input.id = "info_button";
+            input.type = "submit"
+            input.value = "Speichern"
+            this.infoField.appendChild(input);
+            $(this.infoField).off("submit");
+            $(this.infoField).on("submit", function (this: InfoTool, event: Event) {
+                event.preventDefault();
                 (feature as InfoToolEditable).changeAttributes(this.infoField);
             }.bind(this));
         }
@@ -76,13 +93,21 @@ export default class InfoTool extends Tool {
     }
 
     public hideInfoBox() {
-        $(this.infoField).hide("fast", "linear", function () {
+        $(this.infoField).off("submit");
+        $(this.infoField).hide("fast", "linear", undefined, function (this: InfoTool) {
             this.infoField.innerHTML = "";
         }.bind(this))
-
+        this.removeOverlays();
     }
 
-    public static selectStyle(feat: Feature): Style {
+    private removeOverlays() {
+        if (this.lastFeature) {
+            this.lastFeature.hideOverlay(this.map);
+            this.lastFeature = undefined;
+        }
+    }
+
+    public static selectStyle(feat: FeatureLike, __: number): Style {
         let typ = feat.getGeometry().getType();
         if (typ == GeometryType.LINE_STRING || typ == GeometryType.MULTI_LINE_STRING) {
             return new Style({
@@ -138,4 +163,9 @@ export interface InfoToolSelectable extends Feature {
 }
 export interface InfoToolEditable extends Feature {
     changeAttributes: (form: HTMLFormElement) => void;
+}
+
+export interface InfoToolOverlay {
+    showOverlay: (map: Map) => void;
+    hideOverlay: (map: Map) => void;
 }

@@ -37,7 +37,7 @@ import SAPAdd from './Tools/StrassenAusPunkt/SAPAdd';
 import SAPAdd2ER from './Tools/StrassenAusPunkt/SAPAdd2ER';
 import DeleteTool from './Tools/DeleteTool';
 
-var CONFIG: [string, string] = require('./config.json');
+var CONFIG: { [name: string]: string } = require('./config.json');
 
 let urlParamER: RegExpExecArray = new RegExp('[\?&]er=([^&#]*)').exec(window.location.href);
 let urlParamERNR: RegExpExecArray = new RegExp('[\?&]ernr=([^&#]*)').exec(window.location.href);
@@ -65,26 +65,29 @@ window.addEventListener('load', function () {
 
     daten = new Daten(map, er, ernr);
 
-    infoTool = new QuerInfoTool(map, daten.layerTrenn, daten.layerQuer, "sidebar");
+    let sidebar = document.getElementById("sidebar") as HTMLDivElement | null;
+    if (!sidebar) throw new Error("HTML Sidebar nicht gefunden")
+
+    infoTool = new QuerInfoTool(map, daten.layerTrenn, daten.layerQuer, sidebar);
     infoTool.start();
     editTool = new QuerModifyTool(map, infoTool);
     delTool = new QuerDelTool(map, infoTool);
     addTool = new QuerAddTool(map, infoTool);
-    partTool = new QuerPartTool(map, daten, infoTool);
+    partTool = new QuerPartTool(map, infoTool, sidebar);
     qsAdd2ER = new QuerAdd2ER(map);
 
-    vsInfoTool = new InfoTool(map, daten.layerAufstell, "sidebar");
+    vsInfoTool = new InfoTool(map, daten.layerAufstell, sidebar);
     avAdd = new AvAdd(map);
     vzAdd = new AvVzAdd(map);
     avMove = new MoveTool(map, vsInfoTool, daten.layerAufstell);
-    avAdd2ER = new AvAdd2ER(map, daten);
-    avDel = new DeleteTool(map, daten.layerAufstell, "sidebar", "Otaufstvor");
+    avAdd2ER = new AvAdd2ER(map);
+    avDel = new DeleteTool(map, daten.layerAufstell, sidebar, "Otaufstvor");
 
-    sapInfoTool = new InfoTool(map, daten.layerStraus, "sidebar");
+    sapInfoTool = new InfoTool(map, daten.layerStraus, sidebar);
     sapAdd = new SAPAdd(map);
     sapMove = new MoveTool(map, vsInfoTool, daten.layerStraus);
     sapAdd2ER = new SAPAdd2ER(map);
-    sapDel = new DeleteTool(map, daten.layerStraus, "sidebar", "Otstrauspkt");
+    sapDel = new DeleteTool(map, daten.layerStraus, sidebar, "Otstrauspkt");
 
     measure = new Measure(map);
 
@@ -167,7 +170,7 @@ function checkHash(map: Map) {
         }
         if (layer != null) {
             let selection = layer.split(',');
-            map.getLayers().forEach(function (layer, id, array) {
+            map.getLayers().forEach(function (layer, id, __) {
                 if (layer.get('switchable') == true) {
                     if (selection.indexOf(id + "") != -1) {
                         layer.setVisible(true);
@@ -180,7 +183,7 @@ function checkHash(map: Map) {
         }
         foundHash = true;
     }
-    map.getLayers().forEach(function (layer, id, array) {
+    map.getLayers().forEach(function (layer, __, ___) {
         if (layer.get('switchable') == undefined || layer.get('switchable') == true) {
             layer.on("propertychange", recreateHash);
         }
@@ -198,14 +201,15 @@ function recreateHash(event: MapEvent) {
         hash += "&x=" + Math.round(view.getCenter()[0]);
         hash += "&y=" + Math.round(view.getCenter()[1]);
 
-        let visible = []
-        event.target.getLayers().forEach(function (layer: { get: (arg0: string) => boolean; getVisible: () => void; }, id: any, array: any) {
-            if (layer.get('switchable') == true) {
-                if ((layer as Layer).getVisible()) {
-                    visible.push(id);
+        let visible: number[] = []
+        event.target.getLayers().forEach(
+            function (layer: Layer, id: number, __: Layer[]) {
+                if (layer.get('switchable') == true) {
+                    if ((layer as Layer).getVisible()) {
+                        visible.push(id);
+                    }
                 }
-            }
-        });
+            });
 
         hash += "&layer=" + visible.join(',');
         document.location.hash = hash;
@@ -358,6 +362,21 @@ function createMap() {
                     serverType: ('geoserver'),
                     attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
                 })
+            }),
+            new TileLayer({
+                name: "Bezirks-Feinkartierung",
+                visible: false,
+                switchable: true,
+                opacity: 0.8,
+                source: new TileWMS({
+                    url: 'https://geodienste.hamburg.de/HH_WMS_Feinkartierung_Strasse?',
+                    params: {
+                        'LAYERS': 'b_altona_mr_feinkartierung_flaechen,b_harburg_mr_feinkartierung_flaechen,b_mitte_mr_feinkartierung_flaechen,b_eims_mr_feinkartierung_flaechen,b_wands_mr_feinkartierung_flaechen',
+                        'FORMAT': 'image/png'
+                    },
+                    serverType: ('geoserver'),
+                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
+                })
             })
         ],
         target: 'map',
@@ -376,7 +395,7 @@ function createMap() {
     });
 }
 
-function openTab(evt: MouseEvent) {
+function openTab(evt: Event) {
     // Declare all variables
     let i: number, tabcontent: HTMLCollectionOf<Element>, tablinks: HTMLCollectionOf<Element>;
 

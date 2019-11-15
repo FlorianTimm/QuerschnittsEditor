@@ -95,77 +95,11 @@
                 disabled="disabled" />
         </form>
 
-        <form id="hinzu" name="hinzu" class="tool_form">
-            <input type="button" id="addQuerschnittButton" value="Querschnitt hinzuf&uuml;gen" disabled="disabled" />
-        </form>
-
         <form id="quer_del" name="quer_del" class="tool_form">
             <input type="button" id="delQuerschnittButton" value="Querschnitt l&ouml;schen" disabled="disabled" />
         </form>
-
-        <form id="teilen" name="teilen" class="tool_form">
-            <table>
-                <tr>
-                    <td>VNK:</td>
-                    <td id="teilen_vnk"></td>
-                </tr>
-                <tr>
-                    <td>NNK:</td>
-                    <td id="teilen_nnk"></td>
-                </tr>
-                <tr>
-                    <td>Station</td>
-                    <td id="teilen_station"></td>
-                </tr>
-            </table>
-            <input type="button" id="teilen_button" value="Querschnitt teilen" disabled="disabled" />
-        </form>
-
-        <form id="modify" name="modify" class="tool_form">
-            Nachfolgende Querschnitte:<br />
-            <input type="radio" name="typ" id="modify_move" class="label_radio" value="move" checked="checked" /><label
-                for="modify_move">&nbsp;...verschieben</label><br />
-            <input type="radio" name="typ" id="modify_fit" class="label_radio" value="fit" /><label
-                for="modify_fit">&nbsp;...anpassen</label><br />
-            <br />
-            <input type="checkbox" name="modify_glue" id="modify_glue" />
-            <label for="modify_glue">&nbsp;angrenzende Querschnitte mitziehen</label><br />
-        </form>
-
-        <!--
-        <form id="qsMultiMod" name="qsMultiMod" class="tool_form">
-            <table>
-                <tr>
-                    <td>Anzahl</td>
-                    <td><input type="number" id="qsmm_anzahl" disabled="disabled" /></td>
-                </tr>
-                <tr>
-                    <td>Art:</td>
-                    <td><select id="qsmm_art"></select></td>
-                </tr>
-                <tr>
-                    <td>Art der Oberfl&auml;che:</td>
-                    <td><select id="qsmm_ober"></select></td>
-                </tr>
-            </table>
-        </form>-->
-
-        <!--<form style="background-color: rgba(255,180,180,0.8);">Bekannte Fehler:
-            <ul>
-                <li>Kein Verschieben von M-Streifen</li>
-                <li>Nach Teilen Daten doppelt</li>
-                <li>Hinzufügen nicht möglich</li>
-                <li>Löschen nicht möglich</li>
-            </ul>
-        </form>-->
+      
     </sidebar>
-
-    <!--
-    <div id="dialog-confirm" title="Schild wirklich löschen?" style="display: none;">
-        <p>
-            <span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>
-            M&ouml;chten Sie dieses Schild wirklich löschen?</p>
-    </div>-->
 
     <div id="dialog-confirm" style="display: none;">
         <p>
@@ -173,6 +107,7 @@
             <div id="text"></div>
         </p>
     </div>
+
     <script src="./js/edit.ts"></script>
 </body>
 

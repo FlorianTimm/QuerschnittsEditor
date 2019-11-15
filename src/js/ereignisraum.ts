@@ -6,12 +6,25 @@
  */
 
 import PublicWFS from './PublicWFS';
+import "./import_jquery.js";
+import 'chosen-js';
+import 'chosen-js/chosen.css';
+import '../css/index.css';
 
 window.addEventListener('load', loadER);
 
-var er = []
-var select: HTMLSelectElement = document.getElementById("er_select") as HTMLSelectElement;
+var er: {
+    fid: string,
+    nr: number,
+    kurzbez: string,
+    langbez: string,
+    ownerName: string,
+    anlagedat: string
+}[] = []
+let select: HTMLSelectElement = document.getElementById("er_select") as HTMLSelectElement;
 select.addEventListener("change", aenderung);
+let jSelect = $(select).chosen({ placeholder_text_single: "Ereignisräume werden geladen..." });
+jSelect.on("change", aenderung);
 
 //?Service=WFS&Request=GetFeature&TypeName=Projekt&Filter=<Filter><PropertyIsEqualTo><PropertyName>status</PropertyName><Literal>1</Literal></PropertyIsEqualTo></Filter>
 
@@ -93,13 +106,14 @@ function readER(xml: Document) {
         select.innerHTML = ""
         select.appendChild(option);
     }
+    jSelect.trigger("chosen:updated")
 }
 
 function aenderung() {
     for (let projekt of er) {
         if (projekt.fid != select.value) continue;
-        (document.getElementById("ernr") as HTMLInputElement).value = projekt.nr;
-        document.getElementById("nummer").innerHTML = projekt.nr;
+        (document.getElementById("ernr") as HTMLInputElement).value = projekt.nr.toString();
+        document.getElementById("nummer").innerHTML = projekt.nr.toString();
         document.getElementById("kurzbez").innerHTML = projekt.kurzbez;
         document.getElementById("langbez").innerHTML = projekt.langbez;
         document.getElementById("bearbeiter").innerHTML = projekt.ownerName;

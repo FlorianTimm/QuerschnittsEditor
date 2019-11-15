@@ -1,4 +1,3 @@
-var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../config_wfs.json');
 import { Feature } from 'ol';
 import { MultiLineString, Polygon } from 'ol/geom';
 import Daten from '../Daten';
@@ -7,44 +6,42 @@ import Aufbau from '../Objekte/Aufbaudaten';
 import PublicWFS from '../PublicWFS';
 import Vektor from '../Vektor';
 import QuerStation from './QuerStation';
-import Klartext from './Klartext';
+import Klartext, { KlartextMap } from './Klartext';
 import HTML from '../HTML';
 import { InfoToolEditable } from '../Tools/InfoTool';
 import PrimaerObjekt from './prototypes/PrimaerObjekt';
+import WaitBlocker from '../WaitBlocker';
 
 /**
 * @author Florian Timm, LGV HH 
-* @version 2019.10.29
+* @version 2019.11.15
 * @copyright MIT
 */
 
 
 export default class Querschnitt extends PrimaerObjekt implements InfoToolEditable {
-    getObjektKlassenName(): string {
-        return "Dotquer"
-    }
     private _daten: Daten;
     private _aufbaudaten: { [schicht: number]: Aufbau } = null;
-
 
     trenn: Feature;
 
     // SIB-Attribute
     private station: QuerStation = null;
-    private art: string = null;
-    private artober: string = null;
+    private art: Klartext = null;
+    private artober: Klartext = null;
     private breite: number = null;
     private bisBreite: number = null;
-    private blpart: any = null;
-    private blpartnull: any = null;
-    private uipart: any = null;
-    private uipartnull: any = null;
+    private blpart: Klartext = null;
+    private blpartnull: Klartext = null;
+    private uipart: Klartext = null;
+    private uipartnull: Klartext = null;
     private XVstL: number = null;
     private XVstR: number = null;
     private XBstL: number = null;
     private XBstR: number = null;
     private streifen: 'M' | 'L' | 'R' = null;
     private streifennr: number = null;
+    static loadErControlCounter: number = 0;
 
     constructor() {
         super();
@@ -58,8 +55,15 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         this._daten.vectorTrenn.addFeature(this.trenn);
     }
 
-    static loadER(callback?: (xml: Document, ...args: any[]) => void, ...args: any[]) {
-        document.body.style.cursor = 'wait';
+    getWFSKonfigName(): string {
+        return "QUERSCHNITT"
+    }
+
+    getObjektKlassenName(): string {
+        return "Dotquer"
+    }
+
+    static loadER(callback?: (...args: any[]) => void, ...args: any[]) {
         let daten = Daten.getInstanz();
         PublicWFS.doQuery('Dotquer', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
@@ -67,7 +71,6 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     }
 
     static loadAbschnittER(abschnitt: Abschnitt, callback: (...args: any[]) => void, ...args: any[]) {
-        document.body.style.cursor = 'wait';
         let daten = Daten.getInstanz();
         PublicWFS.doQuery('Dotquer', '<Filter>' +
             '<And><PropertyIsEqualTo><PropertyName>abschnittId</PropertyName>' +
@@ -76,32 +79,32 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     }
 
     static _loadER_Callback(xml: Document, callback: (...args: any[]) => void, ...args: any[]) {
-        let daten = Daten.getInstanz();
         let dotquer = xml.getElementsByTagName("Dotquer");
         let liste: Querschnitt[] = [];
         for (let i = 0; i < dotquer.length; i++) {
-            //console.log(quer);
-            liste.push(Querschnitt.fromXML(dotquer[i]));
+            Querschnitt.loadErControlCounter += 1
+            liste.push(Querschnitt.fromXML(dotquer[i], undefined, Querschnitt.loadErControlCallback, callback, ...args));
         }
+        if (dotquer.length == 0) Querschnitt.loadErControlCheck(callback, ...args)
+    }
 
-        Querschnitt.checkQuerschnitte(liste);
+    private static loadErControlCallback(callback?: (...args: any[]) => void, ...args: any[]) {
+        Querschnitt.loadErControlCounter -= 1
+        Querschnitt.loadErControlCheck(callback, ...args)
+    }
 
-        if (callback != undefined) {
-            callback(...args);
-        }
-        document.body.style.cursor = ''
+    private static loadErControlCheck(callback?: (...args: any[]) => void, ...args: any[]) {
+        if (Querschnitt.loadErControlCounter > 0) return;
+        if (callback) callback(...args)
     }
 
     static checkQuerschnitte(liste: Querschnitt[]) {
         liste.forEach(function (querschnitt: Querschnitt) {
             querschnitt.check()
         })
-
     }
 
     public check() {
-        //if (this.XVstL != null && this.XVstR != null && this.XBstL != null && this.XBstR != null) return;
-        //console.log(this);
         let m = this.station.getStreifen("M")
         let seite = this.station.getStreifen(this.streifen);
 
@@ -143,87 +146,75 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
     }
 
-    private static createFields(form: HTMLFormElement, formId: string, querschnitt?: Querschnitt, changeable: boolean = false) {
+    private static createFields(form: HTMLFormElement, __: string, querschnitt?: Querschnitt, changeable: boolean = false) {
         // Art
-        let art = Klartext.createKlartextSelectForm("Itquerart", form, "Art", "art", querschnitt != undefined ? querschnitt.art : undefined);
+        let art = Klartext.createKlartextSelectForm("Itquerart", form, "Art", "art", querschnitt != undefined ? querschnitt.art.getXlink() : undefined);
         $(art).prop('disabled', !changeable).trigger("chosen:updated");
-        form.appendChild(document.createElement("br"));
 
         // Lage
-        let lage = Klartext.createKlartextSelectForm("Itquerober", form, "Lage", "ober", querschnitt != undefined ? querschnitt.artober : undefined);
+        let lage = Klartext.createKlartextSelectForm("Itquerober", form, "Lage", "ober", querschnitt != undefined ? querschnitt.artober.getXlink() : undefined);
         $(lage).prop('disabled', !changeable).trigger("chosen:updated");
-        form.appendChild(document.createElement("br"));
+
+        // Breite
+        let breite = HTML.createNumberInput(form, "Von Breite", "breite", querschnitt != undefined ? querschnitt.breite.toString() : undefined);
+        breite.step = '1';
+        breite.max = '5000';
+        breite.min = '0'
+        breite.disabled = !changeable;
+
+        // BisBreite
+        let bisbreite = HTML.createNumberInput(form, "Bis Breite", "bisbreite", querschnitt != undefined ? querschnitt.bisBreite.toString() : undefined);
+        bisbreite.step = '1';
+        bisbreite.max = '5000';
+        bisbreite.min = '0'
+        bisbreite.disabled = !changeable;
 
         // VNK
         let vnk = HTML.createTextInput(form, "VNK", "vnk", querschnitt != undefined ? querschnitt.getAbschnitt().getVnk() : undefined);
         vnk.disabled = true;
-        form.appendChild(document.createElement("br"));
 
         // NNK
         let nnk = HTML.createTextInput(form, "NNK", "nnk", querschnitt != undefined ? querschnitt.getAbschnitt().getNnk() : undefined);
         nnk.disabled = true;
-        form.appendChild(document.createElement("br"));
 
         // Station
         let station = HTML.createTextInput(form, "Station", "station", querschnitt != undefined ? querschnitt.vst + ' - ' + querschnitt.bst : undefined);
         station.disabled = true;
-        form.appendChild(document.createElement("br"));
 
         // Streifen
         let streifen = HTML.createTextInput(form, "Streifen", "streifen", querschnitt != undefined ? querschnitt.streifen + ' ' + querschnitt.streifennr : undefined);
         streifen.disabled = true;
-        form.appendChild(document.createElement("br"));
-
-        // Breite
-        let breite = HTML.createTextInput(form, "Von Breite", "breite", querschnitt != undefined ? querschnitt.breite.toString() : undefined);
-        breite.disabled = true;
-        form.appendChild(document.createElement("br"));
-
-        // BisBreite
-        let bisbreite = HTML.createTextInput(form, "Bis Breite", "bisbreite", querschnitt != undefined ? querschnitt.bisBreite.toString() : undefined);
-        bisbreite.disabled = true;
-        form.appendChild(document.createElement("br"));
-
-        // Button
-        if (changeable) {
-            let input = document.createElement("input");
-            input.id = formId + "_button";
-            input.type = "button"
-            input.value = "Querschnitt speichern"
-            input.disabled = true;
-            form.appendChild(input);
-        }
     }
 
     public getInfoForm(ziel: HTMLFormElement, changeable: boolean = false): void {
         Querschnitt.createFields(ziel, "info", this, changeable);
     }
 
-    static fromXML(xml: Element, doNotAdd: boolean = false) {
+    static fromXML(xml: Element, doNotAdd: boolean = false, callback?: (...args: any[]) => void, ...args: any[]) {
         let r = new Querschnitt();
-        r.setDataFromXML('QUERSCHNITT', xml)
+        r.setDataFromXML(xml)
 
         if (doNotAdd) return r;  // Abbruch, falls nur die Daten geparst werden sollen
 
-        r.abschnitt = r._daten.getAbschnitt(r.abschnittId);
-        r.abschnitt.addOKinER('Querschnitt');
+        Abschnitt.getAbschnitt(r.abschnittId, function (abschnitt: Abschnitt, r: Querschnitt) {
+            abschnitt.addOKinER('Querschnitt');
+            r.abschnitt = abschnitt;
+
+            if (!(r.abschnitt.existsStation(r.vst))) {
+                r.station = new QuerStation(r.abschnitt, r.vst, r.bst);
+            } else {
+                r.station = r.abschnitt.getStation(r.vst);
+            }
+            r.station.addQuerschnitt(r);
+            r.createGeom();
+
+            if (callback) callback(...args)
+        }, r);
+
 
         //console.log(abschnitt);
-        if (!(r.abschnitt.existsStation(r.vst))) {
-            let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(' ');
-            let geo = [];
-            for (let i = 0; i < koords.length; i++) {
-                let k = koords[i].split(',')
-                let x = Number(k[0]);
-                let y = Number(k[1]);
-                geo.push([x, y]);
-            }
-            r.station = new QuerStation(r.abschnitt, r.vst, r.bst, geo);
-        } else {
-            r.station = r.abschnitt.getStation(r.vst);
-        }
-        r.station.addQuerschnitt(r);
-        r.createGeom();
+
+
         return r;
     }
 
@@ -265,10 +256,15 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         let abst2 = this.XVstL
         let diff2 = this.XBstL - abst2
 
-        let anzahl = this.station.getGeometry().length;
+        let punkte = this.station.getPunkte();
 
-        for (let j = 0; j < anzahl; j++) {
-            let coord = Vektor.sum(this.station.getGeometry()[j], Vektor.multi(this.station.getVector()[j], this.station.getSegment()[j] * diff2 + abst2));
+        let erster = punkte[0];
+        let letzter = punkte[punkte.length - 1]
+
+        for (let i = 0; i < punkte.length; i++) {
+            let pkt = punkte[i]
+            let faktor = (pkt.vorherLaenge - erster.vorherLaenge) / (letzter.vorherLaenge - erster.vorherLaenge);
+            let coord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff2 + abst2)));
             if (isNaN(coord[0]) || isNaN(coord[1])) {
                 console.log("Fehler: keine Koordinaten");
                 continue;
@@ -277,8 +273,11 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             l.push(coord);
         }
 
-        for (let j = anzahl - 1; j >= 0; j--) {
-            let coord = Vektor.sum(this.station.getGeometry()[j], Vektor.multi(this.station.getVector()[j], this.station.getSegment()[j] * diff1 + abst1));
+
+        for (let i = punkte.length - 1; i >= 0; i--) {
+            let pkt = punkte[i]
+            let faktor = (pkt.vorherLaenge - erster.vorherLaenge) / (letzter.vorherLaenge - erster.vorherLaenge);
+            let coord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff1 + abst1)));
             if (isNaN(coord[0]) || isNaN(coord[1])) {
                 console.log("Fehler: keine Koordinaten");
                 continue;
@@ -292,54 +291,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         else this.trenn.setGeometry(new MultiLineString([l, r]));
 
         g.push(g[0])
-        this.setGeometry(new Polygon([g])) //setCoordinates([g])
-    }
-
-    public createInsertXML(changes?: { [tag: string]: number | string }, removeIds?: boolean) {
-        let r = '<wfs:Insert>\n<Dotquer>\n';
-
-        for (let change in changes) {
-            if (CONFIG_WFS.QUERSCHNITT[change].art == 0 || CONFIG_WFS.QUERSCHNITT[change].art == 1) {
-                // Kein Klartext
-                r += '<' + change + '>' + changes[change] + '</' + change + '>\n';
-            } else if (CONFIG_WFS.QUERSCHNITT[change].art == 2) {
-                // Klartext
-                r += '<' + change + ' xlink:href="' + changes[change] + '" typeName="' + CONFIG_WFS.QUERSCHNITT[change].kt + '" />\n';
-            }
-        }
-
-        for (let tag in CONFIG_WFS.QUERSCHNITT) {
-            //console.log(tag);
-            if (changes != undefined && tag in changes) continue;
-            else if (removeIds == true && (tag == "objektId" || tag == "fid")) continue;
-            else if (this[tag] === null || this[tag] === undefined) continue;
-            else if (CONFIG_WFS.QUERSCHNITT[tag].art == 0 || CONFIG_WFS.QUERSCHNITT[tag].art == 1) {
-                // Kein Klartext
-                r += '<' + tag + '>' + this[tag] + '</' + tag + '>\n';
-            } else if (CONFIG_WFS.QUERSCHNITT[tag].art == 2) {
-                // Klartext
-                r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS.QUERSCHNITT[tag].kt + '" />\n';
-            }
-        }
-
-        r += '</Dotquer>\n';
-        r += '</wfs:Insert>\n';
-        return r;
-    }
-
-    private createAufbauDatenXML() {
-        let r = '';
-        if (this._aufbaudaten != null) {
-            r += '<wfs:Insert>\n'
-
-            for (let s in this._aufbaudaten) {
-                //console.log(this._aufbaudaten[s]);
-                r += this._aufbaudaten[s].createXML();
-            }
-            r += '</wfs:Insert>\n';
-
-        }
-        return r;
+        this.setGeometry(new Polygon([g])) //setCoordinates([g])*/
     }
 
     private createUpdateBreiteXML() {
@@ -353,20 +305,8 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         });
     }
 
-
-    private updateArt(art: string, artober: string) {
-        this.art = art;
-        this.artober = artober;
-        this._daten.vectorQuer.changed();
-
-        PublicWFS.doTransaction(this.createUpdateXML({
-            art: this.art,
-            artober: this.artober
-        }));
-    }
-
     public updateArtEinzeln(art: string) {
-        this.art = art;
+        this.setArt(art);
         this._daten.vectorQuer.changed();
 
         PublicWFS.doTransaction(this.createUpdateXML({
@@ -375,7 +315,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     }
 
     public updateOberEinzeln(artober: string) {
-        this.artober = artober;
+        this.setArtober(artober);
         this._daten.vectorQuer.changed();
         PublicWFS.doTransaction(this.createUpdateXML({
             artober: this.artober
@@ -384,21 +324,167 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
     public changeAttributes(form: HTMLFormElement) {
         let changes: { [attribut: string]: any } = {}
-        if ($(form).children("#art").val() != this.getArt()) {
-            this.setArt($(form).children("#art").val() as string)
-            changes["art"] = $(form).children("#art").val()
+        let artXlink = $(form).children().children("#art").val() as string
+        if (artXlink != this.getArt().getXlink()) {
+            this.setArt(artXlink as string)
+            changes["art"] = artXlink
         }
-
-        if ($(form).children("#ober").val() != this.getArtober()) {
-            this.setArtober($(form).children("#ober").val() as string)
-            changes["artober"] = $(form).children("#ober").val()
+        let oberXlink = $(form).children().children("#ober").val() as string
+        if (oberXlink != this.getArtober().getXlink()) {
+            this.setArtober(oberXlink as string)
+            changes["artober"] = oberXlink;
         }
-
         PublicWFS.doTransaction(this.createUpdateXML(changes));
+        this.updateInfoBreite(form);
     };
 
+    private updateInfoBreite(form: HTMLFormElement) {
+        let breite_neu = Number($(form).find('#breite').val());
+        let bisbreite_neu = Number($(form).find('#bisbreite').val());
+        if (breite_neu != this.getBreite() || bisbreite_neu != this.getBisBreite()) {
+            this.editBreite(breite_neu, bisbreite_neu, (document.getElementById('modify_fit') as HTMLInputElement).checked);
+        }
+    }
 
-    public editBreite(edit: string, diff: number, fit: boolean) {
+    private editBreite(breiteVst: number, breiteBst: number, folgenden_anpassen: boolean = false) {
+        let diffVst = 0
+        let diffBst = 0
+        if (breiteVst < 0) breiteVst = 0;
+        if (breiteBst < 0) breiteBst = 0;
+        this.breite = breiteVst;
+        this.bisBreite = breiteBst;
+
+        if (this.streifen == "L") {
+            let xvstl_neu = this.XVstR - this.breite / 100
+            let xbstl_neu = this.XBstR - this.bisBreite / 100;
+            diffVst = xvstl_neu - this.XVstL;
+            diffBst = xbstl_neu - this.XBstL;
+            this.XVstL = xvstl_neu
+            this.XBstL = xbstl_neu
+        } else if (this.streifen == "R") {
+            let xvstr_neu = this.XVstL + this.breite / 100;
+            let xbstr_neu = this.XBstL + this.bisBreite / 100;
+            diffVst = xvstr_neu - this.XVstR;
+            diffBst = xbstr_neu - this.XBstR;
+            this.XVstR = xvstr_neu
+            this.XBstR = xbstr_neu
+        }
+
+        this.editNext(folgenden_anpassen, diffVst, diffBst);
+    }
+
+    private editNext(folgenden_anpassen: boolean = false, diffVst: number = 0, diffBst: number = 0) {
+        if (folgenden_anpassen) {
+            this.folgendeAnpassen()
+        } else {
+            this.folgendeVerschieben(diffVst, diffBst)
+        }
+    }
+
+    private folgendeAnpassen() {
+        let update = "";
+        let naechster = this.getStation().getQuerschnitt(this.streifen, this.streifennr + 1);
+        if (naechster != null) {
+            if (this.streifen == "L") {
+                // negative Breite verhindern
+                if (this.XVstL < naechster.XVstL) this.XVstL = naechster.XVstL;
+                if (this.XBstL < naechster.XBstL) this.XBstL = naechster.XBstL;
+
+                // Linke Begrenzung als rechte des nächsten übernehmen
+                naechster.XVstR = this.XVstL;
+                naechster.XBstR = this.XBstL;
+            } else if (this.streifen == "R") {
+                // negative Breite verhindern
+                if (this.XVstR > naechster.XVstR) this.XVstR = naechster.XVstR;
+                if (this.XBstR > naechster.XBstR) this.XBstR = naechster.XBstR;
+
+                // Rechte Begrenzung als linke des nächsten übernehmen
+                naechster.XVstL = this.XVstR;
+                naechster.XBstL = this.XBstR;
+            }
+            // Breite berechnen
+            naechster.breite = Math.abs(Math.round((naechster.XVstL - naechster.XVstR) * 100));
+            naechster.bisBreite = Math.abs(Math.round((naechster.XBstL - naechster.XBstR) * 100));
+
+            naechster.createGeom();
+            update += naechster.createUpdateBreiteXML();
+
+        }
+        update += this.createUpdateBreiteXML();
+        this.createGeom();
+        PublicWFS.doTransaction(update);
+    }
+
+    private folgendeVerschieben(diffVst: number, diffBst: number) {
+        let update = this.createUpdateBreiteXML();
+        this.createGeom();
+
+        let i = this.streifennr;
+        let naechster = null;
+        while ((naechster = this.getStation().getQuerschnitt(this.streifen, ++i)) != null) {
+            console.log(naechster);
+            naechster.verschieben(diffVst, diffBst);
+            naechster.createGeom();
+            update += naechster.createUpdateBreiteXML();
+        }
+        update += this.createUpdateBreiteXML();
+        this.createGeom();
+
+        this.getStation().getStreifen(this.streifen)
+        PublicWFS.doTransaction(update);
+    }
+
+    private verschieben(diffVst: number, diffBst: number) {
+        this.XVstL += diffVst;
+        this.XVstR += diffVst;
+        this.XBstR += diffBst;
+        this.XBstL += diffBst;
+    }
+
+    /*let max_diff_vst = null;
+    let max_diff_bst = null;
+    if ((document.getElementById('modify_fit') as HTMLInputElement).checked && this.station.getQuerschnitt(this.streifen, this.streifennr + 1) != null) {
+        max_diff_vst = this.station.getQuerschnitt(this.streifen, this.streifennr + 1).getBreite() / 100;
+        max_diff_bst = this.station.getQuerschnitt(this.streifen, this.streifennr + 1).getBisBreite() / 100;
+    }
+
+    if (this.breite != Number($(form).find('breite').val())) {
+        let diff = (Math.round(Number($(form).find('breite').val())) - this.getBreite()) / 100;
+
+        if (max_diff_vst !== null && diff > max_diff_vst) {
+            diff = (max_diff_vst);
+        }
+        this.setBreite(this.getBreite() + diff * 100);
+        if (this.getStreifen() == 'L') {
+            this.setXVstL(this.getXVstL() - diff);
+            this.editBreite('Vst', -diff, (document.getElementById('modify_fit') as HTMLInputElement).checked);
+        }
+        else if (this.getStreifen() == 'R') {
+            this.setXVstR(this.getXVstL() + diff);
+            this.editBreite('Vst', diff, (document.getElementById('modify_fit') as HTMLInputElement).checked);
+        }
+
+    }
+    else if (this.getBisBreite() != Number(($(form).find('bisbreite').val()))) {
+        let diff = (Math.round(Number($(form).find('bisbreite').val())) - this.getBisBreite()) / 100;
+        if (max_diff_bst !== null && diff > max_diff_bst) {
+            diff = (max_diff_bst);
+        }
+        this.setBisBreite(this.getBisBreite() + diff * 100);
+        if (this.getStreifen() == 'L') {
+            this.setXBstL(this.getXBstL() - diff);
+            this.editBreite('Bst', -diff, (document.getElementById('modify_fit') as HTMLInputElement).checked);
+        }
+        else if (this.getStreifen() == 'R') {
+            this.setXBstR(this.getXBstR() + diff);
+            this.editBreite('Bst', diff, (document.getElementById('modify_fit') as HTMLInputElement).checked);
+        }
+    }
+    console.log(this)
+}
+
+*/
+    public editBreiteOld(edit: 'Vst' | 'Bst', diff: number, fit: boolean) {
         let gesStreifen = this.station.getStreifen(this.streifen);
         let nr = this.streifennr;
 
@@ -408,9 +494,9 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             // Anpassen
             if (this.streifen != 'M' && (this.streifennr + 1) in gesStreifen) {
                 if (this.streifen == 'L')
-                    gesStreifen[nr + 1]['X' + edit + 'R'] += diff;
+                    gesStreifen[nr + 1].setX(edit, 'R', gesStreifen[nr + 1].getX(edit, 'R') + diff);
                 else if (this.streifen == 'R')
-                    gesStreifen[nr + 1]['X' + edit + 'L'] += diff;
+                    gesStreifen[nr + 1].setX(edit, 'L', gesStreifen[nr + 1].getX(edit, 'L') + diff);
                 gesStreifen[nr + 1]['breite'] =
                     Math.round(100 * (gesStreifen[nr + 1]['XVstR'] - gesStreifen[nr + 1]['XVstL']));
                 gesStreifen[nr + 1]['bisBreite'] =
@@ -423,8 +509,8 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             for (var nnr in gesStreifen) {
                 if (Number(nnr) <= nr)
                     continue;
-                gesStreifen[nnr]['X' + edit + 'L'] += diff;
-                gesStreifen[nnr]['X' + edit + 'R'] += diff;
+                gesStreifen[nnr].setX(edit, 'L', gesStreifen[nnr].getX(edit, 'L') + diff);
+                gesStreifen[nnr].setX(edit, 'R', gesStreifen[nnr].getX(edit, 'R') + diff);
                 gesStreifen[nnr].createGeom();
                 soap += gesStreifen[nnr].createUpdateBreiteXML();
             }
@@ -434,6 +520,32 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         //console.log(soap);
 
         PublicWFS.doTransaction(soap, undefined, undefined);
+    }
+    /**
+     * setz die Attribute XVstL, XBstL, XVstR, XBstL
+     */
+    public setX(vstOrBst: 'Vst' | 'Bst', lMOderR: 'L' | 'R', value: number): void {
+        if (vstOrBst == 'Vst') {
+            if (lMOderR == 'L') this.setXVstL(value);
+            else if (lMOderR == 'R') this.setXVstR(value);
+        } else {
+            if (lMOderR == 'L') this.setXBstL(value);
+            else if (lMOderR == 'R') this.setXBstR(value);
+        }
+    }
+
+    /**
+     * liest die Attribute XVstL, XBstL, XVstR, XBstL
+     */
+    public getX(vstOrBst: 'Vst' | 'Bst', lMOderR: 'L' | 'R'): number {
+        if (vstOrBst == 'Vst') {
+            if (lMOderR == 'L') return this.getXVstL();
+            else if (lMOderR == 'R') return this.getXVstR();
+        } else {
+            if (lMOderR == 'L') return this.getXBstL();
+            else if (lMOderR == 'R') return this.getXBstR();
+        }
+        return 0;
     }
 
     public delete() {
@@ -450,17 +562,12 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     public getStreifennr(): number {
         return this.streifennr
     }
-    public getArt(): string {
-        if (this.art != null)
-            return this.art.substr(-32);
-        else
-            return null
+    public getArt(): Klartext {
+        return this.art;
     }
-    public getArtober(): string {
-        if (this.artober != null)
-            return this.artober.substr(-32);
-        else
-            return null
+
+    public getArtober(): Klartext {
+        return this.artober;
     }
     public getXBstL(): number {
         return this.XBstL;
@@ -505,12 +612,12 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         this.bisBreite = bisBreite;
     }
 
-    public setArt(art: string) {
-        this.art = art;
+    public setArt(art: Klartext | string) {
+        this.art = Klartext.get("Itquerart", art);
     }
 
-    public setArtober(artober: string) {
-        this.artober = artober;
+    public setArtober(artober: Klartext | string) {
+        this.artober = Klartext.get("Itquerober", artober);
     }
 
     public setXVstR(XVstR: number) {

@@ -1,6 +1,7 @@
 import Control from 'ol/control/Control.js';
+import { Options as ControlOptions } from 'ol/control/Control.js';
 import '../css/layerswitch.css';
-import { Layer } from 'ol/layer';
+import BaseLayer from 'ol/layer/Base';
 
 /**
  * OpenLayers-Control zum Wechseln des Layers
@@ -10,7 +11,7 @@ import { Layer } from 'ol/layer';
  */
 
 class LayerSwitch extends Control {
-	constructor(opt_options?) {
+	constructor(opt_options?: ControlOptions) {
 		var options = opt_options || {};
 		var element = document.createElement('div');
 		super({
@@ -25,11 +26,11 @@ class LayerSwitch extends Control {
 		element.className = 'layerswitch ol-unselectable ol-control';
 		element.appendChild(button);
 
-		element.addEventListener('mouseenter', function () {
+		element.addEventListener('mouseenter', function (this: LayerSwitch) {
 			//layerswi.style.height = "20em";
 			//layerswi.style.overflow = "auto";
 			let layers = (this as LayerSwitch).getMap().getLayers();
-			layers.forEach(function (layer: Layer, id: number) {
+			layers.forEach(function (layer: BaseLayer, id: number) {
 				if (layer.get('switchable') == true) {
 					let div_layer = document.createElement('div');
 					let bt_layer = document.createElement('button');
@@ -46,7 +47,7 @@ class LayerSwitch extends Control {
 					trans.setAttribute('id', 'trans_' + id);
 					trans.dataset.layer = String(id);
 					div_zusatz.appendChild(trans);
-					trans.addEventListener('change', function (event) {
+					trans.addEventListener('change', function (__) {
 						layer.setOpacity(parseInt(trans.value) / 100);
 					});
 					div_layer.appendChild(div_zusatz)

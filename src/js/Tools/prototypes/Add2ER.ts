@@ -1,19 +1,18 @@
 import { Style, Stroke } from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
 import PublicWFS from '../../PublicWFS';
-import StrassenAusPunkt from '../../Objekte/StrassenAusPunkt';
 import Tool from '../prototypes/Tool'
 import Daten from '../../Daten';
 import { Map } from 'ol';
 import { SelectEventType } from 'ol/interaction/Select';
 import Abschnitt from '../../Objekte/Abschnitt';
+import WaitBlocker from '../../WaitBlocker';
 
 export default abstract class Add2ER extends Tool {
     private daten: Daten;
     private map: Map;
     private select: SelectInteraction;
     private objektklasse: string;
-    private objektklasse4ER: string;
 
     protected abstract loadAbschnitt(abschnitt: Abschnitt): void;
 
@@ -35,21 +34,25 @@ export default abstract class Add2ER extends Tool {
         });
         this.select.on('select', this.onSelect.bind(this))
     }
-    onSelect(event: SelectEventType) {
+    onSelect(__: SelectEventType) {
         console.log("Auswahl");
         if (this.select.getFeatures().getArray().length == 0) return;
-
+        WaitBlocker.warteAdd()
         let abschnitt = this.select.getFeatures().getArray()[0] as Abschnitt;
         if (abschnitt.isOKinER(this.objektklasse)) return;
-        document.body.style.cursor = 'wait'
-        PublicWFS.addInER(abschnitt, this.objektklasse, this.daten.ereignisraum_nr, this._onSelect_Callback.bind(this), undefined, abschnitt);
+        PublicWFS.addInER(abschnitt, this.objektklasse, this.daten.ereignisraum_nr, this._onSelect_Callback.bind(this),
+            function () {
+                WaitBlocker.warteSub()
+                PublicWFS.showMessage("Konnte Abschnitt nicht zum ER hinzufügen", true)
+            }, abschnitt);
     }
 
-    _onSelect_Callback(xml: XMLDocument, abschnitt: Abschnitt) {
+    _onSelect_Callback(__: XMLDocument, abschnitt: Abschnitt) {
         abschnitt.addOKinER(this.objektklasse);
         this.loadAbschnitt(abschnitt);
         this.select.getFeatures().clear();
         Daten.getInstanz().layerAchse.changed();
+        WaitBlocker.warteSub()
     }
 
     start() {

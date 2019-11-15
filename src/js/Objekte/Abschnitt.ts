@@ -6,10 +6,14 @@ import Vektor from '../Vektor';
 import Aufbaudaten from './Aufbaudaten';
 import Daten from '../Daten';
 import QuerStation from './QuerStation';
-import { MultiLineString } from 'ol/geom';
 import Aufbau from './Aufbaudaten';
 
 var CONFIG: { [index: string]: string } = require('../config.json');
+
+interface Callback {
+    callback: (abschnitt: Abschnitt, ...args: any[]) => void;
+    args: any[];
+}
 
 /**
  * Straßenabschnitt
@@ -18,6 +22,9 @@ var CONFIG: { [index: string]: string } = require('../config.json');
  * @copyright MIT
  */
 export default class Abschnitt extends Feature {
+    private static abschnitte: { [absid: number]: Abschnitt } = {}
+    private static waitForAbschnitt: { [absid: number]: Callback[] } = {}
+
     private daten: Daten;
     private fid: string = null;
     private abschnittid: string = null;
@@ -37,34 +44,54 @@ export default class Abschnitt extends Feature {
 
     private _feature: any;
     public aufbaudatenLoaded: boolean = false;
+    private punkte: LinienPunkt[];
 
     constructor() {
         super();
         this.daten = Daten.getInstanz();
     }
 
-    public getFaktor() {
-        if (this._faktor == null)
-            this._faktor = this.len / Vektor.line_len((this.getGeometry() as MultiLineString).getCoordinates());
+    public static getAbschnitt(absId: string, callback: (abs: Abschnitt, ...args: any[]) => void, ...args: any[]) {
+        if (absId in this.abschnitte) {
+            callback(this.abschnitte[absId], ...args);
+            return;
+        } else {
+            let laedtSchon = true;
+            if (!(absId in Abschnitt.waitForAbschnitt)) {
+                Abschnitt.waitForAbschnitt[absId] = [];
+                laedtSchon = false;
+            }
+            Abschnitt.waitForAbschnitt[absId].push({ callback, args })
+
+            if (!laedtSchon)
+                Abschnitt.load(absId);
+        }
+
+    }
+
+    public getFaktor(): number {
+        if (this._faktor == null) {
+            this.calcPunkte();
+        }
         return this._faktor;
     }
 
-    static load(abschnittid: string) {
+    private static load(abschnittid: string) {
         if ("ABSCHNITT_WFS_URL" in CONFIG) {
-            return Abschnitt.loadFromAbschnittWFS(abschnittid);
+            Abschnitt.loadFromAbschnittWFS(abschnittid);
         } else {
-            return Abschnitt.loadFromPublicWFS(abschnittid);
+            Abschnitt.loadFromPublicWFS(abschnittid);
         }
     }
 
-    static loadFromAbschnittWFS(abschnittid: string) {
+    private static loadFromAbschnittWFS(abschnittid: string) {
         let r = new Abschnitt();
         r.abschnittid = abschnittid;
         AbschnittWFS.getById(abschnittid, r.loadCallback.bind(r));
         return r;
     }
 
-    static loadFromPublicWFS(abschnittid: string) {
+    private static loadFromPublicWFS(abschnittid: string) {
         let r = new Abschnitt();
         r.abschnittid = abschnittid;
 
@@ -72,8 +99,6 @@ export default class Abschnitt extends Feature {
             '<PropertyIsEqualTo><PropertyName>ABSCHNITT_ID</PropertyName>' +
             '<Literal>' + r.abschnittid + '</Literal></PropertyIsEqualTo>' +
             '</Filter>', r.loadCallback.bind(r));
-
-        return r;
     }
 
     private loadCallback(xml: Document) {
@@ -92,8 +117,6 @@ export default class Abschnitt extends Feature {
     }
 
     private fromXML(xml: Element) {
-        //console.log(xml)
-
         this.len = Number(xml.getElementsByTagName('LEN')[0].firstChild.textContent);
         this.abschnittid = xml.getElementsByTagName('ABSCHNITT_ID')[0].firstChild.textContent;
         this.fid = "S" + this.abschnittid;
@@ -116,13 +139,16 @@ export default class Abschnitt extends Feature {
         }
         //console.log(ak);
         this.setGeometry(new LineString(ak));
-    }
+        Daten.getInstanz().vectorAchse.addFeature(this);
+        Abschnitt.abschnitte[this.abschnittid] = this;
 
-    private readData(xmlhttp: XMLHttpRequest) {
-        if (xmlhttp.responseXML == undefined) {
-            PublicWFS.showMessage('Abschnitt nicht gefunden', true);
-            return;
+        if (this.abschnittid in Abschnitt.waitForAbschnitt) {
+            let callback: Callback;
+            while (callback = Abschnitt.waitForAbschnitt[this.abschnittid].pop()) {
+                callback.callback(this, ...callback.args);
+            }
         }
+
     }
 
     public getFeature() {
@@ -170,7 +196,7 @@ export default class Abschnitt extends Feature {
         //console.log(callbackSuccess);
 
         if (!this.aufbaudatenLoaded || reload) {
-            let xml = PublicWFS.doQuery('Otschicht', '<Filter><And>' +
+            PublicWFS.doQuery('Otschicht', '<Filter><And>' +
                 '<PropertyIsEqualTo>' +
                 '<PropertyName>projekt/@xlink:href</PropertyName>' +
                 '<Literal>' + this.daten.ereignisraum + '</Literal>' +
@@ -190,7 +216,7 @@ export default class Abschnitt extends Feature {
         for (let i = 0; i < aufbau.length; i++) {
             let a = Aufbaudaten.fromXML(aufbau[i]);
             if (a.getParent == null) continue;
-            let fid = a.getParent().replace('#', '');
+            let fid = a.getParent().getXlink();
             if (!(fid in aufbaudaten)) aufbaudaten[fid] = {};
             aufbaudaten[fid][a.getSchichtnr()] = a;
         }
@@ -212,6 +238,143 @@ export default class Abschnitt extends Feature {
             callbackSuccess(...args);
         }
     }
+
+
+
+
+    /**
+     * Berechnet eine Station
+     */
+    public getStationierung(point: number[], anzNachKomma: number = 1): StationObj {
+        let posi: StationObj[] = [];
+
+        let punkte = this.calcPunkte()
+
+        for (let i = 0; i < punkte.length - 1; i++) {
+            let pkt = punkte[i]
+            let obj: StationObj = new StationObj();
+
+            // Position des Fusspunktes auf dem Segment relativ zwischen 0 und 1
+            let faktor = (Vektor.skalar(Vektor.diff(point, pkt.pkt), pkt.vektorZumNaechsten)) / (Vektor.skalar(pkt.vektorZumNaechsten, pkt.vektorZumNaechsten))
+
+            // Abstand und Lot berechnen
+            let fusspkt_genau = Vektor.sum(pkt.pkt, Vektor.multi(pkt.vektorZumNaechsten, faktor))
+            let lot = Vektor.diff(point, fusspkt_genau)
+            obj.abstand = Math.round(Vektor.len(lot) * Math.pow(10, anzNachKomma)) / Math.pow(10, anzNachKomma)
+
+            // Mindest-Stationen
+            let minStation_genau = (pkt.vorherLaenge) * this.getFaktor();
+            let maxStation_genau = (pkt.vorherLaenge + pkt.laengeZumNaechsten) * this.getFaktor();
+            let minStation = Math.ceil(minStation_genau);
+            let maxStation = Math.floor(maxStation_genau);
+
+            // Station berechnen und gegen Min/Max-Station prüfen
+            obj.station = Math.round((pkt.vorherLaenge + faktor * pkt.laengeZumNaechsten) * this.getFaktor());
+            if (obj.station < minStation) obj.station = minStation;
+            if (obj.station > maxStation) obj.station = maxStation;
+
+            // Position des Fußpunktes der gerundeten Station bestimmen
+            faktor = (obj.station - minStation_genau) / (maxStation_genau - minStation_genau)
+            obj.fusspkt = Vektor.sum(pkt.pkt, Vektor.multi(pkt.vektorZumNaechsten, faktor))
+
+            obj.seite = 'M'
+            if (obj.abstand > 0.01) {
+                let c3 = Vektor.kreuz(Vektor.add3(pkt.vektorZumNaechsten), Vektor.add3(lot))[2]
+                if (c3 < 0) {
+                    obj.seite = 'R'
+                } else if (c3 > 0) {
+                    obj.seite = 'L'
+                }
+            }
+
+            obj.neuerPkt = Vektor.sum(obj.fusspkt, Vektor.multi(Vektor.einheit([lot[0], lot[1]]), obj.abstand))
+            obj.distanz = Vektor.len(Vektor.diff(obj.neuerPkt, point))
+
+            posi.push(obj)
+        }
+        return posi.sort(Abschnitt.sortStationierungen)[0]
+    }
+
+    getWinkel(station: number): number {
+        let punkte = this.calcPunkte()
+
+        for (let i = 0; i < punkte.length - 1; i++) {
+            let pkt = punkte[i]
+            if (station > pkt.vorherLaenge && station < pkt.vorherLaenge + pkt.laengeZumNaechsten)
+                return Vektor.winkel(pkt.vektorZumNaechsten)
+        }
+        return 0;
+    }
+
+    public getAbschnitt(vst: number, bst: number) {
+        let punkte = this.calcPunkte();
+        let r: LinienPunkt[] = []
+
+        vst = vst / this.getFaktor();
+        bst = bst / this.getFaktor();
+
+        for (let i = 0; i < punkte.length; i++) {
+            let pkt = punkte[i]
+            if (pkt.vorherLaenge >= vst && pkt.vorherLaenge <= bst) {
+                r.push(pkt);
+            } else if (pkt.laengeZumNaechsten && pkt.vorherLaenge < vst && pkt.vorherLaenge + pkt.laengeZumNaechsten > vst) {
+                let faktor = (vst - pkt.vorherLaenge) / pkt.laengeZumNaechsten
+                let koord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.vektorZumNaechsten, faktor));
+                let pktNeu = new LinienPunkt(koord, Vektor.einheit(Vektor.lot(pkt.vektorZumNaechsten)), vst);
+                r.push(pktNeu)
+            }
+
+            if (pkt.laengeZumNaechsten && pkt.vorherLaenge < bst && pkt.vorherLaenge + pkt.laengeZumNaechsten > bst) {
+                let faktor = (bst - pkt.vorherLaenge) / pkt.laengeZumNaechsten
+                let koord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.vektorZumNaechsten, faktor));
+                let pktNeu = new LinienPunkt(koord, Vektor.einheit(Vektor.lot(pkt.vektorZumNaechsten)), bst);
+                r.push(pktNeu)
+            }
+        }
+        return r;
+    }
+
+    private static sortStationierungen(a: StationObj, b: StationObj): -1 | 0 | 1 {
+        if (Math.abs(a.distanz - b.distanz) > 1) {
+            return (a.distanz < b.distanz) ? -1 : 1;
+        }
+        if (a.abstand != b.abstand) {
+            return (a.abstand < b.abstand) ? -1 : 1;
+        }
+        return 0;
+    }
+
+    private calcPunkte(): LinienPunkt[] {
+        if (this.punkte) return this.punkte;
+
+        this.punkte = [];
+        let line = (this.getGeometry() as LineString).getCoordinates();
+        let vorherLaenge = 0;
+
+        for (var i = 0; i < line.length - 1; i++) {
+            let pkt = new LinienPunkt(line[i], null, vorherLaenge, Vektor.diff(line[i + 1], line[i]));
+
+            vorherLaenge += pkt.laengeZumNaechsten;
+
+            if (i == 0)
+                pkt.seitlicherVektorAmPunkt = Vektor.einheit(Vektor.lot(pkt.vektorZumNaechsten));
+            else {
+
+                let vorher = this.punkte[i - 1];
+                pkt.seitlicherVektorAmPunkt = Vektor.einheit(Vektor.lot(Vektor.sum(Vektor.einheit(vorher.vektorZumNaechsten), Vektor.einheit(pkt.vektorZumNaechsten))));
+            }
+            this.punkte.push(pkt)
+        }
+
+        // letzten Punkt hinzufügen
+        this.punkte.push(new LinienPunkt(line[line.length - 1], Vektor.einheit(Vektor.lot(this.punkte[this.punkte.length - 1].vektorZumNaechsten)), vorherLaenge))
+
+        // Längenfaktor berechnen
+        this._faktor = this.len / vorherLaenge;
+
+        return this.punkte;
+    }
+
 
     // Getter
     public getAbschnittid(): string {
@@ -255,5 +418,30 @@ export default class Abschnitt extends Feature {
     //Setter
     addOKinER(ok: string, value: boolean = true) {
         this.inER[ok] = value;
+    }
+}
+
+export class StationObj {
+    distanz: number = 0;
+    station: number = 0;
+    seite: 'M' | 'R' | 'L' = 'M';
+    abstand: number = 0;
+    fusspkt: number[] = [];
+    neuerPkt: number[] = [];
+}
+
+export class LinienPunkt {
+    pkt: number[];
+    seitlicherVektorAmPunkt: number[];
+    vorherLaenge: number;
+    vektorZumNaechsten: number[] | null = null;
+    laengeZumNaechsten: number | null = null;
+
+    constructor(pkt: number[], seitlicherVektorAmPunkt: number[], vorherLaenge: number, vektorZumNaechsten: number[] | null = null) {
+        this.pkt = pkt;
+        this.seitlicherVektorAmPunkt = seitlicherVektorAmPunkt;
+        this.vorherLaenge = vorherLaenge;
+        this.vektorZumNaechsten = vektorZumNaechsten;
+        if (vektorZumNaechsten) this.laengeZumNaechsten = Vektor.len(vektorZumNaechsten);
     }
 }

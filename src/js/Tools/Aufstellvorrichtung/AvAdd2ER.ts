@@ -7,6 +7,7 @@ import Daten from '../../Daten';
 import { Map } from 'ol';
 import { SelectEventType } from 'ol/interaction/Select';
 import Abschnitt from '../../Objekte/Abschnitt';
+import WaitBlocker from '../../WaitBlocker';
 
 /**
  * Funktion zum Hinzufügen von Aufstellvorrichtungen zum Ereignisraum
@@ -15,13 +16,13 @@ import Abschnitt from '../../Objekte/Abschnitt';
  * @copyright MIT
  */
 class AvAdd2ER extends Tool {
-    daten: Daten;
-    map: Map;
-    select: SelectInteraction;
+    private daten: Daten;
+    private map: Map;
+    private select: SelectInteraction;
 
-    constructor(map: Map, daten: Daten) {
+    constructor(map: Map) {
         super();
-        this.daten = daten;
+        this.daten = Daten.getInstanz();
         this.map = map;
 
         this.select = new SelectInteraction({
@@ -37,17 +38,14 @@ class AvAdd2ER extends Tool {
         this.select.on('select', this.onSelect.bind(this))
     }
 
-    onSelect(event: SelectEventType) {
-        console.log("Auswahl");
+    onSelect(__: SelectEventType) {
         if (this.select.getFeatures().getArray().length == 0) return;
-
         let abschnitt = this.select.getFeatures().getArray()[0] as Abschnitt;
         if (abschnitt.isOKinER("Otaufstvor")) return;
-        document.body.style.cursor = 'wait'
         PublicWFS.addInER(abschnitt, "Otaufstvor", this.daten.ereignisraum_nr, this._onSelect_Callback.bind(this), undefined, abschnitt);
     }
 
-    _onSelect_Callback(xml: XMLDocument, abschnitt: Abschnitt) {
+    _onSelect_Callback(__: XMLDocument, abschnitt: Abschnitt) {
         abschnitt.addOKinER("Otaufstvor");
         Aufstellvorrichtung.loadAbschnittER(abschnitt, PublicWFS.showMessage, "Erfolgreich in ER kopiert");
         this.select.getFeatures().clear();

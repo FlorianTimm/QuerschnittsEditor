@@ -1,14 +1,16 @@
-import { Circle, Style, Stroke, Fill } from 'ol/style';
+import { Style, Stroke } from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
 import Vektor from '../../Vektor';
 import VectorSource from 'ol/source/Vector';
 import { Vector as VectorLayer } from 'ol/layer';
-import { Point, LineString } from 'ol/geom';
-import Feature from 'ol/Feature';
+import { LineString } from 'ol/geom';
+import Feature, { FeatureLike } from 'ol/Feature';
 import Tool from '../prototypes/Tool';
 import QuerInfoTool from './QuerInfoTool';
 import Daten from '../../Daten';
 import { Map, MapBrowserPointerEvent } from 'ol';
+import Abschnitt, { StationObj } from '../../Objekte/Abschnitt';
+import HTML from '../../HTML';
 
 /**
  * Funktion zum Teilen von Querschnittsflächen
@@ -17,185 +19,160 @@ import { Map, MapBrowserPointerEvent } from 'ol';
  * @copyright MIT
  */
 class QuerPartTool extends Tool {
-    map: Map;
-    daten: Daten;
-    info: QuerInfoTool;
-    select: SelectInteraction;
-    v_overlay: VectorSource;
-    l_overlay: VectorLayer;
-    feat_station: Feature;
-    feat_teilung: Feature;
-    feat_station_line: Feature;
+    private map: Map;
+    private daten: Daten;
+    private info: QuerInfoTool;
+    private select: SelectInteraction;
+    private l_overlay: VectorLayer;
+    private feat_teilung: Feature;
+    private feat_station_line: Feature;
+    private abschnitt: Abschnitt;
+    private station: number;
+    private init: boolean = false;
+    private form: HTMLFormElement;
+    private sidebar: HTMLDivElement;
+    private form_vnk: HTMLInputElement;
+    private form_nnk: HTMLInputElement;
+    private form_station: HTMLInputElement;
+    private form_button: HTMLInputElement;
 
-    constructor(map: Map, daten: Daten, info: QuerInfoTool) {
+    constructor(map: Map, info: QuerInfoTool, sidebar: HTMLDivElement) {
         super();
         this.map = map;
-        this.daten = daten;
+        this.daten = Daten.getInstanz();
         this.info = info;
-
-        this.select = new SelectInteraction({
-            layers: [this.daten.layerAchse],
-            style: new Style({
-                stroke: new Stroke({
-                    color: 'rgba(0, 50, 255, 0.5)',
-                    width: 5
-                })
-            })
-        });
-
-
-        this.v_overlay = new VectorSource({
-            features: []
-        });
-
-        this.l_overlay = new VectorLayer({
-            source: this.v_overlay,
-            style: new Style({
-                stroke: new Stroke({
-                    color: '#dd0000',
-                    width: 3
-                }),
-                image: new Circle({
-                    radius: 7,
-                    fill: new Fill({ color: 'black' }),
-                    stroke: new Stroke({
-                        color: [255, 0, 0], width: 2
-                    })
-                }),
-            })
-        });
-
-
-        this.feat_station = new Feature({ geometry: new Point([0, 0]) });
-        this.feat_station.setStyle(
-            new Style({
-                image: new Circle({
-                    radius: 3,
-                    fill: new Fill({ color: [0, 0, 200], }),
-                    stroke: new Stroke({
-                        color: [0, 0, 200], width: 2
-                    })
-                }),
-            })
-        )
-        this.v_overlay.addFeature(this.feat_station);
-
-        this.feat_teilung = new Feature({
-            geometry: new LineString([[0, 0], [0, 0]]),
-            isset: false,
-            abschnittid: null,
-            station: 0,
-        });
-        this.feat_teilung.setStyle(
-            new Style({
-                stroke: new Stroke({
-                    color: 'rgba(255, 0, 0, 1)',
-                    width: 2
-                }),
-            })
-        );
-        this.v_overlay.addFeature(this.feat_teilung);
-
-        this.feat_station_line = new Feature({ geometry: new LineString([[0, 0], [0, 0]]) });
-        this.feat_station_line.setStyle(
-            new Style({
-                stroke: new Stroke({
-                    color: 'rgba(0, 0, 255, 0.5)',
-                    width: 2
-                }),
-            })
-        );
-        this.v_overlay.addFeature(this.feat_station_line);
-
-        document.getElementById('teilen_button').addEventListener('click', this.partQuerschnittButton.bind(this))
+        this.sidebar = sidebar;
     }
 
-    part_get_station(event: MapBrowserPointerEvent) {
-        let achse = null;
-        if (this.select.getFeatures().getArray().length > 0) {
-            achse = this.select.getFeatures().item(0);
+    private initialize() {
+        if (this.init) return;
+
+        this.select = new SelectInteraction({
+            layers: [this.daten.layerAchse]
+        });
+
+        this.createOverlayVectorLayer();
+        this.createForm();
+
+        this.init = true;
+    }
+
+    private createForm() {
+        this.form = HTML.createToolForm(this.sidebar, false, "teilen");
+        this.form_vnk = HTML.createTextInput(this.form, "Von Netzknoten", "vnk");
+        this.form_vnk.disabled = true;
+        this.form_nnk = HTML.createTextInput(this.form, "Nach Netzknoten", "nnk");
+        this.form_nnk.disabled = true;
+        this.form_station = HTML.createTextInput(this.form, "Station", "vst");
+        this.form_station.disabled = true;
+        this.form_button = HTML.createButton(this.form, "Teilen", "button");
+        this.form_button.disabled = true;
+        this.form_button.addEventListener('click', this.partQuerschnittButton.bind(this))
+    }
+
+    private createOverlayVectorLayer() {
+        let v_overlay = new VectorSource();
+        this.l_overlay = new VectorLayer({
+            source: v_overlay,
+            style: function (feat: FeatureLike) {
+                return new Style({
+                    stroke: new Stroke({
+                        color: feat.get("color") ?? "#ccc",
+                        width: 2
+                    })
+                });
+            }
+        });
+        this.feat_teilung = new Feature({
+            geometry: new LineString([[0, 0], [0, 0]]),
+            color: 'rgba(255, 0, 0, 1)'
+        });
+        v_overlay.addFeature(this.feat_teilung);
+        this.feat_station_line = new Feature({
+            geometry: new LineString([[0, 0], [0, 0]]),
+            color: 'rgba(0, 0, 255, 0.5)'
+        });
+        v_overlay.addFeature(this.feat_station_line);
+    }
+
+    part_get_station(event: MapBrowserPointerEvent): { achse: Abschnitt, pos: StationObj } {
+        let achse: Abschnitt = null;
+        if (this.select.getFeatures().getArray().length == 1) {
+            achse = this.select.getFeatures().item(0) as Abschnitt;
         } else {
-            achse = this.daten.vectorAchse.getClosestFeatureToCoordinate(event.coordinate);
+            achse = this.daten.vectorAchse.getClosestFeatureToCoordinate(event.coordinate) as Abschnitt;
         }
 
         if (achse == null) {
-            (this.feat_station.getGeometry() as LineString).setCoordinates([0, 0]);
             (this.feat_station_line.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
             return null;
         }
 
-        return { achse: achse, pos: Vektor.get_pos(achse.getGeometry().getCoordinates(), event.coordinate) };
+        return { achse: achse, pos: achse.getStationierung(event.coordinate, 2) };
     }
 
 
     part_click(event: MapBrowserPointerEvent) {
-        if (!this.feat_teilung.get('isset')) {
-            this.feat_teilung.set('isset', true);
-            let daten = this.part_get_station(event);
-            if (daten['pos'] == null) return;
+        this.feat_teilung.set('isset', true);
+        let daten = this.part_get_station(event);
+        if (daten['pos'] == null) return;
 
-            let vektor = Vektor.multi(Vektor.einheit(Vektor.diff(daten['pos'][6], daten['pos'][5])), 50);
-            let coord = [Vektor.diff(daten['pos'][5], vektor), Vektor.sum(daten['pos'][5], vektor)];
+        let vektor = Vektor.multi(Vektor.einheit(Vektor.diff(daten['pos'].neuerPkt, daten['pos'].fusspkt)), daten.pos.abstand > 50 ? daten.pos.abstand : 50);
+        let coord = [Vektor.diff(daten['pos'].fusspkt, vektor), Vektor.sum(daten['pos'].fusspkt, vektor)];
 
-            (this.feat_teilung.getGeometry() as LineString).setCoordinates(coord);
-            this.feat_teilung.set("abschnittid", daten['achse'].abschnittid);
-            this.feat_teilung.set("station", Math.round(daten['pos'][2]));
+        (this.feat_teilung.getGeometry() as LineString).setCoordinates(coord);
+        this.abschnitt = daten['achse'];
+        this.station = daten['pos'].station;
 
-            document.getElementById("teilen_vnk").innerHTML = daten['achse'].vnk;
-            document.getElementById("teilen_nnk").innerHTML = daten['achse'].nnk;
-            document.getElementById("teilen_station").innerHTML = String(Math.round(daten['pos'][2]));
+        this.form_vnk.value = this.abschnitt.getVnk();
+        this.form_nnk.value = this.abschnitt.getNnk();
+        this.form_station.value = String(this.station);
 
-            (document.getElementById("teilen_button") as HTMLInputElement).disabled = false;
-        } else {
-            this.feat_teilung.set('isset', false);
-            (this.feat_teilung.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
-            (document.getElementById("teilen_button") as HTMLInputElement).disabled = true;
-        }
+        this.form_button.disabled = false;
+    }
+
+    private restartSelection() {
+        this.abschnitt = undefined;
+        this.station = undefined;
+        (this.feat_teilung.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
+        this.form_button.disabled = true;
     }
 
     part_move(event: MapBrowserPointerEvent) {
-
         let daten = this.part_get_station(event);
-        //console.log(daten)
-        if (daten['pos'] == null) return;
+        let vektor = Vektor.multi(Vektor.einheit(Vektor.diff(daten['pos'].neuerPkt, daten['pos'].fusspkt)), daten.pos.abstand > 50 ? daten.pos.abstand : 50);
+        let coord = [Vektor.diff(daten['pos'].fusspkt, vektor), Vektor.sum(daten['pos'].fusspkt, vektor)];
 
-        (this.feat_station.getGeometry() as LineString).setCoordinates(daten['pos'][6]);
-        (this.feat_station_line.getGeometry() as LineString).setCoordinates([daten['pos'][6], daten['pos'][5]]);
+        if (daten.pos == null) return;
+        (this.feat_station_line.getGeometry() as LineString).setCoordinates(coord);
 
-        if (!this.feat_teilung.get('isset')) {
-            document.getElementById("teilen_vnk").innerHTML = daten['achse'].vnk;
-            document.getElementById("teilen_nnk").innerHTML = daten['achse'].nnk;
-            document.getElementById("teilen_station").innerHTML = String(Math.round(daten['pos'][2]))
-        }
+        this.form_vnk.value = daten.achse.getVnk();
+        this.form_nnk.value = daten.achse.getNnk();
+        this.form_station.value = String(daten.pos.station);
     }
 
     partQuerschnittButton() {
-        let absid = this.feat_teilung.get("abschnittid");
-        let station = this.feat_teilung.get("station");
-
-        //console.log(this.daten.getAbschnitt(absid));
-
-        let sta = this.daten.getAbschnitt(absid).getStationByStation(station);
-        sta.teilen(station);
-        this.feat_teilung.set('isset', false);
-        (this.feat_teilung.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
-        (document.getElementById("teilen_button") as HTMLInputElement).disabled = true;
+        let sta = this.abschnitt.getStationByStation(this.station);
+        sta.teilen(this.station);
+        this.restartSelection();
     }
 
     start() {
+        this.initialize()
         this.map.addInteraction(this.select);
-        document.forms.namedItem("teilen").style.display = 'block';
+        $(this.form).show("fast")
         this.map.on("pointermove", this.part_move.bind(this));
         this.map.on("singleclick", this.part_click.bind(this));
         this.map.addLayer(this.l_overlay);
+        this.restartSelection()
     }
 
     stop() {
+        if (!this.init) return;
+        $(this.form).hide("fast")
         this.map.removeInteraction(this.select);
-        document.forms.namedItem("teilen").style.display = 'none';
         this.map.un("pointermove", this.part_move);
         this.map.un("singleclick", this.part_click);
-        (this.feat_station.getGeometry() as LineString).setCoordinates([0, 0]);
         (this.feat_teilung.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
         this.info.hideInfoBox();
         this.map.removeLayer(this.l_overlay);

@@ -31,7 +31,9 @@ sidebar>* {
     margin-top: 10px;
     padding: 5px;
     width: 200px;
-    overflow-x: hidden;
+    /*overflow-x: hidden;*/
+    float: left;
+    clear: both;
     max-width: 200px;
 }
 
@@ -62,7 +64,7 @@ form#modify {
     display: none;
 }
 
-form#hinzu, form#quer_del, form#loeschen, form#teilen {
+form#hinzu, form#quer_del, form#loeschen {
     text-align: center;
     display: none;
 }
@@ -93,17 +95,6 @@ form#quer_del input[type="button"] {
     padding: 10px;
     transition: 0.3s;
     width: 33%;
-}
-
-button#zoomToExtent, button#loadExtent {
-    background-color: #ccc;
-    float: left;
-    border: 1px solid #999;
-    /*outline: none;*/
-    cursor: pointer;
-    padding: 5px 5px;
-    width: 100%;
-    transition: 0.3s;
 }
 
 input[type="radio"]:checked+label {
@@ -252,6 +243,43 @@ span.hotkey_alt {
     text-decoration-color: red;
 }
 
-div.chosen-disabled {
-    opacity: 0.7 !important;
+.tableWithBorder {
+    margin: 10px;
+    border-collapse: collapse;
+}
+
+.tableWithBorder td {
+    border: 1px solid #888888;
+    padding: 5px;
+}
+
+.tool_form input[type=submit], .tool_form input[type=button] {
+    margin-top: 10px;
+    border: none;
+    width: 95%;
+    padding: 7px;
+}
+
+.tool_form input[type=submit]:enabled, .tool_form input[type=button]:enabled {
+    background-color: rgb(76, 175, 80);
+}
+
+.tool_form input[type=submit]:disabled, .tool_form input[type=button]:disabled {
+    color: rgb(128, 128, 128);
+    background-color: rgb(204, 204, 204);
+}
+
+.tool_form input[type=submit]:enabled:hover, .tool_form input[type=button]:enabled:hover {
+    background-color: rgb(50, 122, 52)
+}
+
+button#zoomToExtent, button#loadExtent {
+    background-color: #ccc;
+    float: left;
+    border: 1px solid #999;
+    /*outline: none;*/
+    cursor: pointer;
+    padding: 5px 5px;
+    width: 100%;
+    transition: 0.3s;
 }

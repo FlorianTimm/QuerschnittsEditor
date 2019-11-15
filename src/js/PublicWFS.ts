@@ -1,4 +1,6 @@
 import Abschnitt from './Objekte/Abschnitt'
+import PrimaerObjekt from './Objekte/prototypes/PrimaerObjekt';
+import WaitBlocker from './WaitBlocker';
 var CONFIG = require('./config.json');
 
 
@@ -14,12 +16,13 @@ export default class PublicWFS {
         callbackSuccess: (xml: Document, ...args: any[]) => void,
         callbackFailed: (xml: Document, ...args: any[]) => void,
         ...args: any[]) {
-
+        WaitBlocker.warteAdd()
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.open('POST', CONFIG.PUBLIC_WFS_URL, true);
 
         xmlhttp.onreadystatechange = function () {
             if (xmlhttp.readyState != 4) return;
+            WaitBlocker.warteSub()
             if (xmlhttp.status == 200) {
                 callbackSuccess(xmlhttp.responseXML, ...args)
             } else {
@@ -38,16 +41,17 @@ export default class PublicWFS {
         callbackSuccess?: (xml: Document, ...args: any[]) => void,
         callbackFailed?: (xml: Document, ...args: any[]) => void,
         ...args: any[]) {
-
+        WaitBlocker.warteAdd()
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.open('GET', CONFIG.PUBLIC_WFS_URL + '?' + url_param, true);
-
 
         xmlhttp.onreadystatechange = function () {
             if (xmlhttp.readyState != 4) return;
             if (xmlhttp.status == 200 && callbackSuccess != undefined) {
+                WaitBlocker.warteSub()
                 callbackSuccess(xmlhttp.responseXML, ...args)
             } else if (xmlhttp.status != 200) {
+                WaitBlocker.warteSub()
                 if (callbackFailed != undefined)
                     callbackFailed(xmlhttp.responseXML, ...args)
                 else
@@ -109,14 +113,15 @@ export default class PublicWFS {
         xmlhttp.send(xml);
     }
 
-    static addSekInER(objektPrim, objektTypePrim, objekt, ereignisraum_nr, callbackSuccess, callbackFailed, ...args) {
+    static addSekInER(objektPrim: PrimaerObjekt, objektTypePrim: string, objekt: string, ereignisraum_nr: string,
+        callbackSuccess: (xml: XMLDocument, ...args: any[]) => void, callbackFailed: (xml: XMLDocument, ...args: any[]) => void, ...args: any[]) {
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.open('POST', CONFIG.ER_WFS_URL, true);
 
         xmlhttp.onreadystatechange = function () {
             if (xmlhttp.readyState != 4) return;
             if (xmlhttp.status == 200) {
-                objektPrim.inER[objekt] = true;
+                objektPrim.addOKinER(objekt);
                 if (callbackSuccess != undefined) {
                     callbackSuccess(xmlhttp.responseXML, ...args)
                 } else {
@@ -139,7 +144,7 @@ export default class PublicWFS {
             '                   <int:ProjektNr>' + ereignisraum_nr + '</int:ProjektNr>\n' +
             '            </projekt>\n' +
             '            <primObjekte>\n' +
-            '                   <int:objektId>' + objektPrim.objektId + '</int:objektId>\n' +
+            '                   <int:objektId>' + objektPrim.getObjektId() + '</int:objektId>\n' +
             '                   <int:objektKlasse>' + objektTypePrim + '</int:objektKlasse>\n' +
             '            </primObjekte>\n' +
             '            <objektKlassen>\n' +
@@ -190,7 +195,7 @@ export default class PublicWFS {
     }
 
     static _checkTransacktionFailed(xml: XMLDocument,
-        callbackSuccess?: (xml: XMLDocument, ...args: any[]) => void,
+        __?: (xml: XMLDocument, ...args: any[]) => void,
         callbackFailed?: (xml: XMLDocument, ...args: any[]) => void,
         ...args: any[]) {
 
@@ -201,25 +206,8 @@ export default class PublicWFS {
         callbackSuccess?: (xml: XMLDocument, ...args: any[]) => void,
         callbackFailed?: (xml: XMLDocument, ...args: any[]) => void,
         ...args: any[]) {
-
-        /*var xml = '<?xml version="1.0" encoding="ISO-8859-1"?>' +
-            '<wfs:GetFeature xmlns="http://xml.novasib.de" ' +
-            'xmlns:wfs="http://www.opengis.net/wfs" ' +
-            'xmlns:gml="http://www.opengis.net/gml" ' +
-            'xmlns:ogc="http://www.opengis.net/ogc" ' +
-            'xmlns:xlink="http://www.w3.org/1999/xlink" ' +
-            'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" service="WFS" version="1.0.0" ' +
-            'xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-transaction.xsd">' +
-            '<wfs:Query typeName="' + klasse + '"><MPP>0</MPP>' +
-            filter +
-            '</wfs:Query>' +
-            '</wfs:GetFeature>';
-        return PublicWFS.doSoapRequest(xml, callbackSuccess, callbackFailed, ...args);*/
-
         let url_param = "Request=GetFeature&TYPENAME=" + klasse + "&MPP=0&filter=" + encodeURIComponent(filter);
         return PublicWFS.doGetRequest(url_param, callbackSuccess, callbackFailed, ...args);
-
-
     }
 
     static showMessage(text: string, error: boolean = false) {

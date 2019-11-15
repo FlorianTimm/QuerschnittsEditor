@@ -1,14 +1,20 @@
 .tool_form {
-    overflow-x: inherit;
     text-align: left;
 }
 
-.tool_form input[type="text"], .tool_form input[type="number"], .tool_form select, .tool_form .chosen-container {
-    margin-bottom: 4px;
+.form_group {
+    width: 200px;
+    height: 45px;
+    display: block;
+    float: left;
+}
+
+.form_group input[type="text"], .form_group input[type="number"], .form_group select, .tool_form input[type="button"] {
     width: 95%;
 }
 
 .tool_form .chosen-container {
+    width: 200px;
     font-size: 9pt;
 }
 
@@ -23,3 +29,14 @@
 .ui-dialog {
     z-index: 1100 !important;
 }
+
+div.chosen-disabled {
+    opacity: 0.7 !important;
+}
+
+/*#vz_popup #group_stvoznr_neu .chosen-container .chosen-drop {
+    border-bottom: 0;
+    border-top: 1px solid #aaa;
+    top: auto;
+    bottom: 30px;
+}*/
