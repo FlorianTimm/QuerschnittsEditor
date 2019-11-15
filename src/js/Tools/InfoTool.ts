@@ -3,7 +3,7 @@ import Map from '../openLayers/Map';
 import { Layer } from 'ol/layer';
 import Tool from './prototypes/Tool';
 import { SelectEvent } from 'ol/interaction/Select';
-import { Feature } from 'ol';
+import { Feature, Overlay } from 'ol';
 import "../import_jquery.js";
 import HTML from '../HTML';
 import { Style, Stroke, Fill } from 'ol/style';
@@ -23,6 +23,7 @@ export default class InfoTool extends Tool {
     private layer: Layer;
     private infoField: HTMLFormElement;
     protected select: SelectInteraction;
+    protected lastFeature: InfoToolOverlay;
 
     constructor(map: Map, layer: Layer, sidebar: HTMLDivElement) {
         super();
@@ -50,14 +51,22 @@ export default class InfoTool extends Tool {
 
     public featureSelect(select: SelectInteraction = this.select, changeable: boolean = false) {
         let auswahl = select.getFeatures();
-        console.log(auswahl.getArray())
 
         if (auswahl.getLength() == 0) {
             this.hideInfoBox();
             return;
         }
         this.infoField.innerHTML = "";
-        this.getInfoFieldForFeature(auswahl.item(0), changeable)
+        let feat = auswahl.item(0);
+        this.getInfoFieldForFeature(feat, changeable)
+
+        // Overlays
+        this.removeOverlays()
+        if (!changeable && "showOverlay" in feat) {
+            this.lastFeature = feat as InfoToolOverlay
+            this.lastFeature.showOverlay(this.map)
+        }
+
     }
 
     public getInfoFieldForFeature(feature: Feature, changeable: boolean = false) {
@@ -88,7 +97,14 @@ export default class InfoTool extends Tool {
         $(this.infoField).hide("fast", "linear", undefined, function (this: InfoTool) {
             this.infoField.innerHTML = "";
         }.bind(this))
+        this.removeOverlays();
+    }
 
+    private removeOverlays() {
+        if (this.lastFeature) {
+            this.lastFeature.hideOverlay(this.map);
+            this.lastFeature = undefined;
+        }
     }
 
     public static selectStyle(feat: FeatureLike, __: number): Style {
@@ -147,4 +163,9 @@ export interface InfoToolSelectable extends Feature {
 }
 export interface InfoToolEditable extends Feature {
     changeAttributes: (form: HTMLFormElement) => void;
+}
+
+export interface InfoToolOverlay {
+    showOverlay: (map: Map) => void;
+    hideOverlay: (map: Map) => void;
 }

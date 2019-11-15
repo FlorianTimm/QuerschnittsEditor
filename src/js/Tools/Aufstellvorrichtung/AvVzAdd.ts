@@ -15,6 +15,7 @@ import KlartextManager, { KlartextMap } from '../../Objekte/Klartext';
 import HTML from '../../HTML';
 import Aufstellvorrichtung from 'src/js/Objekte/Aufstellvorrichtung';
 import Klartext from '../../Objekte/Klartext';
+import { pointerMove, never } from 'ol/events/condition';
 var CONFIG = require('../../config.json');
 
 /**
@@ -31,6 +32,8 @@ class AvVzAdd extends Tool {
     private _auswahl: Aufstellvorrichtung = null;
     private _popup: HTMLDivElement;
     private _select: SelectInteraction;
+    private mouseOver: SelectInteraction;
+    lastOverlay: Aufstellvorrichtung;
 
     /**
      * Erzeugt eine Instanz des Verkehrszeichen-Hinzufügen-Tools
@@ -48,6 +51,15 @@ class AvVzAdd extends Tool {
         });
 
         this._select.on("select", this._selected.bind(this));
+
+
+        this.mouseOver = new SelectInteraction({
+            layers: [this._daten.layerAufstell],
+            toggleCondition: never,
+            condition: pointerMove
+        });
+
+        this.mouseOver.on("select", this.mouseIsOver.bind(this))
     }
 
     /**
@@ -98,6 +110,18 @@ class AvVzAdd extends Tool {
         this._popup.appendChild(buttonAbbrechen);
 
         this._auswahl.getZeichen(this._zeichenGeladen.bind(this))
+    }
+
+
+    private mouseIsOver(event: SelectEvent) {
+        for (let sel of event.deselected) {
+            (sel as Aufstellvorrichtung).hideOverlay(this._map);
+            this.lastOverlay = (sel as Aufstellvorrichtung);
+        }
+        for (let sel of event.selected) {
+            (sel as Aufstellvorrichtung).showOverlay(this._map);
+            this.lastOverlay = undefined;
+        }
     }
 
     /**
@@ -472,10 +496,13 @@ class AvVzAdd extends Tool {
 
     start() {
         this._map.addInteraction(this._select);
+        this._map.addInteraction(this.mouseOver);
     }
 
     stop() {
         this._map.removeInteraction(this._select);
+        this._map.removeInteraction(this.mouseOver);
+        if (this.lastOverlay) this.lastOverlay.hideOverlay(this._map)
     }
 }
 

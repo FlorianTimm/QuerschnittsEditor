@@ -5,9 +5,7 @@ import Abschnitt from './Objekte/Abschnitt';
 import PublicWFS from './PublicWFS';
 import AbschnittWFS from './AbschnittWFS';
 import Querschnitt from './Objekte/Querschnittsdaten';
-import KlartextManager from './Objekte/Klartext';
 import Aufstellvorrichtung from './Objekte/Aufstellvorrichtung';
-import { isNullOrUndefined } from 'util';
 import { Map, Feature } from 'ol';
 import Event from 'ol/events/Event';
 import { VectorLayer } from './openLayers/Layer';
@@ -15,7 +13,6 @@ import { LineString } from 'ol/geom';
 import StrassenAusPunkt from './Objekte/StrassenAusPunkt';
 import { FeatureLike } from 'ol/Feature';
 import WaitBlocker from './WaitBlocker';
-import Klartext from './Objekte/Klartext';
 
 var CONFIG: { [name: string]: string } = require('./config.json');
 
@@ -32,7 +29,6 @@ export default class Daten {
     public modus: string = "Otaufstvor"
     public ereignisraum: string;
     public ereignisraum_nr: string;
-    //public querschnitteFID: { [oid: string]: Abschnitt };
     public layerAufstell: VectorLayer;
     public vectorAchse: VectorSource;
     public layerAchse: VectorLayer;

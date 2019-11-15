@@ -15,9 +15,22 @@ import PunktObjekt from './prototypes/PunktObjekt';
 import Zeichen from './Zeichen';
 import HTML from "../HTML";
 import Dokument from "./Dokument";
+import { InfoToolOverlay } from "../Tools/InfoTool.js";
+import { Overlay, Map } from "ol";
+import { Point } from "ol/geom";
+import OverlayPositioning from "ol/OverlayPositioning";
 
-export default class Aufstellvorrichtung extends PunktObjekt {
+class Callback {
+    callback: (zeichen: Zeichen[], ...args: any[]) => void;
+    param: any[]
+}
+
+export default class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay {
     static loadErControlCounter: number = 0;
+    private overlay: Overlay;
+    private overlayShowing: boolean;
+    private loadingZeichen: boolean;
+    private loadingZeichenCallback: Callback[] = [];
 
     getWFSKonfigName(): string {
         return "AUFSTELL";
@@ -111,16 +124,23 @@ export default class Aufstellvorrichtung extends PunktObjekt {
         }
     }
 
-    public reloadZeichen(callback?: (...args: any[]) => void, ...args: any[]) {
+    public reloadZeichen(callback?: (zeichen: Zeichen[], ...args: any[]) => void, ...args: any[]) {
+        if (callback) {
+            if (!this.loadingZeichenCallback) this.loadingZeichenCallback = [];
+            this.loadingZeichenCallback.push({ callback: callback, param: args })
+
+        }
+        if (this.loadingZeichen) return;
+        this.loadingZeichen = true;
         PublicWFS.doQuery('Otvzeichlp', '<Filter>\n' +
             '  <PropertyIsEqualTo>\n' +
             '    <PropertyName>parent/@xlink:href</PropertyName>\n' +
             '    <Literal>' + this.fid + '</Literal>\n' +
             '  </PropertyIsEqualTo>\n' +
-            '</Filter>', this.parseZeichen.bind(this), undefined, callback, ...args);
+            '</Filter>', this.parseZeichen.bind(this));
     }
 
-    private parseZeichen(xml: XMLDocument, callback?: (...args: any[]) => void, ...args: any[]) {
+    private parseZeichen(xml: XMLDocument) {
         let zeichen: Zeichen[] = [];
         let zeichenXML = xml.getElementsByTagName('Otvzeichlp');
 
@@ -133,8 +153,12 @@ export default class Aufstellvorrichtung extends PunktObjekt {
         this.zeichen = zeichen;
         if (this.hasSekObj == 0 && zeichen.length > 0) this.hasSekObj = 1
 
-        if (callback != undefined) {
-            callback(this.zeichen, ...args);
+        this.loadingZeichen = undefined;
+        if (this.loadingZeichenCallback == undefined || this.loadingZeichenCallback.length == 0)
+            return;
+        let callback: Callback;
+        while (callback = this.loadingZeichenCallback.pop()) {
+            callback.callback(this.zeichen, ...callback.param);
         }
     }
 
@@ -286,5 +310,99 @@ export default class Aufstellvorrichtung extends PunktObjekt {
     }
 
 
+    public showOverlay(map: Map) {
+        this.overlayShowing = true;
+        this.getZeichen(this.generateOverlay.bind(this), map)
+    }
+
+    private generateOverlay(alleZeichen: Zeichen[], map: Map) {
+        if (!this.overlayShowing) return;
+        let abschnitt = this.getAbschnitt()
+        let winkel = abschnitt.getWinkel(this.getVst());
+
+        let zeichenListe = alleZeichen.sort(function (a: Zeichen, b: Zeichen) {
+            if (a.getSort() > b.getSort()) return 1;
+            if (a.getSort() < b.getSort()) return -1
+            return 0;
+        })
+
+        let max = 0;
+        let zeichenL: { [richtung: number]: Zeichen[] } = {}
+        for (let z of zeichenListe) {
+            let r = z.getLesbarkeit() ? z.getLesbarkeit().getKt() : '03';
+            if (r == '05') r = '03';
+            if (!(r in zeichenL)) zeichenL[r] = []
+            zeichenL[r].push(z);
+            if (max < zeichenL[r].length) max = zeichenL[r].length
+        }
+
+        let groesse = max * 40 + 30
+
+        let canvas = document.createElement("canvas")
+        canvas.addEventListener("click",
+            function (this: Aufstellvorrichtung) {
+                this.hideOverlay(map)
+            }.bind(this));
+        let ctx = canvas.getContext('2d')
+        canvas.height = groesse * 2;
+        canvas.width = groesse * 2;
+        ctx.fillStyle = "#ffffff";
+        ctx.translate(groesse, groesse);
+        ctx.rotate(winkel)
+        if (this.getVabstVst() > 0) ctx.rotate(Math.PI);
+        ctx.save();
+
+        let winkelArr = ['01', '03', '02', '04'];
+
+        for (let i = 0; i < winkelArr.length; i++) {
+            let r = winkelArr[i];
+            if (!(r in zeichenL)) continue;
+            ctx.restore();
+            ctx.save()
+            ctx.rotate(i * 0.5 * Math.PI)
+
+            let liste = zeichenL[r];
+            ctx.beginPath()
+            ctx.strokeStyle = "#444444";
+            ctx.lineWidth = 4;
+            ctx.moveTo(0, 0)
+            ctx.lineTo(0, -20 - 40 * liste.length)
+            ctx.stroke()
+
+            for (let j = 0; j < liste.length; j++) {
+
+                let zeichen = liste[j]
+                let img = new Image();
+                if (zeichen.getArt().getKt() == '02') {
+                    ctx.fillRect(-25, -60 - 40 * j, 50, 40);
+                }
+                img.src = '../schilder/' + zeichen.getStvoznr().getKt() + '.svg';
+                img.addEventListener("load", function () {
+                    ctx.restore();
+                    ctx.save()
+                    ctx.rotate(i * 0.5 * Math.PI)
+                    let breite = 40 * img.width / img.height
+                    ctx.drawImage(img, - breite / 2, -60 - 40 * j, breite, 40);
+                });
+            }
+        }
+
+        document.getElementById("sidebar").appendChild(canvas);
+
+        this.overlay = new Overlay({
+            position: (this.getGeometry() as Point).getCoordinates(),
+            element: canvas,
+            offset: [-groesse, -groesse],
+            autoPan: true,
+            stopEvent: false
+        });
+        map.addOverlay(this.overlay)
+    }
+
+    hideOverlay(map: Map) {
+        this.overlayShowing = false;
+        if (!this.overlay) return;
+        map.removeOverlay(this.overlay);
+    }
 };
 

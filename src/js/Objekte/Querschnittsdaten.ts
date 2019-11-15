@@ -14,7 +14,7 @@ import WaitBlocker from '../WaitBlocker';
 
 /**
 * @author Florian Timm, LGV HH 
-* @version 2019.10.29
+* @version 2019.11.15
 * @copyright MIT
 */
 
@@ -31,10 +31,10 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     private artober: Klartext = null;
     private breite: number = null;
     private bisBreite: number = null;
-    private blpart: any = null;
-    private blpartnull: any = null;
-    private uipart: any = null;
-    private uipartnull: any = null;
+    private blpart: Klartext = null;
+    private blpartnull: Klartext = null;
+    private uipart: Klartext = null;
+    private uipartnull: Klartext = null;
     private XVstL: number = null;
     private XVstR: number = null;
     private XBstL: number = null;

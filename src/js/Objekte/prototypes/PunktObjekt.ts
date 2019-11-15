@@ -67,7 +67,6 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
             opacity: 0.7,
         });
         layer.setStyle(function (feat: FeatureLike, resolution: number) {
-            let style: Style[] = []
             let pkt = feat as PunktObjekt;
             let color1 = pkt.colorFunktion1();
             let color2 = pkt.colorFunktion2();
@@ -90,7 +89,7 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
 
             //console.log(feature.stand);
             if ((Date.now() - datum.getTime()) > 3600000 * 24) {
-                style.push(new Style({
+                return new Style({
                     image: new Circle({
                         radius: 3,
                         fill: new Fill({ color: color2 }),
@@ -100,9 +99,9 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
                         })
                     }),
                     text: text
-                }));
+                });
             } else {
-                style.push(new Style({
+                return new Style({
                     image: new RegularShape({
                         points: 4,
                         radius: 4,
@@ -114,89 +113,8 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
                         })
                     }),
                     text: text
-                }));
+                });
             }
-
-
-            if (feat instanceof Aufstellvorrichtung && resolution < 0.10) {
-                let aufst = feat as Aufstellvorrichtung;
-                let abschnitt = feat.getAbschnitt()
-                if (abschnitt) {
-                    let winkel = abschnitt.getWinkel(feat.getVst());
-
-                    let zeichenListe = aufst.getZeichen().sort(function (a: Zeichen, b: Zeichen) {
-                        if (a.getSort() > b.getSort()) return 1;
-                        if (a.getSort() < b.getSort()) return -1
-                        return 0;
-                    })
-
-
-
-
-                    let zeichenL: { [richtung: number]: Zeichen[] } = {}
-                    for (let z of zeichenListe) {
-                        let r = z.getLesbarkeit() ? z.getLesbarkeit().getKt() : '03';
-                        if (r == '05') r = '03';
-                        if (!(r in zeichenL)) zeichenL[r] = []
-                        zeichenL[r].push(z);
-                    }
-
-                    let winkelListe = {
-                        'R': {
-                            '01': Math.PI,
-                            '02': 0,
-                            '03': - 0.5 * Math.PI,
-                            '04': 0.5 * Math.PI
-                        },
-                        'L': {
-                            '01': 0,
-                            '02': Math.PI,
-                            '03': 0.5 * Math.PI,
-                            '04': - 0.5 * Math.PI
-                        }
-                    }
-
-                    for (let r in zeichenL) {
-                        let liste = zeichenL[r];
-
-                        let canvas = document.createElement("canvas")
-                        let ctx = canvas.getContext('2d')
-                        ctx.beginPath()
-                        ctx.strokeStyle = "#444444";
-                        ctx.lineWidth = 4;
-                        ctx.moveTo(25, 20 + 40 * liste.length)
-                        ctx.lineTo(25, 20)
-                        ctx.stroke()
-
-                        for (let i = 0; i < liste.length; i++) {
-                            let zeichen = liste[i]
-
-                            let img = new Image();
-
-                            img.src = '../schilder/' + zeichen.getStvoznr().getKt() + '.svg';
-                            img.onload = function () {
-                                console.log(img)
-                                let breite = 40 * img.width / img.height
-                                ctx.drawImage(img, (50 - breite) / 2, 40 * i, breite, 40);
-                            }
-                        }
-
-                        let seite = (aufst.getVabstVst() < 0)?'L':'R';
-
-                        style.push(new Style({
-                            geometry: (aufst.getGeometry() as Point),
-                            image: new Icon({
-                                //src: '../schilder/' + zeichen.getStvoznr().getKt() + '.svg',
-                                imgSize: [50, 20 + 40 * liste.length],
-                                img: canvas,
-                                rotation: winkel + winkelListe[seite][r],
-                                anchor: [0.5, 1]
-                            })
-                        }));
-                    }
-                }
-            }
-            return style;
         }.bind(this));
 
         layer.getStyle
