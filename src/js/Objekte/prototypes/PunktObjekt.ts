@@ -1,6 +1,6 @@
 import VectorSource from 'ol/source/Vector';
 import { Vector as VectorLayer } from 'ol/layer';
-import { Style, Stroke, Fill, Circle, Text, RegularShape } from 'ol/style';
+import { Style, Stroke, Fill, Circle, Text, RegularShape, Icon } from 'ol/style';
 import { Map } from 'ol';
 import { ColorLike } from "ol/colorlike";
 import PublicWFS from "../../PublicWFS";
@@ -9,11 +9,16 @@ import { Point } from "ol/geom";
 import Daten from "../../Daten";
 import PObjektMitDokument from "./PObjektMitDateien";
 import { FeatureLike } from 'ol/Feature';
+import Abschnitt from '../Abschnitt';
+import Aufstellvorrichtung from '../Aufstellvorrichtung';
+import Klartext from '../Klartext';
+import { rotate } from 'ol/transform';
+import Zeichen from '../Zeichen';
 
 export default abstract class PunktObjekt extends PObjektMitDokument implements InfoToolEditable {
     protected vabstVst: number;
     protected vabstBst: number;
-    protected rlageVst: string;
+    protected rlageVst: Klartext;
     protected rabstbaVst: number;
     protected labstbaVst: number;
 
@@ -40,13 +45,17 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
         PublicWFS.doTransaction(xml);
     }
 
-    setDataFromXML(xml: Element) {
+    setDataFromXML(xml: Element, callback?: (...args: any[]) => void, ...args: any[]) {
         super.setDataFromXML(xml);
         let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(',');
         this.setGeometry(new Point([parseFloat(koords[0]), parseFloat(koords[1])]));
-        this.abschnitt = Daten.getInstanz().getAbschnitt(this.abschnittId);
-        this.abschnitt.addOKinER(this.getObjektKlassenName());
         Daten.getInstanz().layerAchse.changed();
+
+        Abschnitt.getAbschnitt(this.abschnittId, function (this: PunktObjekt, abschnitt: Abschnitt) {
+            this.abschnitt = abschnitt
+            abschnitt.addOKinER(this.getObjektKlassenName());
+            if (callback) callback(...args);
+        }.bind(this))
     }
 
     static createLayer(map: Map) {
@@ -57,7 +66,7 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
             source: source,
             opacity: 0.7,
         });
-        layer.setStyle(function (feat: FeatureLike, zoom: number) {
+        layer.setStyle(function (feat: FeatureLike, resolution: number) {
             let pkt = feat as PunktObjekt;
             let color1 = pkt.colorFunktion1();
             let color2 = pkt.colorFunktion2();
@@ -73,10 +82,11 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
                 textAlign: 'left',
                 // get the text from the feature - `this` is ol.Feature
                 // and show only under certain resolution
-                text: ((zoom < 0.2) ? ("" + pkt.vst) : '')
+                text: ((resolution < 0.2) ? ("" + pkt.vst) : '')
             });
 
             let datum = new Date(pkt.stand);
+
             //console.log(feature.stand);
             if ((Date.now() - datum.getTime()) > 3600000 * 24) {
                 return new Style({
@@ -106,7 +116,13 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
                 });
             }
         }.bind(this));
+
+        layer.getStyle
         map.addLayer(layer);
         return layer;
+    }
+
+    setRlageVst(rlagevst: Klartext | string) {
+        this.rlageVst = Klartext.get("Itallglage", rlagevst);
     }
 }

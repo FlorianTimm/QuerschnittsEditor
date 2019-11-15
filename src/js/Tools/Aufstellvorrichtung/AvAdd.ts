@@ -71,6 +71,6 @@ export default class AvAdd extends AddTool {
     }
 
     protected loadERCallback(xml: XMLDocument, ...args: any[]): void {
-        Aufstellvorrichtung.loadERCallback(xml, ...args)
+        Aufstellvorrichtung.loadErCallback(xml, ...args)
     }
 }

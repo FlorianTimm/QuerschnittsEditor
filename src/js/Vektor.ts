@@ -1,3 +1,5 @@
+import { targetNotEditable } from "ol/events/condition";
+
 /**
  * Startscript edit.html
  * @author Florian Timm, LGV HH 
@@ -112,6 +114,10 @@ export default class Vektor {
 
     static azi2vec(azi: number): number[] {
         return [Math.cos(azi), Math.sin(azi)]
+    }
+
+    static winkel(vek: number[]) {
+        return Math.atan(vek[0] / vek[1]);
     }
 
 }

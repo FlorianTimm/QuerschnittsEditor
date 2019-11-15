@@ -68,6 +68,6 @@ export default class SAPAdd extends AddTool {
     }
 
     protected loadERCallback(xml: XMLDocument, ...args: any[]) {
-        StrassenAusPunkt.loadER_Callback(xml, ...args);
+        StrassenAusPunkt.loadErCallback(xml, ...args);
     }
 }

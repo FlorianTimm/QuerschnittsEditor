@@ -6,14 +6,15 @@ import Aufbau from '../Objekte/Aufbaudaten';
 import PublicWFS from '../PublicWFS';
 import Vektor from '../Vektor';
 import QuerStation from './QuerStation';
-import Klartext from './Klartext';
+import Klartext, { KlartextMap } from './Klartext';
 import HTML from '../HTML';
 import { InfoToolEditable } from '../Tools/InfoTool';
 import PrimaerObjekt from './prototypes/PrimaerObjekt';
+import WaitBlocker from '../WaitBlocker';
 
 /**
 * @author Florian Timm, LGV HH 
-* @version 2019.10.29
+* @version 2019.11.15
 * @copyright MIT
 */
 
@@ -26,20 +27,21 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
     // SIB-Attribute
     private station: QuerStation = null;
-    private art: string = null;
-    private artober: string = null;
+    private art: Klartext = null;
+    private artober: Klartext = null;
     private breite: number = null;
     private bisBreite: number = null;
-    private blpart: any = null;
-    private blpartnull: any = null;
-    private uipart: any = null;
-    private uipartnull: any = null;
+    private blpart: Klartext = null;
+    private blpartnull: Klartext = null;
+    private uipart: Klartext = null;
+    private uipartnull: Klartext = null;
     private XVstL: number = null;
     private XVstR: number = null;
     private XBstL: number = null;
     private XBstR: number = null;
     private streifen: 'M' | 'L' | 'R' = null;
     private streifennr: number = null;
+    static loadErControlCounter: number = 0;
 
     constructor() {
         super();
@@ -62,7 +64,6 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     }
 
     static loadER(callback?: (...args: any[]) => void, ...args: any[]) {
-        document.body.style.cursor = 'wait';
         let daten = Daten.getInstanz();
         PublicWFS.doQuery('Dotquer', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
@@ -70,7 +71,6 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     }
 
     static loadAbschnittER(abschnitt: Abschnitt, callback: (...args: any[]) => void, ...args: any[]) {
-        document.body.style.cursor = 'wait';
         let daten = Daten.getInstanz();
         PublicWFS.doQuery('Dotquer', '<Filter>' +
             '<And><PropertyIsEqualTo><PropertyName>abschnittId</PropertyName>' +
@@ -82,28 +82,29 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         let dotquer = xml.getElementsByTagName("Dotquer");
         let liste: Querschnitt[] = [];
         for (let i = 0; i < dotquer.length; i++) {
-            //console.log(quer);
-            liste.push(Querschnitt.fromXML(dotquer[i]));
+            Querschnitt.loadErControlCounter += 1
+            liste.push(Querschnitt.fromXML(dotquer[i], undefined, Querschnitt.loadErControlCallback, callback, ...args));
         }
+        if (dotquer.length == 0) Querschnitt.loadErControlCheck(callback, ...args)
+    }
 
-        Querschnitt.checkQuerschnitte(liste);
+    private static loadErControlCallback(callback?: (...args: any[]) => void, ...args: any[]) {
+        Querschnitt.loadErControlCounter -= 1
+        Querschnitt.loadErControlCheck(callback, ...args)
+    }
 
-        if (callback != undefined) {
-            callback(...args);
-        }
-        document.body.style.cursor = ''
+    private static loadErControlCheck(callback?: (...args: any[]) => void, ...args: any[]) {
+        if (Querschnitt.loadErControlCounter > 0) return;
+        if (callback) callback(...args)
     }
 
     static checkQuerschnitte(liste: Querschnitt[]) {
         liste.forEach(function (querschnitt: Querschnitt) {
             querschnitt.check()
         })
-
     }
 
     public check() {
-        //if (this.XVstL != null && this.XVstR != null && this.XBstL != null && this.XBstR != null) return;
-        //console.log(this);
         let m = this.station.getStreifen("M")
         let seite = this.station.getStreifen(this.streifen);
 
@@ -147,25 +148,25 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
     private static createFields(form: HTMLFormElement, __: string, querschnitt?: Querschnitt, changeable: boolean = false) {
         // Art
-        let art = Klartext.createKlartextSelectForm("Itquerart", form, "Art", "art", querschnitt != undefined ? querschnitt.art : undefined);
+        let art = Klartext.createKlartextSelectForm("Itquerart", form, "Art", "art", querschnitt != undefined ? querschnitt.art.getXlink() : undefined);
         $(art).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Lage
-        let lage = Klartext.createKlartextSelectForm("Itquerober", form, "Lage", "ober", querschnitt != undefined ? querschnitt.artober : undefined);
+        let lage = Klartext.createKlartextSelectForm("Itquerober", form, "Lage", "ober", querschnitt != undefined ? querschnitt.artober.getXlink() : undefined);
         $(lage).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Breite
         let breite = HTML.createNumberInput(form, "Von Breite", "breite", querschnitt != undefined ? querschnitt.breite.toString() : undefined);
-        breite.step= '1';
+        breite.step = '1';
         breite.max = '5000';
-        breite.min =  '0'
+        breite.min = '0'
         breite.disabled = !changeable;
 
         // BisBreite
         let bisbreite = HTML.createNumberInput(form, "Bis Breite", "bisbreite", querschnitt != undefined ? querschnitt.bisBreite.toString() : undefined);
-        bisbreite.step= '1';
+        bisbreite.step = '1';
         bisbreite.max = '5000';
-        bisbreite.min =  '0'
+        bisbreite.min = '0'
         bisbreite.disabled = !changeable;
 
         // VNK
@@ -189,31 +190,31 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         Querschnitt.createFields(ziel, "info", this, changeable);
     }
 
-    static fromXML(xml: Element, doNotAdd: boolean = false) {
+    static fromXML(xml: Element, doNotAdd: boolean = false, callback?: (...args: any[]) => void, ...args: any[]) {
         let r = new Querschnitt();
         r.setDataFromXML(xml)
 
         if (doNotAdd) return r;  // Abbruch, falls nur die Daten geparst werden sollen
 
-        r.abschnitt = r._daten.getAbschnitt(r.abschnittId);
-        r.abschnitt.addOKinER('Querschnitt');
+        Abschnitt.getAbschnitt(r.abschnittId, function (abschnitt: Abschnitt, r: Querschnitt) {
+            abschnitt.addOKinER('Querschnitt');
+            r.abschnitt = abschnitt;
+
+            if (!(r.abschnitt.existsStation(r.vst))) {
+                r.station = new QuerStation(r.abschnitt, r.vst, r.bst);
+            } else {
+                r.station = r.abschnitt.getStation(r.vst);
+            }
+            r.station.addQuerschnitt(r);
+            r.createGeom();
+
+            if (callback) callback(...args)
+        }, r);
+
 
         //console.log(abschnitt);
-        if (!(r.abschnitt.existsStation(r.vst))) {
-            let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(' ');
-            let geo = [];
-            for (let i = 0; i < koords.length; i++) {
-                let k = koords[i].split(',')
-                let x = Number(k[0]);
-                let y = Number(k[1]);
-                geo.push([x, y]);
-            }
-            r.station = new QuerStation(r.abschnitt, r.vst, r.bst, geo);
-        } else {
-            r.station = r.abschnitt.getStation(r.vst);
-        }
-        r.station.addQuerschnitt(r);
-        r.createGeom();
+
+
         return r;
     }
 
@@ -255,10 +256,15 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         let abst2 = this.XVstL
         let diff2 = this.XBstL - abst2
 
-        let anzahl = this.station.getGeometry().length;
+        let punkte = this.station.getPunkte();
 
-        for (let j = 0; j < anzahl; j++) {
-            let coord = Vektor.sum(this.station.getGeometry()[j], Vektor.multi(this.station.getVector()[j], this.station.getSegment()[j] * diff2 + abst2));
+        let erster = punkte[0];
+        let letzter = punkte[punkte.length - 1]
+
+        for (let i = 0; i < punkte.length; i++) {
+            let pkt = punkte[i]
+            let faktor = (pkt.vorherLaenge - erster.vorherLaenge) / (letzter.vorherLaenge - erster.vorherLaenge);
+            let coord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff2 + abst2)));
             if (isNaN(coord[0]) || isNaN(coord[1])) {
                 console.log("Fehler: keine Koordinaten");
                 continue;
@@ -267,8 +273,11 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             l.push(coord);
         }
 
-        for (let j = anzahl - 1; j >= 0; j--) {
-            let coord = Vektor.sum(this.station.getGeometry()[j], Vektor.multi(this.station.getVector()[j], this.station.getSegment()[j] * diff1 + abst1));
+
+        for (let i = punkte.length - 1; i >= 0; i--) {
+            let pkt = punkte[i]
+            let faktor = (pkt.vorherLaenge - erster.vorherLaenge) / (letzter.vorherLaenge - erster.vorherLaenge);
+            let coord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff1 + abst1)));
             if (isNaN(coord[0]) || isNaN(coord[1])) {
                 console.log("Fehler: keine Koordinaten");
                 continue;
@@ -282,7 +291,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         else this.trenn.setGeometry(new MultiLineString([l, r]));
 
         g.push(g[0])
-        this.setGeometry(new Polygon([g])) //setCoordinates([g])
+        this.setGeometry(new Polygon([g])) //setCoordinates([g])*/
     }
 
     private createUpdateBreiteXML() {
@@ -297,7 +306,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     }
 
     public updateArtEinzeln(art: string) {
-        this.art = art;
+        this.setArt(art);
         this._daten.vectorQuer.changed();
 
         PublicWFS.doTransaction(this.createUpdateXML({
@@ -306,7 +315,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     }
 
     public updateOberEinzeln(artober: string) {
-        this.artober = artober;
+        this.setArtober(artober);
         this._daten.vectorQuer.changed();
         PublicWFS.doTransaction(this.createUpdateXML({
             artober: this.artober
@@ -315,15 +324,15 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
     public changeAttributes(form: HTMLFormElement) {
         let changes: { [attribut: string]: any } = {}
-        let art = $(form).children().children("#art").val() as string
-        if (art.substr(-32) != this.getArt().substr(-32)) {
-            this.setArt(art as string)
-            changes["art"] = art
+        let artXlink = $(form).children().children("#art").val() as string
+        if (artXlink != this.getArt().getXlink()) {
+            this.setArt(artXlink as string)
+            changes["art"] = artXlink
         }
-        let ober = $(form).children().children("#ober").val() as string
-        if (ober.substr(-32) != this.getArtober().substr(-32)) {
-            this.setArtober(ober as string)
-            changes["artober"] = ober;
+        let oberXlink = $(form).children().children("#ober").val() as string
+        if (oberXlink != this.getArtober().getXlink()) {
+            this.setArtober(oberXlink as string)
+            changes["artober"] = oberXlink;
         }
         PublicWFS.doTransaction(this.createUpdateXML(changes));
         this.updateInfoBreite(form);
@@ -553,17 +562,12 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     public getStreifennr(): number {
         return this.streifennr
     }
-    public getArt(): string {
-        if (this.art != null)
-            return this.art.substr(-32);
-        else
-            return null
+    public getArt(): Klartext {
+        return this.art;
     }
-    public getArtober(): string {
-        if (this.artober != null)
-            return this.artober.substr(-32);
-        else
-            return null
+
+    public getArtober(): Klartext {
+        return this.artober;
     }
     public getXBstL(): number {
         return this.XBstL;
@@ -608,12 +612,12 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         this.bisBreite = bisBreite;
     }
 
-    public setArt(art: string) {
-        this.art = art;
+    public setArt(art: Klartext | string) {
+        this.art = Klartext.get("Itquerart", art);
     }
 
-    public setArtober(artober: string) {
-        this.artober = artober;
+    public setArtober(artober: Klartext | string) {
+        this.artober = Klartext.get("Itquerober", artober);
     }
 
     public setXVstR(XVstR: number) {

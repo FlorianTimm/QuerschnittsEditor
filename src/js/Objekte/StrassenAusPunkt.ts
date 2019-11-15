@@ -10,12 +10,14 @@ import "../import_jquery.js";
 import 'chosen-js';
 import 'chosen-js/chosen.css';
 import Daten from "../Daten";
-import Klartext from './Klartext';
+import KlartextManager from './Klartext';
 import Abschnitt from './Abschnitt';
 import PunktObjekt from './prototypes/PunktObjekt';
 import HTML from '../HTML';
 
 export default class StrassenAusPunkt extends PunktObjekt {
+    static loadErControlCounter: number = 0;
+
     getWFSKonfigName(): string {
         return "STAUSPKT";
     }
@@ -48,66 +50,56 @@ export default class StrassenAusPunkt extends PunktObjekt {
         StrassenAusPunkt.createFields(ziel, this, changeable);
     }
 
-    static loadER(callback?: (...args: any) => void, ...args: any) {
+    static loadER(callback?: (...args: any[]) => void, ...args: any[]) {
         let daten = Daten.getInstanz();
         PublicWFS.doQuery('Otstrauspkt', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', StrassenAusPunkt.loadER_Callback, undefined, callback, ...args);
-
+            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', StrassenAusPunkt.loadErCallback, undefined, callback, ...args);
     }
 
-    public static loadER_Callback(xml: XMLDocument, callback?: (...args: any) => void, ...args: any) {
-        let ausstattung = xml.getElementsByTagName("Otstrauspkt");
-        for (let i = 0; i < ausstattung.length; i++) {
-            let f = StrassenAusPunkt.fromXML(ausstattung[i]);
-            Daten.getInstanz().layerStraus.getSource().addFeature(f);
-        }
-        if (callback != undefined)
-            callback(...args);
-    }
-
-    /**
-     * Lädt einen Abschnitt nach
-     * @param {Abschnitt} abschnitt 
-     */
     static loadAbschnittER(abschnitt: Abschnitt, callback?: (...args: any[]) => void, ...args: any[]) {
-        //console.log(daten);
-        document.body.style.cursor = 'wait';
         PublicWFS.doQuery('Otstrauspkt', '<Filter>' +
             '<And><PropertyIsEqualTo><PropertyName>abschnittId</PropertyName>' +
             '<Literal>' + abschnitt.getAbschnittid() + '</Literal></PropertyIsEqualTo><PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + Daten.getInstanz().ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>', StrassenAusPunkt._loadAbschnittER_Callback, undefined, callback, ...args);
+            '<Literal>' + Daten.getInstanz().ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>', StrassenAusPunkt.loadErCallback, undefined, callback, ...args);
     }
 
-    static _loadAbschnittER_Callback(xml: XMLDocument, callback?: (...args: any[]) => void, ...args: any[]) {
-        //console.log(callback);
+    public static loadErCallback(xml: XMLDocument, callback?: (...args: any[]) => void, ...args: any[]) {
         let straus = xml.getElementsByTagName("Otstrauspkt");
         for (let i = 0; i < straus.length; i++) {
-            let f = StrassenAusPunkt.fromXML(straus[i]);
+            StrassenAusPunkt.loadErControlCounter += 1
+            let f = StrassenAusPunkt.fromXML(straus[i], StrassenAusPunkt.loadErControlCallback, callback, ...args);
             Daten.getInstanz().layerStraus.getSource().addFeature(f);
         }
-        document.body.style.cursor = '';
-        if (callback != undefined) {
-            callback(...args);
-        }
+        if (straus.length == 0) StrassenAusPunkt.loadErControlCheck(callback, ...args)
     }
 
-    public static fromXML(xml: Element) {
+    private static loadErControlCallback(callback?: (...args: any[]) => void, ...args: any[]) {
+        StrassenAusPunkt.loadErControlCounter -= 1
+        StrassenAusPunkt.loadErControlCheck(callback, ...args)
+    }
+
+    private static loadErControlCheck(callback?: (...args: any[]) => void, ...args: any[]) {
+        if (StrassenAusPunkt.loadErControlCounter > 0) return;
+        if (callback) callback(...args)
+    }
+
+    public static fromXML(xml: Element, callback?: (...args: any[]) => void, ...args: any[]) {
         let r = new StrassenAusPunkt();
-        r.setDataFromXML(xml);
+        r.setDataFromXML(xml, callback, ...args);
         return r;
     }
 
     protected static createFields(form: HTMLFormElement, ausstattung?: StrassenAusPunkt, changeable: boolean = false) {
-        let art = Klartext.createKlartextSelectForm("Itstrauspktart", form, "Art", "art", ausstattung != undefined ? ausstattung.art : undefined);
+        let art = KlartextManager.createKlartextSelectForm("Itstrauspktart", form, "Art", "art", ausstattung != undefined ? ausstattung.art : undefined);
         $(art).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Lage
-        let lage = Klartext.createKlartextSelectForm("Itallglage", form, "Lage", "lage", ausstattung != undefined ? ausstattung.rlageVst : undefined);
+        let lage = KlartextManager.createKlartextSelectForm("Itallglage", form, "Lage", "lage", ausstattung != undefined ? ausstattung.rlageVst.getXlink() : undefined);
         $(lage).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Quelle
-        let quelle = Klartext.createKlartextSelectForm("Itquelle", form, "Quelle", "quelle", ausstattung != undefined ? ausstattung.quelle : undefined);
+        let quelle = KlartextManager.createKlartextSelectForm("Itquelle", form, "Quelle", "quelle", ausstattung != undefined ? ausstattung.quelle.getXlink() : undefined);
         $(quelle).prop('disabled', !changeable).trigger("chosen:updated");
 
         // VNK
@@ -136,8 +128,8 @@ export default class StrassenAusPunkt extends PunktObjekt {
 
     public changeAttributes(form: HTMLFormElement): void {
         this.art = $(form).find("#art").children("option:selected").val() as string;
-        this.rlageVst = $(form).find("#lage").children("option:selected").val() as string;
-        this.quelle = $(form).find("#quelle").children("option:selected").val() as string;
+        this.setRlageVst($(form).find("#lage").children("option:selected").val() as string);
+        this.setQuelle($(form).find("#quelle").children("option:selected").val() as string);
         this.objektnr = $(form).find("#extid").val() as string;
 
         let xml = this.createUpdateXML({

@@ -7,6 +7,7 @@ import Daten from '../../Daten';
 import { Map } from 'ol';
 import { SelectEventType } from 'ol/interaction/Select';
 import Abschnitt from '../../Objekte/Abschnitt';
+import WaitBlocker from '../../WaitBlocker';
 
 /**
  * Funktion zum Hinzufügen von Aufstellvorrichtungen zum Ereignisraum
@@ -38,12 +39,9 @@ class AvAdd2ER extends Tool {
     }
 
     onSelect(__: SelectEventType) {
-        console.log("Auswahl");
         if (this.select.getFeatures().getArray().length == 0) return;
-
         let abschnitt = this.select.getFeatures().getArray()[0] as Abschnitt;
         if (abschnitt.isOKinER("Otaufstvor")) return;
-        document.body.style.cursor = 'wait'
         PublicWFS.addInER(abschnitt, "Otaufstvor", this.daten.ereignisraum_nr, this._onSelect_Callback.bind(this), undefined, abschnitt);
     }
 

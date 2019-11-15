@@ -203,7 +203,7 @@ function recreateHash(event: MapEvent) {
 
         let visible: number[] = []
         event.target.getLayers().forEach(
-            function (layer: Layer, id: number, __: any) {
+            function (layer: Layer, id: number, __: Layer[]) {
                 if (layer.get('switchable') == true) {
                     if ((layer as Layer).getVisible()) {
                         visible.push(id);

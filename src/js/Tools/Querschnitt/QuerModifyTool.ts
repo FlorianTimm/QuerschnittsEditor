@@ -2,21 +2,27 @@ import { Snap } from 'ol/interaction';
 import { platformModifierKeyOnly, never } from 'ol/events/condition';
 import QuerInfoTool from './QuerInfoTool';
 import Daten from '../../Daten';
-import { Map, Feature } from 'ol';
+import { Map, Feature, MapBrowserEvent } from 'ol';
 import Tool from '../prototypes/Tool';
 import { SelectInteraction, ModifyInteraction } from '../../openLayers/Interaction'
 import { ModifyEvent } from 'ol/interaction/Modify';
-import Querschnitt from 'src/js/Objekte/Querschnittsdaten';
+import Querschnitt from '../../Objekte/Querschnittsdaten';
 import InfoTool from '../InfoTool';
-import { MultiLineString } from 'ol/geom';
+import { MultiLineString, Point, LineString } from 'ol/geom';
 import HTML from '../../HTML';
-import Klartext from '../../Objekte/Klartext';
+import KlartextManager from '../../Objekte/Klartext';
 
 import "../../import_jquery.js";
 import 'chosen-js';
 import 'chosen-js/chosen.css';
 import 'jquery-ui-bundle';
 import 'jquery-ui-bundle/jquery-ui.css'
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
+import { Circle, Style, Stroke, Fill } from 'ol/style';
+import { FeatureLike } from 'ol/Feature';
+import Vektor from '../../Vektor';
+import PublicWFS from '../../PublicWFS';
 
 /**
  * Funktion zum Verändern von Querschnittsflächen
@@ -33,13 +39,15 @@ export default class QuerModifyTool extends Tool {
     private selectFlaechen: SelectInteraction;
     private snapTrenn: Snap;
     private snapStation: Snap;
-    //private streifen: 'M' | 'L' | 'R';
-    //private streifennr: number;
     private multiEditForm: HTMLFormElement;
     private multiCountInput: HTMLInputElement;
     private multiArtSelect: HTMLSelectElement;
     private multiOberSelect: HTMLSelectElement;
     private moveTypeForm: HTMLFormElement;
+    private modifySource: VectorSource;
+    private modifyLayer: VectorLayer;
+    modifyOverlaySource: VectorSource;
+    modifyOverlayLayer: VectorLayer;
 
     constructor(map: Map, info: QuerInfoTool) {
         super();
@@ -71,8 +79,8 @@ export default class QuerModifyTool extends Tool {
         if (this.multiEditForm) return;
         this.multiEditForm = HTML.createToolForm(document.getElementById("sidebar"), false, "qsMultiMod");
 
-        this.multiArtSelect = Klartext.createKlartextSelectForm("Itquerart", this.multiEditForm, "Art", 'qsmm_art', undefined, "- verschiedene -")
-        this.multiOberSelect = Klartext.createKlartextSelectForm("Itquerober", this.multiEditForm, "Art der Oberfläche", 'qsmm_ober', undefined, "- verschiedene -")
+        this.multiArtSelect = KlartextManager.createKlartextSelectForm("Itquerart", this.multiEditForm, "Art", 'qsmm_art', undefined, "- verschiedene -")
+        this.multiOberSelect = KlartextManager.createKlartextSelectForm("Itquerober", this.multiEditForm, "Art der Oberfläche", 'qsmm_ober', undefined, "- verschiedene -")
         this.multiCountInput = HTML.createNumberInput(this.multiEditForm, "Anzahl", "qsmm_anzahl");
         this.multiCountInput.disabled = true;
 
@@ -81,92 +89,174 @@ export default class QuerModifyTool extends Tool {
     }
 
     private createModify() {
+        this.modifySource = new VectorSource({
+            features: []
+        });
+
+        this.modifyLayer = new VectorLayer({
+            source: this.modifySource,
+            style: function (feat: FeatureLike) {
+                let color = 'green';
+                if (feat.get("st") && feat.get("st") == "Bst")
+                    color = 'red';
+                return new Style({
+                    image: new Circle({
+                        radius: 5,
+                        fill: new Fill({ color: color }),
+                        stroke: new Stroke({
+                            color: 'rgba(50,50,50,0.5)', width: 1
+                        })
+                    })
+                })
+            }
+        });
+        this.map.addLayer(this.modifyLayer)
+
+
+        this.modifyOverlaySource = new VectorSource({
+            features: []
+        });
+
+        this.modifyOverlayLayer = new VectorLayer({
+            source: this.modifyOverlaySource,
+            style: new Style({
+                stroke: new Stroke({
+                    color: 'rgba(50,50,50,0.5)', width: 3
+                })
+            })
+        });
+
+
         this.modify = new ModifyInteraction({
             deleteCondition: never,
             insertVertexCondition: never,
-            features: this.selectLinien.getFeatures()
+            source: this.modifySource
         });
-        this.modify.geo_vorher = null;
-        this.modify.modify = this;
 
         this.modify.on('modifystart', this.modifyStart.bind(this));
         this.modify.on('modifyend', this.modifyEnd.bind(this));
+        this.modify.on('change', console.log)
     }
 
-    private modifyStart(e: ModifyEvent) {
-        let auswahl = e.features.getArray()[0];
-        e.target.geo_vorher = auswahl.getGeometry().clone();
+    private modifyStart(_: ModifyEvent) {
+        /*let auswahl = e.features.getArray()[0];
+        e.target.geo_vorher = auswahl.getGeometry().clone();*/
         this.map.addInteraction(this.snapStation);
+        this.map.on("pointermove", this.mouseMove.bind(this))
+        this.map.addLayer(this.modifyOverlayLayer)
     }
 
-    private modifyEnd(event: ModifyEvent) {
-        this.map.removeInteraction(this.snapStation);
-        let auswahl = event.features.getArray()[0];
-        let querschnitt = auswahl.get('objekt') as Querschnitt;
-        let nachher: number[][][] = (auswahl.getGeometry() as MultiLineString).getCoordinates();
-        let vorher: number[][][] = event.target.geo_vorher.getCoordinates();
+    private mouseMove(_: MapBrowserEvent) {
+        this.modifyOverlaySource.clear();
 
-        for (let i = 0; i < vorher.length; i++) {
-            for (let j = 0; j < vorher[i].length; j += vorher[i].length - 1) {
-                if (nachher[i][j][0] != vorher[i][j][0] || nachher[i][j][1] != vorher[i][j][1]) {
-                    // alte Daten speichern für Vergleich, wenn angrenzender Querschnitt mitbewegt werden soll
-                    let alt_XBstR = querschnitt.getXBstR();
-                    let alt_XBstL = querschnitt.getXBstL();
-                    let alt_XVstR = querschnitt.getXVstR();
-                    let alt_XVstL = querschnitt.getXVstL();
+        let abs = this.calcAbstand()
+        if (abs == null) return
+        let seite = abs.querschnitt.getStreifen();
+        if (seite == 'M') return;
 
-                    // Variablen, je nach dem ob BST oder VST verändert wird
-                    // VST
-                    let vst = true;
-                    let edit: 'Vst' | 'Bst' = "Vst";
-                    let edit_breite: "breite" | "bisBreite" = "breite";
-                    // BST
-                    if (j > 0) {
-                        vst = false;
-                        edit = "Bst";
-                        edit_breite = "bisBreite";
-                    }
 
-                    // Berechnen des Abstandes des neuen Punktes
-                    let pos = querschnitt.getAbschnitt().calcStationierung(nachher[i][j]);
-                    let dist = Math.round(pos.abstand * 100) / 100;
 
-                    // Streifen und Nr
-                    let streifen = querschnitt.getStreifen();
+        let abstVst = (abs.vstOrBst == 'Vst') ? abs.abstand : abs.querschnitt.getX('Vst', seite)
+        let abstBst = (abs.vstOrBst == 'Bst') ? abs.abstand : abs.querschnitt.getX('Bst', seite)
+        let diff2 = abstBst - abstVst
 
-                    if (streifen == 'L')
-                        dist *= -1;
+        let punkte = abs.querschnitt.getStation().getPunkte();
 
-                    let diff = dist - querschnitt.getX(edit, streifen as 'L' | 'R');
+        let erster = punkte[0];
+        let letzter = punkte[punkte.length - 1]
 
-                    diff = this._check_and_edit_querschnitt(querschnitt, diff, edit, edit_breite);
+        let l = [];
+        for (let i = 0; i < punkte.length; i++) {
+            let pkt = punkte[i]
+            let faktor = (pkt.vorherLaenge - erster.vorherLaenge) / (letzter.vorherLaenge - erster.vorherLaenge);
+            let coord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff2 + abstVst)));
+            if (isNaN(coord[0]) || isNaN(coord[1])) {
+                console.log("Fehler: keine Koordinaten");
+                continue;
+            }
+            l.push(coord);
+        }
 
-                    // Nachbar-Querschnitt mitziehen?
-                    //console.log(querschnitt);
-                    if (document.forms.namedItem("modify").modify_glue.checked) {
-                        // VST, BST suchen und ändern
-                        if (vst) {
-                            let station = querschnitt.getStation().getAbschnitt().getStationByBST(querschnitt.getVst());
-                            if (station == null) break;
-                            let querschnitt_nachbar = station.getQuerschnittByBstAbstand(alt_XVstL, alt_XVstR);
-                            if (querschnitt_nachbar == null) break;
-                            this._check_and_edit_querschnitt(querschnitt_nachbar, diff, 'Bst', 'bisBreite')
-                        }
-                        //BST, VST suchen und ändern
-                        else {
-                            let station = querschnitt.getStation().getAbschnitt().getStationByVST(querschnitt.getBst());
-                            if (station == null) break;
-                            let querschnitt_nachbar = station.getQuerschnittByVstAbstand(alt_XBstL, alt_XBstR);
-                            if (querschnitt_nachbar == null) break;
-                            this._check_and_edit_querschnitt(querschnitt_nachbar, diff, 'Vst', 'breite')
-                        }
-                    }
-                    break;
-                }
+        this.modifyOverlaySource.addFeature(new Feature(new LineString(l)));
+    }
+
+    calcAbstand() {
+        let querschnitt = this.selectFlaechen.getFeatures().item(0) as Querschnitt;
+        if (querschnitt == null) return null;
+        let pkt_segment = querschnitt.getStation().getPunkte();
+        let pkt_karte = this.modifySource.getFeatures();
+
+
+        // Feststellen ob VST oder BST bearbeitet wurden
+        let vstOrBst: 'Vst' | 'Bst';
+        let point: number[];
+        for (let feat of pkt_karte) {
+            let neu = (feat.getGeometry() as Point).getCoordinates();
+            let x = feat.get('x');
+            let y = feat.get('y');
+            if (neu[0] != x || neu[1] != y) {
+                vstOrBst = feat.get("st")
+                point = neu;
+                break;
             }
         }
-        //breiteNachfAnpassen(absid, station, streifen, nr, edit, diff);
-        this.info.featureSelect(this.selectFlaechen, true);
+        if (!vstOrBst || !point) return null;
+
+        // Achspunkt für Abstandberechnung bestimmen
+        let pkt = pkt_segment[(vstOrBst == 'Vst') ? 0 : (pkt_segment.length - 1)]
+
+        // Abstand berechnen
+        let abstand = -Math.round((Vektor.skalar(Vektor.diff(point, pkt.pkt), pkt.seitlicherVektorAmPunkt)) / (Vektor.skalar(pkt.seitlicherVektorAmPunkt, pkt.seitlicherVektorAmPunkt)) * 100) / 100
+        return { abstand: abstand, vstOrBst: vstOrBst, querschnitt: querschnitt }
+    }
+
+    private modifyEnd(_: ModifyEvent) {
+        this.map.un("pointermove", this.mouseMove.bind(this));
+        this.map.removeLayer(this.modifyOverlayLayer)
+
+        // Abstand berechnen
+        let abs = this.calcAbstand()
+        if (!abs) return;
+
+        // Mittelstreifen filtern
+        let seite = abs.querschnitt.getStreifen();
+        if (seite == 'M') {
+            PublicWFS.showMessage("Mittelstreifen können nicht bearbeitet werden")
+            return;
+        }
+
+        // Differenz bestimmen
+        let diff = abs.abstand - abs.querschnitt.getX(abs.vstOrBst, seite)
+
+        // alte Daten speichern für Vergleich, wenn angrenzender Querschnitt mitbewegt werden soll
+        let alt_XBstR = abs.querschnitt.getXBstR();
+        let alt_XBstL = abs.querschnitt.getXBstL();
+        let alt_XVstR = abs.querschnitt.getXVstR();
+        let alt_XVstL = abs.querschnitt.getXVstL();
+
+        // Daten prüfen und bearbeiten 
+        diff = this._check_and_edit_querschnitt(abs.querschnitt, diff, abs.vstOrBst, (abs.vstOrBst == "Vst" ? "breite" : "bisBreite"));
+
+        if (document.forms.namedItem("modify").modify_glue.checked) {
+            // VST, BST suchen und ändern
+            if (abs.vstOrBst == "Vst") {
+                let station = abs.querschnitt.getStation().getAbschnitt().getStationByBST(abs.querschnitt.getVst());
+                if (station == null) return;
+                let querschnitt_nachbar = station.getQuerschnittByBstAbstand(alt_XVstL, alt_XVstR);
+                if (querschnitt_nachbar == null) return;
+                this._check_and_edit_querschnitt(querschnitt_nachbar, diff, 'Bst', 'bisBreite')
+            }
+            //BST, VST suchen und ändern
+            else {
+                let station = abs.querschnitt.getStation().getAbschnitt().getStationByVST(abs.querschnitt.getBst());
+                if (station == null) return;
+                let querschnitt_nachbar = station.getQuerschnittByVstAbstand(alt_XBstL, alt_XBstR);
+                if (querschnitt_nachbar == null) return;
+                this._check_and_edit_querschnitt(querschnitt_nachbar, diff, 'Vst', 'breite')
+            }
+        }
+        this.featureSelected()
+        this.map.removeInteraction(this.snapStation);
     }
 
     _check_and_edit_querschnitt(querschnitt: Querschnitt, diff: number, Vst_or_Bst: 'Vst' | 'Bst', breite_or_bisBreite: 'breite' | 'bisBreite') {
@@ -212,7 +302,7 @@ export default class QuerModifyTool extends Tool {
 
     private flaecheSelected() {
         this.selectLinien.getFeatures().clear();
-        let auswahl = (this.selectFlaechen as SelectInteraction).getFeatures();
+        let auswahl = this.selectFlaechen.getFeatures();
         auswahl.forEach(function (this: QuerModifyTool, feat: Feature) {
             this.selectLinien.getFeatures().push((feat as Querschnitt).trenn);
         }.bind(this))
@@ -224,6 +314,8 @@ export default class QuerModifyTool extends Tool {
         let selection = this.selectFlaechen.getFeatures().getArray() as Querschnitt[];
 
         this.selectLinien.getFeatures().clear()
+        this.modifySource.clear();
+
         this.selectFlaechen.getFeatures().forEach(function (this: QuerModifyTool, feature: Feature) {
             this.selectLinien.getFeatures().push((feature as Querschnitt).trenn)
         }.bind(this));
@@ -246,6 +338,25 @@ export default class QuerModifyTool extends Tool {
 
         this.setModifyActive(true);
         this.info.featureSelect(this.selectFlaechen, true);
+
+        let linien = this.selectLinien.getFeatures().item(0).getGeometry() as MultiLineString;
+
+        for (let linie of linien.getCoordinates()) {
+            this.modifySource.addFeature(new Feature({
+                geometry: new Point(linie[0]),
+                st: "Vst",
+                x: linie[0][0],
+                y: linie[0][1]
+            }));
+            this.modifySource.addFeature(new Feature({
+                geometry: new Point(linie[linie.length - 1]),
+                st: "Bst",
+                x: linie[linie.length - 1][0],
+                y: linie[linie.length - 1][1]
+            }));
+        }
+
+        console.log(this.modifySource.getFeatures())
     }
 
     private multiSelect(selection: Querschnitt[]) {
@@ -255,14 +366,14 @@ export default class QuerModifyTool extends Tool {
         this.setModifyActive(false);
         $(this.moveTypeForm).hide("fast");
 
-        let art = selection[0].getArt();
-        let ober = selection[0].getArtober();
+        let art = selection[0].getArt().getXlink();
+        let ober = selection[0].getArtober().getXlink();
         console.log(art)
         for (let querschnitt of selection) {
             console.log(querschnitt.getArt());
-            if (art != querschnitt.getArt())
+            if (art != querschnitt.getArt().getXlink())
                 art = null;
-            if (ober != querschnitt.getArtober())
+            if (ober != querschnitt.getArtober().getXlink())
                 ober = null;
             if (art == null && ober == null)
                 break;
@@ -291,7 +402,7 @@ export default class QuerModifyTool extends Tool {
         });
         this.snapStation = new Snap({
             source: this.daten.vectorStation,
-            pixelTolerance: 500,
+            pixelTolerance: 100,
             vertex: false
         });
     }

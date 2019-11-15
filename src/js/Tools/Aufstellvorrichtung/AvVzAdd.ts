@@ -11,9 +11,11 @@ import Daten from '../../Daten';
 import { Map } from 'ol';
 import Zeichen from '../../Objekte/Zeichen';
 import { SelectEvent } from 'ol/interaction/Select';
-import Klartext from '../../Objekte/Klartext';
+import KlartextManager, { KlartextMap } from '../../Objekte/Klartext';
 import HTML from '../../HTML';
 import Aufstellvorrichtung from 'src/js/Objekte/Aufstellvorrichtung';
+import Klartext from '../../Objekte/Klartext';
+import { pointerMove, never } from 'ol/events/condition';
 var CONFIG = require('../../config.json');
 
 /**
@@ -30,6 +32,8 @@ class AvVzAdd extends Tool {
     private _auswahl: Aufstellvorrichtung = null;
     private _popup: HTMLDivElement;
     private _select: SelectInteraction;
+    private mouseOver: SelectInteraction;
+    lastOverlay: Aufstellvorrichtung;
 
     /**
      * Erzeugt eine Instanz des Verkehrszeichen-Hinzufügen-Tools
@@ -47,6 +51,15 @@ class AvVzAdd extends Tool {
         });
 
         this._select.on("select", this._selected.bind(this));
+
+
+        this.mouseOver = new SelectInteraction({
+            layers: [this._daten.layerAufstell],
+            toggleCondition: never,
+            condition: pointerMove
+        });
+
+        this.mouseOver.on("select", this.mouseIsOver.bind(this))
     }
 
     /**
@@ -79,7 +92,7 @@ class AvVzAdd extends Tool {
         this._popup.appendChild(this._liste);
 
 
-        let stvoZNrNeu = Klartext.createKlartextSelectForm('Itvzstvoznr', this._popup, 'Verkehrszeichen', 'stvoznr_neu', undefined, "Neues Schild hinzufügen...")
+        let stvoZNrNeu = KlartextManager.createKlartextSelectForm('Itvzstvoznr', this._popup, 'Verkehrszeichen', 'stvoznr_neu', undefined, "Neues Schild hinzufügen...")
 
         $(stvoZNrNeu).on("change", this.newSchild.bind(this));
 
@@ -97,6 +110,18 @@ class AvVzAdd extends Tool {
         this._popup.appendChild(buttonAbbrechen);
 
         this._auswahl.getZeichen(this._zeichenGeladen.bind(this))
+    }
+
+
+    private mouseIsOver(event: SelectEvent) {
+        for (let sel of event.deselected) {
+            (sel as Aufstellvorrichtung).hideOverlay(this._map);
+            this.lastOverlay = (sel as Aufstellvorrichtung);
+        }
+        for (let sel of event.selected) {
+            (sel as Aufstellvorrichtung).showOverlay(this._map);
+            this.lastOverlay = undefined;
+        }
     }
 
     /**
@@ -135,9 +160,9 @@ class AvVzAdd extends Tool {
         let img = document.createElement("img");
         img.classList.add('schildBild');
         img.style.height = "50px";
-        Klartext.getInstanz().load("Itvzstvoznr", function (klartext: { [oid: string]: { kt: string, beschreib: string, objektId: string } }) {
-            img.src = "http://gv-srv-w00118:8080/schilder/" + klartext[eintrag.getStvoznr()].kt + ".svg";
-            img.title = klartext[eintrag.getStvoznr()]['beschreib'] + (eintrag.getVztext() != null) ? ("\n" + eintrag.getVztext()) : ('');
+        Klartext.load("Itvzstvoznr", function (_: KlartextMap) {
+            img.src = "http://gv-srv-w00118:8080/schilder/" + eintrag.getStvoznr().getKt() + ".svg";
+            img.title = eintrag.getStvoznr().getBeschreib() + (eintrag.getVztext() != null) ? ("\n" + eintrag.getVztext()) : ('');
         });
         div.appendChild(img);
 
@@ -147,10 +172,10 @@ class AvVzAdd extends Tool {
         text.classList.add('schildText');
 
         // StVOZNR
-        let stvoznr = Klartext.createKlartextSelectForm('Itvzstvoznr', text, 'Verkehrszeichen', 'stvoznr', eintrag.getStvoznr())
+        let stvoznr = Klartext.createKlartextSelectForm('Itvzstvoznr', text, 'Verkehrszeichen', 'stvoznr', eintrag.getStvoznr().getXlink())
         $(stvoznr).on("change", function () {
-            let schild = Klartext.getInstanz().get("Itvzstvoznr", stvoznr.value)
-            img.src = "http://gv-srv-w00118:8080/schilder/" + schild['kt'] + ".svg";
+            let schild = Klartext.get("Itvzstvoznr", stvoznr.value)
+            img.src = "http://gv-srv-w00118:8080/schilder/" + schild.getKt() + ".svg";
             img.title = schild['beschreib'];
         });
 
@@ -159,27 +184,27 @@ class AvVzAdd extends Tool {
 
         // Lage FB
         if (eintrag.getLageFb() == undefined) eintrag.setLageFb(CONFIG.LAGEFB);
-        Klartext.createKlartextSelectForm('Itvzlagefb', text, 'Lage', 'lageFb', eintrag.getLageFb())
+        KlartextManager.createKlartextSelectForm('Itvzlagefb', text, 'Lage', 'lageFb', eintrag.getLageFb().getXlink())
 
         // Lesbarkeit
         if (eintrag.getLesbarkeit() == undefined) eintrag.setLesbarkeit(CONFIG.LESBARKEIT);
-        Klartext.createKlartextSelectForm('Itvzlesbarkeit', text, 'Lesbarkeit', 'lesbarkeit', eintrag.getLesbarkeit())
+        KlartextManager.createKlartextSelectForm('Itvzlesbarkeit', text, 'Lesbarkeit', 'lesbarkeit', eintrag.getLesbarkeit().getXlink())
 
         // Beleuchtet
         if (eintrag.getBeleucht() == undefined) eintrag.setBeleucht(CONFIG.BELEUCHTET);
-        Klartext.createKlartextSelectForm('Itvzbeleucht', text, 'Beleuchtung', 'beleucht', eintrag.getBeleucht())
+        KlartextManager.createKlartextSelectForm('Itvzbeleucht', text, 'Beleuchtung', 'beleucht', eintrag.getBeleucht().getXlink())
 
         //Einzelschild
         if (eintrag.getArt() == undefined) eintrag.setArt(CONFIG.EINZELSCHILD);
-        Klartext.createKlartextSelectForm('Itvzart', text, 'Art', 'art', eintrag.getArt())
+        KlartextManager.createKlartextSelectForm('Itvzart', text, 'Art', 'art', eintrag.getArt().getXlink())
 
         // Größe des Schilder
         if (eintrag.getGroesse() == undefined) eintrag.setGroesse(CONFIG.GROESSE);
-        Klartext.createKlartextSelectForm('Itvzgroesse', text, 'Größe', 'groesse', eintrag.getGroesse())
+        KlartextManager.createKlartextSelectForm('Itvzgroesse', text, 'Größe', 'groesse', eintrag.getGroesse().getXlink())
 
         // Straßenbezug
         if (eintrag.getStrbezug() == undefined) eintrag.setStrbezug(CONFIG.STRASSENBEZUG);
-        Klartext.createKlartextSelectForm('Itbesstrbezug', text, 'Straßenbezug', 'strbezug', eintrag.getStrbezug())
+        KlartextManager.createKlartextSelectForm('Itbesstrbezug', text, 'Straßenbezug', 'strbezug', eintrag.getStrbezug().getXlink())
 
         // Aufstelldatum
         HTML.createDateInput(text, "Aufstelldatum", "aufstelldat", ((eintrag.getAufstelldat() != null) ? (eintrag.getAufstelldat()) : ('')));
@@ -189,11 +214,11 @@ class AvVzAdd extends Tool {
 
         // Erfassungsart
         if (eintrag.getErfart() == undefined) eintrag.setErfart(CONFIG.ERFASSUNG);
-        Klartext.createKlartextSelectForm('Iterfart', text, 'Erfassung', 'erfart', eintrag.getErfart())
+        KlartextManager.createKlartextSelectForm('Iterfart', text, 'Erfassung', 'erfart', eintrag.getErfart().getXlink())
 
         // Quelle
         if (eintrag.getQuelle() == undefined) eintrag.setQuelle(CONFIG.QUELLE);
-        Klartext.createKlartextSelectForm('Itquelle', text, 'Quelle', 'quelle', eintrag.getQuelle())
+        KlartextManager.createKlartextSelectForm('Itquelle', text, 'Quelle', 'quelle', eintrag.getQuelle().getXlink())
 
         // Löschen
         let del_group = document.createElement("div");
@@ -281,38 +306,38 @@ class AvVzAdd extends Tool {
                     upd += '<wfs:Property>\n<wfs:Name>sort</wfs:Name>\n<wfs:Value>' + modiZeichen.getSort() + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update sort");
                 }
-                if (oldZeichen.getStvoznr().substr(-32) != modiZeichen.getStvoznr()) {
-                    upd += '<wfs:Property>\n<wfs:Name>stvoznr/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getStvoznr() + '</wfs:Value>\n</wfs:Property>\n';
+                if (oldZeichen.getStvoznr().getXlink() != modiZeichen.getStvoznr().getXlink()) {
+                    upd += '<wfs:Property>\n<wfs:Name>stvoznr/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getStvoznr().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update stvoznr");
                 }
                 if (oldZeichen.getVztext() != modiZeichen.getVztext()) {
                     upd += '<wfs:Property>\n<wfs:Name>vztext</wfs:Name>\n<wfs:Value>' + ((modiZeichen.getVztext() != null) ? modiZeichen.getVztext() : '') + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update text");
                 }
-                if (oldZeichen.getLageFb() == null || oldZeichen.getLageFb().substr(-32) != modiZeichen.getLageFb()) {
-                    upd += '<wfs:Property>\n<wfs:Name>lageFb/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getLageFb() + '</wfs:Value>\n</wfs:Property>\n';
+                if (oldZeichen.getLageFb() == null || oldZeichen.getLageFb().getXlink() != modiZeichen.getLageFb().getXlink()) {
+                    upd += '<wfs:Property>\n<wfs:Name>lageFb/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getLageFb().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update lageFb");
                 }
-                if (oldZeichen.getLesbarkeit() == null || oldZeichen.getLesbarkeit().substr(-32) != modiZeichen.getLesbarkeit()) {
-                    upd += '<wfs:Property>\n<wfs:Name>lesbarkeit/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getLesbarkeit() + '</wfs:Value>\n</wfs:Property>\n';
+                if (oldZeichen.getLesbarkeit() == null || oldZeichen.getLesbarkeit().getXlink() != modiZeichen.getLesbarkeit().getXlink()) {
+                    upd += '<wfs:Property>\n<wfs:Name>lesbarkeit/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getLesbarkeit().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update text");
                 }
-                if (oldZeichen.getBeleucht() == null || oldZeichen.getBeleucht().substr(-32) != modiZeichen.getBeleucht()) {
-                    upd += '<wfs:Property>\n<wfs:Name>beleucht/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getBeleucht() + '</wfs:Value>\n</wfs:Property>\n';
+                if (oldZeichen.getBeleucht() == null || oldZeichen.getBeleucht().getXlink() != modiZeichen.getBeleucht().getXlink()) {
+                    upd += '<wfs:Property>\n<wfs:Name>beleucht/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getBeleucht().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update beleucht");
                 }
-                if (oldZeichen.getArt() == null || oldZeichen.getArt().substr(-32) != modiZeichen.getArt()) {
-                    upd += '<wfs:Property>\n<wfs:Name>art/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getArt() + '</wfs:Value>\n</wfs:Property>\n';
+                if (oldZeichen.getArt() == null || oldZeichen.getArt().getXlink() != modiZeichen.getArt().getXlink()) {
+                    upd += '<wfs:Property>\n<wfs:Name>art/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getArt().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update art");
                 }
 
-                if (oldZeichen.getGroesse() == null || oldZeichen.getGroesse().substr(-32) != modiZeichen.getGroesse()) {
-                    upd += '<wfs:Property>\n<wfs:Name>groesse/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getGroesse() + '</wfs:Value>\n</wfs:Property>\n';
+                if (oldZeichen.getGroesse() == null || oldZeichen.getGroesse().getXlink() != modiZeichen.getGroesse().getXlink()) {
+                    upd += '<wfs:Property>\n<wfs:Name>groesse/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getGroesse().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update groesse");
                 }
 
-                if (oldZeichen.getStrbezug() == null || oldZeichen.getStrbezug().substr(-32) != modiZeichen.getStrbezug()) {
-                    upd += '<wfs:Property>\n<wfs:Name>strbezug/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getStrbezug() + '</wfs:Value>\n</wfs:Property>\n';
+                if (oldZeichen.getStrbezug() == null || oldZeichen.getStrbezug().getXlink() != modiZeichen.getStrbezug().getXlink()) {
+                    upd += '<wfs:Property>\n<wfs:Name>strbezug/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getStrbezug().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update strbezug");
                 }
 
@@ -321,12 +346,12 @@ class AvVzAdd extends Tool {
                     console.log("update aufstelldat");
                 }
 
-                if (oldZeichen.getErfart() == null || oldZeichen.getErfart().substr(-32) != modiZeichen.getErfart()) {
+                if (oldZeichen.getErfart() == null || oldZeichen.getErfart().getXlink() != modiZeichen.getErfart().getXlink()) {
                     upd += '<wfs:Property>\n<wfs:Name>erfart/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getErfart() + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update erfart");
                 }
 
-                if (oldZeichen.getQuelle() == null || oldZeichen.getQuelle().substr(-32) != modiZeichen.getQuelle()) {
+                if (oldZeichen.getQuelle() == null || oldZeichen.getQuelle().getXlink() != modiZeichen.getQuelle().getXlink()) {
                     upd += '<wfs:Property>\n<wfs:Name>quelle/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getQuelle() + '</wfs:Value>\n</wfs:Property>\n';
                     console.log("update quelle");
                 }
@@ -471,10 +496,13 @@ class AvVzAdd extends Tool {
 
     start() {
         this._map.addInteraction(this._select);
+        this._map.addInteraction(this.mouseOver);
     }
 
     stop() {
         this._map.removeInteraction(this._select);
+        this._map.removeInteraction(this.mouseOver);
+        if (this.lastOverlay) this.lastOverlay.hideOverlay(this._map)
     }
 }
 

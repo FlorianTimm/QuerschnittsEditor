@@ -139,7 +139,7 @@ export default abstract class AddTool extends Tool {
             return null;
         }
 
-        return { achse: achse, pos: achse.calcStationierung(event.coordinate) };
+        return { achse: achse, pos: achse.getStationierung(event.coordinate) };
     }
 
     protected part_click(event: MapBrowserEvent) {

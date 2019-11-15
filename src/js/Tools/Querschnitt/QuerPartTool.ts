@@ -1,9 +1,9 @@
-import { Circle, Style, Stroke, Fill } from 'ol/style';
+import { Style, Stroke } from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
 import Vektor from '../../Vektor';
 import VectorSource from 'ol/source/Vector';
 import { Vector as VectorLayer } from 'ol/layer';
-import { Point, LineString } from 'ol/geom';
+import { LineString } from 'ol/geom';
 import Feature, { FeatureLike } from 'ol/Feature';
 import Tool from '../prototypes/Tool';
 import QuerInfoTool from './QuerInfoTool';
@@ -108,7 +108,7 @@ class QuerPartTool extends Tool {
             return null;
         }
 
-        return { achse: achse, pos: achse.calcStationierung(event.coordinate) };
+        return { achse: achse, pos: achse.getStationierung(event.coordinate, 2) };
     }
 
 

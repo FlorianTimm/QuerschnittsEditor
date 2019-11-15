@@ -132,7 +132,7 @@ export default class MoveTool extends Tool {
             return null;
         }
 
-        return { achse: achse, pos: achse.calcStationierung(coordinates) };
+        return { achse: achse, pos: achse.getStationierung(coordinates) };
     }
 
     private move(event: MapBrowserEvent) {

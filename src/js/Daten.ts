@@ -5,15 +5,14 @@ import Abschnitt from './Objekte/Abschnitt';
 import PublicWFS from './PublicWFS';
 import AbschnittWFS from './AbschnittWFS';
 import Querschnitt from './Objekte/Querschnittsdaten';
-import Klartext from './Objekte/Klartext';
 import Aufstellvorrichtung from './Objekte/Aufstellvorrichtung';
-import { isNullOrUndefined } from 'util';
 import { Map, Feature } from 'ol';
 import Event from 'ol/events/Event';
 import { VectorLayer } from './openLayers/Layer';
 import { LineString } from 'ol/geom';
 import StrassenAusPunkt from './Objekte/StrassenAusPunkt';
 import { FeatureLike } from 'ol/Feature';
+import WaitBlocker from './WaitBlocker';
 
 var CONFIG: { [name: string]: string } = require('./config.json');
 
@@ -30,7 +29,6 @@ export default class Daten {
     public modus: string = "Otaufstvor"
     public ereignisraum: string;
     public ereignisraum_nr: string;
-    //public querschnitteFID: { [oid: string]: Abschnitt };
     public layerAufstell: VectorLayer;
     public vectorAchse: VectorSource;
     public layerAchse: VectorLayer;
@@ -42,9 +40,9 @@ export default class Daten {
     public layerQuer: VectorLayer;
     public layerStraus: VectorLayer;
 
-    private abschnitte: { [absId: string]: Abschnitt };
     private map: Map;
     private warteAufObjektklassen: number;
+
 
     constructor(map: Map, ereignisraum: string, ereignisraum_nr: string) {
         Daten.daten = this;
@@ -56,9 +54,6 @@ export default class Daten {
         this.createLayerQuerschnittsTrennLinien();
         this.createLayerStationen();
         this.createLayerAchsen();
-
-        this.abschnitte = {};
-
 
         this.layerAufstell = Aufstellvorrichtung.createLayer(this.map);
         this.layerStraus = StrassenAusPunkt.createLayer(this.map);
@@ -76,11 +71,10 @@ export default class Daten {
 
     private loadErCallback(zoomToExtentWhenReady?: boolean) {
         this.warteAufObjektklassen -= 1;
-        console.log(this.warteAufObjektklassen)
         if (this.warteAufObjektklassen <= 0) {
             console.log("ERs geladen");
             (document.getElementById("zoomToExtent") as HTMLButtonElement).disabled = false;
-            if (zoomToExtentWhenReady != false)
+            if (zoomToExtentWhenReady)
                 this.zoomToExtent();
         }
     }
@@ -95,11 +89,6 @@ export default class Daten {
 
         for (let f of features) {
             let geo = f.getGeometry()
-            if (geo == undefined) {
-                console.log("Geometrien noch nicht geladen, prüfe in 500ms")
-                setTimeout(this.zoomToExtent.bind(this), 500);
-                return;
-            }
             let p = geo.getExtent();
 
             if (minX == null || minX > p[0]) minX = p[0];
@@ -109,29 +98,14 @@ export default class Daten {
         }
         this.map.getView().fit([minX, minY, maxX, maxY], { padding: [20, 240, 20, 20] })
 
-        //map.getView().fit(daten.l_achse.getExtent());
-
-        /*
-        let extent = Daten.calcAbschnitteExtent(daten.l_achse.getSource().getFeatures());
-        map.getView().fit(extent, { padding: [20, 240, 20, 20] })
-        */
     }
 
     public static getInstanz(): Daten {
         return Daten.daten;
     }
 
-    public getAbschnitt(absId: string): Abschnitt {
-        if (!(absId in this.abschnitte)) {
-            this.abschnitte[absId] = Abschnitt.load(absId);
-            this.vectorAchse.addFeature(this.abschnitte[absId]);
-        }
-        //console.log(this.abschnitte[absId]);
-        return this.abschnitte[absId];
-    }
-
     public loadExtent() {
-        document.body.style.cursor = 'wait'
+        WaitBlocker.warteAdd()
         let extent = this.map.getView().calculateExtent();
         if ("ABSCHNITT_WFS_URL" in CONFIG) {
             AbschnittWFS.getByExtent(extent, this.loadExtent_Callback.bind(this));
@@ -152,13 +126,9 @@ export default class Daten {
     private loadExtent_Callback(xml: XMLDocument) {
         let netz = xml.getElementsByTagName("VI_STRASSENNETZ");
         for (let i = 0; i < netz.length; i++) {
-            let abschnitt = Abschnitt.fromXML(netz[i]);
-            if (!(abschnitt.getAbschnittid() in this.abschnitte)) {
-                this.abschnitte[abschnitt.getAbschnittid()] = abschnitt;
-                this.vectorAchse.addFeature(this.abschnitte[abschnitt.getAbschnittid()]);
-            }
+            Abschnitt.fromXML(netz[i]);
         }
-        document.body.style.cursor = '';
+        WaitBlocker.warteSub()
     }
 
     private createLayerAchsen() {
@@ -265,7 +235,7 @@ export default class Daten {
                 stroke: new Stroke({
                     color: '#000000',
                     width: 1
-                }),
+                })
             })
         });
         this.map.addLayer(this.layerStation);
@@ -294,22 +264,19 @@ export default class Daten {
             features: []
         });
 
-        Klartext.getInstanz().load("Itquerart");
-        Klartext.getInstanz().load("Itquerober");
-
         let createStyle = function (feature: FeatureLike, resolution: number): Style {
-            let kt_art = Klartext.getInstanz().get('Itquerart', (feature as Querschnitt).getArt())
-            let kt_ober = Klartext.getInstanz().get('Itquerober', (feature as Querschnitt).getArtober())
+            let kt_art = (feature as Querschnitt).getArt()
+            let kt_ober = (feature as Querschnitt).getArtober()
 
             // leere Arten filtern
             let art = 0
-            if (!isNullOrUndefined(kt_art))
-                art = Number(kt_art.kt);
+            if (kt_art)
+                art = Number(kt_art.getKt());
 
             // leere Oberflächen filtern
             let ober = 0
-            if (!isNullOrUndefined(kt_ober))
-                ober = Number(kt_ober.kt);
+            if (kt_ober)
+                ober = Number(kt_ober.getKt());
 
             // Farbe für Querschnittsfläche
             let color = [255, 255, 255];
@@ -388,7 +355,7 @@ export default class Daten {
         let wert = document.forms.namedItem("suche").suche.value;
         if (wert == "") return;
         if ("ABSCHNITT_WFS_URL" in CONFIG) {
-            document.body.style.cursor = 'wait'
+            WaitBlocker.warteAdd();
 
             const vnknnk = /(\d{7,9}[A-Z]?)[\s\-]+(\d{7,9}[A-Z]?)/gm;
             let found1 = vnknnk.exec(wert)
@@ -426,18 +393,16 @@ export default class Daten {
             //console.log(abschnittXML)
             let abschnitt = Abschnitt.fromXML(netz.item(i));
             geladen.push(abschnitt);
-            if (!(abschnitt.getAbschnittid() in this.abschnitte)) {
-                this.abschnitte[abschnitt.getAbschnittid()] = abschnitt;
-                this.vectorAchse.addFeature(this.abschnitte[abschnitt.getAbschnittid()]);
-            }
         }
+
+        // auf die Abschnitte zoomen
         if (geladen.length > 0) {
             let extent = Daten.calcAbschnitteExtent(geladen);
             this.map.getView().fit(extent, { padding: [20, 240, 20, 20] })
         } else {
             PublicWFS.showMessage("Kein Abschnitt gefunden!", true);
         }
-        document.body.style.cursor = '';
+        WaitBlocker.warteSub();
     }
 
     public static calcAbschnitteExtent(abschnitte: Abschnitt[]) {
