@@ -175,6 +175,7 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
 
 
     private static createFields(form: HTMLFormElement, aufstell?: Aufstellvorrichtung, changeable: boolean = false) {
+        console.log(aufstell)
         // Art
         let art = Klartext.createKlartextSelectForm("Itaufstvorart", form, "Art", "art", aufstell != undefined ? aufstell.art.getXlink() : undefined);
         $(art).prop('disabled', !changeable).trigger("chosen:updated");
@@ -331,6 +332,7 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         for (let z of zeichenListe) {
             let r = z.getLesbarkeit() ? z.getLesbarkeit().getKt() : '03';
             if (r == '05') r = '03';
+            if (r == '00') r = '03';
             if (!(r in zeichenL)) zeichenL[r] = []
             zeichenL[r].push(z);
             if (max < zeichenL[r].length) max = zeichenL[r].length
@@ -349,24 +351,25 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         ctx.fillStyle = "#ffffff";
         ctx.translate(groesse, groesse);
         ctx.rotate(winkel)
-        if (this.getVabstVst() > 0) ctx.rotate(Math.PI);
+
         ctx.save();
 
-        let winkelArr = ['01', '03', '02', '04'];
 
-        for (let i = 0; i < winkelArr.length; i++) {
-            let r = winkelArr[i];
-            if (!(r in zeichenL)) continue;
+        let faktoren = { '01': 0, '02': 2, '03': 1, '04': 3 };
+        if (this.getVabstVst() < 0) faktoren = { '01': 0, '02': 2, '03': 3, '04': 1 }
+
+
+        for (let r in zeichenL) {
             ctx.restore();
             ctx.save()
-            ctx.rotate(i * 0.5 * Math.PI)
+            ctx.rotate(faktoren[r] * 0.5 * Math.PI)
 
             let liste = zeichenL[r];
             ctx.beginPath()
             ctx.strokeStyle = "#444444";
             ctx.lineWidth = 4;
             ctx.moveTo(0, 0)
-            ctx.lineTo(0, -20 - 40 * liste.length)
+            ctx.lineTo(0, - 40 * liste.length)
             ctx.stroke()
 
             for (let j = 0; j < liste.length; j++) {
@@ -374,15 +377,20 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
                 let zeichen = liste[j]
                 let img = new Image();
                 if (zeichen.getArt().getKt() == '02') {
-                    ctx.fillRect(-25, -60 - 40 * j, 50, 40);
+                    ctx.fillRect(-25, -20 - 40 * (liste.length - j), 50, 40);
                 }
                 img.src = '../schilder/' + zeichen.getStvoznr().getKt() + '.svg';
                 img.addEventListener("load", function () {
                     ctx.restore();
                     ctx.save()
-                    ctx.rotate(i * 0.5 * Math.PI)
+                    ctx.rotate(faktoren[r] * 0.5 * Math.PI)
+                    let hoehe = 40;
                     let breite = 40 * img.width / img.height
-                    ctx.drawImage(img, - breite / 2, -60 - 40 * j, breite, 40);
+                    if (breite > 40) {
+                        breite = 40;
+                        hoehe = 40 * img.height / img.width
+                    }
+                    ctx.drawImage(img, - breite / 2, (40 - hoehe) / 2 - 20 - 40 * (liste.length - j), breite, hoehe);
                 });
             }
         }

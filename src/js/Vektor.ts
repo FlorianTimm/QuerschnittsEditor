@@ -117,7 +117,7 @@ export default class Vektor {
     }
 
     static winkel(vek: number[]) {
-        return Math.atan(vek[0] / vek[1]);
+        return Math.atan2(vek[0], vek[1]);
     }
 
 }
