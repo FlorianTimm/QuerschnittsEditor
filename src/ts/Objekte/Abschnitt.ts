@@ -222,7 +222,7 @@ export default class Abschnitt extends Feature {
         }
 
         for (let stationNr in this._station) {
-            for (let querschnitt in this._station[stationNr]) {
+            for (let __ in this._station[stationNr]) {
                 for (let streifen of this._station[stationNr].getAllQuerschnitte()) {
                     if (streifen.getFid() in aufbaudaten) {
                         streifen.setAufbauGesamt(aufbaudaten[streifen.getFid()])
@@ -413,6 +413,9 @@ export default class Abschnitt extends Feature {
     }
     getNnklfd() {
         return this.nnklfd;
+    }
+    getFid() {
+        return this.fid;
     }
 
     //Setter

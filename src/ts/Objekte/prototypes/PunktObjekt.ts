@@ -1,6 +1,6 @@
 import VectorSource from 'ol/source/Vector';
 import { Vector as VectorLayer } from 'ol/layer';
-import { Style, Stroke, Fill, Circle, Text, RegularShape, Icon } from 'ol/style';
+import { Style, Stroke, Fill, Circle, Text, RegularShape } from 'ol/style';
 import { Map } from 'ol';
 import { ColorLike } from "ol/colorlike";
 import PublicWFS from "../../PublicWFS";
@@ -10,10 +10,7 @@ import Daten from "../../Daten";
 import PObjektMitDokument from "./PObjektMitDateien";
 import { FeatureLike } from 'ol/Feature';
 import Abschnitt from '../Abschnitt';
-import Aufstellvorrichtung from '../Aufstellvorrichtung';
 import Klartext from '../Klartext';
-import { rotate } from 'ol/transform';
-import Zeichen from '../Zeichen';
 
 export default abstract class PunktObjekt extends PObjektMitDokument implements InfoToolEditable {
     protected vabstVst: number;

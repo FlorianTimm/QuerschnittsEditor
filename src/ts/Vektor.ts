@@ -1,5 +1,3 @@
-import { targetNotEditable } from "ol/events/condition";
-
 /**
  * Startscript edit.html
  * @author Florian Timm, LGV HH 

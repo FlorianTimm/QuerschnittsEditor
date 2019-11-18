@@ -238,7 +238,7 @@ class AvVzAdd extends Tool {
                         $((event.target as HTMLUnknownElement).parentElement.parentElement.parentElement).remove();
                         $(this).dialog("close");
                     },
-                    Cancel: function () {
+                    "Schließen": function () {
                         $(this).dialog("close");
                     }
                 }

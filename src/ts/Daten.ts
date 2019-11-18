@@ -6,7 +6,7 @@ import PublicWFS from './PublicWFS';
 import AbschnittWFS from './AbschnittWFS';
 import Querschnitt from './Objekte/Querschnittsdaten';
 import Aufstellvorrichtung from './Objekte/Aufstellvorrichtung';
-import { Map, Feature } from 'ol';
+import { Map } from 'ol';
 import Event from 'ol/events/Event';
 import { VectorLayer } from './openLayers/Layer';
 import { LineString } from 'ol/geom';

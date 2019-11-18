@@ -113,7 +113,7 @@ class QuerAddTool extends Tool {
                     this.loadAufbaudaten(querschnitt, "R");
                     jqueryDialog.dialog("close");
                 }.bind(this),
-                Cancel: function () {
+                "Abbrechen": function () {
                     jqueryDialog.dialog("close");
                 }
             }

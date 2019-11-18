@@ -7,7 +7,6 @@ import Daten from '../../Daten';
 import { Map } from 'ol';
 import { SelectEventType } from 'ol/interaction/Select';
 import Abschnitt from '../../Objekte/Abschnitt';
-import WaitBlocker from '../../WaitBlocker';
 
 /**
  * Funktion zum Hinzufügen von Aufstellvorrichtungen zum Ereignisraum

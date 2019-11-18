@@ -1,5 +1,5 @@
 import SekundaerObjekt from "./prototypes/SekundaerObjekt";
-import Klartext, { KlartextMap } from "./Klartext";
+import Klartext from "./Klartext";
 
 /**
 * Zeichen

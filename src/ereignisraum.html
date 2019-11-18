@@ -14,6 +14,9 @@
 	<h1><img src="./img/title_blur.png" alt="LGV-QuerschnittsEditor" /></h1>
 	<form name="erg" method="GET" action="edit.html">
 		<h2>Ereignisraum ausw&auml;hlen</h2>
+
+		<input type="button" id="anlegen" value="Neuen ER anlegen" /><br /><br />
+
 		<select name="er" id="er_select" disabled="disabled">
 		</select><br>
 		<input name="ernr" id="ernr" type="hidden" />
@@ -39,8 +42,11 @@
 				<td id="bearbeiter"></td>
 			</tr>
 		</table>
+		<input type="button" id="pruefen" value="Prüfen" disabled="disabled" />&nbsp;
 		<input type="submit" id="submit" value="Starten" disabled="disabled" />
 	</form>
+
+
 	<script src="./ts/ereignisraum.ts"></script>
 </body>
 

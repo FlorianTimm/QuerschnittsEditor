@@ -18,7 +18,6 @@ import Dokument from "./Dokument";
 import { InfoToolOverlay } from "../Tools/InfoTool.js";
 import { Overlay, Map } from "ol";
 import { Point } from "ol/geom";
-import OverlayPositioning from "ol/OverlayPositioning";
 
 class Callback {
     callback: (zeichen: Zeichen[], ...args: any[]) => void;
@@ -253,7 +252,7 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
                     /* "Speichern": function (this: Aufstellvorrichtung) {
                          jqueryDialog.dialog("close");
                      }.bind(this),*/
-                    Cancel: function () {
+                    "Schließen": function () {
                         jqueryDialog.dialog("close");
                     }
                 }

@@ -3,7 +3,7 @@ import Map from '../openLayers/Map';
 import { Layer } from 'ol/layer';
 import Tool from './prototypes/Tool';
 import { SelectEvent } from 'ol/interaction/Select';
-import { Feature, Overlay } from 'ol';
+import { Feature } from 'ol';
 import "../import_jquery.js";
 import HTML from '../HTML';
 import { Style, Stroke, Fill } from 'ol/style';

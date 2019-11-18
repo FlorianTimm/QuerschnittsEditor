@@ -10,36 +10,54 @@ var CONFIG = require('./config.json');
  * @version 2019.10.29
  * @copyright MIT
  */
-export default class PublicWFS {
-    static doSoapRequest(
-        xml: string,
-        callbackSuccess: (xml: Document, ...args: any[]) => void,
-        callbackFailed: (xml: Document, ...args: any[]) => void,
-        ...args: any[]) {
-        WaitBlocker.warteAdd()
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.open('POST', CONFIG.PUBLIC_WFS_URL, true);
 
+type xmlCallback = (xml: Document, ...args: any[]) => void
+
+
+export default class PublicWFS {
+    private static doSoapRequestWFS(
+        xml: string,
+        callbackSuccess: xmlCallback,
+        callbackFailed: xmlCallback,
+        ...args: any[]) {
+        PublicWFS.doSoapRequest(CONFIG.PUBLIC_WFS_URL, xml, callbackSuccess, callbackFailed, ...args);
+    }
+
+    private static doSoapRequestERWFS(
+        xml: string,
+        callbackSuccess: xmlCallback,
+        callbackFailed: xmlCallback,
+        ...args: any[]) {
+        PublicWFS.doSoapRequest(CONFIG.ER_WFS_URL, xml, callbackSuccess, callbackFailed, ...args);
+    }
+
+    private static doSoapRequest(url: string, xml: string, callbackSuccess: xmlCallback, callbackFailed: xmlCallback, ...args: any[]) {
+        WaitBlocker.warteAdd();
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.open('POST', url, true);
         xmlhttp.onreadystatechange = function () {
-            if (xmlhttp.readyState != 4) return;
-            WaitBlocker.warteSub()
+            if (xmlhttp.readyState != 4)
+                return;
+            WaitBlocker.warteSub();
             if (xmlhttp.status == 200) {
-                callbackSuccess(xmlhttp.responseXML, ...args)
-            } else {
+                callbackSuccess(xmlhttp.responseXML, ...args);
+            }
+            else {
                 if (callbackFailed != undefined)
-                    callbackFailed(xmlhttp.responseXML, ...args)
+                    callbackFailed(xmlhttp.responseXML, ...args);
                 else
                     PublicWFS.showMessage("Kommunikationsfehler", true);
             }
-        }
-        xmlhttp.setRequestHeader('Content-Type', 'text/xml; charset=ISO-8859-1');
+        };
+        xmlhttp.setRequestHeader('Content-Type', 'text/xml');
+        //xmlhttp.setRequestHeader('Content-Type', 'text/xml; charset=ISO-8859-1');
         xmlhttp.send(xml);
     }
 
-    static doGetRequest(
+    private static doGetRequest(
         url_param: string,
-        callbackSuccess?: (xml: Document, ...args: any[]) => void,
-        callbackFailed?: (xml: Document, ...args: any[]) => void,
+        callbackSuccess?: xmlCallback,
+        callbackFailed?: xmlCallback,
         ...args: any[]) {
         WaitBlocker.warteAdd()
         var xmlhttp = new XMLHttpRequest();
@@ -64,30 +82,10 @@ export default class PublicWFS {
     static addInER(
         abschnitt: Abschnitt,
         objekt: string, ereignisraum_nr: string,
-        callbackSuccess?: (xml: Document, ...args: any[]) => void,
-        callbackFailed?: (xml: Document, ...args: any[]) => void,
+        callbackSuccess?: xmlCallback,
+        callbackFailed?: xmlCallback,
         ...args: any[]) {
 
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.open('POST', CONFIG.ER_WFS_URL, true);
-
-        xmlhttp.onreadystatechange = function () {
-            if (xmlhttp.readyState != 4) return;
-            if (xmlhttp.status == 200) {
-                abschnitt.addOKinER(objekt);
-                if (callbackSuccess != undefined) {
-                    callbackSuccess(xmlhttp.responseXML, ...args)
-                } else {
-                    PublicWFS.showMessage("Objekt in ER kopiert");
-                }
-            } else {
-                if (callbackFailed != undefined)
-                    callbackFailed(xmlhttp.responseXML, ...args)
-                else
-                    PublicWFS.showMessage("Objekt konnte nicht in ER kopiert werden", true);
-            }
-        }
-        xmlhttp.setRequestHeader('Content-Type', 'text/xml');
         let xml = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
             'xmlns:pub="http://ttsib.novasib.de/PublicServices" xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">\n' +
             '<soapenv:Header/>\n' +
@@ -110,31 +108,24 @@ export default class PublicWFS {
             '     </pub:expandProjektAbsObj>\n' +
             '</soapenv:Body>\n' +
             '</soapenv:Envelope>'
-        xmlhttp.send(xml);
+        PublicWFS.doSoapRequestERWFS(xml, function (xml, abschnitt, objekt, callbackSuccess, __, ...args) {
+            abschnitt.addOKinER(objekt);
+            if (callbackSuccess != undefined) {
+                callbackSuccess(xml, ...args)
+            } else {
+                PublicWFS.showMessage("Objekt in ER kopiert");
+            }
+        }, function (xml, _, __, ___, callbackFailed, ...args) {
+            if (callbackFailed != undefined)
+                callbackFailed(xml, ...args)
+            else
+                PublicWFS.showMessage("Objekt konnte nicht in ER kopiert werden", true);
+        }, abschnitt, objekt, callbackSuccess, callbackFailed, ...args)
     }
 
     static addSekInER(objektPrim: PrimaerObjekt, objektTypePrim: string, objekt: string, ereignisraum_nr: string,
         callbackSuccess: (xml: XMLDocument, ...args: any[]) => void, callbackFailed: (xml: XMLDocument, ...args: any[]) => void, ...args: any[]) {
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.open('POST', CONFIG.ER_WFS_URL, true);
 
-        xmlhttp.onreadystatechange = function () {
-            if (xmlhttp.readyState != 4) return;
-            if (xmlhttp.status == 200) {
-                objektPrim.addOKinER(objekt);
-                if (callbackSuccess != undefined) {
-                    callbackSuccess(xmlhttp.responseXML, ...args)
-                } else {
-                    PublicWFS.showMessage("Objekt in ER kopiert");
-                }
-            } else {
-                if (callbackFailed != undefined)
-                    callbackFailed(xmlhttp.responseXML, ...args)
-                else
-                    PublicWFS.showMessage("Objekt konnte nicht in ER kopiert werden", true);
-            }
-        }
-        xmlhttp.setRequestHeader('Content-Type', 'text/xml');
         let xml = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
             'xmlns:pub="http://ttsib.novasib.de/PublicServices" xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">\n' +
             '<soapenv:Header/>\n' +
@@ -153,12 +144,24 @@ export default class PublicWFS {
             '     </pub:expandProjektPrimObj>\n' +
             '</soapenv:Body>\n' +
             '</soapenv:Envelope>'
-        xmlhttp.send(xml);
+        PublicWFS.doSoapRequestERWFS(xml, function (xml, objektPrim, objekt, callbackSuccess, __, ...args) {
+            objektPrim.addOKinER(objekt);
+            if (callbackSuccess != undefined) {
+                callbackSuccess(xml, ...args)
+            } else {
+                PublicWFS.showMessage("Objekt in ER kopiert");
+            }
+        }, function (xml, _, __, ___, callbackFailed, ...args) {
+            if (callbackFailed != undefined)
+                callbackFailed(xml, ...args)
+            else
+                PublicWFS.showMessage("Objekt konnte nicht in ER kopiert werden", true);
+        }, objektPrim, objekt, callbackSuccess, callbackFailed, ...args)
     }
 
     static doTransaction(transaction: string,
-        callbackSuccess?: (xml: Document, ...args: any[]) => void,
-        callbackFailed?: (xml: Document, ...args: any[]) => void, ...args: any[]) {
+        callbackSuccess?: xmlCallback,
+        callbackFailed?: xmlCallback, ...args: any[]) {
 
         var xml =
             '<?xml version="1.0" encoding="ISO-8859-1"?>' +
@@ -172,11 +175,11 @@ export default class PublicWFS {
             '		xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-transaction.xsd">' +
             transaction +
             '</wfs:Transaction>';
-        return PublicWFS.doSoapRequest(xml, this._checkTransacktionSuccess, this._checkTransacktionFailed,
+        return PublicWFS.doSoapRequestWFS(xml, this._checkTransacktionSuccess, this._checkTransacktionFailed,
             callbackSuccess, callbackFailed, ...args)
     }
 
-    static _checkTransacktionSuccess(xml: Document,
+    private static _checkTransacktionSuccess(xml: Document,
         callbackSuccess?: (xml: XMLDocument, ...args: any[]) => void,
         callbackFailed?: (xml: XMLDocument, ...args: any[]) => void,
         ...args: any[]) {
@@ -194,7 +197,7 @@ export default class PublicWFS {
         }
     }
 
-    static _checkTransacktionFailed(xml: XMLDocument,
+    private static _checkTransacktionFailed(xml: XMLDocument,
         __?: (xml: XMLDocument, ...args: any[]) => void,
         callbackFailed?: (xml: XMLDocument, ...args: any[]) => void,
         ...args: any[]) {
@@ -202,7 +205,7 @@ export default class PublicWFS {
         callbackFailed(xml, ...args);
     }
 
-    static doQuery(klasse: string, filter: string,
+    public static doQuery(klasse: string, filter: string,
         callbackSuccess?: (xml: XMLDocument, ...args: any[]) => void,
         callbackFailed?: (xml: XMLDocument, ...args: any[]) => void,
         ...args: any[]) {
@@ -210,7 +213,91 @@ export default class PublicWFS {
         return PublicWFS.doGetRequest(url_param, callbackSuccess, callbackFailed, ...args);
     }
 
-    static showMessage(text: string, error: boolean = false) {
+
+    public static testER(
+        ereignisraum_nr: string,
+        callback?: (success: boolean, errorListe?: Element[], ...args: any[]) => void,
+        ...args: any[]) {
+
+        let xml = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
+            'xmlns:pub="http://ttsib.novasib.de/PublicServices" xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">\n' +
+            '<soapenv:Header/>\n' +
+            '<soapenv:Body>\n' +
+            '     <pub:testProjekt>\n' +
+            '            <projekt>\n' +
+            '                   <int:ProjektNr>' + ereignisraum_nr + '</int:ProjektNr>\n' +
+            '            </projekt>\n' +
+            '     </pub:testProjekt>\n' +
+            '</soapenv:Body>\n' +
+            '</soapenv:Envelope>'
+        PublicWFS.doSoapRequestERWFS(xml, PublicWFS.testErCallback, undefined, ereignisraum_nr, callback, ...args)
+    }
+
+    private static testErCallback(xmlResponse: XMLDocument, ereignisraum_nr: string, callback?: (success: boolean, errorListe?: Element[], ...args: any[]) => void, ...args: any[]) {
+        let success = xmlResponse.getElementsByTagName("testSuccess");
+        if (!success || success.length == 0) {
+            PublicWFS.showMessage("Fehler beim Prüfen", true);
+            return;
+        }
+
+        if (success.item(0).innerHTML != "false") {
+            if (callback) {
+                callback(true, ...args)
+            } else {
+                PublicWFS.showMessage("Erfolgreich geprüft");
+            }
+            return;
+        }
+
+        if (!callback) return;
+        
+        let xml = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
+            'xmlns:pub="http://ttsib.novasib.de/PublicServices" xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">\n' +
+            '<soapenv:Header/>\n' +
+            '<soapenv:Body>\n' +
+            '     <pub:queryTestresult>\n' +
+            '            <projekt>\n' +
+            '                   <int:ProjektNr>' + ereignisraum_nr + '</int:ProjektNr>\n' +
+            '            </projekt>\n' +
+            '     </pub:queryTestresult>\n' +
+            '</soapenv:Body>\n' +
+            '</soapenv:Envelope>'
+        PublicWFS.doSoapRequestERWFS(xml, PublicWFS.testErCallback2, undefined, callback, ...args)
+    }
+
+    private static testErCallback2(xmlResponse: XMLDocument, callback: (success: boolean, errorListe?: Element[], ...args: any[]) => void, ...args: any[]) {
+        let results = xmlResponse.getElementsByTagName("testResult");
+        if (!results || results.length == 0) {
+            PublicWFS.showMessage("Fehler beim Prüfen", true);
+            return;
+        }
+        if (callback) {
+            callback(false, Array.from(results), ...args);
+        }
+    }
+
+    public static anlegenER(
+        kurzBez: string, langBez: string, autoER: boolean = false,
+        callbackSuccess?: xmlCallback,
+        callbackFailed?: xmlCallback,
+        ...args: any[]) {
+
+        let xml = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
+            'xmlns:pub="http://ttsib.novasib.de/PublicServices" xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">\n' +
+            '<soapenv:Header/>\n' +
+            '<soapenv:Body>\n' +
+            '  <pub:createProjekt>\n' +
+            '    <kurzBez>' + kurzBez + '</kurzBez>\n' +
+            '    <langBez>' + langBez + '</langBez>\n' +
+            '    <eKat>D</eKat>\n' +
+            '    <autoER>' + autoER + '</autoER>\n' +
+            '  </pub:createProjekt>\n' +
+            '</soapenv:Body>\n' +
+            '</soapenv:Envelope>'
+        PublicWFS.doSoapRequestERWFS(xml, callbackSuccess, callbackFailed, ...args)
+    }
+
+    public static showMessage(text: string, error: boolean = false) {
         let m = document.createElement('div');
         m.className = 'nachricht';
         m.innerHTML = text;

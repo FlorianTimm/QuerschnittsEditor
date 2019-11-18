@@ -6,11 +6,10 @@ import Aufbau from '../Objekte/Aufbaudaten';
 import PublicWFS from '../PublicWFS';
 import Vektor from '../Vektor';
 import QuerStation from './QuerStation';
-import Klartext, { KlartextMap } from './Klartext';
+import Klartext from './Klartext';
 import HTML from '../HTML';
 import { InfoToolEditable } from '../Tools/InfoTool';
 import PrimaerObjekt from './prototypes/PrimaerObjekt';
-import WaitBlocker from '../WaitBlocker';
 
 /**
 * @author Florian Timm, LGV HH 

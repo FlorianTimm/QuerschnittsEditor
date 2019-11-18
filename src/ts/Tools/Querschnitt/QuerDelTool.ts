@@ -51,7 +51,7 @@ class QuerDelTool extends Tool {
                     this.confirmedDelete(querschnitt);
                     jqueryDialog.dialog("close");
                 }.bind(this),
-                Cancel: function () {
+                "Nein": function () {
                     jqueryDialog.dialog("close");
                 }
             }
