@@ -26,7 +26,7 @@ class QuerPartTool extends Tool {
     private l_overlay: VectorLayer;
     private feat_teilung: Feature;
     private feat_station_line: Feature;
-    private abschnitt: Abschnitt;
+    private abschnitt: Abschnitt | undefined;
     private station: number;
     private init: boolean = false;
     private form: HTMLFormElement;
@@ -96,7 +96,7 @@ class QuerPartTool extends Tool {
     }
 
     part_get_station(event: MapBrowserPointerEvent): { achse: Abschnitt, pos: StationObj } {
-        let achse: Abschnitt = null;
+        let achse: Abschnitt;
         if (this.select.getFeatures().getArray().length == 1) {
             achse = this.select.getFeatures().item(0) as Abschnitt;
         } else {
@@ -105,7 +105,7 @@ class QuerPartTool extends Tool {
 
         if (achse == null) {
             (this.feat_station_line.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
-            return null;
+            throw new Error("Keine Achsen geladen");
         }
 
         return { achse: achse, pos: achse.getStationierung(event.coordinate, 2) };
@@ -133,7 +133,7 @@ class QuerPartTool extends Tool {
 
     private restartSelection() {
         this.abschnitt = undefined;
-        this.station = undefined;
+        this.station = 0;
         (this.feat_teilung.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
         this.form_button.disabled = true;
     }
@@ -152,6 +152,7 @@ class QuerPartTool extends Tool {
     }
 
     partQuerschnittButton() {
+        if (!this.abschnitt) return;
         let sta = this.abschnitt.getStationByStation(this.station);
         sta.teilen(this.station);
         this.restartSelection();

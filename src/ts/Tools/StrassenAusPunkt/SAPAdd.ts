@@ -14,12 +14,12 @@ var CONFIG = require('../../config.json');
  */
 
 export default class SAPAdd extends AddTool {
-    constructor(map: Map) {
-        super(map);
+    constructor(map: Map, sidebar: HTMLDivElement) {
+        super(map, sidebar);
     }
 
     protected createForm() {
-        this.form = StrassenAusPunkt.createForm(undefined, true, false);
+        this.form = StrassenAusPunkt.createForm(this.sidebar, undefined, true, false);
         let input = document.createElement("input");
         input.type = "submit"
         input.value = "Hinzufügen"

@@ -46,14 +46,16 @@ export default class QuerModifyTool extends Tool {
     private moveTypeForm: HTMLFormElement;
     private modifySource: VectorSource;
     private modifyLayer: VectorLayer;
-    modifyOverlaySource: VectorSource;
-    modifyOverlayLayer: VectorLayer;
+    private modifyOverlaySource: VectorSource;
+    private modifyOverlayLayer: VectorLayer;
+    private sidebar: HTMLDivElement;
 
-    constructor(map: Map, info: QuerInfoTool) {
+    constructor(map: Map, info: QuerInfoTool, sidebar: HTMLDivElement) {
         super();
         this.map = map;
         this.daten = Daten.getInstanz();
         this.info = info;
+        this.sidebar = sidebar;
 
         this.createLinienSelect();
         this.createFlaechenSelect();
@@ -63,7 +65,7 @@ export default class QuerModifyTool extends Tool {
 
     private createMoveTypeForm() {
         if (this.moveTypeForm) return;
-        this.moveTypeForm = HTML.createToolForm(document.getElementById('sidebar'), false, 'modify');
+        this.moveTypeForm = HTML.createToolForm(this.sidebar, false, 'modify');
         this.moveTypeForm.innerHTML += "Nachfolgende Querschnitte:";
         HTML.createBreak(this.moveTypeForm);
         let radio = HTML.createFormGroup(this.moveTypeForm);
@@ -77,7 +79,7 @@ export default class QuerModifyTool extends Tool {
 
     private createMultiModForm() {
         if (this.multiEditForm) return;
-        this.multiEditForm = HTML.createToolForm(document.getElementById("sidebar"), false, "qsMultiMod");
+        this.multiEditForm = HTML.createToolForm(this.sidebar, false, "qsMultiMod");
 
         this.multiArtSelect = KlartextManager.createKlartextSelectForm("Itquerart", this.multiEditForm, "Art", 'qsmm_art', undefined, "- verschiedene -")
         this.multiOberSelect = KlartextManager.createKlartextSelectForm("Itquerober", this.multiEditForm, "Art der Oberfläche", 'qsmm_ober', undefined, "- verschiedene -")

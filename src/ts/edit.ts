@@ -70,21 +70,21 @@ window.addEventListener('load', function () {
 
     infoTool = new QuerInfoTool(map, daten.layerTrenn, daten.layerQuer, sidebar);
     infoTool.start();
-    editTool = new QuerModifyTool(map, infoTool);
+    editTool = new QuerModifyTool(map, infoTool, sidebar);
     delTool = new QuerDelTool(map, infoTool);
     addTool = new QuerAddTool(map, infoTool);
     partTool = new QuerPartTool(map, infoTool, sidebar);
     qsAdd2ER = new QuerAdd2ER(map);
 
     vsInfoTool = new InfoTool(map, daten.layerAufstell, sidebar);
-    avAdd = new AvAdd(map);
+    avAdd = new AvAdd(map, sidebar);
     vzAdd = new AvVzAdd(map);
     avMove = new MoveTool(map, vsInfoTool, daten.layerAufstell);
     avAdd2ER = new AvAdd2ER(map);
     avDel = new DeleteTool(map, daten.layerAufstell, sidebar, "Otaufstvor");
 
     sapInfoTool = new InfoTool(map, daten.layerStraus, sidebar);
-    sapAdd = new SAPAdd(map);
+    sapAdd = new SAPAdd(map, sidebar);
     sapMove = new MoveTool(map, vsInfoTool, daten.layerStraus);
     sapAdd2ER = new SAPAdd2ER(map);
     sapDel = new DeleteTool(map, daten.layerStraus, sidebar, "Otstrauspkt");

@@ -161,8 +161,7 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         }
     }
 
-    public static createForm(formId: string, aufstell?: Aufstellvorrichtung, changeable: boolean = false, showForm: boolean = true): HTMLFormElement {
-        let sidebar = document.getElementById("sidebar");
+    public static createForm(sidebar: HTMLDivElement, formId: string, aufstell?: Aufstellvorrichtung, changeable: boolean = false, showForm: boolean = true): HTMLFormElement {
         let form = HTML.createToolForm(sidebar, showForm, formId);
 
         // Art

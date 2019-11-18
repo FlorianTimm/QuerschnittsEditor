@@ -33,12 +33,14 @@ export default abstract class AddTool extends Tool {
     protected feat_station_line: Feature;
 
     protected form: HTMLFormElement = null;
+    protected sidebar: HTMLDivElement;
 
     protected abstract createForm(): void;
 
-    constructor(map: Map) {
+    constructor(map: Map, sidebar: HTMLDivElement) {
         super();
         this.map = map;
+        this.sidebar = sidebar;
 
         this.createAchsSelect();
         this.createOverlayGeometry();

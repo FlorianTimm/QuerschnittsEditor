@@ -36,8 +36,7 @@ export default class StrassenAusPunkt extends PunktObjekt {
         return "Otstrauspkt";
     }
 
-    public static createForm(ausstattung?: StrassenAusPunkt, changeable: boolean = false, showForm: boolean = true): HTMLFormElement {
-        let sidebar = document.getElementById("sidebar");
+    public static createForm(sidebar: HTMLDivElement, ausstattung?: StrassenAusPunkt, changeable: boolean = false, showForm: boolean = true): HTMLFormElement {
         let form = HTML.createToolForm(sidebar, showForm);
 
         // Art

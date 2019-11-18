@@ -12,9 +12,8 @@ var CONFIG = require('../../config.json');
  * @copyright MIT
  */
 export default class AvAdd extends AddTool {
-    constructor(map: Map) {
-        super(map);
-
+    constructor(map: Map, sidebar: HTMLDivElement) {
+        super(map, sidebar);
     }
 
     getObjektklasse(): string {
@@ -22,7 +21,7 @@ export default class AvAdd extends AddTool {
     }
 
     createForm() {
-        this.form = Aufstellvorrichtung.createForm('avadd', undefined, true, false);
+        this.form = Aufstellvorrichtung.createForm(this.sidebar, 'avadd', undefined, true, false);
         let input = document.createElement("input");
         input.type = "submit"
         input.value = "Hinzufügen"
