@@ -1,5 +1,5 @@
 import Objekt from "./Objekt";
-import { InfoToolSelectable } from "src/js/Tools/InfoTool";
+import { InfoToolSelectable } from "js/Tools/InfoTool";
 
 export default abstract class PrimaerObjekt extends Objekt implements InfoToolSelectable {
     protected abschnittOderAst: string = null;

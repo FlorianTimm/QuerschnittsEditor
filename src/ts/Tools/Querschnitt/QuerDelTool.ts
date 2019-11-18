@@ -4,7 +4,7 @@ import QuerInfoTool from "./QuerInfoTool";
 import Tool from '../prototypes/Tool';
 import { never } from 'ol/events/condition';
 import { SelectInteraction } from '../../openLayers/Interaction'
-import Querschnitt from "src/js/Objekte/Querschnittsdaten";
+import Querschnitt from "../../Objekte/Querschnittsdaten";
 import InfoTool from "../InfoTool";
 
 /**

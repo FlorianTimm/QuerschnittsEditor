@@ -1,7 +1,7 @@
 import { Select as SelectInteraction } from 'ol/interaction';
 import { never } from 'ol/events/condition';
 import Daten from '../../Daten';
-import Querschnitt from 'src/js/Objekte/Querschnittsdaten';
+import Querschnitt from '../../Objekte/Querschnittsdaten';
 import InfoTool from '../InfoTool';
 import Map from '../../openLayers/Map';
 import { Layer } from 'ol/layer';

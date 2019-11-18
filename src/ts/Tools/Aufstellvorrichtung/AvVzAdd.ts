@@ -13,7 +13,7 @@ import Zeichen from '../../Objekte/Zeichen';
 import { SelectEvent } from 'ol/interaction/Select';
 import KlartextManager, { KlartextMap } from '../../Objekte/Klartext';
 import HTML from '../../HTML';
-import Aufstellvorrichtung from 'src/js/Objekte/Aufstellvorrichtung';
+import Aufstellvorrichtung from '../../Objekte/Aufstellvorrichtung';
 import Klartext from '../../Objekte/Klartext';
 import { pointerMove, never } from 'ol/events/condition';
 var CONFIG = require('../../config.json');
