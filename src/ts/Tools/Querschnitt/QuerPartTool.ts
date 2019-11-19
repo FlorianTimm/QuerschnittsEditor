@@ -49,7 +49,6 @@ class QuerPartTool extends Tool {
         this.select = new SelectInteraction({
             layers: [this.layerAchse]
         });
-
         this.createOverlayVectorLayer();
         this.createForm();
 
@@ -66,7 +65,7 @@ class QuerPartTool extends Tool {
         this.form_station.disabled = true;
         this.form_button = HTML.createButton(this.form, "Teilen", "button");
         this.form_button.disabled = true;
-        this.form_button.addEventListener('click', this.partQuerschnittButton.bind(this))
+        this.form_button.addEventListener('click', this.querschnittButton.bind(this))
     }
 
     private createOverlayVectorLayer() {
@@ -94,7 +93,7 @@ class QuerPartTool extends Tool {
         v_overlay.addFeature(this.feat_station_line);
     }
 
-    part_get_station(event: MapBrowserPointerEvent): { achse: Abschnitt, pos: StationObj } {
+    private getStation(event: MapBrowserPointerEvent): { achse: Abschnitt, pos: StationObj } {
         let achse: Abschnitt;
         if (this.select.getFeatures().getArray().length == 1) {
             achse = this.select.getFeatures().item(0) as Abschnitt;
@@ -106,14 +105,12 @@ class QuerPartTool extends Tool {
             (this.feat_station_line.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
             throw new Error("Keine Achsen geladen");
         }
-
         return { achse: achse, pos: achse.getStationierung(event.coordinate, 2) };
     }
 
-
-    part_click(event: MapBrowserPointerEvent) {
+    private partClick(event: MapBrowserPointerEvent) {
         this.feat_teilung.set('isset', true);
-        let daten = this.part_get_station(event);
+        let daten = this.getStation(event);
         if (daten['pos'] == null) return;
 
         let vektor = Vektor.multi(Vektor.einheit(Vektor.diff(daten['pos'].neuerPkt, daten['pos'].fusspkt)), daten.pos.abstand > 50 ? daten.pos.abstand : 50);
@@ -137,8 +134,8 @@ class QuerPartTool extends Tool {
         this.form_button.disabled = true;
     }
 
-    part_move(event: MapBrowserPointerEvent) {
-        let daten = this.part_get_station(event);
+    private move(event: MapBrowserPointerEvent) {
+        let daten = this.getStation(event);
         let vektor = Vektor.multi(Vektor.einheit(Vektor.diff(daten['pos'].neuerPkt, daten['pos'].fusspkt)), daten.pos.abstand > 50 ? daten.pos.abstand : 50);
         let coord = [Vektor.diff(daten['pos'].fusspkt, vektor), Vektor.sum(daten['pos'].fusspkt, vektor)];
 
@@ -150,29 +147,29 @@ class QuerPartTool extends Tool {
         this.form_station.value = String(daten.pos.station);
     }
 
-    partQuerschnittButton() {
+    private querschnittButton() {
         if (!this.abschnitt) return;
         let sta = this.abschnitt.getStationByStation(this.station);
         sta.teilen(this.station);
         this.restartSelection();
     }
 
-    start() {
+    public start() {
         this.initialize()
         this.map.addInteraction(this.select);
         $(this.form).show("fast")
-        this.map.on("pointermove", this.part_move.bind(this));
-        this.map.on("singleclick", this.part_click.bind(this));
+        this.map.on("pointermove", this.move.bind(this));
+        this.map.on("singleclick", this.partClick.bind(this));
         this.map.addLayer(this.l_overlay);
         this.restartSelection()
     }
 
-    stop() {
+    public stop() {
         if (!this.init) return;
         $(this.form).hide("fast")
         this.map.removeInteraction(this.select);
-        this.map.un("pointermove", this.part_move);
-        this.map.un("singleclick", this.part_click);
+        this.map.un("pointermove", this.move);
+        this.map.un("singleclick", this.partClick);
         (this.feat_teilung.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
         this.info.hideInfoBox();
         this.map.removeLayer(this.l_overlay);

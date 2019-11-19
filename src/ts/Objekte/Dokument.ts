@@ -15,10 +15,6 @@ export default class Dokument extends SekundaerObjekt {
         return "Otdokument"
     }
 
-    getWFSKonfigName() {
-        return this.getObjektKlassenName();
-    }
-
     static fromXML(xml: Element) {
         let r = new Dokument();
         r.setDataFromXML(xml)

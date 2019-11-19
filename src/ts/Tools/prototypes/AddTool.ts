@@ -7,7 +7,6 @@ import Feature from 'ol/Feature';
 import Tool from '../prototypes/Tool';
 import { Map, MapBrowserEvent } from 'ol';
 import Abschnitt, { StationObj } from '../../Objekte/Abschnitt';
-import Daten from '../../Daten';
 import PublicWFS from '../../PublicWFS';
 
 /**
@@ -19,25 +18,21 @@ import PublicWFS from '../../PublicWFS';
 
 export default abstract class AddTool extends Tool {
     protected map: Map;
-
     protected abschnitt: Abschnitt = null;
     protected station: number = null;
     protected abstand: number = null;
     protected seite: string = null;
-
     protected select: SelectInteraction;
     protected v_overlay: VectorSource;
     protected l_overlay: VectorLayer;
     protected feat_station: Feature;
     protected feat_neu: Feature;
     protected feat_station_line: Feature;
-
     protected form: HTMLFormElement = null;
     protected sidebar: HTMLDivElement;
+    private layerAchse: VectorLayer;
 
     protected abstract createForm(): void;
-
-    private layerAchse: VectorLayer;
 
     constructor(map: Map, sidebar: HTMLDivElement, layerAchse: VectorLayer) {
         super();

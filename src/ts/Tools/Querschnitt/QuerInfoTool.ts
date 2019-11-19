@@ -13,20 +13,18 @@ import { Feature } from 'ol';
  * @version 2019.10.29
  * @copyright MIT
  */
-class QuerInfoTool extends InfoTool {
+export default class QuerInfoTool extends InfoTool {
     daten: Daten;
     protected selectLinie: SelectInteraction;
 
     constructor(map: Map, layerLinie: Layer, layerFlaechen: Layer, sidebar: HTMLDivElement) {
         super(map, layerFlaechen, sidebar);
 
-
         this.selectLinie = new SelectInteraction({
             layers: [layerLinie],
             condition: never,
             style: InfoTool.selectStyle
         });
-
         this.select.on("select", this.featureSelectedFlaeche.bind(this))
     }
 
@@ -48,7 +46,4 @@ class QuerInfoTool extends InfoTool {
         this.map.removeInteraction(this.selectLinie);
         this.selectLinie.getFeatures().clear();
     }
-
 }
-
-export default QuerInfoTool;

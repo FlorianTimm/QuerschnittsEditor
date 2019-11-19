@@ -23,7 +23,7 @@ export default abstract class Add2ER extends Tool {
         this.objektklasse = objektklasse;
 
         this.select = new SelectInteraction({
-            layers: [this.daten.layerAchse],
+            layers: [Abschnitt.getLayer()],
             hitTolerance: 10,
             style: new Style({
                 stroke: new Stroke({
@@ -52,7 +52,7 @@ export default abstract class Add2ER extends Tool {
         abschnitt.addOKinER(this.objektklasse);
         this.loadAbschnitt(abschnitt);
         this.select.getFeatures().clear();
-        Daten.getInstanz().layerAchse.changed();
+        Abschnitt.getLayer().changed();
         WaitBlocker.warteSub()
     }
 

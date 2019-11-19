@@ -7,6 +7,10 @@ import Abschnitt, { LinienPunkt } from './Abschnitt';
 import Querschnitt from './Querschnittsdaten';
 import Aufbau from './Aufbaudaten';
 import { Point } from 'ol/geom';
+import { VectorLayer } from '../openLayers/Layer';
+import VectorSource from 'ol/source/Vector';
+import { Map } from 'ol';
+import { Stroke, Style } from 'ol/style';
 
 /**
 * Querschnitts-Station
@@ -24,6 +28,7 @@ export default class QuerStation {
     private linie: MultiLineString;
     private _querschnitte: { [streifen: string]: { [streifennr: number]: Querschnitt } } = {};
     private linienPunkte: LinienPunkt[];
+    private static layerStation: VectorLayer;
 
     constructor(abschnitt: Abschnitt, vst: number, bst: number) {
         this.daten = Daten.getInstanz();
@@ -33,6 +38,24 @@ export default class QuerStation {
         this.abschnitt.addStation(this);
         this.getPunkte();
     }
+
+    static getLayer(map?: Map) {
+        if (!QuerStation.layerStation) {
+            QuerStation.layerStation = new VectorLayer({
+                source: new VectorSource(),
+                opacity: 0.6,
+                style: new Style({
+                    stroke: new Stroke({
+                        color: '#000000',
+                        width: 1
+                    })
+                })
+            });
+        }
+        if (map) map.addLayer(QuerStation.layerStation);
+        return QuerStation.layerStation
+    }
+
     addQuerschnitt(querschnitt: Querschnitt) {
         let streifen = querschnitt.getStreifen();
         let nr = querschnitt.getStreifennr();
@@ -94,10 +117,10 @@ export default class QuerStation {
         let letzter = this.linienPunkte[this.linienPunkte.length - 1];
         let statTrenn = [];
         statTrenn.push([Vektor.sum(letzter.pkt, Vektor.multi(letzter.seitlicherVektorAmPunkt, 30)), Vektor.sum(letzter.pkt, Vektor.multi(letzter.seitlicherVektorAmPunkt, -30))]);
-        this.daten.layerStation.getSource().addFeature(new Feature({ geom: new Point(letzter.pkt) }));
+        QuerStation.layerStation.getSource().addFeature(new Feature({ geom: new Point(letzter.pkt) }));
         if (this.vst == 0) {
             statTrenn.push([Vektor.sum(erster.pkt, Vektor.multi(erster.seitlicherVektorAmPunkt, 30)), Vektor.sum(erster.pkt, Vektor.multi(erster.seitlicherVektorAmPunkt, -30))]);
-            this.daten.layerStation.getSource().addFeature(new Feature({ geom: new Point(erster.pkt) }));
+            QuerStation.layerStation.getSource().addFeature(new Feature({ geom: new Point(erster.pkt) }));
         }
 
         if (this.linie) {
@@ -108,11 +131,11 @@ export default class QuerStation {
                 geometry: this.linie,
                 objekt: this,
             });
-            this.daten.layerStation.getSource().addFeature(feat);
+            QuerStation.layerStation.getSource().addFeature(feat);
         }
-
         return this.linienPunkte;
     }
+
     teilen(station: number) {
         if (this.vst < station && this.bst > station) {
             this.abschnitt.getAufbauDaten(this.teilen_callback_aufbaudaten.bind(this), undefined, false, station);
@@ -122,7 +145,6 @@ export default class QuerStation {
     }
 
     private teilen_callback_aufbaudaten(station: number) {
-
         let xml = '<wfs:Delete typeName="Dotquer">\n' +
             '	<ogc:Filter>\n' +
             '		<ogc:And>\n' +
@@ -173,7 +195,6 @@ export default class QuerStation {
                 }, true);
             }
         }
-
         PublicWFS.doTransaction(xml, this.neueQuerschnitteCallbackInsertResult.bind(this), undefined, station);
     }
 
@@ -239,8 +260,6 @@ export default class QuerStation {
             //console.log(qs);
             soap += qs.createInsertXML();
         }
-
-        console.log(soap);
         PublicWFS.doTransaction(soap, this.neueQuerschnitteCallbackInsertResult.bind(this))
     }
 
@@ -275,7 +294,6 @@ export default class QuerStation {
                 }, true)
                 insertRows++;
             }
-
         }
         insert += "</wfs:Insert>";
         console.log(insert)
@@ -283,14 +301,12 @@ export default class QuerStation {
             PublicWFS.doTransaction(insert);
         }
 
-
         if (station != undefined) {
             let neueStation = new QuerStation(this.abschnitt, station, this.bst);
             this.bst = station;
             this.abschnitt.addStation(neueStation);
             neueStation.reload();
         }
-
         this.reload()
     }
 
@@ -316,7 +332,6 @@ export default class QuerStation {
             '</And>' +
             '</Filter>';
         PublicWFS.doQuery('Dotquer', filter, this.loadStationCallback.bind(this));
-
     }
 
     loadStationCallback(xml: Document) {
@@ -339,8 +354,8 @@ export default class QuerStation {
     }
 
     public deleteStreifen(streifen: string, nummer: number) {
-        this.daten.layerTrenn.getSource().removeFeature(this._querschnitte[streifen][nummer].trenn)
-        this.daten.layerQuer.getSource().removeFeature(this._querschnitte[streifen][nummer])
+        Querschnitt.getLayerTrenn().getSource().removeFeature(this._querschnitte[streifen][nummer].trenn)
+        Querschnitt.getLayerFlaechen().getSource().removeFeature(this._querschnitte[streifen][nummer])
         delete this._querschnitte[streifen][nummer];
     }
 

@@ -5,17 +5,22 @@ import MoveTool from "../Tools/MoveTool";
 import DeleteTool from "../Tools/DeleteTool";
 import SAPAdd2ER from "../Tools/StrassenAusPunkt/SAPAdd2ER";
 import SAPAdd from "../Tools/StrassenAusPunkt/SAPAdd";
-import VectorLayer from "ol/layer/Vector";
+import Abschnitt from "../Objekte/Abschnitt";
+import StrassenAusPunkt from "../Objekte/StrassenAusPunkt";
 
 export default class AusstPktToolBox extends ToolBox {
-    infoTool: InfoTool;
-    addTool: SAPAdd;
-    moveTool: MoveTool;
-    add2ErTool: SAPAdd2ER;
-    delTool: DeleteTool;
+    private infoTool: InfoTool;
+    private addTool: SAPAdd;
+    private moveTool: MoveTool;
+    private add2ErTool: SAPAdd2ER;
+    private delTool: DeleteTool;
 
-    constructor(map: Map, sidebar: HTMLDivElement, layerAchse: VectorLayer, layerStraus: VectorLayer) {
+    constructor(map: Map, sidebar: HTMLDivElement) {
         super(map, sidebar, "tab_Otstrauspkt")
+
+        let layerStraus = StrassenAusPunkt.getLayer()
+        let layerAchse = Abschnitt.getLayer();
+
         this.infoTool = new InfoTool(map, layerStraus, sidebar);
         this.addTool = new SAPAdd(map, sidebar, layerAchse);
         this.moveTool = new MoveTool(map, this.infoTool, layerStraus);

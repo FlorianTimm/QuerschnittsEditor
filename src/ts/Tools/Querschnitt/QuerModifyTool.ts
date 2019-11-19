@@ -42,9 +42,7 @@ export default class QuerModifyTool extends Tool {
     private multiArtSelect: HTMLSelectElement;
     private multiOberSelect: HTMLSelectElement;
     private moveTypeForm: HTMLFormElement;
-    private modifySource: VectorSource;
     private modifyLayer: VectorLayer;
-    private modifyOverlaySource: VectorSource;
     private modifyOverlayLayer: VectorLayer;
     private sidebar: HTMLDivElement;
 
@@ -88,12 +86,8 @@ export default class QuerModifyTool extends Tool {
     }
 
     private createModify() {
-        this.modifySource = new VectorSource({
-            features: []
-        });
-
         this.modifyLayer = new VectorLayer({
-            source: this.modifySource,
+            source: new VectorSource(),
             style: function (feat: FeatureLike) {
                 let color = 'green';
                 if (feat.get("st") && feat.get("st") == "Bst")
@@ -111,13 +105,8 @@ export default class QuerModifyTool extends Tool {
         });
         this.map.addLayer(this.modifyLayer)
 
-
-        this.modifyOverlaySource = new VectorSource({
-            features: []
-        });
-
         this.modifyOverlayLayer = new VectorLayer({
-            source: this.modifyOverlaySource,
+            source: new VectorSource(),
             style: new Style({
                 stroke: new Stroke({
                     color: 'rgba(50,50,50,0.5)', width: 3
@@ -125,35 +114,29 @@ export default class QuerModifyTool extends Tool {
             })
         });
 
-
         this.modify = new ModifyInteraction({
             deleteCondition: never,
             insertVertexCondition: never,
-            source: this.modifySource
+            source: this.modifyLayer.getSource()
         });
-
         this.modify.on('modifystart', this.modifyStart.bind(this));
         this.modify.on('modifyend', this.modifyEnd.bind(this));
         this.modify.on('change', console.log)
     }
 
     private modifyStart(_: ModifyEvent) {
-        /*let auswahl = e.features.getArray()[0];
-        e.target.geo_vorher = auswahl.getGeometry().clone();*/
         this.map.addInteraction(this.snapStation);
         this.map.on("pointermove", this.mouseMove.bind(this))
         this.map.addLayer(this.modifyOverlayLayer)
     }
 
     private mouseMove(_: MapBrowserEvent) {
-        this.modifyOverlaySource.clear();
+        this.modifyOverlayLayer.getSource().clear();
 
         let abs = this.calcAbstand()
         if (abs == null) return
         let seite = abs.querschnitt.getStreifen();
         if (seite == 'M') return;
-
-
 
         let abstVst = (abs.vstOrBst == 'Vst') ? abs.abstand : abs.querschnitt.getX('Vst', seite)
         let abstBst = (abs.vstOrBst == 'Bst') ? abs.abstand : abs.querschnitt.getX('Bst', seite)
@@ -175,16 +158,14 @@ export default class QuerModifyTool extends Tool {
             }
             l.push(coord);
         }
-
-        this.modifyOverlaySource.addFeature(new Feature(new LineString(l)));
+        this.modifyOverlayLayer.getSource().addFeature(new Feature(new LineString(l)));
     }
 
     calcAbstand() {
         let querschnitt = this.selectFlaechen.getFeatures().item(0) as Querschnitt;
         if (querschnitt == null) return null;
         let pkt_segment = querschnitt.getStation().getPunkte();
-        let pkt_karte = this.modifySource.getFeatures();
-
+        let pkt_karte = this.modifyLayer.getSource().getFeatures();
 
         // Feststellen ob VST oder BST bearbeitet wurden
         let vstOrBst: 'Vst' | 'Bst';
@@ -295,7 +276,6 @@ export default class QuerModifyTool extends Tool {
             toggleCondition: platformModifierKeyOnly,
             style: InfoTool.selectStyle
         });
-
         this.selectFlaechen.on('select', this.flaecheSelected.bind(this));
     }
 
@@ -313,7 +293,7 @@ export default class QuerModifyTool extends Tool {
         let selection = this.selectFlaechen.getFeatures().getArray() as Querschnitt[];
 
         this.selectLinien.getFeatures().clear()
-        this.modifySource.clear();
+        this.modifyLayer.getSource().clear();
 
         this.selectFlaechen.getFeatures().forEach(function (this: QuerModifyTool, feature: Feature) {
             this.selectLinien.getFeatures().push((feature as Querschnitt).trenn)
@@ -341,21 +321,19 @@ export default class QuerModifyTool extends Tool {
         let linien = this.selectLinien.getFeatures().item(0).getGeometry() as MultiLineString;
 
         for (let linie of linien.getCoordinates()) {
-            this.modifySource.addFeature(new Feature({
+            this.modifyLayer.getSource().addFeature(new Feature({
                 geometry: new Point(linie[0]),
                 st: "Vst",
                 x: linie[0][0],
                 y: linie[0][1]
             }));
-            this.modifySource.addFeature(new Feature({
+            this.modifyLayer.getSource().addFeature(new Feature({
                 geometry: new Point(linie[linie.length - 1]),
                 st: "Bst",
                 x: linie[linie.length - 1][0],
                 y: linie[linie.length - 1][1]
             }));
         }
-
-        console.log(this.modifySource.getFeatures())
     }
 
     private multiSelect(selection: Querschnitt[]) {
@@ -381,7 +359,6 @@ export default class QuerModifyTool extends Tool {
         $(this.multiArtSelect).val(art);
         $(this.multiOberSelect).val(ober);
 
-        console.log($(this.multiArtSelect));
         $(this.multiArtSelect).trigger("chosen:updated");
         $(this.multiOberSelect).trigger("chosen:updated");
 

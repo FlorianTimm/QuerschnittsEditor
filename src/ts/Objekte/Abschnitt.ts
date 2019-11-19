@@ -1,4 +1,4 @@
-import Feature from 'ol/Feature';
+import Feature, { FeatureLike } from 'ol/Feature';
 import LineString from 'ol/geom/LineString';
 import PublicWFS from '../PublicWFS';
 import AbschnittWFS from '../AbschnittWFS';
@@ -7,6 +7,12 @@ import Aufbaudaten from './Aufbaudaten';
 import Daten from '../Daten';
 import QuerStation from './QuerStation';
 import Aufbau from './Aufbaudaten';
+import { VectorLayer } from '../openLayers/Layer';
+import VectorSource from 'ol/source/Vector';
+import { Style, Stroke, Fill, Icon, Text } from 'ol/style';
+import { Point } from 'ol/geom';
+import CircleStyle from 'ol/style/Circle';
+import { Map } from 'ol';
 
 var CONFIG: { [index: string]: string } = require('../config.json');
 
@@ -25,7 +31,6 @@ export default class Abschnitt extends Feature {
     private static abschnitte: { [absid: number]: Abschnitt } = {}
     private static waitForAbschnitt: { [absid: number]: Callback[] } = {}
 
-    private daten: Daten;
     private fid: string = null;
     private abschnittid: string = null;
     private vnk: string = null;
@@ -45,11 +50,7 @@ export default class Abschnitt extends Feature {
     private _feature: any;
     public aufbaudatenLoaded: boolean = false;
     private punkte: LinienPunkt[];
-
-    constructor() {
-        super();
-        this.daten = Daten.getInstanz();
-    }
+    static layer: VectorLayer;
 
     public static getAbschnitt(absId: string, callback: (abs: Abschnitt, ...args: any[]) => void, ...args: any[]) {
         if (absId in this.abschnitte) {
@@ -68,6 +69,99 @@ export default class Abschnitt extends Feature {
         }
 
     }
+
+    public static getLayer(map?: Map): VectorLayer {
+        if (!Abschnitt.layer) {
+            let achsen_style = function (feature: FeatureLike, resolution: number): Style[] {
+                let abschnitt = feature as Abschnitt;
+                let styles = [];
+                // Linienfarbe - rot, wenn in ER
+                let color = '#222';
+                if (abschnitt.isOKinER(Daten.getInstanz().modus)) color = '#d00';
+
+                // Linie + Beschriftung
+                styles.push(new Style({
+                    stroke: new Stroke({
+                        color: color,
+                        width: 3
+                    }),
+                    // Beschriftung
+                    text: new Text({
+                        font: '12px Calibri,sans-serif',
+                        fill: new Fill({ color: color }),
+                        stroke: new Stroke({
+                            color: '#fff', width: 2
+                        }),
+                        text: abschnitt.getVnk() + ' - ' + abschnitt.getNnk(),
+                        placement: 'line',
+                        offsetY: -7
+                    })
+                }));
+
+                // Pfeile/Start/Endknoten ab bestimmten Maßstab
+                if (resolution < 0.15) {
+                    // Pfeile
+                    var geometry = abschnitt.getGeometry() as LineString;
+                    let first = true;
+                    geometry.forEachSegment(function (start, end) {
+                        if (first) {
+                            first = false;
+                        } else {
+                            let point = new Point(start);
+                            var dx = end[0] - start[0];
+                            var dy = end[1] - start[1];
+                            var rotation = Math.atan2(dy, dx);
+                            // arrows
+                            styles.push(new Style({
+                                geometry: point,
+                                image: new Icon({
+                                    src: './img/arrow_klein.png',
+                                    anchor: [0.75, 0.5],
+                                    rotateWithView: false,
+                                    rotation: -rotation
+                                })
+                            }));
+                        }
+                    });
+
+                    // Startpunkt
+                    styles.push(new Style({
+                        geometry: new Point(geometry.getFirstCoordinate()),
+                        image: new CircleStyle({
+                            radius: 6,
+                            fill: new Fill({ color: 'green' }),
+                            stroke: new Stroke({
+                                color: [255, 255, 255],
+                                width: 1
+                            })
+                        })
+                    }));
+
+                    // Endpunkt
+                    styles.push(new Style({
+                        geometry: new Point(geometry.getLastCoordinate()),
+                        image: new CircleStyle({
+                            radius: 6,
+                            fill: new Fill({ color: 'red' }),
+                            stroke: new Stroke({
+                                color: [255, 255, 255],
+                                width: 1
+                            })
+                        })
+                    }));
+                }
+                return styles;
+            };
+            Abschnitt.layer = new VectorLayer({
+                source: new VectorSource(),
+                opacity: 0.6,
+                style: achsen_style
+            });
+        }
+        if (map) map.addLayer(Abschnitt.layer);
+        return Abschnitt.layer;
+    }
+
 
     public getFaktor(): number {
         if (this._faktor == null) {
@@ -139,7 +233,7 @@ export default class Abschnitt extends Feature {
         }
         //console.log(ak);
         this.setGeometry(new LineString(ak));
-        Daten.getInstanz().layerAchse.getSource().addFeature(this);
+        Abschnitt.getLayer().getSource().addFeature(this);
         Abschnitt.abschnitte[this.abschnittid] = this;
 
         if (this.abschnittid in Abschnitt.waitForAbschnitt) {
@@ -199,7 +293,7 @@ export default class Abschnitt extends Feature {
             PublicWFS.doQuery('Otschicht', '<Filter><And>' +
                 '<PropertyIsEqualTo>' +
                 '<PropertyName>projekt/@xlink:href</PropertyName>' +
-                '<Literal>' + this.daten.ereignisraum + '</Literal>' +
+                '<Literal>' + Daten.getInstanz().ereignisraum + '</Literal>' +
                 '</PropertyIsEqualTo>' +
                 '<PropertyIsEqualTo>' +
                 '<PropertyName>abschnittOderAst/@xlink:href</PropertyName>' +
@@ -238,9 +332,6 @@ export default class Abschnitt extends Feature {
             callbackSuccess(...args);
         }
     }
-
-
-
 
     /**
      * Berechnet eine Station

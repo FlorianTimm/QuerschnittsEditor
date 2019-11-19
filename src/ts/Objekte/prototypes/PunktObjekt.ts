@@ -46,7 +46,7 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
         super.setDataFromXML(xml);
         let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(',');
         this.setGeometry(new Point([parseFloat(koords[0]), parseFloat(koords[1])]));
-        Daten.getInstanz().layerAchse.changed();
+        Abschnitt.getLayer().changed();
 
         Abschnitt.getAbschnitt(this.abschnittId, function (this: PunktObjekt, abschnitt: Abschnitt) {
             this.abschnitt = abschnitt
@@ -55,12 +55,9 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
         }.bind(this))
     }
 
-    static createLayer(map: Map) {
-        let source = new VectorSource({
-            features: []
-        });
+    protected static createLayer(map?: Map) {
         let layer = new VectorLayer({
-            source: source,
+            source: new VectorSource(),
             opacity: 0.7,
         });
         layer.setStyle(function (feat: FeatureLike, resolution: number) {
@@ -115,7 +112,7 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
         }.bind(this));
 
         layer.getStyle
-        map.addLayer(layer);
+        if (map) map.addLayer(layer);
         return layer;
     }
 

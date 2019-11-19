@@ -175,24 +175,21 @@ export default class Klartext {
         return sortable;
     }
 
-
     // HTML-Form-Methods
-
-    static createKlartextSelectForm(klartext: string, form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, value?: string, platzhalter?: string) {
+    static createKlartextSelectForm(klartext: string, form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, value?: Klartext, platzhalter?: string) {
         let field = HTML.createSelectForm(form, beschriftung, id, platzhalter);
         Klartext.klartext2select(klartext, field, value, platzhalter);
         return field;
     }
 
-    static klartext2select(klartext: string, selectInput: HTMLSelectElement, value?: string, platzhalter?: string) {
+    static klartext2select(klartext: string, selectInput: HTMLSelectElement, value?: Klartext, platzhalter?: string) {
         Klartext.load(klartext, Klartext.klartext2select_callback, klartext, selectInput, value, platzhalter);
     }
 
-    private static klartext2select_callback(__: {}, klartext: string, selectInput: HTMLSelectElement, value?: string, platzhalter?: string) {
+    private static klartext2select_callback(__: {}, klartext: string, selectInput: HTMLSelectElement, value?: Klartext, platzhalter?: string) {
         let arten = Klartext.getAllSorted(klartext);
-
         for (let a of arten) {
-            let isSelected = (value && value.substr(-32) == a.getXlink());
+            let isSelected = (value && value.getXlink() == a.getXlink());
             HTML.createSelectNode(selectInput, a.getKt() + ' - ' + a.getBeschreib(), a.getXlink(), isSelected);
         }
         if (value == null && platzhalter != undefined) selectInput.value = null;

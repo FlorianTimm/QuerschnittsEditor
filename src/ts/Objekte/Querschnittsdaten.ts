@@ -1,4 +1,4 @@
-import { Feature } from 'ol';
+import { Feature, Map } from 'ol';
 import { MultiLineString, Polygon } from 'ol/geom';
 import Daten from '../Daten';
 import Abschnitt from '../Objekte/Abschnitt';
@@ -10,6 +10,10 @@ import Klartext from './Klartext';
 import HTML from '../HTML';
 import { InfoToolEditable } from '../Tools/InfoTool';
 import PrimaerObjekt from './prototypes/PrimaerObjekt';
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
+import { Style, Stroke, Text, Fill } from 'ol/style';
+import { FeatureLike } from 'ol/Feature';
 
 /**
 * @author Florian Timm, LGV HH 
@@ -41,6 +45,8 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     private streifen: 'M' | 'L' | 'R' = null;
     private streifennr: number = null;
     static loadErControlCounter: number = 0;
+    static layerTrenn: VectorLayer;
+    static layerQuer: VectorLayer;
 
     constructor() {
         super();
@@ -48,14 +54,10 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         //console.log(daten);
 
         this.setGeometry(new Polygon([[[0, 0], [0, 0], [0, 0]]]));
-        this._daten.layerQuer.getSource().addFeature(this)
+        Querschnitt.getLayerFlaechen().getSource().addFeature(this)
 
         this.trenn = new Feature({ geom: new MultiLineString([[[0, 0], [0, 0], [0, 0]]]), objekt: this });
-        this._daten.layerTrenn.getSource().addFeature(this.trenn);
-    }
-
-    getWFSKonfigName(): string {
-        return "QUERSCHNITT"
+        Querschnitt.getLayerTrenn().getSource().addFeature(this.trenn);
     }
 
     getObjektKlassenName(): string {
@@ -142,16 +144,15 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         }
         this.createGeom();
         return;
-
     }
 
     private static createFields(form: HTMLFormElement, __: string, querschnitt?: Querschnitt, changeable: boolean = false) {
         // Art
-        let art = Klartext.createKlartextSelectForm("Itquerart", form, "Art", "art", querschnitt != undefined ? querschnitt.art.getXlink() : undefined);
+        let art = Klartext.createKlartextSelectForm("Itquerart", form, "Art", "art", querschnitt != undefined ? querschnitt.art : undefined);
         $(art).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Lage
-        let lage = Klartext.createKlartextSelectForm("Itquerober", form, "Lage", "ober", querschnitt != undefined ? querschnitt.artober.getXlink() : undefined);
+        let lage = Klartext.createKlartextSelectForm("Itquerober", form, "Lage", "ober", querschnitt != undefined ? querschnitt.artober : undefined);
         $(lage).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Breite
@@ -209,14 +210,8 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
             if (callback) callback(...args)
         }, r);
-
-
-        //console.log(abschnitt);
-
-
         return r;
     }
-
 
     public addAufbau(schicht?: number, aufbau?: Aufbau) {
         if (this._aufbaudaten == null) { this._aufbaudaten = {} };
@@ -224,11 +219,9 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         this._aufbaudaten[schicht] = aufbau;
     }
 
-
     public setAufbauGesamt(aufbau: { [schicht: number]: Aufbau }) {
         this._aufbaudaten = aufbau;
     }
-
 
     public getAufbau(callback?: (schichten: { [schicht: number]: Aufbau }) => void): { [schicht: number]: Aufbau } | void {
         if (callback == undefined) return this._aufbaudaten
@@ -238,7 +231,6 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         } else {
             this.getAufbauCallback(callback);
         }
-
     }
 
     private getAufbauCallback(callback: (schichten: { [schicht: number]: Aufbau }) => void) {
@@ -271,7 +263,6 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             g.push(coord);
             l.push(coord);
         }
-
 
         for (let i = punkte.length - 1; i >= 0; i--) {
             let pkt = punkte[i]
@@ -306,7 +297,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
     public updateArtEinzeln(art: string) {
         this.setArt(art);
-        this._daten.layerQuer.getSource().changed();
+        Querschnitt.getLayerFlaechen().getSource().changed();
 
         PublicWFS.doTransaction(this.createUpdateXML({
             art: this.art,
@@ -315,7 +306,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
     public updateOberEinzeln(artober: string) {
         this.setArtober(artober);
-        this._daten.layerQuer.getSource().changed();
+        Querschnitt.getLayerFlaechen().getSource().changed();
         PublicWFS.doTransaction(this.createUpdateXML({
             artober: this.artober
         }));
@@ -440,49 +431,6 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         this.XBstL += diffBst;
     }
 
-    /*let max_diff_vst = null;
-    let max_diff_bst = null;
-    if ((document.getElementById('modify_fit') as HTMLInputElement).checked && this.station.getQuerschnitt(this.streifen, this.streifennr + 1) != null) {
-        max_diff_vst = this.station.getQuerschnitt(this.streifen, this.streifennr + 1).getBreite() / 100;
-        max_diff_bst = this.station.getQuerschnitt(this.streifen, this.streifennr + 1).getBisBreite() / 100;
-    }
-
-    if (this.breite != Number($(form).find('breite').val())) {
-        let diff = (Math.round(Number($(form).find('breite').val())) - this.getBreite()) / 100;
-
-        if (max_diff_vst !== null && diff > max_diff_vst) {
-            diff = (max_diff_vst);
-        }
-        this.setBreite(this.getBreite() + diff * 100);
-        if (this.getStreifen() == 'L') {
-            this.setXVstL(this.getXVstL() - diff);
-            this.editBreite('Vst', -diff, (document.getElementById('modify_fit') as HTMLInputElement).checked);
-        }
-        else if (this.getStreifen() == 'R') {
-            this.setXVstR(this.getXVstL() + diff);
-            this.editBreite('Vst', diff, (document.getElementById('modify_fit') as HTMLInputElement).checked);
-        }
-
-    }
-    else if (this.getBisBreite() != Number(($(form).find('bisbreite').val()))) {
-        let diff = (Math.round(Number($(form).find('bisbreite').val())) - this.getBisBreite()) / 100;
-        if (max_diff_bst !== null && diff > max_diff_bst) {
-            diff = (max_diff_bst);
-        }
-        this.setBisBreite(this.getBisBreite() + diff * 100);
-        if (this.getStreifen() == 'L') {
-            this.setXBstL(this.getXBstL() - diff);
-            this.editBreite('Bst', -diff, (document.getElementById('modify_fit') as HTMLInputElement).checked);
-        }
-        else if (this.getStreifen() == 'R') {
-            this.setXBstR(this.getXBstR() + diff);
-            this.editBreite('Bst', diff, (document.getElementById('modify_fit') as HTMLInputElement).checked);
-        }
-    }
-    console.log(this)
-}
-
-*/
     public editBreiteOld(edit: 'Vst' | 'Bst', diff: number, fit: boolean) {
         let gesStreifen = this.station.getStreifen(this.streifen);
         let nr = this.streifennr;
@@ -516,10 +464,9 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         }
         this.createGeom();
 
-        //console.log(soap);
-
         PublicWFS.doTransaction(soap, undefined, undefined);
     }
+
     /**
      * setz die Attribute XVstL, XBstL, XVstR, XBstL
      */
@@ -548,9 +495,114 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     }
 
     public delete() {
-        this._daten.layerQuer.getSource().removeFeature(this)
-        this._daten.layerTrenn.getSource().removeFeature(this.trenn)
+        Querschnitt.getLayerFlaechen().getSource().removeFeature(this)
+        Querschnitt.getLayerTrenn().getSource().removeFeature(this.trenn)
     }
+
+    public static getLayerTrenn(map?: Map) {
+        if (!Querschnitt.layerTrenn) {
+            this.layerTrenn = new VectorLayer({
+                source: new VectorSource(),
+                opacity: 0.6,
+                style: new Style({
+                    stroke: new Stroke({
+                        color: '#00dd00',
+                        width: 2
+                    })
+                })
+            });
+        }
+        if (map) map.addLayer(Querschnitt.layerTrenn);
+        return Querschnitt.layerTrenn
+    }
+
+    public static getLayerFlaechen(map?: Map) {
+        if (!Querschnitt.layerQuer) {
+            let createStyle = function (feature: FeatureLike, resolution: number): Style {
+                let kt_art = (feature as Querschnitt).getArt()
+                let kt_ober = (feature as Querschnitt).getArtober()
+
+                // leere Arten filtern
+                let art = 0
+                if (kt_art)
+                    art = Number(kt_art.getKt());
+
+                // leere Oberflächen filtern
+                let ober = 0
+                if (kt_ober)
+                    ober = Number(kt_ober.getKt());
+
+                // Farbe für Querschnittsfläche
+                let color = [255, 255, 255];
+
+                if ((art >= 100 && art <= 110) || (art >= 113 && art <= 119) || (art >= 122 && art <= 161) || (art >= 163 && art <= 179) || art == 312)
+                    color = [33, 33, 33];	// Fahrstreifen
+                else if (art == 111)
+                    color = [66, 66, 66]; // 1. Überholfahrstreifen
+                else if (art == 112)
+                    color = [100, 100, 100]; // 2. Überholfahrstreifen
+                else if (art >= 180 && art <= 183)
+                    color = [50, 50, 100];	// Parkstreifen
+                else if (art >= 940 && art <= 942)
+                    color = [0xF9, 0x14, 0xB8]; // Busanlagen
+                else if (art == 210) color = [0x22, 0x22, 0xff];	// Gehweg
+                else if ((art >= 240 && art <= 243) || art == 162)
+                    color = [0x33, 0x33, 0x66];	// Radweg
+                else if (art == 250 || art == 251)
+                    color = [0xcc, 0x22, 0xcc];	// Fuß-Rad-Weg
+                else if (art == 220)
+                    color = [0xff, 0xdd, 0x00];	// paralleler Wirtschaftsweg
+                else if (art == 420 || art == 430 || art == 900)
+                    color = [0xff, 0xff, 0xff];	// Markierungen
+                else if (art == 310 || art == 311 || art == 313 || art == 320 || art == 330 || (art >= 910 && art <= 916))
+                    color = [0xee, 0xee, 0xee];	// Trenn-, Schutzstreifen und Schwellen
+                else if (art == 120 || art == 121)
+                    color = [0x1F, 0x22, 0x97];	// Rinne
+                else if (art == 301)
+                    color = [0x75, 0x9F, 0x1E];	// Banket
+                else if (art == 510 || art == 511 || art == 520)
+                    color = [0x12, 0x0a, 0x8f];	// Gräben und Mulden
+                else if (art == 700 || art == 710)
+                    color = [0x00, 0x44, 0x00];	// Böschungen
+                else if (art == 314 || art == 315)
+                    color = [0x8A, 0x60, 0xD8];	// Inseln
+                else if (art == 400 || art == 410 || art == 715)
+                    color = [0x8A, 0x60, 0xD8];	// Randstreifen und Sichtflächen
+                else if (art == 600 || art == 610 || art == 620 || art == 630 || art == 640)
+                    color = [0xC1, 0xBA, 0xC8];	// Borde und Kantsteine
+                else if (art == 340)
+                    color = [0, 0, 0];	// Gleiskörper
+                else if (art == 999)
+                    color = [0x88, 0x88, 0x88];	// Bestandsachse
+                else if (art == 990 || art == 720)
+                    color = [0xFC, 0x8A, 0x57];	// sonstige Streifenart
+
+                color.push(0.4);
+
+                return new Style({
+                    fill: new Fill({
+                        color: color
+                    }),
+                    text: new Text({
+                        font: '12px Calibri,sans-serif',
+                        fill: new Fill({ color: '#000' }),
+                        stroke: new Stroke({
+                            color: '#fff', width: 2
+                        }),
+                        text: ((resolution < 0.05) ? (art + " - " + ober) : '')
+                    })
+                })
+            }
+
+            Querschnitt.layerQuer = new VectorLayer({
+                source: new VectorSource(),
+                style: createStyle
+            });
+        }
+        if (map) map.addLayer(Querschnitt.layerQuer);
+        return Querschnitt.layerQuer
+    }
+
 
 
     // Getter

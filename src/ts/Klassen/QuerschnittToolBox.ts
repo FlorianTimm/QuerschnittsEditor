@@ -6,7 +6,9 @@ import QuerModifyTool from '../Tools/Querschnitt/QuerModifyTool';
 import QuerPartTool from '../Tools/Querschnitt/QuerPartTool';
 import Map from '../openLayers/Map';
 import ToolBox from './ToolBox';
-import VectorLayer from 'ol/layer/Vector';
+import Querschnitt from '../Objekte/Querschnittsdaten';
+import Abschnitt from '../Objekte/Abschnitt';
+import QuerStation from '../Objekte/QuerStation';
 
 export default class QuerschnittToolBox extends ToolBox {
     private infoTool: QuerInfoTool;
@@ -16,8 +18,13 @@ export default class QuerschnittToolBox extends ToolBox {
     private partTool: QuerPartTool;
     private qsAdd2ER: QuerAdd2ER;
 
-    constructor(map: Map, sidebar: HTMLDivElement, layerAchse: VectorLayer, layerQuer: VectorLayer, layerTrenn: VectorLayer, layerStation: VectorLayer) {
-        super(map,  sidebar, "tab_Querschnitt");
+    constructor(map: Map, sidebar: HTMLDivElement) {
+        super(map, sidebar, "tab_Querschnitt");
+
+        let layerTrenn = Querschnitt.getLayerTrenn();
+        let layerQuer = Querschnitt.getLayerFlaechen();
+        let layerAchse = Abschnitt.getLayer();
+        let layerStation = QuerStation.getLayer();
 
         this.infoTool = new QuerInfoTool(this.map, layerTrenn, layerQuer, this.sidebar);
         this.modifyTool = new QuerModifyTool(map, this.infoTool, this.sidebar, layerTrenn, layerQuer, layerStation);

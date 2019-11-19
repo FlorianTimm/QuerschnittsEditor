@@ -26,6 +26,7 @@ import QuerschnittToolBox from './Klassen/QuerschnittToolBox';
 import AufstellToolBox from './Klassen/AufstellToolBox';
 import AusstPktToolBox from './Klassen/AusstPktToolBox';
 import ToolBox from './Klassen/ToolBox';
+import Abschnitt from './Objekte/Abschnitt';
 
 var CONFIG: { [name: string]: string } = require('./config.json');
 
@@ -55,9 +56,9 @@ window.addEventListener('load', function () {
     let sidebar = document.getElementById("sidebar") as HTMLDivElement | null;
     if (!sidebar) throw new Error("HTML Sidebar nicht gefunden")
 
-    new QuerschnittToolBox(map, sidebar, daten.layerAchse, daten.layerQuer, daten.layerTrenn, daten.layerStation);
-    new AufstellToolBox(map, sidebar, daten.layerAchse, daten.layerAufstell);
-    new AusstPktToolBox(map, sidebar, daten.layerAchse, daten.layerStraus);
+    new QuerschnittToolBox(map, sidebar);
+    new AufstellToolBox(map, sidebar);
+    new AusstPktToolBox(map, sidebar);
 
     // Messen
     ToolBox.createRadio(document.getElementById("steuerung_sonstige") as HTMLDivElement, "Messen", new Measure(map))
@@ -289,7 +290,7 @@ function openTab(evt: Event) {
     (evt.currentTarget as HTMLElement).className += " active";
     document.getElementById(tabName).getElementsByTagName('input')[0].click();
     Daten.getInstanz().modus = (evt.currentTarget as HTMLElement).dataset.tab.replace("tab_", "")
-    Daten.getInstanz().layerAchse.changed();
+    Abschnitt.getLayer().changed();
 }
 
 window.addEventListener('load', function () {

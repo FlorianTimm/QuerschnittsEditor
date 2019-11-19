@@ -8,10 +8,7 @@ import Klartext from "./Klartext";
 * @copyright MIT
 */
 export default class Aufbau extends SekundaerObjekt {
-	getWFSKonfigName(): string {
-		return "AUFBAUDATEN";
-	}
-	getObjektKlassenName(): string {
+	public getObjektKlassenName(): string {
 		return "Otschicht";
 	}
 

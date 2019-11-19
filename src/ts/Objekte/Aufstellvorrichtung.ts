@@ -18,6 +18,8 @@ import Dokument from "./Dokument";
 import { InfoToolOverlay } from "../Tools/InfoTool.js";
 import { Overlay, Map } from "ol";
 import { Point } from "ol/geom";
+import VectorLayer from "ol/layer/Vector";
+import { ColorLike } from "ol/colorlike";
 
 class Callback {
     callback: (zeichen: Zeichen[], ...args: any[]) => void;
@@ -26,19 +28,21 @@ class Callback {
 
 export default class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay {
     static loadErControlCounter: number = 0;
+    static layer: VectorLayer;
+    
     private overlay: Overlay;
     private overlayShowing: boolean;
     private loadingZeichen: boolean;
     private loadingZeichenCallback: Callback[] = [];
-
-    getWFSKonfigName(): string {
-        return "AUFSTELL";
-    }
     private zeichen: Zeichen[] = null;
     private hasSekObj: number;
     private art: Klartext;
 
-    public colorFunktion1(): import("ol/colorlike").ColorLike {
+    getObjektKlassenName(): string {
+        return "Otaufstvor";
+    }
+
+    public colorFunktion1(): ColorLike {
         if (this.hasSekObj > 0 || (this.zeichen != null && this.zeichen.length > 0)) {
             return 'rgba(250,120,0,0.8)';
         } else {
@@ -46,12 +50,15 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         }
     }
 
-    public colorFunktion2(): import("ol/colorlike").ColorLike {
+    public colorFunktion2(): ColorLike {
         return 'black';
     }
 
-    getObjektKlassenName(): string {
-        return "Otaufstvor";
+    static getLayer(map?: Map): VectorLayer {
+        if (!Aufstellvorrichtung.layer) {
+            Aufstellvorrichtung.layer = Aufstellvorrichtung.createLayer(map);
+        }
+        return Aufstellvorrichtung.layer;
     }
 
     private vzAddHTML(zeichen: Zeichen[], ziel: HTMLElement) {
@@ -88,7 +95,7 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         for (let i = 0; i < straus.length; i++) {
             Aufstellvorrichtung.loadErControlCounter += 1
             let f = Aufstellvorrichtung.fromXML(straus[i], Aufstellvorrichtung.loadErControlCallback, callback, ...args);
-            Daten.getInstanz().layerAufstell.getSource().addFeature(f);
+            Aufstellvorrichtung.getLayer().getSource().addFeature(f);
         }
         if (straus.length == 0) Aufstellvorrichtung.loadErControlCheck(callback, ...args)
     }
@@ -169,15 +176,15 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
 
     private static createFields(form: HTMLFormElement, aufstell?: Aufstellvorrichtung, changeable: boolean = false) {
         // Art
-        let art = Klartext.createKlartextSelectForm("Itaufstvorart", form, "Art", "art", aufstell != undefined ? aufstell.art.getXlink() : undefined);
+        let art = Klartext.createKlartextSelectForm("Itaufstvorart", form, "Art", "art", aufstell != undefined ? aufstell.art : undefined);
         $(art).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Lage
-        let lage = Klartext.createKlartextSelectForm("Itallglage", form, "Lage", "lage", aufstell != undefined ? aufstell.rlageVst.getXlink() : undefined);
+        let lage = Klartext.createKlartextSelectForm("Itallglage", form, "Lage", "lage", aufstell != undefined ? aufstell.rlageVst : undefined);
         $(lage).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Quelle
-        let quelle = Klartext.createKlartextSelectForm("Itquelle", form, "Quelle", "quelle", aufstell != undefined ? aufstell.quelle.getXlink() : undefined);
+        let quelle = Klartext.createKlartextSelectForm("Itquelle", form, "Quelle", "quelle", aufstell != undefined ? aufstell.quelle : undefined);
         $(quelle).prop('disabled', !changeable).trigger("chosen:updated");
 
         // ext: Objektid

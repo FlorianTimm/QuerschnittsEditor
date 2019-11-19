@@ -38,10 +38,6 @@ class Zeichen extends SekundaerObjekt {
         return "Otvzeichlp";
     }
 
-    getWFSKonfigName(): string {
-        return "ZEICHEN";
-    }
-
     static fromXML(xml: Element) {
         //console.log(xml);
         let r = new Zeichen();
@@ -50,7 +46,6 @@ class Zeichen extends SekundaerObjekt {
     }
 
     // Getter
-
     getSort(): number {
         return this.sort;
     }
@@ -92,7 +87,6 @@ class Zeichen extends SekundaerObjekt {
     }
 
     // Setter
-
     setGroesse(groesse: Klartext | string) {
         this.groesse = Klartext.get("Itvzgroesse", groesse);
     }

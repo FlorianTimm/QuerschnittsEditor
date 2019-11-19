@@ -26,8 +26,7 @@ export default abstract class ToolBox {
     public static stop(uncheck: boolean = true) {
         for (let radio of ToolBox.radioButtons) {
             radio.tool.stop()
-            if (uncheck)
-                radio.radio.checked = false;
+            if (uncheck) radio.radio.checked = false;
         }
     }
 

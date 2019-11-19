@@ -14,15 +14,15 @@ import KlartextManager from './Klartext';
 import Abschnitt from './Abschnitt';
 import PunktObjekt from './prototypes/PunktObjekt';
 import HTML from '../HTML';
+import { VectorLayer } from '../openLayers/Layer';
+import { Map } from 'ol';
+import Klartext from './Klartext';
 
 export default class StrassenAusPunkt extends PunktObjekt {
     static loadErControlCounter: number = 0;
-
-    getWFSKonfigName(): string {
-        return "STAUSPKT";
-    }
+    static layer: any;
     private hasSekObj: number = null;
-    private art: string = null;
+    private art: Klartext = null;
 
     colorFunktion1(): import("ol/colorlike").ColorLike {
         return 'rgba(0,120,0,0.8)'
@@ -30,6 +30,13 @@ export default class StrassenAusPunkt extends PunktObjekt {
 
     colorFunktion2(): import("ol/colorlike").ColorLike {
         return 'black';
+    }
+
+    static getLayer(map?: Map): VectorLayer {
+        if (!StrassenAusPunkt.layer) {
+            StrassenAusPunkt.layer = StrassenAusPunkt.createLayer(map);
+        }
+        return StrassenAusPunkt.layer;
     }
 
     getObjektKlassenName(): string {
@@ -68,7 +75,7 @@ export default class StrassenAusPunkt extends PunktObjekt {
         for (let i = 0; i < straus.length; i++) {
             StrassenAusPunkt.loadErControlCounter += 1
             let f = StrassenAusPunkt.fromXML(straus[i], StrassenAusPunkt.loadErControlCallback, callback, ...args);
-            Daten.getInstanz().layerStraus.getSource().addFeature(f);
+            StrassenAusPunkt.getLayer().getSource().addFeature(f);
         }
         if (straus.length == 0) StrassenAusPunkt.loadErControlCheck(callback, ...args)
     }
@@ -94,11 +101,11 @@ export default class StrassenAusPunkt extends PunktObjekt {
         $(art).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Lage
-        let lage = KlartextManager.createKlartextSelectForm("Itallglage", form, "Lage", "lage", ausstattung != undefined ? ausstattung.rlageVst.getXlink() : undefined);
+        let lage = KlartextManager.createKlartextSelectForm("Itallglage", form, "Lage", "lage", ausstattung != undefined ? ausstattung.rlageVst : undefined);
         $(lage).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Quelle
-        let quelle = KlartextManager.createKlartextSelectForm("Itquelle", form, "Quelle", "quelle", ausstattung != undefined ? ausstattung.quelle.getXlink() : undefined);
+        let quelle = KlartextManager.createKlartextSelectForm("Itquelle", form, "Quelle", "quelle", ausstattung != undefined ? ausstattung.quelle : undefined);
         $(quelle).prop('disabled', !changeable).trigger("chosen:updated");
 
         // VNK
@@ -126,7 +133,7 @@ export default class StrassenAusPunkt extends PunktObjekt {
     }
 
     public changeAttributes(form: HTMLFormElement): void {
-        this.art = $(form).find("#art").children("option:selected").val() as string;
+        this.setArt($(form).find("#art").children("option:selected").val() as string);
         this.setRlageVst($(form).find("#lage").children("option:selected").val() as string);
         this.setQuelle($(form).find("#quelle").children("option:selected").val() as string);
         this.objektnr = $(form).find("#extid").val() as string;
@@ -138,5 +145,14 @@ export default class StrassenAusPunkt extends PunktObjekt {
             'objektnr': this.objektnr,
         });
         PublicWFS.doTransaction(xml);
+    }
+
+    // Setter
+    public setArt(art: Klartext | string) {
+        if (art instanceof Klartext)
+            this.art = art;
+        else {
+            this.art = Klartext.get("Itstrauspktart", art)
+        }
     }
 }

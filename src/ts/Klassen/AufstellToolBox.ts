@@ -6,7 +6,8 @@ import AvVzAdd from "../Tools/Aufstellvorrichtung/AvVzAdd";
 import MoveTool from "../Tools/MoveTool";
 import AvAdd2ER from "../Tools/Aufstellvorrichtung/AvAdd2ER";
 import DeleteTool from "../Tools/DeleteTool";
-import VectorLayer from "ol/layer/Vector";
+import Aufstellvorrichtung from "../Objekte/Aufstellvorrichtung";
+import Abschnitt from "../Objekte/Abschnitt";
 
 export default class AufstellToolBox extends ToolBox {
     private infoTool: InfoTool;
@@ -16,8 +17,12 @@ export default class AufstellToolBox extends ToolBox {
     private add2ErTool: AvAdd2ER;
     private delTool: DeleteTool;
 
-    constructor(map: Map, sidebar: HTMLDivElement, layerAchse: VectorLayer, layerAufstell: VectorLayer) {
+    constructor(map: Map, sidebar: HTMLDivElement) {
         super(map, sidebar, "tab_Otaufstvor")
+
+        let layerAufstell = Aufstellvorrichtung.getLayer()
+        let layerAchse = Abschnitt.getLayer();
+
         this.infoTool = new InfoTool(this.map, layerAufstell, this.sidebar);
         this.addTool = new AvAdd(this.map, sidebar, layerAchse);
         this.vzAddTool = new AvVzAdd(this.map);

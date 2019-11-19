@@ -1,5 +1,5 @@
 {
-    "AUFBAUDATEN": {
+    "Otschicht": {
         "projekt": {
             "art": 2,
             "kt": "Projekt"
@@ -147,7 +147,7 @@
             "art": 0
         }
     },
-    "QUERSCHNITT": {
+    "Dotquer": {
         "projekt": {
             "art": 2,
             "kt": "Projekt"
@@ -255,7 +255,7 @@
             "art": 0
         }
     },
-    "AUFSTELL": {
+    "Otaufstvor": {
         "projekt": {
             "art": 2,
             "kt": "Projekt"
@@ -370,7 +370,7 @@
             "art": 0
         }
     },
-    "ZEICHEN": {
+    "Otvzeichlp": {
         "projekt": {
             "art": 2,
             "kt": "Projekt"
@@ -602,7 +602,7 @@
             "kt": null
         }
     },
-    "STAUSPKT": {
+    "Otstrauspkt": {
         "projekt": {
             "art": 2,
             "kt": "Projekt"

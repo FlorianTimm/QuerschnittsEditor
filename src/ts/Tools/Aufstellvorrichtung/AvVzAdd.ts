@@ -25,15 +25,14 @@ var CONFIG = require('../../config.json');
  * @copyright MIT
  */
 class AvVzAdd extends Tool {
-    private _map: Map;
-    private _daten: Daten;
-    private _ausblenden: any = null;
-    private _liste: any = null;
-    private _auswahl: Aufstellvorrichtung = null;
-    private _popup: HTMLDivElement;
-    private _select: SelectInteraction;
+    private map: Map;
+    private ausblenden: any = null;
+    private liste: any = null;
+    private auswahl: Aufstellvorrichtung = null;
+    private popup: HTMLDivElement;
+    private select: SelectInteraction;
     private mouseOver: SelectInteraction;
-    lastOverlay: Aufstellvorrichtung;
+    private lastOverlay: Aufstellvorrichtung;
 
     /**
      * Erzeugt eine Instanz des Verkehrszeichen-Hinzufügen-Tools
@@ -42,23 +41,20 @@ class AvVzAdd extends Tool {
      */
     constructor(map: Map) {
         super();
-        this._map = map;
-        this._daten = Daten.getInstanz();
+        this.map = map;
 
-        this._select = new SelectInteraction({
-            layers: [this._daten.layerAufstell],
+        this.select = new SelectInteraction({
+            layers: [Aufstellvorrichtung.getLayer()],
             hitTolerance: 10
         });
 
-        this._select.on("select", this._selected.bind(this));
-
+        this.select.on("select", this._selected.bind(this));
 
         this.mouseOver = new SelectInteraction({
-            layers: [this._daten.layerAufstell],
+            layers: [Aufstellvorrichtung.getLayer()],
             toggleCondition: never,
             condition: pointerMove
         });
-
         this.mouseOver.on("select", this.mouseIsOver.bind(this))
     }
 
@@ -71,55 +67,54 @@ class AvVzAdd extends Tool {
         if (event.selected.length == 0) {
             return;
         }
-        this._auswahl = event.selected[0] as Aufstellvorrichtung;
+        this.auswahl = event.selected[0] as Aufstellvorrichtung;
 
         // Popup erzeugen
-        this._ausblenden = document.createElement("div");
-        this._ausblenden.id = "vzadd_ausblenden";
-        document.body.appendChild(this._ausblenden);
-        this._popup = document.createElement("div");
-        this._popup.id = "vz_popup";
-        this._popup.style.textAlign = "left";
+        this.ausblenden = document.createElement("div");
+        this.ausblenden.id = "vzadd_ausblenden";
+        document.body.appendChild(this.ausblenden);
+        this.popup = document.createElement("div");
+        this.popup.id = "vz_popup";
+        this.popup.style.textAlign = "left";
 
-        this._ausblenden.appendChild(this._popup);
+        this.ausblenden.appendChild(this.popup);
 
-        this._liste = document.createElement("div");
-        $(this._liste).sortable({
+        this.liste = document.createElement("div");
+        $(this.liste).sortable({
             placeholder: "ui-state-highlight"
         });
-        $(this._liste).disableSelection();
-        this._liste.classList.add("schilderListe")
-        this._popup.appendChild(this._liste);
+        $(this.liste).disableSelection();
+        this.liste.classList.add("schilderListe")
+        this.popup.appendChild(this.liste);
 
 
-        let stvoZNrNeu = KlartextManager.createKlartextSelectForm('Itvzstvoznr', this._popup, 'Verkehrszeichen', 'stvoznr_neu', undefined, "Neues Schild hinzufügen...")
+        let stvoZNrNeu = KlartextManager.createKlartextSelectForm('Itvzstvoznr', this.popup, 'Verkehrszeichen', 'stvoznr_neu', undefined, "Neues Schild hinzufügen...")
 
         $(stvoZNrNeu).on("change", this.newSchild.bind(this));
 
-        this._popup.appendChild(document.createElement("br"));
+        this.popup.appendChild(document.createElement("br"));
 
         let buttonSpeichern = document.createElement('button');
         buttonSpeichern.addEventListener("click", this._save.bind(this));
         buttonSpeichern.innerHTML = "Speichern";
-        this._popup.appendChild(buttonSpeichern);
+        this.popup.appendChild(buttonSpeichern);
 
         let buttonAbbrechen = document.createElement('button');
         buttonAbbrechen.addEventListener("click", this._closePopup.bind(this));
         buttonAbbrechen.innerHTML = "Abbrechen";
         buttonAbbrechen.style.marginBottom = "250px";
-        this._popup.appendChild(buttonAbbrechen);
+        this.popup.appendChild(buttonAbbrechen);
 
-        this._auswahl.getZeichen(this._zeichenGeladen.bind(this))
+        this.auswahl.getZeichen(this._zeichenGeladen.bind(this))
     }
-
 
     private mouseIsOver(event: SelectEvent) {
         for (let sel of event.deselected) {
-            (sel as Aufstellvorrichtung).hideOverlay(this._map);
+            (sel as Aufstellvorrichtung).hideOverlay(this.map);
             this.lastOverlay = (sel as Aufstellvorrichtung);
         }
         for (let sel of event.selected) {
-            (sel as Aufstellvorrichtung).showOverlay(this._map);
+            (sel as Aufstellvorrichtung).showOverlay(this.map);
             this.lastOverlay = undefined;
         }
     }
@@ -151,7 +146,7 @@ class AvVzAdd extends Tool {
      */
     private _createSchildForm(eintrag: Zeichen) {
         let div = document.createElement("form");
-        this._liste.appendChild(div);
+        this.liste.appendChild(div);
         div.dataset.oid = eintrag.getObjektId();
         div.classList.add('ui-state-default');
         div.classList.add('schild');
@@ -172,7 +167,7 @@ class AvVzAdd extends Tool {
         text.classList.add('schildText');
 
         // StVOZNR
-        let stvoznr = Klartext.createKlartextSelectForm('Itvzstvoznr', text, 'Verkehrszeichen', 'stvoznr', eintrag.getStvoznr().getXlink())
+        let stvoznr = Klartext.createKlartextSelectForm('Itvzstvoznr', text, 'Verkehrszeichen', 'stvoznr', eintrag.getStvoznr())
         $(stvoznr).on("change", function () {
             let schild = Klartext.get("Itvzstvoznr", stvoznr.value)
             img.src = "http://gv-srv-w00118:8080/schilder/" + schild.getKt() + ".svg";
@@ -184,27 +179,27 @@ class AvVzAdd extends Tool {
 
         // Lage FB
         if (eintrag.getLageFb() == undefined) eintrag.setLageFb(CONFIG.LAGEFB);
-        KlartextManager.createKlartextSelectForm('Itvzlagefb', text, 'Lage', 'lageFb', eintrag.getLageFb().getXlink())
+        KlartextManager.createKlartextSelectForm('Itvzlagefb', text, 'Lage', 'lageFb', eintrag.getLageFb())
 
         // Lesbarkeit
         if (eintrag.getLesbarkeit() == undefined) eintrag.setLesbarkeit(CONFIG.LESBARKEIT);
-        KlartextManager.createKlartextSelectForm('Itvzlesbarkeit', text, 'Lesbarkeit', 'lesbarkeit', eintrag.getLesbarkeit().getXlink())
+        KlartextManager.createKlartextSelectForm('Itvzlesbarkeit', text, 'Lesbarkeit', 'lesbarkeit', eintrag.getLesbarkeit())
 
         // Beleuchtet
         if (eintrag.getBeleucht() == undefined) eintrag.setBeleucht(CONFIG.BELEUCHTET);
-        KlartextManager.createKlartextSelectForm('Itvzbeleucht', text, 'Beleuchtung', 'beleucht', eintrag.getBeleucht().getXlink())
+        KlartextManager.createKlartextSelectForm('Itvzbeleucht', text, 'Beleuchtung', 'beleucht', eintrag.getBeleucht())
 
         //Einzelschild
         if (eintrag.getArt() == undefined) eintrag.setArt(CONFIG.EINZELSCHILD);
-        KlartextManager.createKlartextSelectForm('Itvzart', text, 'Art', 'art', eintrag.getArt().getXlink())
+        KlartextManager.createKlartextSelectForm('Itvzart', text, 'Art', 'art', eintrag.getArt())
 
         // Größe des Schilder
         if (eintrag.getGroesse() == undefined) eintrag.setGroesse(CONFIG.GROESSE);
-        KlartextManager.createKlartextSelectForm('Itvzgroesse', text, 'Größe', 'groesse', eintrag.getGroesse().getXlink())
+        KlartextManager.createKlartextSelectForm('Itvzgroesse', text, 'Größe', 'groesse', eintrag.getGroesse())
 
         // Straßenbezug
         if (eintrag.getStrbezug() == undefined) eintrag.setStrbezug(CONFIG.STRASSENBEZUG);
-        KlartextManager.createKlartextSelectForm('Itbesstrbezug', text, 'Straßenbezug', 'strbezug', eintrag.getStrbezug().getXlink())
+        KlartextManager.createKlartextSelectForm('Itbesstrbezug', text, 'Straßenbezug', 'strbezug', eintrag.getStrbezug())
 
         // Aufstelldatum
         HTML.createDateInput(text, "Aufstelldatum", "aufstelldat", ((eintrag.getAufstelldat() != null) ? (eintrag.getAufstelldat()) : ('')));
@@ -214,11 +209,11 @@ class AvVzAdd extends Tool {
 
         // Erfassungsart
         if (eintrag.getErfart() == undefined) eintrag.setErfart(CONFIG.ERFASSUNG);
-        KlartextManager.createKlartextSelectForm('Iterfart', text, 'Erfassung', 'erfart', eintrag.getErfart().getXlink())
+        KlartextManager.createKlartextSelectForm('Iterfart', text, 'Erfassung', 'erfart', eintrag.getErfart())
 
         // Quelle
         if (eintrag.getQuelle() == undefined) eintrag.setQuelle(CONFIG.QUELLE);
-        KlartextManager.createKlartextSelectForm('Itquelle', text, 'Quelle', 'quelle', eintrag.getQuelle().getXlink())
+        KlartextManager.createKlartextSelectForm('Itquelle', text, 'Quelle', 'quelle', eintrag.getQuelle())
 
         // Löschen
         let del_group = document.createElement("div");
@@ -261,7 +256,7 @@ class AvVzAdd extends Tool {
         let alt: { [objektid: string]: Zeichen } = {};
 
         // Alle Schilder-Formulare auf Änderungen prüfen
-        let forms = this._popup.getElementsByTagName("form");
+        let forms = this.popup.getElementsByTagName("form");
         for (let i = 0; i < forms.length; i++) {
             //form of this._popup.getElementsByTagName("form")) {
             let eintraege = $(forms[i]).children(".schildText");
@@ -290,13 +285,13 @@ class AvVzAdd extends Tool {
                 alt[schild.getObjektId()] = schild;
             }
         }
-        console.log(this._auswahl.getZeichen());
+        console.log(this.auswahl.getZeichen());
         console.log(neu);
         console.log(alt);
 
         let update = ""
         let anzDelete = 0, anzUpdate = 0;
-        let zeichen = this._auswahl.getZeichen();
+        let zeichen = this.auswahl.getZeichen();
         for (let oldZeichen_i in zeichen as Zeichen[]) {
             let oldZeichen = zeichen[oldZeichen_i] as Zeichen;
             if (oldZeichen.getObjektId() in alt) {
@@ -372,13 +367,12 @@ class AvVzAdd extends Tool {
                         '			</ogc:PropertyIsEqualTo>\n' +
                         '			<ogc:PropertyIsEqualTo>\n' +
                         '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
-                        '				<ogc:Literal>#' + this._daten.ereignisraum + '</ogc:Literal>\n' +
+                        '				<ogc:Literal>#' + Daten.getInstanz().ereignisraum + '</ogc:Literal>\n' +
                         '			</ogc:PropertyIsEqualTo>\n' +
                         '		</ogc:And>\n' +
                         '	</ogc:Filter>\n' + upd +
                         '</wfs:Update>\n';
                 }
-                //console.log("update");
             } else {
                 console.log("delete");
                 anzDelete += 1
@@ -391,7 +385,7 @@ class AvVzAdd extends Tool {
                     '			</ogc:PropertyIsEqualTo>\n' +
                     '			<ogc:PropertyIsEqualTo>\n' +
                     '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
-                    '				<ogc:Literal>#' + this._daten.ereignisraum + '</ogc:Literal>\n' +
+                    '				<ogc:Literal>#' + Daten.getInstanz().ereignisraum + '</ogc:Literal>\n' +
                     '			</ogc:PropertyIsEqualTo>\n' +
                     '		</ogc:And>\n' +
                     '	</ogc:Filter>\n' +
@@ -402,7 +396,7 @@ class AvVzAdd extends Tool {
             console.log("neu");
             if (zeichen.getVztext == null) zeichen.setVztext("");
             update += '<wfs:Insert>\n<Otvzeichlp>\n' +
-                '<projekt typeName="Projekt" xlink:href="#' + this._daten.ereignisraum + '"/>\n' +
+                '<projekt typeName="Projekt" xlink:href="#' + Daten.getInstanz().ereignisraum + '"/>\n' +
                 '<sort>' + zeichen.getSort() + '</sort>\n' +
                 '<stvoznr xlink:href="#S' + zeichen.getStvoznr() + '" typeName="Itvzstvoznr" />\n' +
                 '<vztext>' + ((zeichen.getVztext() != null) ? zeichen.getVztext() : '') + '</vztext>\n' +
@@ -410,7 +404,7 @@ class AvVzAdd extends Tool {
                 '<lesbarkeit xlink:href="#S' + zeichen.getLesbarkeit() + '" typeName="Itvzlesbarkeit" />\n' +
                 '<beleucht xlink:href="#S' + zeichen.getBeleucht() + '" typeName="Itvzbeleucht" />\n' +
                 '<art xlink:href="#' + zeichen.getArt() + '" typeName="Itvzart" />\n' +
-                '<parent typeName="Otaufstvor" xlink:href="#' + this._auswahl.getFid() + '"/>\n' +
+                '<parent typeName="Otaufstvor" xlink:href="#' + this.auswahl.getFid() + '"/>\n' +
                 '<groesse xlink:href="#' + zeichen.getGroesse() + '" typeName="Itvzgroesse" />\n' +
                 '<strbezug xlink:href="#' + zeichen.getStrbezug() + '" typeName="Itbesstrbezug" />\n' +
                 '<aufstelldat>' + zeichen.getAufstelldat() + '</aufstelldat>\n' +
@@ -437,16 +431,7 @@ class AvVzAdd extends Tool {
                 buttons: {
                     "Daten schreiben": function (this: AvVzAdd) {
                         $((event.target as HTMLElement).parentElement.parentElement).remove();
-                        console.log("bestätigt")
-                        console.log(this)
-                        // Unterscheidung zwischen neuer Aufstellvorrichtung und alter, leider nicht möglich
-                        /*if (this._auswahl.hasSekObj == 0)
-                            PublicWFS.doTransaction(update, this._updateCallback, undefined, this, this._auswahl);
-                        else
-                            PublicWFS.addSekInER(this._auswahl, "Otaufstvor", "Otvzeichlp", this._daten.ereignisraum_nr, this._erCallback, undefined, this, update, this._auswahl);
-                        */
-                        PublicWFS.addSekInER(this._auswahl, "Otaufstvor", "Otvzeichlp", this._daten.ereignisraum_nr, this._erCallback.bind(this), this._erCallback.bind(this), update, this._auswahl);
-                        //this._closePopup(event);
+                        PublicWFS.addSekInER(this.auswahl, "Otaufstvor", "Otvzeichlp", Daten.getInstanz().ereignisraum_nr, this._erCallback.bind(this), this._erCallback.bind(this), update, this.auswahl);
                         $("#dialog-confirm").dialog("close");
                     }.bind(this),
                     "Abbrechen": function () {
@@ -480,7 +465,7 @@ class AvVzAdd extends Tool {
         PublicWFS.showMessage("erfolgreich", false);
         console.log("reload");
         _auswahl.reloadZeichen();
-        this._select.getFeatures().clear();
+        this.select.getFeatures().clear();
     }
 
     /**
@@ -489,20 +474,20 @@ class AvVzAdd extends Tool {
      */
     _closePopup(__: any) {
         //this._ausblenden.remove();
-        document.body.removeChild(this._ausblenden);
-        this._select.getFeatures().clear();
-        this._auswahl = null;
+        document.body.removeChild(this.ausblenden);
+        this.select.getFeatures().clear();
+        this.auswahl = null;
     }
 
     start() {
-        this._map.addInteraction(this._select);
-        this._map.addInteraction(this.mouseOver);
+        this.map.addInteraction(this.select);
+        this.map.addInteraction(this.mouseOver);
     }
 
     stop() {
-        this._map.removeInteraction(this._select);
-        this._map.removeInteraction(this.mouseOver);
-        if (this.lastOverlay) this.lastOverlay.hideOverlay(this._map)
+        this.map.removeInteraction(this.select);
+        this.map.removeInteraction(this.mouseOver);
+        if (this.lastOverlay) this.lastOverlay.hideOverlay(this.map)
     }
 }
 

@@ -33,23 +33,18 @@ export default abstract class Objekt extends Feature {
 	protected abschnittId: string = null;
 
 	abstract getObjektKlassenName(): string;
-	abstract getWFSKonfigName(): string;
-
-	constructor() {
-		super({ geom: null });
-	}
 
 	public setDataFromXML(xml: Element) {
 		this.fid = xml.getAttribute('fid');
-		for (var tag in CONFIG_WFS[this.getWFSKonfigName()]) {
+		for (var tag in CONFIG_WFS[this.getObjektKlassenName()]) {
 			if (xml.getElementsByTagName(tag).length <= 0) continue;
-			if (CONFIG_WFS[this.getWFSKonfigName()][tag].art == 0) {
+			if (CONFIG_WFS[this.getObjektKlassenName()][tag].art == 0) {
 				// Kein Klartext
 				this[tag] = xml.getElementsByTagName(tag)[0].firstChild.textContent;
-			} else if (CONFIG_WFS[this.getWFSKonfigName()][tag].art == 1) {
+			} else if (CONFIG_WFS[this.getObjektKlassenName()][tag].art == 1) {
 				// Kein Klartext
 				this[tag] = Number(xml.getElementsByTagName(tag)[0].firstChild.textContent);
-			} else if (CONFIG_WFS[this.getWFSKonfigName()][tag].art == 2) {
+			} else if (CONFIG_WFS[this.getObjektKlassenName()][tag].art == 2) {
 				// Klartext, xlink wird gespeichert
 				let eintrag = xml.getElementsByTagName(tag)[0]
 				this[tag] = Klartext.get(
@@ -99,25 +94,25 @@ export default abstract class Objekt extends Feature {
 		let r = '<' + this.getObjektKlassenName() + '>\n';
 
 		for (let change in changes) {
-			if (CONFIG_WFS[this.getWFSKonfigName()][change].art == 0 || CONFIG_WFS[this.getWFSKonfigName()][change].art == 1) {
+			if (CONFIG_WFS[this.getObjektKlassenName()][change].art == 0 || CONFIG_WFS[this.getObjektKlassenName()][change].art == 1) {
 				// Kein Klartext
 				r += '<' + change + '>' + changes[change] + '</' + change + '>\n';
-			} else if (CONFIG_WFS[this.getWFSKonfigName()][change].art == 2) {
+			} else if (CONFIG_WFS[this.getObjektKlassenName()][change].art == 2) {
 				// Klartext
-				r += '<' + change + ' xlink:href="' + changes[change] + '" typeName="' + CONFIG_WFS[this.getWFSKonfigName()][change].kt + '" />\n';
+				r += '<' + change + ' xlink:href="' + changes[change] + '" typeName="' + CONFIG_WFS[this.getObjektKlassenName()][change].kt + '" />\n';
 			}
 		}
 
-		for (let tag in CONFIG_WFS[this.getWFSKonfigName()]) {
+		for (let tag in CONFIG_WFS[this.getObjektKlassenName()]) {
 			if (changes != undefined && tag in changes) continue;
 			else if (removeIds == true && (tag == "objektId" || tag == "fid")) continue;
 			else if (this[tag] === null || this[tag] === undefined) continue;
-			else if (CONFIG_WFS[this.getWFSKonfigName()][tag].art == 0 || CONFIG_WFS[this.getWFSKonfigName()][tag].art == 1) {
+			else if (CONFIG_WFS[this.getObjektKlassenName()][tag].art == 0 || CONFIG_WFS[this.getObjektKlassenName()][tag].art == 1) {
 				// Kein Klartext
 				r += '<' + tag + '>' + this[tag] + '</' + tag + '>\n';
-			} else if (CONFIG_WFS[this.getWFSKonfigName()][tag].art == 2) {
+			} else if (CONFIG_WFS[this.getObjektKlassenName()][tag].art == 2) {
 				// Klartext
-				r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS[this.getWFSKonfigName()][tag].kt + '" />\n';
+				r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS[this.getObjektKlassenName()][tag].kt + '" />\n';
 			}
 		}
 
@@ -125,19 +120,7 @@ export default abstract class Objekt extends Feature {
 		return r;
 	}
 
-
-	isOKinER(ok: string): boolean {
-		return ok in this.inER && this.inER[ok];
-	}
-
-	//Setter
-	addOKinER(ok: string, value: boolean = true) {
-		this.inER[ok] = value;
-	}
-
-
 	// Getter
-
 	public getProjekt(): Klartext {
 		return this.projekt;
 	}
@@ -194,5 +177,4 @@ export default abstract class Objekt extends Feature {
 	public setObjektnr(objektnr: string) {
 		this.objektnr = objektnr;
 	}
-
 }
