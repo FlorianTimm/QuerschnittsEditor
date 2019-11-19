@@ -7,7 +7,8 @@ import { LineString } from 'ol/geom';
 import Feature, { FeatureLike } from 'ol/Feature';
 import Tool from '../prototypes/Tool';
 import QuerInfoTool from './QuerInfoTool';
-import { Map, MapBrowserPointerEvent } from 'ol';
+import { MapBrowserPointerEvent } from 'ol';
+import Map from "../../openLayers/Map";
 import Abschnitt, { StationObj } from '../../Objekte/Abschnitt';
 import HTML from '../../HTML';
 
@@ -18,7 +19,6 @@ import HTML from '../../HTML';
  * @copyright MIT
  */
 class QuerPartTool extends Tool {
-    private map: Map;
     private info: QuerInfoTool;
     private select: SelectInteraction;
     private l_overlay: VectorLayer;
@@ -36,8 +36,7 @@ class QuerPartTool extends Tool {
     private layerAchse: VectorLayer;
 
     constructor(map: Map, info: QuerInfoTool, sidebar: HTMLDivElement, layerAchse: VectorLayer) {
-        super();
-        this.map = map;
+        super(map);
         this.info = info;
         this.sidebar = sidebar;
         this.layerAchse = layerAchse;

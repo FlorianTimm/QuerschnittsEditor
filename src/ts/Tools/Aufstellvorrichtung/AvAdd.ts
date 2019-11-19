@@ -1,7 +1,7 @@
 import PublicWFS from '../../PublicWFS';
 import Aufstellvorrichtung from '../../Objekte/Aufstellvorrichtung';
 import AddTool from '../prototypes/AddTool';
-import { Map } from 'ol';
+import Map from "../../openLayers/Map";
 import Daten from '../../Daten';
 import VectorLayer from 'ol/layer/Vector';
 var CONFIG = require('../../config.json');

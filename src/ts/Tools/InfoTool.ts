@@ -19,15 +19,13 @@ import { FeatureLike } from 'ol/Feature';
  */
 
 export default class InfoTool extends Tool {
-    protected map: Map;
     private layer: Layer;
     private infoField: HTMLFormElement;
     protected select: SelectInteraction;
     protected lastFeature: InfoToolOverlay;
 
     constructor(map: Map, layer: Layer, sidebar: HTMLDivElement) {
-        super();
-        this.map = map;
+        super(map);
         this.layer = layer;
 
         this.select = new SelectInteraction({

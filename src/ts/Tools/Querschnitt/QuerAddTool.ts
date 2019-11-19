@@ -1,13 +1,12 @@
 import { Select as SelectInteraction } from 'ol/interaction';
 import Querschnitt from '../../Objekte/Querschnittsdaten';
-import Map from 'ol/Map';
-import Daten from '../../Daten';
 import QuerInfoTool from './QuerInfoTool';
 import Tool from '../prototypes/Tool';
 import { SelectEvent } from 'ol/interaction/Select';
 import InfoTool from '../InfoTool';
 import HTML from '../../HTML';
 import { VectorLayer } from '../../openLayers/Layer';
+import Map from "../../openLayers/Map";
 
 import "../../import_jquery.js";
 import 'jquery-ui-bundle';
@@ -20,17 +19,13 @@ import 'jquery-ui-bundle/jquery-ui.css'
  * @copyright MIT
  */
 class QuerAddTool extends Tool {
-    private _daten: Daten;
     private _info: QuerInfoTool;
     private _select: SelectInteraction;
-    private _map: Map;
     private form: HTMLFormElement = null;
     button: HTMLInputElement;
 
     constructor(map: Map, info: QuerInfoTool, layerTrennLinien: VectorLayer) {
-        super();
-        this._map = map;
-        this._daten = Daten.getInstanz();
+        super(map);
         this._info = info;
         this._select = new SelectInteraction({
             layers: [layerTrennLinien],
@@ -69,13 +64,13 @@ class QuerAddTool extends Tool {
     start() {
         this.createForm();
         if (this.form != null) $(this.form).show("fast");
-        this._map.addInteraction(this._select);
+        this.map.addInteraction(this._select);
     }
 
     stop() {
         if (this.form != null) $(this.form).hide("fast");
         this.disableMenu()
-        this._map.removeInteraction(this._select);
+        this.map.removeInteraction(this._select);
         this._info.hideInfoBox();
     }
 

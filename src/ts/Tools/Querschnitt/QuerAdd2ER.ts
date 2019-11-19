@@ -1,6 +1,6 @@
 import PublicWFS from '../../PublicWFS';
 import Querschnittsdaten from '../../Objekte/Querschnittsdaten';
-import { Map } from 'ol';
+import Map from "../../openLayers/Map";
 import Abschnitt from '../../Objekte/Abschnitt';
 import Add2ER from '../prototypes/Add2ER';
 

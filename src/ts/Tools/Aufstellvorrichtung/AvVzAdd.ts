@@ -8,7 +8,7 @@ import 'jquery-ui-bundle/jquery-ui.css'
 import PublicWFS from '../../PublicWFS';
 import Tool from '../prototypes/Tool';
 import Daten from '../../Daten';
-import { Map } from 'ol';
+import Map from "../../openLayers/Map";
 import Zeichen from '../../Objekte/Zeichen';
 import { SelectEvent } from 'ol/interaction/Select';
 import KlartextManager, { KlartextMap } from '../../Objekte/Klartext';
@@ -25,7 +25,6 @@ var CONFIG = require('../../config.json');
  * @copyright MIT
  */
 class AvVzAdd extends Tool {
-    private map: Map;
     private ausblenden: any = null;
     private liste: any = null;
     private auswahl: Aufstellvorrichtung = null;
@@ -40,8 +39,7 @@ class AvVzAdd extends Tool {
      * @param daten Daten-Objekt
      */
     constructor(map: Map) {
-        super();
-        this.map = map;
+        super(map);
 
         this.select = new SelectInteraction({
             layers: [Aufstellvorrichtung.getLayer()],

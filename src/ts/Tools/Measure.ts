@@ -5,7 +5,7 @@ import { Vector as VectorLayer } from 'ol/layer';
 import Overlay from 'ol/Overlay';
 import { getLength } from 'ol/sphere';
 import { unByKey } from 'ol/Observable';
-import Map from '../openLayers/Map';
+import Map from "../openLayers/Map";
 import GeometryType from 'ol/geom/GeometryType';
 import OverlayPositioning from 'ol/OverlayPositioning';
 import Tool from './prototypes/Tool';
@@ -22,15 +22,13 @@ var CONFIG = require('../config.json');
  * @copyright MIT
  */
 class Measure extends Tool {
-    private map: Map;
     private source: VectorSource;
     private vector: VectorLayer;
     private draw: Draw;
     private measureTooltip: Overlay;
 
     constructor(map: Map) {
-        super();
-        this.map = map;
+        super(map);
 
         // Layer erzeugen
         this.source = new VectorSource();

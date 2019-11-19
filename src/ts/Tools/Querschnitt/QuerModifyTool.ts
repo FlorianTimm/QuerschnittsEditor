@@ -1,7 +1,7 @@
 import { Snap } from 'ol/interaction';
 import { platformModifierKeyOnly, never } from 'ol/events/condition';
 import QuerInfoTool from './QuerInfoTool';
-import { Map, Feature, MapBrowserEvent } from 'ol';
+import { Feature, MapBrowserEvent } from 'ol';
 import Tool from '../prototypes/Tool';
 import { SelectInteraction, ModifyInteraction } from '../../openLayers/Interaction'
 import { ModifyEvent } from 'ol/interaction/Modify';
@@ -10,6 +10,7 @@ import InfoTool from '../InfoTool';
 import { MultiLineString, Point, LineString } from 'ol/geom';
 import HTML from '../../HTML';
 import KlartextManager from '../../Objekte/Klartext';
+import Map from "../../openLayers/Map";
 
 import "../../import_jquery.js";
 import 'chosen-js';
@@ -30,7 +31,6 @@ import PublicWFS from '../../PublicWFS';
  * @copyright MIT
  */
 export default class QuerModifyTool extends Tool {
-    private map: Map;
     private info: QuerInfoTool;
     private modify: ModifyInteraction;
     private selectLinien: SelectInteraction;
@@ -47,8 +47,7 @@ export default class QuerModifyTool extends Tool {
     private sidebar: HTMLDivElement;
 
     constructor(map: Map, info: QuerInfoTool, sidebar: HTMLDivElement, layerTrenn: VectorLayer, layerQuer: VectorLayer, layerStation: VectorLayer) {
-        super();
-        this.map = map;
+        super(map);
         this.info = info;
         this.sidebar = sidebar;
 

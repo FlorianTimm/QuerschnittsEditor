@@ -1,5 +1,5 @@
 import PublicWFS from '../../PublicWFS';
-import { Map } from 'ol';
+import Map from "../../openLayers/Map";
 import Abschnitt from '../../Objekte/Abschnitt';
 import Add2ER from '../prototypes/Add2ER';
 import StrassenAusPunkt from '../../Objekte/StrassenAusPunkt';

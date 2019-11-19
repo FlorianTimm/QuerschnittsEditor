@@ -3,23 +3,21 @@ import { Select as SelectInteraction } from 'ol/interaction';
 import PublicWFS from '../../PublicWFS';
 import Tool from '../prototypes/Tool'
 import Daten from '../../Daten';
-import { Map } from 'ol';
+import Map from "../../openLayers/Map";
 import { SelectEventType } from 'ol/interaction/Select';
 import Abschnitt from '../../Objekte/Abschnitt';
 import WaitBlocker from '../../WaitBlocker';
 
 export default abstract class Add2ER extends Tool {
     private daten: Daten;
-    private map: Map;
     private select: SelectInteraction;
     private objektklasse: string;
 
     protected abstract loadAbschnitt(abschnitt: Abschnitt): void;
 
     constructor(map: Map, objektklasse: string) {
-        super();
+        super(map);
         this.daten = Daten.getInstanz();
-        this.map = map;
         this.objektklasse = objektklasse;
 
         this.select = new SelectInteraction({

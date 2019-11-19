@@ -1,11 +1,6 @@
-import { Style, Stroke } from 'ol/style';
-import { Select as SelectInteraction } from 'ol/interaction';
 import PublicWFS from '../../PublicWFS';
 import Aufstellvorrichtung from '../../Objekte/Aufstellvorrichtung';
-import Tool from '../prototypes/Tool'
-import Daten from '../../Daten';
-import { Map } from 'ol';
-import { SelectEventType } from 'ol/interaction/Select';
+import Map from "../../openLayers/Map";
 import Abschnitt from '../../Objekte/Abschnitt';
 import Add2ER from '../prototypes/Add2ER';
 

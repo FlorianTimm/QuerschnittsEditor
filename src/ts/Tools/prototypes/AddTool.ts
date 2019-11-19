@@ -5,7 +5,8 @@ import { Vector as VectorLayer } from 'ol/layer';
 import { Point, LineString } from 'ol/geom';
 import Feature from 'ol/Feature';
 import Tool from '../prototypes/Tool';
-import { Map, MapBrowserEvent } from 'ol';
+import { MapBrowserEvent } from 'ol';
+import Map from "../../openLayers/Map";
 import Abschnitt, { StationObj } from '../../Objekte/Abschnitt';
 import PublicWFS from '../../PublicWFS';
 
@@ -35,8 +36,7 @@ export default abstract class AddTool extends Tool {
     protected abstract createForm(): void;
 
     constructor(map: Map, sidebar: HTMLDivElement, layerAchse: VectorLayer) {
-        super();
-        this.map = map;
+        super(map);
         this.sidebar = sidebar;
         this.layerAchse = layerAchse;
 

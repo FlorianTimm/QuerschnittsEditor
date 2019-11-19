@@ -1,4 +1,4 @@
-import { Map, Feature, Collection } from "ol";
+import { Feature, Collection } from "ol";
 import QuerInfoTool from "./QuerInfoTool";
 import Tool from '../prototypes/Tool';
 import { never } from 'ol/events/condition';
@@ -6,6 +6,7 @@ import { SelectInteraction } from '../../openLayers/Interaction'
 import Querschnitt from "../../Objekte/Querschnittsdaten";
 import InfoTool from "../InfoTool";
 import { VectorLayer } from "ts/openLayers/Layer";
+import Map from "../../openLayers/Map";
 
 /**
  * Funktion zum Löschen von Querschnitten
@@ -15,14 +16,12 @@ import { VectorLayer } from "ts/openLayers/Layer";
  */
 
 class QuerDelTool extends Tool {
-    private map: Map;
     private info: QuerInfoTool;
     private selectLinien: SelectInteraction;
     private selectFlaechen: SelectInteraction;
 
     constructor(map: Map, info: QuerInfoTool, layerTrenn: VectorLayer, layerQuer: VectorLayer) {
-        super();
-        this.map = map;
+        super(map);
         this.info = info;
 
         this.createLinienSelect(layerTrenn);

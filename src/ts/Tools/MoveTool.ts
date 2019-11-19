@@ -5,7 +5,7 @@ import { Vector as VectorLayer } from 'ol/layer';
 import { LineString, Point } from 'ol/geom';
 import Feature from 'ol/Feature';
 import { never as neverCondition } from 'ol/events/condition';
-import { Map, MapBrowserEvent } from 'ol';
+import { MapBrowserEvent } from 'ol';
 import InfoTool from './InfoTool';
 import Tool from './prototypes/Tool';
 import { ModifyInteraction } from '../openLayers/Interaction';
@@ -14,6 +14,7 @@ import PunktObjekt from '../Objekte/prototypes/PunktObjekt';
 import { SelectEvent } from 'ol/interaction/Select';
 import { ModifyEvent } from 'ol/interaction/Modify';
 import Abschnitt, { StationObj } from '../Objekte/Abschnitt';
+import Map from "../openLayers/Map";
 
 /**
  * Funktion zum Verschieben von Punktobjekten
@@ -23,7 +24,6 @@ import Abschnitt, { StationObj } from '../Objekte/Abschnitt';
  */
 
 export default class MoveTool extends Tool {
-    private map: Map;
     private infoTool: InfoTool;
     private select: SelectInteraction;
     private v_overlay: VectorSource;
@@ -32,8 +32,7 @@ export default class MoveTool extends Tool {
     private modify: ModifyInteraction;
 
     constructor(map: Map, avInfoTool: InfoTool, selectLayer: VectorLayer) {
-        super();
-        this.map = map;
+        super(map);
         this.infoTool = avInfoTool;
 
         this.select = new SelectInteraction({
