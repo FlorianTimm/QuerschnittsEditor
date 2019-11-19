@@ -7,7 +7,6 @@ import { LineString } from 'ol/geom';
 import Feature, { FeatureLike } from 'ol/Feature';
 import Tool from '../prototypes/Tool';
 import QuerInfoTool from './QuerInfoTool';
-import Daten from '../../Daten';
 import { Map, MapBrowserPointerEvent } from 'ol';
 import Abschnitt, { StationObj } from '../../Objekte/Abschnitt';
 import HTML from '../../HTML';
@@ -20,7 +19,6 @@ import HTML from '../../HTML';
  */
 class QuerPartTool extends Tool {
     private map: Map;
-    private daten: Daten;
     private info: QuerInfoTool;
     private select: SelectInteraction;
     private l_overlay: VectorLayer;
@@ -35,20 +33,21 @@ class QuerPartTool extends Tool {
     private form_nnk: HTMLInputElement;
     private form_station: HTMLInputElement;
     private form_button: HTMLInputElement;
+    private layerAchse: VectorLayer;
 
-    constructor(map: Map, info: QuerInfoTool, sidebar: HTMLDivElement) {
+    constructor(map: Map, info: QuerInfoTool, sidebar: HTMLDivElement, layerAchse: VectorLayer) {
         super();
         this.map = map;
-        this.daten = Daten.getInstanz();
         this.info = info;
         this.sidebar = sidebar;
+        this.layerAchse = layerAchse;
     }
 
     private initialize() {
         if (this.init) return;
 
         this.select = new SelectInteraction({
-            layers: [this.daten.layerAchse]
+            layers: [this.layerAchse]
         });
 
         this.createOverlayVectorLayer();
@@ -100,7 +99,7 @@ class QuerPartTool extends Tool {
         if (this.select.getFeatures().getArray().length == 1) {
             achse = this.select.getFeatures().item(0) as Abschnitt;
         } else {
-            achse = this.daten.vectorAchse.getClosestFeatureToCoordinate(event.coordinate) as Abschnitt;
+            achse = this.layerAchse.getSource().getClosestFeatureToCoordinate(event.coordinate) as Abschnitt;
         }
 
         if (achse == null) {

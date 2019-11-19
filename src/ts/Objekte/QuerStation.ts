@@ -94,10 +94,10 @@ export default class QuerStation {
         let letzter = this.linienPunkte[this.linienPunkte.length - 1];
         let statTrenn = [];
         statTrenn.push([Vektor.sum(letzter.pkt, Vektor.multi(letzter.seitlicherVektorAmPunkt, 30)), Vektor.sum(letzter.pkt, Vektor.multi(letzter.seitlicherVektorAmPunkt, -30))]);
-        this.daten.vectorStation.addFeature(new Feature({ geom: new Point(letzter.pkt) }));
+        this.daten.layerStation.getSource().addFeature(new Feature({ geom: new Point(letzter.pkt) }));
         if (this.vst == 0) {
             statTrenn.push([Vektor.sum(erster.pkt, Vektor.multi(erster.seitlicherVektorAmPunkt, 30)), Vektor.sum(erster.pkt, Vektor.multi(erster.seitlicherVektorAmPunkt, -30))]);
-            this.daten.vectorStation.addFeature(new Feature({ geom: new Point(erster.pkt) }));
+            this.daten.layerStation.getSource().addFeature(new Feature({ geom: new Point(erster.pkt) }));
         }
 
         if (this.linie) {
@@ -108,7 +108,7 @@ export default class QuerStation {
                 geometry: this.linie,
                 objekt: this,
             });
-            this.daten.vectorStation.addFeature(feat);
+            this.daten.layerStation.getSource().addFeature(feat);
         }
 
         return this.linienPunkte;
@@ -325,7 +325,6 @@ export default class QuerStation {
         let dotquer = xml.getElementsByTagName("Dotquer");
         let liste: Querschnitt[] = [];
         for (let i = 0; i < dotquer.length; i++) {
-            //console.log(quer);
             let q = Querschnitt.fromXML(dotquer[i])
             liste.push(q);
 
@@ -340,8 +339,8 @@ export default class QuerStation {
     }
 
     public deleteStreifen(streifen: string, nummer: number) {
-        this.daten.vectorTrenn.removeFeature(this._querschnitte[streifen][nummer].trenn)
-        this.daten.vectorQuer.removeFeature(this._querschnitte[streifen][nummer])
+        this.daten.layerTrenn.getSource().removeFeature(this._querschnitte[streifen][nummer].trenn)
+        this.daten.layerQuer.getSource().removeFeature(this._querschnitte[streifen][nummer])
         delete this._querschnitte[streifen][nummer];
     }
 

@@ -1,11 +1,11 @@
 import { Map, Feature, Collection } from "ol";
-import Daten from '../../Daten';
 import QuerInfoTool from "./QuerInfoTool";
 import Tool from '../prototypes/Tool';
 import { never } from 'ol/events/condition';
 import { SelectInteraction } from '../../openLayers/Interaction'
 import Querschnitt from "../../Objekte/Querschnittsdaten";
 import InfoTool from "../InfoTool";
+import { VectorLayer } from "ts/openLayers/Layer";
 
 /**
  * Funktion zum Löschen von Querschnitten
@@ -16,19 +16,17 @@ import InfoTool from "../InfoTool";
 
 class QuerDelTool extends Tool {
     private map: Map;
-    private daten: Daten;
     private info: QuerInfoTool;
     private selectLinien: SelectInteraction;
     private selectFlaechen: SelectInteraction;
 
-    constructor(map: Map, info: QuerInfoTool) {
+    constructor(map: Map, info: QuerInfoTool, layerTrenn: VectorLayer, layerQuer: VectorLayer) {
         super();
         this.map = map;
-        this.daten = Daten.getInstanz();
         this.info = info;
 
-        this.createLinienSelect();
-        this.createFlaechenSelect();
+        this.createLinienSelect(layerTrenn);
+        this.createFlaechenSelect(layerQuer);
 
         document.getElementById("delQuerschnittButton").addEventListener("click", this.querschnittLoeschenButton.bind(this))
     }
@@ -88,17 +86,17 @@ class QuerDelTool extends Tool {
         querschnitt.getStation().rewrite();
     }
 
-    private createLinienSelect() {
+    private createLinienSelect(layerTrenn: VectorLayer) {
         this.selectLinien = new SelectInteraction({
-            layers: [this.daten.layerTrenn],
+            layers: [layerTrenn],
             condition: never,
             style: InfoTool.selectStyle
         });
     }
 
-    private createFlaechenSelect() {
+    private createFlaechenSelect(layerQuer: VectorLayer) {
         this.selectFlaechen = new SelectInteraction({
-            layers: [this.daten.layerQuer],
+            layers: [layerQuer],
             toggleCondition: never,
             style: InfoTool.selectStyle
         });

@@ -163,17 +163,11 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
 
     public static createForm(sidebar: HTMLDivElement, formId: string, aufstell?: Aufstellvorrichtung, changeable: boolean = false, showForm: boolean = true): HTMLFormElement {
         let form = HTML.createToolForm(sidebar, showForm, formId);
-
-        // Art
         Aufstellvorrichtung.createFields(form, aufstell, changeable);
-
         return form;
     }
 
-
-
     private static createFields(form: HTMLFormElement, aufstell?: Aufstellvorrichtung, changeable: boolean = false) {
-        console.log(aufstell)
         // Art
         let art = Klartext.createKlartextSelectForm("Itaufstvorart", form, "Art", "art", aufstell != undefined ? aufstell.art.getXlink() : undefined);
         $(art).prop('disabled', !changeable).trigger("chosen:updated");

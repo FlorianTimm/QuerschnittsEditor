@@ -1,7 +1,6 @@
 import { Snap } from 'ol/interaction';
 import { platformModifierKeyOnly, never } from 'ol/events/condition';
 import QuerInfoTool from './QuerInfoTool';
-import Daten from '../../Daten';
 import { Map, Feature, MapBrowserEvent } from 'ol';
 import Tool from '../prototypes/Tool';
 import { SelectInteraction, ModifyInteraction } from '../../openLayers/Interaction'
@@ -32,7 +31,6 @@ import PublicWFS from '../../PublicWFS';
  */
 export default class QuerModifyTool extends Tool {
     private map: Map;
-    private daten: Daten;
     private info: QuerInfoTool;
     private modify: ModifyInteraction;
     private selectLinien: SelectInteraction;
@@ -50,17 +48,16 @@ export default class QuerModifyTool extends Tool {
     private modifyOverlayLayer: VectorLayer;
     private sidebar: HTMLDivElement;
 
-    constructor(map: Map, info: QuerInfoTool, sidebar: HTMLDivElement) {
+    constructor(map: Map, info: QuerInfoTool, sidebar: HTMLDivElement, layerTrenn: VectorLayer, layerQuer: VectorLayer, layerStation: VectorLayer) {
         super();
         this.map = map;
-        this.daten = Daten.getInstanz();
         this.info = info;
         this.sidebar = sidebar;
 
-        this.createLinienSelect();
-        this.createFlaechenSelect();
+        this.createLinienSelect(layerTrenn);
+        this.createFlaechenSelect(layerQuer);
         this.createModify();
-        this.createSnap();
+        this.createSnap(layerTrenn, layerStation);
     };
 
     private createMoveTypeForm() {
@@ -283,18 +280,18 @@ export default class QuerModifyTool extends Tool {
         return diff;
     }
 
-    private createLinienSelect() {
+    private createLinienSelect(layerTrenn: VectorLayer) {
         this.selectLinien = new SelectInteraction({
-            layers: [this.daten.layerTrenn],
+            layers: [layerTrenn],
             condition: never,
             style: InfoTool.selectStyle
         });
         //this.selectLinien.on('select', this.linieSelected.bind(this));
     }
 
-    private createFlaechenSelect() {
+    private createFlaechenSelect(layerQuer: VectorLayer) {
         this.selectFlaechen = new SelectInteraction({
-            layers: [this.daten.layerQuer],
+            layers: [layerQuer],
             toggleCondition: platformModifierKeyOnly,
             style: InfoTool.selectStyle
         });
@@ -397,13 +394,13 @@ export default class QuerModifyTool extends Tool {
         this.modify.setActive(status);
     }
 
-    private createSnap() {
+    private createSnap(layerTrenn: VectorLayer, layerStation: VectorLayer) {
         this.snapTrenn = new Snap({
-            source: this.daten.vectorTrenn,
+            source: layerTrenn.getSource(),
             edge: false
         });
         this.snapStation = new Snap({
-            source: this.daten.vectorStation,
+            source: layerStation.getSource(),
             pixelTolerance: 100,
             vertex: false
         });

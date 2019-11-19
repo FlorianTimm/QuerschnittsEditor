@@ -48,10 +48,10 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         //console.log(daten);
 
         this.setGeometry(new Polygon([[[0, 0], [0, 0], [0, 0]]]));
-        this._daten.vectorQuer.addFeature(this)
+        this._daten.layerQuer.getSource().addFeature(this)
 
         this.trenn = new Feature({ geom: new MultiLineString([[[0, 0], [0, 0], [0, 0]]]), objekt: this });
-        this._daten.vectorTrenn.addFeature(this.trenn);
+        this._daten.layerTrenn.getSource().addFeature(this.trenn);
     }
 
     getWFSKonfigName(): string {
@@ -306,7 +306,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
     public updateArtEinzeln(art: string) {
         this.setArt(art);
-        this._daten.vectorQuer.changed();
+        this._daten.layerQuer.getSource().changed();
 
         PublicWFS.doTransaction(this.createUpdateXML({
             art: this.art,
@@ -315,7 +315,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
     public updateOberEinzeln(artober: string) {
         this.setArtober(artober);
-        this._daten.vectorQuer.changed();
+        this._daten.layerQuer.getSource().changed();
         PublicWFS.doTransaction(this.createUpdateXML({
             artober: this.artober
         }));
@@ -548,8 +548,8 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     }
 
     public delete() {
-        this._daten.vectorQuer.removeFeature(this)
-        this._daten.vectorTrenn.removeFeature(this.trenn)
+        this._daten.layerQuer.getSource().removeFeature(this)
+        this._daten.layerTrenn.getSource().removeFeature(this.trenn)
     }
 
 

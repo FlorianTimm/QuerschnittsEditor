@@ -7,6 +7,7 @@ import Tool from '../prototypes/Tool';
 import { SelectEvent } from 'ol/interaction/Select';
 import InfoTool from '../InfoTool';
 import HTML from '../../HTML';
+import { VectorLayer } from '../../openLayers/Layer';
 
 import "../../import_jquery.js";
 import 'jquery-ui-bundle';
@@ -26,13 +27,13 @@ class QuerAddTool extends Tool {
     private form: HTMLFormElement = null;
     button: HTMLInputElement;
 
-    constructor(map: Map, info: QuerInfoTool) {
+    constructor(map: Map, info: QuerInfoTool, layerTrennLinien: VectorLayer) {
         super();
         this._map = map;
         this._daten = Daten.getInstanz();
         this._info = info;
         this._select = new SelectInteraction({
-            layers: [this._daten.layerTrenn],
+            layers: [layerTrennLinien],
             style: InfoTool.selectStyle,
             hitTolerance: 10
         });

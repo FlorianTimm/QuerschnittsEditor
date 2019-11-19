@@ -139,7 +139,7 @@ export default class Abschnitt extends Feature {
         }
         //console.log(ak);
         this.setGeometry(new LineString(ak));
-        Daten.getInstanz().vectorAchse.addFeature(this);
+        Daten.getInstanz().layerAchse.getSource().addFeature(this);
         Abschnitt.abschnitte[this.abschnittid] = this;
 
         if (this.abschnittid in Abschnitt.waitForAbschnitt) {

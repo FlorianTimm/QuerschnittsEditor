@@ -3,6 +3,7 @@ import Aufstellvorrichtung from '../../Objekte/Aufstellvorrichtung';
 import AddTool from '../prototypes/AddTool';
 import { Map } from 'ol';
 import Daten from '../../Daten';
+import VectorLayer from 'ol/layer/Vector';
 var CONFIG = require('../../config.json');
 
 /**
@@ -12,8 +13,8 @@ var CONFIG = require('../../config.json');
  * @copyright MIT
  */
 export default class AvAdd extends AddTool {
-    constructor(map: Map, sidebar: HTMLDivElement) {
-        super(map, sidebar);
+    constructor(map: Map, sidebar: HTMLDivElement, layerAchse: VectorLayer) {
+        super(map, sidebar, layerAchse);
     }
 
     getObjektklasse(): string {

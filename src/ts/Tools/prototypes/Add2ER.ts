@@ -37,9 +37,10 @@ export default abstract class Add2ER extends Tool {
     onSelect(__: SelectEventType) {
         console.log("Auswahl");
         if (this.select.getFeatures().getArray().length == 0) return;
-        WaitBlocker.warteAdd()
+
         let abschnitt = this.select.getFeatures().getArray()[0] as Abschnitt;
         if (abschnitt.isOKinER(this.objektklasse)) return;
+        WaitBlocker.warteAdd()
         PublicWFS.addInER(abschnitt, this.objektklasse, this.daten.ereignisraum_nr, this._onSelect_Callback.bind(this),
             function () {
                 WaitBlocker.warteSub()

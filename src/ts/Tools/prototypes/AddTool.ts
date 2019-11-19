@@ -37,10 +37,13 @@ export default abstract class AddTool extends Tool {
 
     protected abstract createForm(): void;
 
-    constructor(map: Map, sidebar: HTMLDivElement) {
+    private layerAchse: VectorLayer;
+
+    constructor(map: Map, sidebar: HTMLDivElement, layerAchse: VectorLayer) {
         super();
         this.map = map;
         this.sidebar = sidebar;
+        this.layerAchse = layerAchse;
 
         this.createAchsSelect();
         this.createOverlayGeometry();
@@ -117,7 +120,7 @@ export default abstract class AddTool extends Tool {
 
     private createAchsSelect() {
         this.select = new SelectInteraction({
-            layers: [Daten.getInstanz().layerAchse],
+            layers: [this.layerAchse],
             style: new Style({
                 stroke: new Stroke({
                     color: 'rgba(0, 50, 255, 0.5)',
@@ -132,7 +135,7 @@ export default abstract class AddTool extends Tool {
         if (this.select.getFeatures().getArray().length > 0) {
             achse = this.select.getFeatures().item(0) as Abschnitt;
         } else {
-            achse = Daten.getInstanz().vectorAchse.getClosestFeatureToCoordinate(event.coordinate) as Abschnitt;
+            achse = this.layerAchse.getSource().getClosestFeatureToCoordinate(event.coordinate) as Abschnitt;
         }
 
         if (achse == null) {

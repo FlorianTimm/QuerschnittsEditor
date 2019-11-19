@@ -22,20 +22,10 @@ import Measure from './Tools/Measure';
 import { ImageLayer, TileLayer } from './openLayers/Layer';
 import Map from './openLayers/Map';
 import PublicWFS from './PublicWFS';
-import AvAdd from './Tools/Aufstellvorrichtung/AvAdd';
-import AvAdd2ER from './Tools/Aufstellvorrichtung/AvAdd2ER';
-import AvVzAdd from './Tools/Aufstellvorrichtung/AvVzAdd';
-import InfoTool from './Tools/InfoTool';
-import MoveTool from './Tools/MoveTool';
-import QuerAdd2ER from './Tools/Querschnitt/QuerAdd2ER';
-import QuerAddTool from './Tools/Querschnitt/QuerAddTool';
-import QuerDelTool from './Tools/Querschnitt/QuerDelTool';
-import QuerInfoTool from './Tools/Querschnitt/QuerInfoTool';
-import QuerModifyTool from './Tools/Querschnitt/QuerModifyTool';
-import QuerPartTool from './Tools/Querschnitt/QuerPartTool';
-import SAPAdd from './Tools/StrassenAusPunkt/SAPAdd';
-import SAPAdd2ER from './Tools/StrassenAusPunkt/SAPAdd2ER';
-import DeleteTool from './Tools/DeleteTool';
+import QuerschnittToolBox from './Klassen/QuerschnittToolBox';
+import AufstellToolBox from './Klassen/AufstellToolBox';
+import AusstPktToolBox from './Klassen/AusstPktToolBox';
+import ToolBox from './Klassen/ToolBox';
 
 var CONFIG: { [name: string]: string } = require('./config.json');
 
@@ -49,8 +39,7 @@ var er = decodeURI(urlParamER[1])
 var ernr = decodeURI(urlParamERNR[1])
 console.log("Ereignisraum: " + ernr);
 
-let daten: Daten, infoTool: QuerInfoTool, editTool: QuerModifyTool, delTool: QuerDelTool, partTool: QuerPartTool, addTool: QuerAddTool, vsInfoTool: InfoTool, avAdd: AvAdd, avAdd2ER: AvAdd2ER, qsAdd2ER: QuerAdd2ER, avMove: MoveTool, vzAdd: AvVzAdd, measure: Measure, avDel: DeleteTool;
-let sapInfoTool: InfoTool, sapAdd: SAPAdd, sapMove: MoveTool, sapAdd2ER: SAPAdd2ER, sapDel: DeleteTool;
+let daten: Daten, measure: Measure;
 
 window.addEventListener('load', function () {
     proj4.defs("EPSG:31467", "+proj=tmerc +lat_0=0 +lon_0=9 +k=1 +x_0=3500000 +y_0=0 +ellps=bessel +towgs84=598.1,73.7,418.2,0.202,0.045,-2.455,6.7 +units=m +no_defs");
@@ -59,8 +48,6 @@ window.addEventListener('load', function () {
 
 
     var map = createMap();
-    //console.log(map.getControls());
-
     let foundHash = checkHash(map);
 
     daten = new Daten(map, er, ernr);
@@ -68,66 +55,19 @@ window.addEventListener('load', function () {
     let sidebar = document.getElementById("sidebar") as HTMLDivElement | null;
     if (!sidebar) throw new Error("HTML Sidebar nicht gefunden")
 
-    infoTool = new QuerInfoTool(map, daten.layerTrenn, daten.layerQuer, sidebar);
-    infoTool.start();
-    editTool = new QuerModifyTool(map, infoTool, sidebar);
-    delTool = new QuerDelTool(map, infoTool);
-    addTool = new QuerAddTool(map, infoTool);
-    partTool = new QuerPartTool(map, infoTool, sidebar);
-    qsAdd2ER = new QuerAdd2ER(map);
+    new QuerschnittToolBox(map, sidebar, daten.layerAchse, daten.layerQuer, daten.layerTrenn, daten.layerStation);
+    new AufstellToolBox(map, sidebar, daten.layerAchse, daten.layerAufstell);
+    new AusstPktToolBox(map, sidebar, daten.layerAchse, daten.layerStraus);
 
-    vsInfoTool = new InfoTool(map, daten.layerAufstell, sidebar);
-    avAdd = new AvAdd(map, sidebar);
-    vzAdd = new AvVzAdd(map);
-    avMove = new MoveTool(map, vsInfoTool, daten.layerAufstell);
-    avAdd2ER = new AvAdd2ER(map);
-    avDel = new DeleteTool(map, daten.layerAufstell, sidebar, "Otaufstvor");
-
-    sapInfoTool = new InfoTool(map, daten.layerStraus, sidebar);
-    sapAdd = new SAPAdd(map, sidebar);
-    sapMove = new MoveTool(map, vsInfoTool, daten.layerStraus);
-    sapAdd2ER = new SAPAdd2ER(map);
-    sapDel = new DeleteTool(map, daten.layerStraus, sidebar, "Otstrauspkt");
-
-    measure = new Measure(map);
-
+    // Messen
+    ToolBox.createRadio(document.getElementById("steuerung_sonstige") as HTMLDivElement, "Messen", new Measure(map))
 
     daten.loadER(!foundHash);
 
-    document.getElementById("befehl_modify").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_delete").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_part").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_add").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_qsadd2er").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_info").addEventListener('change', befehl_changed);
-
-    document.getElementById("befehl_vsinfo").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_avadd").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_avdel").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_vzadd").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_avadd2er").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_avmove").addEventListener('change', befehl_changed);
-
-    document.getElementById("befehl_sapinfo").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_sapadd").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_sapdel").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_sapadd").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_sapadd2er").addEventListener('change', befehl_changed);
-    document.getElementById("befehl_sapmove").addEventListener('change', befehl_changed);
-
-    document.getElementById("befehl_messen").addEventListener('change', befehl_changed);
-
     document.getElementById("zoomToExtent").addEventListener('click', Daten.getInstanz().zoomToExtent.bind(daten))
-
-
     document.getElementById("loadExtent").addEventListener('click', function () {
         daten.loadExtent();
     })
-    /*map.addEventListener('moveend', function (event) {
-        if (map.getView().getResolution() < 0.03) {
-            daten.loadExtent();
-        }
-    })*/
 
     document.getElementById("sucheButton").addEventListener('click', function () {
         daten.searchForStreet();
@@ -214,74 +154,6 @@ function recreateHash(event: MapEvent) {
         hash += "&layer=" + visible.join(',');
         document.location.hash = hash;
     }
-}
-
-function befehl_changed() {
-    // Querschnitt
-    infoTool.stop();
-    editTool.stop();
-    delTool.stop();
-    partTool.stop();
-    addTool.stop();
-    qsAdd2ER.stop();
-
-    // Aufstellvorrichtung / Schild
-    vsInfoTool.stop();
-    avAdd.stop();
-    avAdd2ER.stop();
-    avMove.stop();
-    vzAdd.stop();
-    avDel.stop();
-
-    // Straßenausstattung punktuell
-    sapAdd.stop();
-    sapAdd2ER.stop();
-    sapDel.stop();
-    sapInfoTool.stop();
-    sapMove.stop();
-
-    // Sonstige
-    measure.stop();
-
-    if ((document.getElementById("befehl_info") as HTMLInputElement).checked)
-        infoTool.start();
-    else if ((document.getElementById("befehl_qsadd2er") as HTMLInputElement).checked)
-        qsAdd2ER.start();
-    else if ((document.getElementById("befehl_modify") as HTMLInputElement).checked)
-        editTool.start();
-    else if ((document.getElementById("befehl_delete") as HTMLInputElement).checked)
-        delTool.start();
-    else if ((document.getElementById("befehl_part") as HTMLInputElement).checked)
-        partTool.start();
-    else if ((document.getElementById("befehl_add") as HTMLInputElement).checked)
-        addTool.start();
-
-    else if ((document.getElementById("befehl_vsinfo") as HTMLInputElement).checked)
-        vsInfoTool.start();
-    else if ((document.getElementById("befehl_avadd") as HTMLInputElement).checked)
-        avAdd.start();
-    else if ((document.getElementById("befehl_avdel") as HTMLInputElement).checked)
-        avDel.start();
-    else if ((document.getElementById("befehl_vzadd") as HTMLInputElement).checked)
-        vzAdd.start();
-    else if ((document.getElementById("befehl_avadd2er") as HTMLInputElement).checked)
-        avAdd2ER.start();
-    else if ((document.getElementById("befehl_avmove") as HTMLInputElement).checked)
-        avMove.start();
-
-    else if ((document.getElementById("befehl_sapinfo") as HTMLInputElement).checked)
-        sapInfoTool.start();
-    else if ((document.getElementById("befehl_sapadd") as HTMLInputElement).checked)
-        sapAdd.start();
-    else if ((document.getElementById("befehl_sapdel") as HTMLInputElement).checked)
-        sapDel.start();
-    else if ((document.getElementById("befehl_sapadd2er") as HTMLInputElement).checked)
-        sapAdd2ER.start();
-    else if ((document.getElementById("befehl_sapmove") as HTMLInputElement).checked)
-        sapMove.start();
-
-    else if ((document.getElementById("befehl_messen") as HTMLInputElement).checked)
-        measure.start();
 }
 
 function createMap() {
@@ -427,55 +299,3 @@ window.addEventListener('load', function () {
     }
     document.getElementById("defaultOpen").click();
 });
-
-
-
-
-/*
-document.onkeyup = function (e: KeyboardEvent) {
-    if ($(e.target).closest("input")[0]) {
-        return;
-    }
-    console.log(e.code);
-    console.log(Daten.getInstanz().modus);
-
-
-    let modus = Daten.getInstanz().modus;
-
-    if (modus == "Otaufstvor") {
-        if (e.altKey && e.code == "KeyI") {
-            (document.getElementById("befehl_vsinfo") as HTMLInputElement).checked = true;
-        } else if (e.altKey && e.code == "KeyR") {
-            (document.getElementById("befehl_avadd2er") as HTMLInputElement).checked = true;
-        } else if (e.altKey && e.code == "KeyH") {
-            (document.getElementById("befehl_avadd") as HTMLInputElement).checked = true;
-        } else if (e.altKey && e.code == "KeyL") {
-            (document.getElementById("befehl_avdel") as HTMLInputElement).checked = true;
-        } else if (e.altKey && e.code == "KeyS") {
-            (document.getElementById("befehl_vzadd") as HTMLInputElement).checked = true;
-        } else if (e.altKey && e.code == "KeyV") {
-            (document.getElementById("befehl_avmove") as HTMLInputElement).checked = true;
-        }
-    } else if (modus == "Querschnitt") {
-
-    } else if (modus == "Otstrauspkt") {
-        if (e.altKey && e.code == "KeyI") {
-            (document.getElementById("befehl_sapinfo") as HTMLInputElement).checked = true;
-        } else if (e.altKey && e.code == "KeyR") {
-            (document.getElementById("befehl_sapadd2er") as HTMLInputElement).checked = true;
-        } else if (e.altKey && e.code == "KeyH") {
-            (document.getElementById("befehl_sapadd") as HTMLInputElement).checked = true;
-        } else if (e.altKey && e.code == "KeyL") {
-            (document.getElementById("befehl_sapdel") as HTMLInputElement).checked = true;
-        } else if (e.altKey && e.code == "KeyV") {
-            (document.getElementById("befehl_sapmove") as HTMLInputElement).checked = true;
-        }
-    }
-    befehl_changed();
-};
-$("span.hotkey_alt").each(function () {
-    let t = $(this).text();
-    $(this).parent().prop('title', 'Alt + ' + t.toUpperCase() + '')
-});
-$("span.hotkey_alt").parent().tooltip({ track: true })
-*/

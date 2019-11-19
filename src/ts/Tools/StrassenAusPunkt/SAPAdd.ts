@@ -3,6 +3,7 @@ import StrassenAusPunkt from '../../Objekte/StrassenAusPunkt';
 import AddTool from '../prototypes/AddTool';
 import { Map } from 'ol';
 import Daten from '../../Daten';
+import VectorLayer from 'ol/layer/Vector';
 
 var CONFIG = require('../../config.json');
 
@@ -14,8 +15,8 @@ var CONFIG = require('../../config.json');
  */
 
 export default class SAPAdd extends AddTool {
-    constructor(map: Map, sidebar: HTMLDivElement) {
-        super(map, sidebar);
+    constructor(map: Map, sidebar: HTMLDivElement, layerAchse: VectorLayer) {
+        super(map, sidebar, layerAchse);
     }
 
     protected createForm() {

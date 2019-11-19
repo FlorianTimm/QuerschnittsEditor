@@ -30,13 +30,9 @@ export default class Daten {
     public ereignisraum: string;
     public ereignisraum_nr: string;
     public layerAufstell: VectorLayer;
-    public vectorAchse: VectorSource;
     public layerAchse: VectorLayer;
-    public vectorStation: VectorSource;
     public layerStation: VectorLayer;
-    public vectorTrenn: VectorSource;
     public layerTrenn: VectorLayer;
-    public vectorQuer: VectorSource;
     public layerQuer: VectorLayer;
     public layerStraus: VectorLayer;
 
@@ -81,7 +77,7 @@ export default class Daten {
 
     public zoomToExtent() {
         let minX = null, maxX = null, minY = null, maxY = null;
-        let features = this.vectorAchse.getFeatures();
+        let features = this.layerAchse.getSource().getFeatures();
         if (features.length == 0) {
             PublicWFS.showMessage("Keine Daten geladen<br /><br />[ ER enthält keine bearbeitbaren Objekte ]", true);
             return;
@@ -132,7 +128,7 @@ export default class Daten {
     }
 
     private createLayerAchsen() {
-        this.vectorAchse = new VectorSource({
+        let vectorAchse = new VectorSource({
             features: []
         });
         let achsen_style = function (feature: FeatureLike, resolution: number): Style[] {
@@ -217,7 +213,7 @@ export default class Daten {
         };
         this.layerAchse = new VectorLayer({
             daten: this,
-            source: this.vectorAchse,
+            source: vectorAchse,
             opacity: 0.6,
             style: achsen_style
         });
@@ -225,11 +221,11 @@ export default class Daten {
     }
 
     private createLayerStationen() {
-        this.vectorStation = new VectorSource({
+        let vectorStation = new VectorSource({
             features: []
         });
         this.layerStation = new VectorLayer({
-            source: this.vectorStation,
+            source: vectorStation,
             opacity: 0.6,
             style: new Style({
                 stroke: new Stroke({
@@ -242,11 +238,11 @@ export default class Daten {
     }
 
     private createLayerQuerschnittsTrennLinien() {
-        this.vectorTrenn = new VectorSource({
+        let vectorTrenn = new VectorSource({
             features: []
         });
         this.layerTrenn = new VectorLayer({
-            source: this.vectorTrenn,
+            source: vectorTrenn,
             opacity: 0.6,
             style: new Style({
                 stroke: new Stroke({
@@ -260,7 +256,7 @@ export default class Daten {
 
     private createLayerQuerschnittsFlaechen() {
         // Layer mit Querschnittsflächen
-        this.vectorQuer = new VectorSource({
+        let vectorQuer = new VectorSource({
             features: []
         });
 
@@ -343,7 +339,7 @@ export default class Daten {
         }
 
         this.layerQuer = new VectorLayer({
-            source: this.vectorQuer,
+            source: vectorQuer,
             //opacity: 0.40,
             style: createStyle
         });

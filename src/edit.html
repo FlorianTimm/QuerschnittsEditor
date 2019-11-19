@@ -34,57 +34,11 @@
                 <button type="button" class="tablinks bt_Strassenaus" data-tab="tab_Otstrauspkt">Aussta.</button>
             </div>
 
-            <div id="tab_Querschnitt" class="tabcontent">
-                <input type="radio" name="befehl" id="befehl_info" value="info" checked="checked" /><label
-                    for="befehl_info">&nbsp;Info</label><br />
-                <input type="radio" name="befehl" id="befehl_qsadd2er" value="qsadd2er" /><label
-                    for="befehl_qsadd2er">&nbsp;zum
-                    ER hinzufügen</label><br />
-                <input type="radio" name="befehl" id="befehl_modify" value="modify" /><label
-                    for="befehl_modify">&nbsp;Fl&auml;che &auml;ndern</label><br />
-                <input type="radio" name="befehl" id="befehl_delete" value="delete" /><label
-                    for="befehl_delete">&nbsp;Fl&auml;che l&ouml;schen</label><br />
-                <input type="radio" name="befehl" id="befehl_add" value="add" /><label
-                    for="befehl_add">&nbsp;Fl&auml;che hinzufügen</label><br />
-                <input type="radio" name="befehl" id="befehl_part" value="part" /><label
-                    for="befehl_part">&nbsp;Querschnitt teilen</label><br />
-            </div>
-            <div id="tab_Otaufstvor" class="tabcontent">
-                <input type="radio" name="befehl" id="befehl_vsinfo" value="vsinfo" /><label
-                    for="befehl_vsinfo">&nbsp;<span class="hotkey_alt">I</span>nfo</label><br />
-                <input type="radio" name="befehl" id="befehl_avadd2er" value="avadd2er" /><label
-                    for="befehl_avadd2er">&nbsp;zum
-                    E<span class="hotkey_alt">R</span> hinzufügen</label><br />
-                <input type="radio" name="befehl" id="befehl_avadd" value="avadd" /><label
-                    for="befehl_avadd">&nbsp;Aufstellv.
-                    <span class="hotkey_alt">h</span>inzuf&uuml;gen</label><br />
-                <input type="radio" name="befehl" id="befehl_avdel" value="avdel" /><label
-                    for="befehl_avdel">&nbsp;Aufstellv.
-                    <span class="hotkey_alt">l</span>&ouml;schen</label><br />
-                <input type="radio" name="befehl" id="befehl_vzadd" value="vzadd" /><label
-                    for="befehl_vzadd">&nbsp;<span class="hotkey_alt">S</span>childer
-                    &auml;ndern</label><br />
-                <input type="radio" name="befehl" id="befehl_avmove" value="avmove" /><label
-                    for="befehl_avmove">&nbsp;<span class="hotkey_alt">V</span>erschieben</label><br />
-            </div>
-            <div id="tab_Otstrauspkt" class="tabcontent">
-                <input type="radio" name="befehl" id="befehl_sapinfo" value="sapinfo" /><label
-                    for="befehl_sapinfo">&nbsp;<span class="hotkey_alt">I</span>nfo</label><br />
-                <input type="radio" name="befehl" id="befehl_sapadd2er" value="sapadd2er" /><label
-                    for="befehl_sapadd2er">&nbsp;zum
-                    E<span class="hotkey_alt">R</span> hinzufügen</label><br />
-                <input type="radio" name="befehl" id="befehl_sapadd" value="sapadd" /><label
-                    for="befehl_sapadd">&nbsp;Ausstatt.
-                    <span class="hotkey_alt">h</span>inzuf&uuml;gen</label><br />
-                <input type="radio" name="befehl" id="befehl_sapdel" value="sapdel" /><label
-                    for="befehl_sapdel">&nbsp;Ausstatt.
-                    <span class="hotkey_alt">l</span>&ouml;schen</label><br />
-                <input type="radio" name="befehl" id="befehl_sapmove" value="sapmove" /><label
-                    for="befehl_sapmove">&nbsp;<span class="hotkey_alt">V</span>erschieben</label><br />
-            </div>
+            <div id="tab_Querschnitt" class="tabcontent"></div>
+            <div id="tab_Otaufstvor" class="tabcontent"></div>
+            <div id="tab_Otstrauspkt" class="tabcontent"></div>
+
             <div id="steuerung_sonstige">
-                <input type="radio" name="befehl" id="befehl_messen" value="messen" /><label
-                    for="befehl_messen">&nbsp;Messen</label><br />
             </div>
             <button type="button" id="zoomToExtent" disabled="disabled">Auf Ausdehnung zoomen</button>
             <button type="button" id="loadExtent">Abschnitte laden</button>
@@ -98,7 +52,7 @@
         <form id="quer_del" name="quer_del" class="tool_form">
             <input type="button" id="delQuerschnittButton" value="Querschnitt l&ouml;schen" disabled="disabled" />
         </form>
-      
+
     </sidebar>
 
     <div id="dialog-confirm" style="display: none;">
