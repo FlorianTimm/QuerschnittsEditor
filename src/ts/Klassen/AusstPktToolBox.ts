@@ -8,6 +8,13 @@ import SAPAdd from "../Tools/StrassenAusPunkt/SAPAdd";
 import Abschnitt from "../Objekte/Abschnitt";
 import StrassenAusPunkt from "../Objekte/StrassenAusPunkt";
 
+/**
+ * Klasse zum Erzeugen eines Werkzeugkasten zur Bearbeitung von 
+ * Straßenausstattung punktuell
+ * @author Florian Timm
+ * @version 2019-11-20
+ * @license MIT
+ */
 export default class AusstPktToolBox extends ToolBox {
     private infoTool: InfoTool;
     private addTool: SAPAdd;
@@ -15,6 +22,10 @@ export default class AusstPktToolBox extends ToolBox {
     private add2ErTool: SAPAdd2ER;
     private delTool: DeleteTool;
 
+    /**
+    * @param map Karte
+    * @param sidebar DIV-Element, in den die Tools geladen werden sollen
+    */
     constructor(map: Map, sidebar: HTMLDivElement) {
         super(map, sidebar, "tab_Otstrauspkt")
 
@@ -29,6 +40,9 @@ export default class AusstPktToolBox extends ToolBox {
         this.createToolBox();
     }
 
+    /**
+    * Erzeugt das Menu zur Auswahl des Werkzeuges
+    */
     protected createToolBox() {
         this.createRadio("Info", this.infoTool)
         $(this.form).append($("<br />"))

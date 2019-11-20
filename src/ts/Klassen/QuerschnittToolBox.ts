@@ -10,6 +10,13 @@ import Querschnitt from '../Objekte/Querschnittsdaten';
 import Abschnitt from '../Objekte/Abschnitt';
 import QuerStation from '../Objekte/QuerStation';
 
+/**
+ * Klasse zum Erzeugen eines Werkzeugkasten zur Bearbeitung von
+ * Querschnitten
+ * @author Florian Timm
+ * @version 2019-11-20
+ * @license MIT
+ */
 export default class QuerschnittToolBox extends ToolBox {
     private infoTool: QuerInfoTool;
     private modifyTool: QuerModifyTool;
@@ -18,13 +25,19 @@ export default class QuerschnittToolBox extends ToolBox {
     private partTool: QuerPartTool;
     private qsAdd2ER: QuerAdd2ER;
 
+    /**
+     * @param map Karte
+     * @param sidebar DIV-Element, in den die Tools geladen werden sollen
+     */
     constructor(map: Map, sidebar: HTMLDivElement) {
         super(map, sidebar, "tab_Querschnitt");
 
-        let layerTrenn = Querschnitt.getLayerTrenn();
-        let layerQuer = Querschnitt.getLayerFlaechen();
         let layerAchse = Abschnitt.getLayer();
-        let layerStation = QuerStation.getLayer();
+
+        // Layer erzeugen
+        let layerTrenn = Querschnitt.getLayerTrenn(this.map);
+        let layerQuer = Querschnitt.getLayerFlaechen(this.map);
+        let layerStation = QuerStation.getLayer(this.map);
 
         this.infoTool = new QuerInfoTool(this.map, layerTrenn, layerQuer, this.sidebar);
         this.modifyTool = new QuerModifyTool(map, this.infoTool, this.sidebar, layerTrenn, layerQuer, layerStation);
@@ -35,6 +48,9 @@ export default class QuerschnittToolBox extends ToolBox {
         this.createToolBox();
     }
 
+    /**
+    * Erzeugt das Menu zur Auswahl des Werkzeuges
+    */
     protected createToolBox() {
         this.createRadio("Info", this.infoTool)
         $(this.form).append($("<br />"))

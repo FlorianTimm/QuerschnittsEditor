@@ -40,9 +40,6 @@ export default class Daten {
     }
 
     private createLayers(map: Map) {
-        Querschnitt.getLayerFlaechen(map);
-        Querschnitt.getLayerTrenn(map);
-        QuerStation.getLayer(map);
         Abschnitt.getLayer(map);
         Aufstellvorrichtung.getLayer(map);
         StrassenAusPunkt.getLayer(map);
