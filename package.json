@@ -4,7 +4,8 @@
   "description": "Ermöglicht das Editieren von Querschnitte im WebEditor. Als Datenquelle \r wird hierfür der PublicWFS der TTSIB5 von NOVASIB verwendet. Der \r Editor ist nur in Zusammenhang mit dieser Software einsetzbar.",
   "main": "src/js/edit.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha",
+    "coverage": "nyc mocha",
     "startServer": "parcel watch --out-dir \"//gv-srv-w00118/GlassFish Docroot/querOO\" --hmr-hostname localhost --public-url . src/*.html",
     "buildServer": "parcel build --out-dir \"//gv-srv-w00118/GlassFish Docroot/querschnitt\" --public-url . src/*.html",
     "buildBeta": "parcel build --out-dir \"//gv-srv-w00118/GlassFish Docroot/querBeta\" --public-url . src/*.html",
@@ -47,7 +48,30 @@
     "ts": "^0.2.2"
   },
   "devDependencies": {
+    "@istanbuljs/nyc-config-typescript": "^0.1.3",
+    "@types/chai": "^4.2.5",
+    "@types/mocha": "^5.2.7",
+    "chai": "^4.2.0",
     "cssnano": "^4.1.10",
+    "source-map-support": "^0.5.16",
+    "ts-node": "^8.5.2",
     "typescript": "^3.7.2"
+  },
+  "nyc": {
+    "extends": "@istanbuljs/nyc-config-typescript",
+    "extension": [
+      ".ts",
+      ".tsx"
+    ],
+    "include": [
+      "src/ts/**"
+    ],
+    "exclude": [
+      "**/*.d.ts"
+    ],
+    "reporter": [
+      "text"
+    ],
+    "all": true
   }
 }
