@@ -35,14 +35,6 @@ export default class Daten {
         this.map = map;
         this.ereignisraum = ereignisraum;
         this.ereignisraum_nr = ereignisraum_nr;
-
-        this.createLayers(map);
-    }
-
-    private createLayers(map: Map) {
-        Abschnitt.getLayer(map);
-        Aufstellvorrichtung.getLayer(map);
-        StrassenAusPunkt.getLayer(map);
     }
 
     /**

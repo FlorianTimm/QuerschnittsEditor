@@ -59,6 +59,7 @@ window.addEventListener('load', function () {
     new QuerschnittToolBox(map, sidebar);
     new AufstellToolBox(map, sidebar);
     new AusstPktToolBox(map, sidebar);
+    Abschnitt.getLayer(map);
 
     // Messen
     ToolBox.createRadio(document.getElementById("steuerung_sonstige") as HTMLDivElement, "Messen", new Measure(map))
