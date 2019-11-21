@@ -53,7 +53,7 @@ window.addEventListener('load', function () {
 
     daten = new Daten(map, er, ernr);
 
-    let sidebar = document.getElementById("sidebar") as HTMLDivElement | null;
+    let sidebar = document.getElementById("tools") as HTMLDivElement | null;
     if (!sidebar) throw new Error("HTML Sidebar nicht gefunden")
 
     new QuerschnittToolBox(map, sidebar);
@@ -269,35 +269,9 @@ function createMap() {
     });
 }
 
-function openTab(evt: Event) {
-    // Declare all variables
-    let i: number, tabcontent: HTMLCollectionOf<Element>, tablinks: HTMLCollectionOf<Element>;
-
-    // Get all elements with class="tabcontent" and hide them
-    tabcontent = document.getElementsByClassName("tabcontent");
-    for (i = 0; i < tabcontent.length; i++) {
-        (tabcontent[i] as HTMLElement).style.display = "none";
+$("div#tabs").tabs({
+    activate: function (event) {
+        Daten.getInstanz().modus = (event.currentTarget as HTMLElement).dataset.ok;
+        Abschnitt.getLayer().changed();
     }
-
-    // Get all elements with class="tablinks" and remove the class "active"
-    tablinks = document.getElementsByClassName("tablinks");
-    for (i = 0; i < tablinks.length; i++) {
-        tablinks[i].className = tablinks[i].className.replace(" active", "");
-    }
-
-    // Show the current tab, and add an "active" class to the button that opened the tab
-    let tabName = (evt.currentTarget as HTMLElement).dataset.tab;
-    document.getElementById(tabName).style.display = "block";
-    (evt.currentTarget as HTMLElement).className += " active";
-    document.getElementById(tabName).getElementsByTagName('input')[0].click();
-    Daten.getInstanz().modus = (evt.currentTarget as HTMLElement).dataset.tab.replace("tab_", "")
-    Abschnitt.getLayer().changed();
-}
-
-window.addEventListener('load', function () {
-    let tablinks = document.getElementsByClassName("tablinks");
-    for (let i = 0; i < tablinks.length; i++) {
-        tablinks[i].addEventListener('click', openTab);
-    }
-    document.getElementById("defaultOpen").click();
-});
+})

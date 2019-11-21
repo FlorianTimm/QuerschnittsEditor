@@ -26,33 +26,32 @@
     </form>
 
     <sidebar id="sidebar">
-        <form id="steuerung" name="steuerung">
-            <div class="tab">
-                <button type="button" class="tablinks bt_Querschnitt" data-tab="tab_Querschnitt">Quer.</button>
-                <button type="button" class="tablinks bt_Aufstell" data-tab="tab_Otaufstvor"
-                    id="defaultOpen">Aufstell.</button>
-                <button type="button" class="tablinks bt_Strassenaus" data-tab="tab_Otstrauspkt">Aussta.</button>
+        <div id="steuerung">
+            <div id="tabs">
+                <ul>
+                    <li><a href="#tab_Querschnitt" data-ok="Querschnitt">Quer.</a></li>
+                    <li><a href="#tab_Otaufstvor" data-ok="Otaufstvor">Aufstell.</a></li>
+                    <li><a href="#tab_Otstrauspkt" data-ok="Otstrauspkt">Ausst.</a></li>
+                </ul>
+                <div id="tab_Querschnitt"></div>
+                <div id="tab_Otaufstvor"></div>
+                <div id="tab_Otstrauspkt"></div>
             </div>
-
-            <div id="tab_Querschnitt" class="tabcontent"></div>
-            <div id="tab_Otaufstvor" class="tabcontent"></div>
-            <div id="tab_Otstrauspkt" class="tabcontent"></div>
-
             <div id="steuerung_sonstige">
             </div>
             <button type="button" id="zoomToExtent" disabled="disabled">Auf Ausdehnung zoomen</button>
             <button type="button" id="loadExtent">Abschnitte laden</button>
-        </form>
+        </div>
 
-        <form id="loeschen" name="loeschen" class="tool_form">
-            <input type="button" onclick="delQuerschnittButton()" value="Querschnitt l&ouml;schen"
-                disabled="disabled" />
-        </form>
-
-        <form id="quer_del" name="quer_del" class="tool_form">
-            <input type="button" id="delQuerschnittButton" value="Querschnitt l&ouml;schen" disabled="disabled" />
-        </form>
-
+        <div id="tools">
+            <form id="loeschen" name="loeschen" class="tool_form">
+                <input type="button" onclick="delQuerschnittButton()" value="Querschnitt l&ouml;schen"
+                    disabled="disabled" />
+            </form>
+            <form id="quer_del" name="quer_del" class="tool_form">
+                <input type="button" id="delQuerschnittButton" value="Querschnitt l&ouml;schen" disabled="disabled" />
+            </form>
+        </div>
     </sidebar>
 
     <div id="dialog-confirm" style="display: none;">
