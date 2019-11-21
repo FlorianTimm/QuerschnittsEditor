@@ -32,7 +32,7 @@
     "@types/chosen-js": "^1.8.1",
     "@types/jquery": "^3.3.31",
     "@types/jqueryui": "^1.12.9",
-    "@types/node": "^12.12.9",
+    "@types/node": "^12.12.11",
     "@types/ol": "^5.3.6",
     "@types/proj4": "^2.5.0",
     "babel-polyfill": "^6.26.0",
@@ -56,22 +56,5 @@
     "source-map-support": "^0.5.16",
     "ts-node": "^8.5.2",
     "typescript": "^3.7.2"
-  },
-  "nyc": {
-    "extends": "@istanbuljs/nyc-config-typescript",
-    "extension": [
-      ".ts",
-      ".tsx"
-    ],
-    "include": [
-      "src/ts/**"
-    ],
-    "exclude": [
-      "**/*.d.ts"
-    ],
-    "reporter": [
-      "text"
-    ],
-    "all": true
   }
 }

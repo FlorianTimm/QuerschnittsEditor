@@ -3,3 +3,4 @@ node_modules/
 ts_out/
 dist/
 .nyc_output
+coverage
