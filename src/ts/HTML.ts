@@ -107,6 +107,7 @@ export default class HTML {
         $(aufstellField).datepicker('option', 'changeMonth', true);
         $(aufstellField).datepicker('option', 'changeYear', true);
         if (inhalt) $(aufstellField).val(inhalt);
+        return aufstellField;
     }
 
     private static createInputField(type: "number" | "text" | "button", form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string) {

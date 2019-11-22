@@ -64,6 +64,9 @@ export default class Vektor {
 
     static kreuz(v1: number[], v2: number[]): number[] {
         let r = []
+        if (v1.length != v2.length) {
+            throw new Error("Ungleiche Länge: " + v1.length + " und " + v2.length)
+        }
         for (var i = 0; i < v1.length; i++) {
             let n = i + 1
             let nn = i + 2

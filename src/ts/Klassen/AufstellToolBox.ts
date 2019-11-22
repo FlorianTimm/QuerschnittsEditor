@@ -9,6 +9,13 @@ import DeleteTool from "../Tools/DeleteTool";
 import Aufstellvorrichtung from "../Objekte/Aufstellvorrichtung";
 import Abschnitt from "../Objekte/Abschnitt";
 
+/**
+ * Klasse zum Erzeugen eines Werkzeugkasten zur Bearbeitung von
+ * Aufstellvorrichtungen
+ * @author Florian Timm
+ * @version 2019-11-20
+ * @license MIT
+ */
 export default class AufstellToolBox extends ToolBox {
     private infoTool: InfoTool;
     private addTool: AvAdd;
@@ -17,11 +24,16 @@ export default class AufstellToolBox extends ToolBox {
     private add2ErTool: AvAdd2ER;
     private delTool: DeleteTool;
 
+    /**
+    * @param map Karte
+    * @param sidebar DIV-Element, in den die Tools geladen werden sollen
+    */
     constructor(map: Map, sidebar: HTMLDivElement) {
         super(map, sidebar, "tab_Otaufstvor")
 
-        let layerAufstell = Aufstellvorrichtung.getLayer()
+        let layerAufstell = Aufstellvorrichtung.getLayer(this.map)
         let layerAchse = Abschnitt.getLayer();
+        this.layer.push(layerAufstell)
 
         this.infoTool = new InfoTool(this.map, layerAufstell, this.sidebar);
         this.addTool = new AvAdd(this.map, sidebar, layerAchse);
@@ -32,8 +44,11 @@ export default class AufstellToolBox extends ToolBox {
         this.createToolBox();
     }
 
-    protected createToolBox() {
-        this.createRadio("Info", this.infoTool)
+    /**
+     * Erzeugt das Menu zur Auswahl des Werkzeuges
+     */
+    protected createToolBox(): void {
+        this.createRadio("Info", this.infoTool);
         $(this.form).append($("<br />"))
         this.createRadio("zum ER hinzufügen", this.add2ErTool)
         $(this.form).append($("<br />"))

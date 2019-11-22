@@ -5,10 +5,8 @@ import Querschnitt from './Objekte/Querschnittsdaten';
 import Aufstellvorrichtung from './Objekte/Aufstellvorrichtung';
 import { Map } from 'ol';
 import Event from 'ol/events/Event';
-import { VectorLayer } from './openLayers/Layer';
 import StrassenAusPunkt from './Objekte/StrassenAusPunkt';
 import WaitBlocker from './WaitBlocker';
-import QuerStation from './Objekte/QuerStation';
 
 var CONFIG: { [name: string]: string } = require('./config.json');
 
@@ -35,17 +33,6 @@ export default class Daten {
         this.map = map;
         this.ereignisraum = ereignisraum;
         this.ereignisraum_nr = ereignisraum_nr;
-
-        this.createLayers(map);
-    }
-
-    private createLayers(map: Map) {
-        Querschnitt.getLayerFlaechen(map);
-        Querschnitt.getLayerTrenn(map);
-        QuerStation.getLayer(map);
-        Abschnitt.getLayer(map);
-        Aufstellvorrichtung.getLayer(map);
-        StrassenAusPunkt.getLayer(map);
     }
 
     /**
