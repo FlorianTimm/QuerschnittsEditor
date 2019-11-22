@@ -1,6 +1,8 @@
 import Abschnitt from './Objekte/Abschnitt'
 import PrimaerObjekt from './Objekte/prototypes/PrimaerObjekt';
 import WaitBlocker from './WaitBlocker';
+import Objekt from './Objekte/prototypes/Objekt';
+import SekundaerObjekt from './Objekte/prototypes/SekundaerObjekt';
 var CONFIG = require('./config.json');
 
 
@@ -144,8 +146,9 @@ export default class PublicWFS {
             '     </pub:expandProjektPrimObj>\n' +
             '</soapenv:Body>\n' +
             '</soapenv:Envelope>'
-        PublicWFS.doSoapRequestERWFS(xml, function (xml, objektPrim, objekt, callbackSuccess, __, ...args) {
-            objektPrim.addOKinER(objekt);
+        PublicWFS.doSoapRequestERWFS(xml, function (xml, objektPrim: Objekt, objektSek: string, callbackSuccess, __, ...args) {
+            console.log(objektPrim)
+            objektPrim.addSekOKinER(objektSek);
             if (callbackSuccess != undefined) {
                 callbackSuccess(xml, ...args)
             } else {
@@ -250,7 +253,7 @@ export default class PublicWFS {
         }
 
         if (!callback) return;
-        
+
         let xml = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
             'xmlns:pub="http://ttsib.novasib.de/PublicServices" xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">\n' +
             '<soapenv:Header/>\n' +

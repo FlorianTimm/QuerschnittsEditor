@@ -20,11 +20,12 @@ body,
     width: 90px;
 }
 
-sidebar {
+#sidebar {
     display: block;
     position: absolute;
     right: 20px;
     top: 10px;
+    width: 210px;
 }
 
 #tabs .ui-tabs-panel,
@@ -33,12 +34,12 @@ sidebar {
 #tools>* {
     border-radius: 5px;
     margin-bottom: 3px;
+    border: 1px solid gray;
 }
 
 #tools>* {
     display: block;
     background: rgba(255, 255, 255, 0.8);
-    margin-top: 10px;
     padding: 5px;
     width: 200px;
     /*overflow-x: hidden;*/

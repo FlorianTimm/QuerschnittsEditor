@@ -29,8 +29,9 @@ export default class AusstPktToolBox extends ToolBox {
     constructor(map: Map, sidebar: HTMLDivElement) {
         super(map, sidebar, "tab_Otstrauspkt")
 
-        let layerStraus = StrassenAusPunkt.getLayer()
+        let layerStraus = StrassenAusPunkt.getLayer(this.map)
         let layerAchse = Abschnitt.getLayer();
+        this.layer.push(layerStraus)
 
         this.infoTool = new InfoTool(map, layerStraus, sidebar);
         this.addTool = new SAPAdd(map, sidebar, layerAchse);

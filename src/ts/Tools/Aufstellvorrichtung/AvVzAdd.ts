@@ -200,7 +200,8 @@ class AvVzAdd extends Tool {
         KlartextManager.createKlartextSelectForm('Itbesstrbezug', text, 'Straßenbezug', 'strbezug', eintrag.getStrbezug())
 
         // Aufstelldatum
-        HTML.createDateInput(text, "Aufstelldatum", "aufstelldat", ((eintrag.getAufstelldat() != null) ? (eintrag.getAufstelldat()) : ('')));
+        let aufstdat = HTML.createDateInput(text, "Aufstelldatum", "aufstelldat" + Math.round(Math.random() * 2000), ((eintrag.getAufstelldat() != null) ? (eintrag.getAufstelldat()) : ('')));
+        aufstdat.classList.add("aufstelldat")
 
         // Ext. Objektnummer
         HTML.createTextInput(text, 'Externe Objektnummer', "objektnr", ((eintrag.getObjektnr() != null) ? (eintrag.getObjektnr()) : ('')));
@@ -272,7 +273,7 @@ class AvVzAdd extends Tool {
             schild.setArt(($(eintrag).children().children("select#art")[0] as HTMLInputElement).value);
             schild.setGroesse(($(eintrag).children().children("select#groesse")[0] as HTMLInputElement).value);
             schild.setStrbezug(($(eintrag).children().children("select#strbezug")[0] as HTMLInputElement).value);
-            schild.setAufstelldat(($(eintrag).children().children("input#aufstelldat")[0] as HTMLInputElement).value);
+            schild.setAufstelldat(($(eintrag).children().children("input.aufstelldat")[0] as HTMLInputElement).value);
             schild.setErfart(($(eintrag).children().children("select#erfart")[0] as HTMLInputElement).value);
             schild.setQuelle(($(eintrag).children().children("select#quelle")[0] as HTMLInputElement).value);
             schild.setObjektnr(($(eintrag).children().children("input#objektnr")[0] as HTMLInputElement).value);
@@ -365,7 +366,7 @@ class AvVzAdd extends Tool {
                         '			</ogc:PropertyIsEqualTo>\n' +
                         '			<ogc:PropertyIsEqualTo>\n' +
                         '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
-                        '				<ogc:Literal>#' + Daten.getInstanz().ereignisraum + '</ogc:Literal>\n' +
+                        '				<ogc:Literal>' + Daten.getInstanz().ereignisraum + '</ogc:Literal>\n' +
                         '			</ogc:PropertyIsEqualTo>\n' +
                         '		</ogc:And>\n' +
                         '	</ogc:Filter>\n' + upd +

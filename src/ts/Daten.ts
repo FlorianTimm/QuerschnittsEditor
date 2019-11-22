@@ -5,10 +5,8 @@ import Querschnitt from './Objekte/Querschnittsdaten';
 import Aufstellvorrichtung from './Objekte/Aufstellvorrichtung';
 import { Map } from 'ol';
 import Event from 'ol/events/Event';
-import { VectorLayer } from './openLayers/Layer';
 import StrassenAusPunkt from './Objekte/StrassenAusPunkt';
 import WaitBlocker from './WaitBlocker';
-import QuerStation from './Objekte/QuerStation';
 
 var CONFIG: { [name: string]: string } = require('./config.json');
 

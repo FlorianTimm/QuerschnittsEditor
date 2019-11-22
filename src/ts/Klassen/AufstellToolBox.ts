@@ -31,8 +31,9 @@ export default class AufstellToolBox extends ToolBox {
     constructor(map: Map, sidebar: HTMLDivElement) {
         super(map, sidebar, "tab_Otaufstvor")
 
-        let layerAufstell = Aufstellvorrichtung.getLayer()
+        let layerAufstell = Aufstellvorrichtung.getLayer(this.map)
         let layerAchse = Abschnitt.getLayer();
+        this.layer.push(layerAufstell)
 
         this.infoTool = new InfoTool(this.map, layerAufstell, this.sidebar);
         this.addTool = new AvAdd(this.map, sidebar, layerAchse);
@@ -47,7 +48,7 @@ export default class AufstellToolBox extends ToolBox {
      * Erzeugt das Menu zur Auswahl des Werkzeuges
      */
     protected createToolBox(): void {
-        this.createRadio("Info", this.infoTool)
+        this.createRadio("Info", this.infoTool);
         $(this.form).append($("<br />"))
         this.createRadio("zum ER hinzufügen", this.add2ErTool)
         $(this.form).append($("<br />"))

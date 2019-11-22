@@ -27,6 +27,7 @@ import AufstellToolBox from './Klassen/AufstellToolBox';
 import AusstPktToolBox from './Klassen/AusstPktToolBox';
 import ToolBox from './Klassen/ToolBox';
 import Abschnitt from './Objekte/Abschnitt';
+import SonstigesToolBox from './Klassen/SonstigesToolBox';
 
 var CONFIG: { [name: string]: string } = require('./config.json');
 
@@ -57,12 +58,12 @@ window.addEventListener('load', function () {
     if (!sidebar) throw new Error("HTML Sidebar nicht gefunden")
 
     new QuerschnittToolBox(map, sidebar);
-    new AufstellToolBox(map, sidebar);
+    let atb = new AufstellToolBox(map, sidebar);
     new AusstPktToolBox(map, sidebar);
+    new SonstigesToolBox(map, sidebar)
+    atb.start()
     Abschnitt.getLayer(map);
 
-    // Messen
-    ToolBox.createRadio(document.getElementById("steuerung_sonstige") as HTMLDivElement, "Messen", new Measure(map))
 
     daten.loadER(!foundHash);
 
@@ -270,8 +271,11 @@ function createMap() {
 }
 
 $("div#tabs").tabs({
-    activate: function (event) {
+    activate: function (event, ui) {
         Daten.getInstanz().modus = (event.currentTarget as HTMLElement).dataset.ok;
         Abschnitt.getLayer().changed();
-    }
+        ToolBox.getByFormId(ui.oldPanel.prop("id")).stop();
+        ToolBox.getByFormId(ui.newPanel.prop("id")).start();
+    },
+    active: 1
 })

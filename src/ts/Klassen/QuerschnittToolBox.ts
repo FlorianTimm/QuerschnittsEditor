@@ -9,6 +9,7 @@ import ToolBox from './ToolBox';
 import Querschnitt from '../Objekte/Querschnittsdaten';
 import Abschnitt from '../Objekte/Abschnitt';
 import QuerStation from '../Objekte/QuerStation';
+import { VectorLayer } from '../openLayers/Layer';
 
 /**
  * Klasse zum Erzeugen eines Werkzeugkasten zur Bearbeitung von
@@ -38,6 +39,7 @@ export default class QuerschnittToolBox extends ToolBox {
         let layerTrenn = Querschnitt.getLayerTrenn(this.map);
         let layerQuer = Querschnitt.getLayerFlaechen(this.map);
         let layerStation = QuerStation.getLayer(this.map);
+        this.layer.push(layerTrenn, layerQuer, layerStation);
 
         this.infoTool = new QuerInfoTool(this.map, layerTrenn, layerQuer, this.sidebar);
         this.modifyTool = new QuerModifyTool(map, this.infoTool, this.sidebar, layerTrenn, layerQuer, layerStation);

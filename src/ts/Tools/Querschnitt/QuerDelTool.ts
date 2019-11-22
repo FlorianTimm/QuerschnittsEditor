@@ -5,7 +5,7 @@ import { never } from 'ol/events/condition';
 import { SelectInteraction } from '../../openLayers/Interaction'
 import Querschnitt from "../../Objekte/Querschnittsdaten";
 import InfoTool from "../InfoTool";
-import { VectorLayer } from "ts/openLayers/Layer";
+import { VectorLayer } from "../../openLayers/Layer";
 import Map from "../../openLayers/Map";
 
 /**

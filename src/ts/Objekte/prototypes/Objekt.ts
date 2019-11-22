@@ -31,6 +31,7 @@ export default abstract class Objekt extends Feature {
 	protected abschnitt: Abschnitt = null;
 	protected projekt: Klartext = null;
 	protected abschnittId: string = null;
+	protected sekInER: { [ok: string]: boolean } = {};
 
 	abstract getObjektKlassenName(): string;
 
@@ -118,6 +119,15 @@ export default abstract class Objekt extends Feature {
 
 		r += '</' + this.getObjektKlassenName() + '>\n';
 		return r;
+	}
+
+
+	public addSekOKinER(ok: string) {
+		this.sekInER[ok] = true;
+	}
+
+	public isSekOKinER(ok: string) {
+		return (ok in this.sekInER && this.sekInER[ok]);
 	}
 
 	// Getter
