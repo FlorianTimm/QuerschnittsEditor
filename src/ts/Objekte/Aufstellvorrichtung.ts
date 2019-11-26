@@ -29,7 +29,7 @@ class Callback {
 export default class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay {
     static loadErControlCounter: number = 0;
     static layer: VectorLayer;
-    
+
     private overlay: Overlay;
     private overlayShowing: boolean;
     private loadingZeichen: boolean;
@@ -236,27 +236,29 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
 
     private showDokuPopup(__: Event) {
         this.getDokumente(function (this: Aufstellvorrichtung, doks: Dokument[]) {
-            let dialog = document.createElement("table");
-            dialog.className = "tableWithBorder"
-            for (let dok of doks) {
-                dialog.innerHTML += "<tr><td>" + dok.getBeschreib() + "</td><td>" + dok.getPfad() + "</td></tr>"
-            }
-            document.body.appendChild(dialog);
-            let jqueryDialog = $(dialog).dialog({
-                resizable: false,
-                height: "auto",
-                title: "Dokumente",
-                width: 400,
-                modal: true,
-                buttons: {
-                    /* "Speichern": function (this: Aufstellvorrichtung) {
-                         jqueryDialog.dialog("close");
-                     }.bind(this),*/
-                    "Schließen": function () {
-                        jqueryDialog.dialog("close");
-                    }
+            Klartext.load("Itdokart", function () {
+                let dialog = document.createElement("table");
+                dialog.className = "tableWithBorder"
+                for (let dok of doks) {
+                    dialog.innerHTML += "<tr><td>" + dok.getArt().getBeschreib() + "</td><td>" + dok.getBeschreib() + "</td><td>" + dok.getPfad() + "</td></tr>"
                 }
-            });
+                document.body.appendChild(dialog);
+                let jqueryDialog = $(dialog).dialog({
+                    resizable: false,
+                    height: "auto",
+                    title: "Dokumente",
+                    width: 600,
+                    modal: true,
+                    buttons: {
+                        /* "Speichern": function (this: Aufstellvorrichtung) {
+                             jqueryDialog.dialog("close");
+                         }.bind(this),*/
+                        "Schließen": function () {
+                            jqueryDialog.dialog("close");
+                        }
+                    }
+                });
+            }.bind(this))
         }.bind(this));
     }
 

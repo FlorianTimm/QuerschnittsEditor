@@ -1,7 +1,8 @@
 import SekundaerObjekt from "./prototypes/SekundaerObjekt";
+import Klartext from "./Klartext";
 
 export default class Dokument extends SekundaerObjekt {
-    protected art: string
+    protected art: Klartext
     protected beschreib: string
     protected standort: string
     protected pfad: string
@@ -27,7 +28,7 @@ export default class Dokument extends SekundaerObjekt {
     public getBeschreib(): string {
         return this.beschreib;
     }
-    public getArt(): string {
-        return this.pfad ? this.pfad.substr(-32) : null;
+    public getArt(): Klartext {
+        return this.art;
     }
 }
