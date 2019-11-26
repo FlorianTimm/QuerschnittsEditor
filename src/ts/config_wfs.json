@@ -1,0 +1,720 @@
+{
+    "Otschicht": {
+        "projekt": {
+            "art": 2,
+            "kt": "Projekt"
+        },
+        "parent": {
+            "art": 2,
+            "kt": "Dotquer"
+        },
+        "abschnittOderAst": {
+            "art": 2,
+            "kt": "AsbAbschn"
+        },
+        "schichtnr": {
+            "art": 1
+        },
+        "vst": {
+            "art": 1
+        },
+        "bst": {
+            "art": 1
+        },
+        "teilnr": {
+            "art": 1
+        },
+        "teilbreite": {
+            "art": 1
+        },
+        "decksch": {
+            "art": 0
+        },
+        "baujahr": {
+            "art": 0
+        },
+        "dicke": {
+            "art": 1
+        },
+        "baumonat": {
+            "art": 0
+        },
+        "korngr": {
+            "art": 0
+        },
+        "unscharf": {
+            "art": 0
+        },
+        "kennz": {
+            "art": 2,
+            "kt": "Itschichtkennz"
+        },
+        "art1": {
+            "art": 2,
+            "kt": "Itschichta1"
+        },
+        "art2": {
+            "art": 2,
+            "kt": "Itschichta2"
+        },
+        "art3": {
+            "art": 2,
+            "kt": "Itschichta3"
+        },
+        "artneu": {
+            "art": 2,
+            "kt": "Itschiartneu"
+        },
+        "material1": {
+            "art": 2,
+            "kt": "Itschimat1"
+        },
+        "material2": {
+            "art": 2,
+            "kt": "Itschimat2"
+        },
+        "material3": {
+            "art": 2,
+            "kt": "Itschimat3"
+        },
+        "bindemit1": {
+            "art": 2,
+            "kt": "Itschibind1"
+        },
+        "bindemit2": {
+            "art": 2,
+            "kt": "Itschibind2"
+        },
+        "detaila": {
+            "art": 2,
+            "kt": "Itschideta"
+        },
+        "detailb": {
+            "art": 2,
+            "kt": "Itschidetb"
+        },
+        "detailc": {
+            "art": 2,
+            "kt": "Itschidetc"
+        },
+        "detaild": {
+            "art": 2,
+            "kt": "Itschidetd"
+        },
+        "umweltr": {
+            "art": 0
+        },
+        "kherk": {
+            "art": 2,
+            "kt": "Itherkkoord"
+        },
+        "baujahrGew": {
+            "art": 0
+        },
+        "abnahmeGew": {
+            "art": 0
+        },
+        "dauerGew": {
+            "art": 0
+        },
+        "ablaufGew": {
+            "art": 0
+        },
+        "objektId": {
+            "art": 0
+        },
+        "objektnr": {
+            "art": 0
+        },
+        "erfart": {
+            "art": 2,
+            "kt": "Iterfart"
+        },
+        "quelle": {
+            "art": 2,
+            "kt": "Itquelle"
+        },
+        "ADatum": {
+            "art": 0
+        },
+        "bemerkung": {
+            "art": 0
+        },
+        "bearbeiter": {
+            "art": 0
+        },
+        "behoerde": {
+            "art": 0
+        }
+    },
+    "Dotquer": {
+        "projekt": {
+            "art": 2,
+            "kt": "Projekt"
+        },
+        "hasSekObj": {
+            "art": 1
+        },
+        "abschnittId": {
+            "art": 0
+        },
+        "vst": {
+            "art": 1
+        },
+        "bst": {
+            "art": 1
+        },
+        "streifen": {
+            "art": 0
+        },
+        "streifennr": {
+            "art": 1
+        },
+        "art": {
+            "art": 2,
+            "kt": "Itquerart"
+        },
+        "artober": {
+            "art": 2,
+            "kt": "Itquerober"
+        },
+        "breite": {
+            "art": 1
+        },
+        "bisBreite": {
+            "art": 1
+        },
+        "blpart": {
+            "art": 2,
+            "kt": "Itquerpart"
+        },
+        "blpart3": {
+            "art": 2,
+            "kt": "Itquerpart3"
+        },
+        "uipart": {
+            "art": 2,
+            "kt": "Itquerpart"
+        },
+        "uipart3": {
+            "art": 2,
+            "kt": "Itquerpart3"
+        },
+        "XVstL": {
+            "art": 1
+        },
+        "XVstR": {
+            "art": 1
+        },
+        "XBstL": {
+            "art": 1
+        },
+        "XBstR": {
+            "art": 1
+        },
+        "kherk": {
+            "art": 2,
+            "kt": "Itherkkoord"
+        },
+        "baujahrGew": {
+            "art": 0
+        },
+        "abnahmeGew": {
+            "art": 0
+        },
+        "dauerGew": {
+            "art": 0
+        },
+        "ablaufGew": {
+            "art": 0
+        },
+        "objektId": {
+            "art": 0
+        },
+        "objektnr": {
+            "art": 0
+        },
+        "erfart": {
+            "art": 2,
+            "kt": "Iterfart"
+        },
+        "quelle": {
+            "art": 2,
+            "kt": "Itquelle"
+        },
+        "ADatum": {
+            "art": 0
+        },
+        "bemerkung": {
+            "art": 0
+        },
+        "bearbeiter": {
+            "art": 0
+        },
+        "behoerde": {
+            "art": 0
+        }
+    },
+    "Otaufstvor": {
+        "projekt": {
+            "art": 2,
+            "kt": "Projekt"
+        },
+        "hasSekObj": {
+            "art": 1
+        },
+        "abschnittId": {
+            "art": 0
+        },
+        "vst": {
+            "art": 1
+        },
+        "bst": {
+            "art": 1
+        },
+        "vabstVst": {
+            "art": 1
+        },
+        "vabstBst": {
+            "art": 1
+        },
+        "art": {
+            "art": 2,
+            "kt": "Itaufstvorart"
+        },
+        "llageVst": {
+            "art": 2,
+            "kt": "Itallglage"
+        },
+        "llageBst": {
+            "art": 2,
+            "kt": "Itallglage"
+        },
+        "rlageVst": {
+            "art": 2,
+            "kt": "Itallglage"
+        },
+        "rlageBst": {
+            "art": 2,
+            "kt": "Itallglage"
+        },
+        "rabstbaVst": {
+            "art": 1
+        },
+        "labstbaVst": {
+            "art": 1
+        },
+        "bwnr": {
+            "art": 0
+        },
+        "teilbwnr": {
+            "art": 0
+        },
+        "kreuzungzuord": {
+            "art": 2,
+            "kt": "Itkreuzungzuord"
+        },
+        "unterhaltaa": {
+            "art": 0
+        },
+        "unterhaltstat": {
+            "art": 1
+        },
+        "kherk": {
+            "art": 2,
+            "kt": "Itherkkoord"
+        },
+        "baujahrGew": {
+            "art": 0
+        },
+        "abnahmeGew": {
+            "art": 0
+        },
+        "dauerGew": {
+            "art": 0
+        },
+        "ablaufGew": {
+            "art": 0
+        },
+        "objektId": {
+            "art": 0
+        },
+        "objektnr": {
+            "art": 0
+        },
+        "erfart": {
+            "art": 2,
+            "kt": "Iterfart"
+        },
+        "quelle": {
+            "art": 2,
+            "kt": "Itquelle"
+        },
+        "ADatum": {
+            "art": 0
+        },
+        "bemerkung": {
+            "art": 0
+        },
+        "detailgrad": {
+            "art": 2,
+            "kt": "Itobjdetailgrad"
+        },
+        "bearbeiter": {
+            "art": 0
+        },
+        "behoerde": {
+            "art": 0
+        },
+        "stand": {
+            "art": 0
+        }
+    },
+    "Otvzeichlp": {
+        "projekt": {
+            "art": 2,
+            "kt": "Projekt"
+        },
+        "hasSekObj": {
+            "art": 1
+        },
+        "vst": {
+            "art": 1
+        },
+        "bst": {
+            "art": 1
+        },
+        "stvoznr": {
+            "art": 2,
+            "kt": "Itvzstvoznr"
+        },
+        "sort": {
+            "art": 1
+        },
+        "vztext": {
+            "art": 0
+        },
+        "lageFb": {
+            "art": 2,
+            "kt": "Itvzlagefb"
+        },
+        "fsnummer": {
+            "art": 1
+        },
+        "lesbarkeit": {
+            "art": 2,
+            "kt": "Itvzlesbarkeit"
+        },
+        "strbezug": {
+            "art": 2,
+            "kt": "Itbesstrbezug"
+        },
+        "bauart": {
+            "art": 2,
+            "kt": "Itvzbauart"
+        },
+        "groesse": {
+            "art": 2,
+            "kt": "Itvzgroesse"
+        },
+        "art": {
+            "art": 2,
+            "kt": "Itvzart"
+        },
+        "hersteller": {
+            "art": 2,
+            "kt": "Itvzhersteller"
+        },
+        "herstdat": {
+            "art": 0
+        },
+        "aufstelldat": {
+            "art": 0
+        },
+        "aufhebdat": {
+            "art": 0
+        },
+        "beleucht": {
+            "art": 2,
+            "kt": "Itvzbeleucht"
+        },
+        "sichtbar": {
+            "art": 2,
+            "kt": "Itvzsichtbar"
+        },
+        "lesbarT": {
+            "art": 2,
+            "kt": "Itvztnlesbar"
+        },
+        "lesbarN": {
+            "art": 2,
+            "kt": "Itvztnlesbar"
+        },
+        "unterhaltstat": {
+            "art": 1
+        },
+        "verdeckbar": {
+            "art": 2,
+            "kt": "Itjun"
+        },
+        "aufnahme": {
+            "art": 0
+        },
+        "zuordnung": {
+            "art": 0
+        },
+        "ausfuehr": {
+            "art": 2,
+            "kt": "Itvzausfuehr"
+        },
+        "kherk": {
+            "art": 2,
+            "kt": "Itherkkoord"
+        },
+        "baujahrGew": {
+            "art": 0
+        },
+        "abnahmeGew": {
+            "art": 0
+        },
+        "dauerGew": {
+            "art": 0
+        },
+        "ablaufGew": {
+            "art": 0
+        },
+        "objektId": {
+            "art": 0
+        },
+        "objektnr": {
+            "art": 0
+        },
+        "erfart": {
+            "art": 2,
+            "kt": "Iterfart"
+        },
+        "quelle": {
+            "art": 2,
+            "kt": "Itquelle"
+        },
+        "ADatum": {
+            "art": 0
+        },
+        "bemerkung": {
+            "art": 0
+        },
+        "detailgrad": {
+            "art": 2,
+            "kt": "Itobjdetailgrad"
+        },
+        "bearbeiter": {
+            "art": 0
+        },
+        "behoerde": {
+            "art": 0
+        },
+        "stand": {
+            "art": 0
+        },
+        "parent": {
+            "art": 2,
+            "kt": "Otaufstell"
+        }
+    },
+    "Otdokument": {
+        "projekt": {
+            "art": 2,
+            "kt": "Projekt"
+        },
+        "vst": {
+            "art": 1
+        },
+        "bst": {
+            "art": 1
+        },
+        "art": {
+            "art": 2,
+            "kt": "Itdokart"
+        },
+        "beschreib": {
+            "art": 0
+        },
+        "standort": {
+            "art": 0
+        },
+        "pfad": {
+            "art": 0
+        },
+        "checksumme": {
+            "art": 0
+        },
+        "kherk": {
+            "art": 2,
+            "kt": "Itherkkoord"
+        },
+        "baujahrGew": {
+            "art": 0
+        },
+        "abnahmeGew": {
+            "art": 0
+        },
+        "dauerGew": {
+            "art": 0
+        },
+        "ablaufGew": {
+            "art": 0
+        },
+        "objektId": {
+            "art": 0
+        },
+        "objektnr": {
+            "art": 0
+        },
+        "erfart": {
+            "art": 2,
+            "kt": "Iterfart"
+        },
+        "quelle": {
+            "art": 2,
+            "kt": "Itquelle"
+        },
+        "ADatum": {
+            "art": 0
+        },
+        "bemerkung": {
+            "art": 0
+        },
+        "detailgrad": {
+            "art": 2,
+            "kt": "Itobjdetailgrad"
+        },
+        "bearbeiter": {
+            "art": 0
+        },
+        "behoerde": {
+            "art": 0
+        },
+        "stand": {
+            "art": 0
+        },
+        "parent": {
+            "art": 2,
+            "kt": null
+        }
+    },
+    "Otstrauspkt": {
+        "projekt": {
+            "art": 2,
+            "kt": "Projekt"
+        },
+        "hasSekObj": {
+            "art": 1
+        },
+        "abschnittId": {
+            "art": 0
+        },
+        "vst": {
+            "art": 1
+        },
+        "bst": {
+            "art": 1
+        },
+        "vabstVst": {
+            "art": 1
+        },
+        "vabstBst": {
+            "art": 1
+        },
+        "art": {
+            "art": 2,
+            "kt": "Itaufstvorart"
+        },
+        "llageVst": {
+            "art": 2,
+            "kt": "Itallglage"
+        },
+        "llageBst": {
+            "art": 2,
+            "kt": "Itallglage"
+        },
+        "rlageVst": {
+            "art": 2,
+            "kt": "Itallglage"
+        },
+        "rlageBst": {
+            "art": 2,
+            "kt": "Itallglage"
+        },
+        "rabstbaVst": {
+            "art": 1
+        },
+        "labstbaVst": {
+            "art": 1
+        },
+        "bwnr": {
+            "art": 0
+        },
+        "teilbwnr": {
+            "art": 0
+        },
+        "kreuzungzuord": {
+            "art": 2,
+            "kt": "Itkreuzungzuord"
+        },
+        "unterhaltaa": {
+            "art": 0
+        },
+        "unterhaltstat": {
+            "art": 1
+        },
+        "kherk": {
+            "art": 2,
+            "kt": "Itherkkoord"
+        },
+        "baujahrGew": {
+            "art": 0
+        },
+        "abnahmeGew": {
+            "art": 0
+        },
+        "dauerGew": {
+            "art": 0
+        },
+        "ablaufGew": {
+            "art": 0
+        },
+        "objektId": {
+            "art": 0
+        },
+        "objektnr": {
+            "art": 0
+        },
+        "erfart": {
+            "art": 2,
+            "kt": "Iterfart"
+        },
+        "quelle": {
+            "art": 2,
+            "kt": "Itquelle"
+        },
+        "ADatum": {
+            "art": 0
+        },
+        "bemerkung": {
+            "art": 0
+        },
+        "detailgrad": {
+            "art": 2,
+            "kt": "Itobjdetailgrad"
+        },
+        "bearbeiter": {
+            "art": 0
+        },
+        "behoerde": {
+            "art": 0
+        },
+        "stand": {
+            "art": 0
+        }
+    }
+}

@@ -1,4 +1,6 @@
-html, body, #map {
+html,
+body,
+#map {
     height: 100%;
     width: 100%;
     margin: 0;
@@ -18,17 +20,26 @@ html, body, #map {
     width: 90px;
 }
 
-sidebar {
+#sidebar {
     display: block;
     position: absolute;
     right: 20px;
     top: 10px;
+    width: 210px;
 }
 
-sidebar>* {
+#tabs .ui-tabs-panel,
+#steuerung>*,
+#zoomToExtent,
+#tools>* {
+    border-radius: 5px;
+    margin-bottom: 3px;
+    border: 1px solid gray;
+}
+
+#tools>* {
     display: block;
     background: rgba(255, 255, 255, 0.8);
-    margin-top: 10px;
     padding: 5px;
     width: 200px;
     /*overflow-x: hidden;*/
@@ -43,7 +54,9 @@ form table {
     border-collapse: collapse;
 }
 
-form table, th, td {
+form table,
+th,
+td {
     border: 1px solid black;
 }
 
@@ -60,11 +73,9 @@ form table, th, td {
     font-family: sans-serif;
 }
 
-form#modify {
-    display: none;
-}
-
-form#hinzu, form#quer_del, form#loeschen {
+form#hinzu,
+form#quer_del,
+form#loeschen {
     text-align: center;
     display: none;
 }
@@ -75,92 +86,54 @@ form#quer_del input[type="button"] {
     font-weight: 600;
 }
 
-/* Style the tab */
-
-.tab {
-    overflow: hidden;
-    /*border: 1px solid #ccc;*/
-    background-color: #f1f1f1;
+#tabs a.ui-tabs-anchor {
+    padding: .5em 0.3em;
 }
 
-/* Style the buttons that are used to open the tab content */
+#tabs {
+    padding: 0px;
+}
 
-.tab button {
-    /*background-color: inherit;*/
-    float: left;
+#tabs,
+#tabs .ui-widget-header,
+#tabs .ui-tabs-nav {
+    background: none;
+    border: none;
+}
+
+#tabs .ui-widget-content {
+    border: 1px solid gray;
+    height: 140px;
+}
+
+#tabs .ui-widget-content label {
+    line-height: 1.6;
+}
+
+#tab_Querschnitt.ui-widget-content {
+    background-color: rgba(255, 243, 188, 0.8);
+}
+
+#tab_Otaufstvor.ui-widget-content {
+    background-color: rgba(250, 182, 182, 0.8);
+}
+
+#tab_Otstrauspkt.ui-widget-content {
+    background-color: rgba(212, 255, 214, 0.8);
+}
+
+#steuerung_sonstige {
+    background-color: rgba(212, 212, 212, 0.8);
+    padding: 6px 12px;
     border: 1px solid #ccc;
-    /*border-top: none;*/
-    outline: none;
-    cursor: pointer;
-    padding: 10px;
-    transition: 0.3s;
-    width: 33%;
+    border-top: none;
+    line-height: 1.6;
+    border: 1px solid gray;
 }
 
 input[type="radio"]:checked+label {
     font-weight: 500;
     text-shadow: 0px 0px 5px rgb(2, 105, 189);
-}
-
-/* Change background color of buttons on hover */
-
-.tab button:hover {
-    background-color: #ddd;
-}
-
-/* Create an active/current tablink class */
-
-.tab button.active {
-    /*background-color: #ccc;*/
-    font-weight: 600;
-    border-bottom: 1px solid rgba(0, 0, 0, 0);
-}
-
-/* Style the tab content */
-
-.tabcontent {
-    display: none;
-    padding: 6px 12px;
-    padding-bottom: 20px;
-    border: 1px solid #ccc;
-    border-top: none;
-    height: 9em;
-    line-height: 1.6;
-}
-
-.tabcontent {
-    animation: fadeEffect 1s;
-    /* Fading effect takes 1 second */
-}
-
-/* Go from zero to full opacity */
-
-#tab_Querschnitt, .bt_Querschnitt {
-    background-color: rgba(255, 243, 188, 0.8);
-}
-
-#tab_Otaufstvor, .bt_Aufstell {
-    background-color: rgba(250, 182, 182, 0.8);
-}
-
-#tab_Otstrauspkt, .bt_Strassenaus {
-    background-color: rgba(212, 255, 214, 0.8);
-}
-
-#steuerung_sonstige {
-    padding: 6px 12px;
-    border: 1px solid #ccc;
-    border-top: none;
-    line-height: 1.6;
-}
-
-@keyframes fadeEffect {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
 }
 
 form#suche {
@@ -196,7 +169,8 @@ form#suche {
     border: 1px solid white;
 }
 
-.tooltip-measure:before, .tooltip-static:before {
+.tooltip-measure:before,
+.tooltip-static:before {
     border-top: 6px solid rgba(0, 0, 0, 0.5);
     border-right: 6px solid transparent;
     border-left: 6px solid transparent;
@@ -253,27 +227,32 @@ span.hotkey_alt {
     padding: 5px;
 }
 
-.tool_form input[type=submit], .tool_form input[type=button] {
+.tool_form input[type=submit],
+.tool_form input[type=button] {
     margin-top: 10px;
     border: none;
     width: 95%;
     padding: 7px;
 }
 
-.tool_form input[type=submit]:enabled, .tool_form input[type=button]:enabled {
+.tool_form input[type=submit]:enabled,
+.tool_form input[type=button]:enabled {
     background-color: rgb(76, 175, 80);
 }
 
-.tool_form input[type=submit]:disabled, .tool_form input[type=button]:disabled {
+.tool_form input[type=submit]:disabled,
+.tool_form input[type=button]:disabled {
     color: rgb(128, 128, 128);
     background-color: rgb(204, 204, 204);
 }
 
-.tool_form input[type=submit]:enabled:hover, .tool_form input[type=button]:enabled:hover {
+.tool_form input[type=submit]:enabled:hover,
+.tool_form input[type=button]:enabled:hover {
     background-color: rgb(50, 122, 52)
 }
 
-button#zoomToExtent, button#loadExtent {
+button#zoomToExtent,
+button#loadExtent {
     background-color: #ccc;
     float: left;
     border: 1px solid #999;

@@ -2,3 +2,5 @@ node_modules/
 .cache
 ts_out/
 dist/
+.nyc_output
+coverage

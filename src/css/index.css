@@ -25,6 +25,7 @@ form {
 form input[type=text], form input[type=password] {
     margin-bottom: 15px;
     margin-left: 10px;
+    padding: 3px;
 }
 
 .chosen-container {
@@ -67,7 +68,7 @@ h1 {
     color: rgba(255, 255, 255, 0.6);
 }
 
-input[type=submit] {
+input[type=submit], input[type=button] {
     background-color: #4CAF50;
     /* Green */
     border: none;
@@ -79,6 +80,35 @@ input[type=submit] {
     font-size: 16px;
 }
 
-input[type=submit]:hover {
+input[type=submit]:hover, input[type=button]:hover {
     background-color: rgb(50, 122, 52);
+}
+
+input[type=submit]:disabled, input[type=button]:disabled {
+    background-color: rgb(153, 153, 153);
+}
+
+#fehlerliste div {
+    text-indent: -1em;
+    padding-left: 1em;
+    margin-bottom: 10px;
+}
+
+#fehlerliste .fehler {
+   color: #a00;
+}
+
+
+.nachricht {
+    position: absolute;
+    top: 220px;
+    left: 40%;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 20px;
+    text-align: center;
+    vertical-align: center;
+    display: none;
+    font-size: 18px;
+    font-family: sans-serif;
+    z-index: 9999;
 }
