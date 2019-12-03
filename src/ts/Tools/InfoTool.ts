@@ -78,10 +78,10 @@ export default class InfoTool extends Tool {
             input.value = "Speichern"
             this.infoField.appendChild(input);
             $(this.infoField).off("submit");
-            $(this.infoField).on("submit", function (this: InfoTool, event: Event) {
+            $(this.infoField).on("submit", (event: Event) => {
                 event.preventDefault();
                 (feature as InfoToolEditable).changeAttributes(this.infoField);
-            }.bind(this));
+            });
         }
         this.showInfoBox();
     }
@@ -92,9 +92,9 @@ export default class InfoTool extends Tool {
 
     public hideInfoBox() {
         $(this.infoField).off("submit");
-        $(this.infoField).hide("fast", "linear", undefined, function (this: InfoTool) {
+        $(this.infoField).hide("fast", "linear", undefined, () => {
             this.infoField.innerHTML = "";
-        }.bind(this))
+        })
         this.removeOverlays();
     }
 

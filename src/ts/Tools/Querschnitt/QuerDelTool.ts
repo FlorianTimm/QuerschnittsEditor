@@ -44,11 +44,11 @@ class QuerDelTool extends Tool {
             width: 400,
             modal: true,
             buttons: {
-                "Ja": function (this: QuerDelTool) {
+                "Ja": () => {
                     this.confirmedDelete(querschnitt);
                     jqueryDialog.dialog("close");
-                }.bind(this),
-                "Nein": function () {
+                },
+                "Nein": () => {
                     jqueryDialog.dialog("close");
                 }
             }
@@ -106,9 +106,9 @@ class QuerDelTool extends Tool {
     private flaecheSelected() {
         this.selectLinien.getFeatures().clear();
         let auswahl = (this.selectFlaechen as SelectInteraction).getFeatures();
-        auswahl.forEach(function (this: QuerDelTool, feat: Feature) {
+        auswahl.forEach((feat: Feature) => {
             this.selectLinien.getFeatures().push((feat as Querschnitt).trenn);
-        }.bind(this))
+        })
         this.featureSelected()
     }
 

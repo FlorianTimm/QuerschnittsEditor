@@ -48,11 +48,11 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
         this.setGeometry(new Point([parseFloat(koords[0]), parseFloat(koords[1])]));
         Abschnitt.getLayer().changed();
 
-        Abschnitt.getAbschnitt(this.abschnittId, function (this: PunktObjekt, abschnitt: Abschnitt) {
+        Abschnitt.getAbschnitt(this.abschnittId, (abschnitt: Abschnitt) => {
             this.abschnitt = abschnitt
             abschnitt.addOKinER(this.getObjektKlassenName());
             if (callback) callback(...args);
-        }.bind(this))
+        })
     }
 
     protected static createLayer(map?: Map) {
@@ -60,7 +60,7 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
             source: new VectorSource(),
             opacity: 0.7,
         });
-        layer.setStyle(function (feat: FeatureLike, resolution: number) {
+        layer.setStyle((feat: FeatureLike, resolution: number) => {
             let pkt = feat as PunktObjekt;
             let color1 = pkt.colorFunktion1();
             let color2 = pkt.colorFunktion2();
@@ -109,7 +109,7 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
                     text: text
                 });
             }
-        }.bind(this));
+        });
 
         layer.getStyle
         if (map) map.addLayer(layer);

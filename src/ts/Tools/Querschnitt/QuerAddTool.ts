@@ -101,14 +101,14 @@ class QuerAddTool extends Tool {
             title: "Querschnitt hinzufügen",
             modal: true,
             buttons: {
-                "Links": function (this: QuerAddTool) {
+                "Links": () => {
                     this.loadAufbaudaten(querschnitt, "L");
                     jqueryDialog.dialog("close");
-                }.bind(this),
-                "Rechts": function (this: QuerAddTool) {
+                },
+                "Rechts": () => {
                     this.loadAufbaudaten(querschnitt, "R");
                     jqueryDialog.dialog("close");
-                }.bind(this),
+                },
                 "Abbrechen": function () {
                     jqueryDialog.dialog("close");
                 }

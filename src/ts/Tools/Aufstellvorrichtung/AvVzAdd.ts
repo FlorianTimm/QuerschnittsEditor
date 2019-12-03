@@ -428,11 +428,11 @@ class AvVzAdd extends Tool {
                 width: 400,
                 modal: true,
                 buttons: {
-                    "Daten schreiben": function (this: AvVzAdd) {
+                    "Daten schreiben": () => {
                         $((event.target as HTMLElement).parentElement.parentElement).remove();
                         PublicWFS.addSekInER(this.auswahl, "Otaufstvor", "Otvzeichlp", Daten.getInstanz().ereignisraum_nr, this._erCallback.bind(this), this._erCallback.bind(this), update, this.auswahl);
                         $("#dialog-confirm").dialog("close");
-                    }.bind(this),
+                    },
                     "Abbrechen": function () {
                         $(this).dialog("close");
                     }

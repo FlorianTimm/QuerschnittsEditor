@@ -28,10 +28,10 @@ export default class AvAdd extends AddTool {
         input.value = "Hinzufügen"
         input.disabled = true;
         this.form.appendChild(input);
-        $(this.form).on("submit", function (this: AvAdd, event: Event) {
+        $(this.form).on("submit", (event: Event) => {
             event.preventDefault();
             this.addAufstellButton();
-        }.bind(this));
+        });
     }
 
     private addAufstellButton() {

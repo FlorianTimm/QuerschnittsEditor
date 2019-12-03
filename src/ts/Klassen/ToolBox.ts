@@ -101,10 +101,10 @@ export default abstract class ToolBox {
         input.type = "radio";
         input.name = "toolbox_radio";
 
-        input.addEventListener("change", function (this: ToolBox) {
+        input.addEventListener("change", () => {
             this.stopAll(false);
             tool.start();
-        }.bind(this));
+        });
 
         $(this.form).append($("<label />", {
             append: [input, "&nbsp;" + text]

@@ -281,9 +281,9 @@ export default class QuerModifyTool extends Tool {
     private flaecheSelected() {
         this.selectLinien.getFeatures().clear();
         let auswahl = this.selectFlaechen.getFeatures();
-        auswahl.forEach(function (this: QuerModifyTool, feat: Feature) {
+        auswahl.forEach((feat: Feature) => {
             this.selectLinien.getFeatures().push((feat as Querschnitt).trenn);
-        }.bind(this))
+        })
 
         this.featureSelected();
     }
@@ -294,9 +294,9 @@ export default class QuerModifyTool extends Tool {
         this.selectLinien.getFeatures().clear()
         this.modifyLayer.getSource().clear();
 
-        this.selectFlaechen.getFeatures().forEach(function (this: QuerModifyTool, feature: Feature) {
+        this.selectFlaechen.getFeatures().forEach((feature: Feature) => {
             this.selectLinien.getFeatures().push((feature as Querschnitt).trenn)
-        }.bind(this));
+        });
 
         if (selection.length == 1) {
             this.singleSelect();

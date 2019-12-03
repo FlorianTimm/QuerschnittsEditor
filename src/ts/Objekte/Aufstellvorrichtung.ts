@@ -235,8 +235,8 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
     }
 
     private showDokuPopup(__: Event) {
-        this.getDokumente(function (this: Aufstellvorrichtung, doks: Dokument[]) {
-            Klartext.load("Itdokart", function () {
+        this.getDokumente((doks: Dokument[]) => {
+            Klartext.load("Itdokart", () => {
                 let dialog = document.createElement("table");
                 dialog.className = "tableWithBorder"
                 for (let dok of doks) {
@@ -250,16 +250,16 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
                     width: 600,
                     modal: true,
                     buttons: {
-                        /* "Speichern": function (this: Aufstellvorrichtung) {
+                        /* "Speichern": () => {
                              jqueryDialog.dialog("close");
-                         }.bind(this),*/
+                         },*/
                         "Schließen": function () {
                             jqueryDialog.dialog("close");
                         }
                     }
                 });
-            }.bind(this))
-        }.bind(this));
+            })
+        });
     }
 
     public getInfoForm(ziel: HTMLFormElement, changeable: boolean = false): void {
@@ -342,10 +342,9 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         let groesse = max * 40 + 30
 
         let canvas = document.createElement("canvas")
-        canvas.addEventListener("click",
-            function (this: Aufstellvorrichtung) {
-                this.hideOverlay(map)
-            }.bind(this));
+        canvas.addEventListener("click", () => {
+            this.hideOverlay(map)
+        });
         let ctx = canvas.getContext('2d')
         canvas.height = groesse * 2;
         canvas.width = groesse * 2;
