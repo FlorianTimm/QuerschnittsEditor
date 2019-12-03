@@ -76,21 +76,29 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         ziel.appendChild(div);
     }
 
-    static loadER(callback?: (...args: any[]) => void, ...args: any[]) {
+    static loadER(): Promise<Document> {
         let daten = Daten.getInstanz();
-        PublicWFS.doQuery('Otaufstvor', '<Filter>' +
+        let query = PublicWFS.doQuery('Otaufstvor', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Aufstellvorrichtung.loadErCallback, undefined, callback, ...args);
+            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>')
+        query.then((xml) => {
+            return Aufstellvorrichtung.loadErCallback(xml)
+        });
+        return query;
     }
 
-    static loadAbschnittER(abschnitt: Abschnitt, callback?: (...args: any[]) => void, ...args: any[]) {
-        PublicWFS.doQuery('Otaufstvor', '<Filter>' +
+    static loadAbschnittER(abschnitt: Abschnitt) {
+        let query = PublicWFS.doQuery('Otaufstvor', '<Filter>' +
             '<And><PropertyIsEqualTo><PropertyName>abschnittId</PropertyName>' +
             '<Literal>' + abschnitt.getAbschnittid() + '</Literal></PropertyIsEqualTo><PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + Daten.getInstanz().ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>', Aufstellvorrichtung.loadErCallback, undefined, callback, ...args);
+            '<Literal>' + Daten.getInstanz().ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>');
+        query.then((xml) => {
+            return Aufstellvorrichtung.loadErCallback(xml)
+        });
+        return query;
     }
 
-    public static loadErCallback(xml: XMLDocument, callback?: (...args: any[]) => void, ...args: any[]) {
+    public static loadErCallback(xml: XMLDocument) {
         let straus = xml.getElementsByTagName("Otaufstvor");
         for (let i = 0; i < straus.length; i++) {
             Aufstellvorrichtung.loadErControlCounter += 1
