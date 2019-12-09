@@ -116,8 +116,9 @@ class QuerAddTool extends Tool {
         });
     }
 
-    private loadAufbaudaten(querschnitt: Querschnitt, seite: "R" | "L") {
-        querschnitt.getStation().getAbschnitt().getAufbauDaten(this.addQuerschnittCallback.bind(this), undefined, undefined, seite, querschnitt);
+    private loadAufbaudaten(querschnitt: Querschnitt, seite: "R" | "L"): Promise<void> {
+        return querschnitt.getStation().getAbschnitt().getAufbauDaten()
+            .then(() => { this.addQuerschnittCallback(seite, querschnitt) });
     }
 
     private addQuerschnittCallback(seite: 'L' | 'R', querschnitt: Querschnitt) {

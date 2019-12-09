@@ -24,7 +24,7 @@ export default class Klartext {
     private beschreib: string;
 
     private static liste: { [klartext: string]: { [xlink: string]: Klartext } } = {}
-    private static loadedKlartexte: { [klartext: string]: boolean } = {};
+    private static loadedKlartexte: { [klartext: string]: Promise<KlartextMap> } = {};
     private static openRequests: { [klartext: string]: boolean } = {}
     private static requestCallbacks: { [klartext: string]: Callback[] } = {}
 
@@ -89,31 +89,16 @@ export default class Klartext {
 
     // STATIC METHODS
 
-    public static load(klartext: string, whenReady?: (klartext: KlartextMap, ...args: any[]) => void, ...args: any[]) {
+    public static load(klartext: string): Promise<KlartextMap> {
 
         if (klartext in Klartext.loadedKlartexte) {
-            if (whenReady)
-                whenReady(Klartext.liste[klartext], ...args);
-            return;
+            return Klartext.loadedKlartexte[klartext];
         }
 
-        if (!Klartext.requestCallbacks[klartext])
-            Klartext.requestCallbacks[klartext] = [];
-
-        if (klartext in Klartext.openRequests) {
-            if (whenReady)
-                Klartext.requestCallbacks[klartext].push({ callback: whenReady, args: args });
-            return;
-        }
-
-        Klartext.openRequests[klartext] = true;
-        if (whenReady != undefined) {
-            Klartext.requestCallbacks[klartext].push({ callback: whenReady, args: args });
-        }
-        PublicWFS.doQuery(klartext, '', Klartext.read, undefined, klartext);
+        return PublicWFS.doQuery(klartext, '').then((xml) => { return Klartext.read(xml, klartext) });
     }
 
-    private static read(xml: Document, klartext: string) {
+    private static read(xml: Document, klartext: string): KlartextMap {
         let quer = xml.getElementsByTagName(klartext)
         for (let i = 0; i < quer.length; i++) {
             let id = quer[i].getElementsByTagName('objektId')[0].firstChild.textContent.substr(-32);
@@ -126,14 +111,7 @@ export default class Klartext {
             Klartext.get(klartext, id, luk, beschreib);
         }
 
-        Klartext.loadedKlartexte[klartext] = true;
-        delete (Klartext.openRequests[klartext]);
-        if (Klartext.requestCallbacks[klartext] == undefined || Klartext.requestCallbacks[klartext].length == 0)
-            return;
-        let callback: Callback;
-        while (callback = Klartext.requestCallbacks[klartext].pop()) {
-            callback.callback(Klartext.liste[klartext], ...callback.args);
-        }
+        return Klartext.liste[klartext];
     }
 
     private static getAll(klartext: string): Klartext[] {
@@ -183,17 +161,16 @@ export default class Klartext {
     }
 
     static klartext2select(klartext: string, selectInput: HTMLSelectElement, value?: Klartext, platzhalter?: string) {
-        Klartext.load(klartext, Klartext.klartext2select_callback, klartext, selectInput, value, platzhalter);
-    }
+        Klartext.load(klartext)
+            .then(() => {
+                let arten = Klartext.getAllSorted(klartext);
+                for (let a of arten) {
+                    let isSelected = (value && value.getXlink() == a.getXlink());
+                    HTML.createSelectNode(selectInput, a.getKt() + ' - ' + a.getBeschreib(), a.getXlink(), isSelected);
+                }
+                if (value == null && platzhalter != undefined) selectInput.value = null;
 
-    private static klartext2select_callback(__: {}, klartext: string, selectInput: HTMLSelectElement, value?: Klartext, platzhalter?: string) {
-        let arten = Klartext.getAllSorted(klartext);
-        for (let a of arten) {
-            let isSelected = (value && value.getXlink() == a.getXlink());
-            HTML.createSelectNode(selectInput, a.getKt() + ' - ' + a.getBeschreib(), a.getXlink(), isSelected);
-        }
-        if (value == null && platzhalter != undefined) selectInput.value = null;
-
-        $(selectInput).chosen({ width: "99%", search_contains: true, no_results_text: "Keine Übereinstimmung gefunden für ", placeholder_text_single: platzhalter });
+                $(selectInput).chosen({ width: "99%", search_contains: true, no_results_text: "Keine Übereinstimmung gefunden für ", placeholder_text_single: platzhalter });
+            });
     }
 }

@@ -16,6 +16,7 @@ import '../css/html_forms.css';
 import '../css/index.css';
 
 import HTML from './HTML';
+import { Collection } from 'ol';
 
 window.addEventListener('load', function () { loadER() });
 
@@ -37,8 +38,8 @@ document.getElementById("anlegen").addEventListener("click", legeERan);
 
 //?Service=WFS&Request=GetFeature&TypeName=Projekt&Filter=<Filter><PropertyIsEqualTo><PropertyName>status</PropertyName><Literal>1</Literal></PropertyIsEqualTo></Filter>
 
-function loadER(projektnr?: number, callback?: (...args: any[]) => void, ...args: any[]) {
-    PublicWFS.doQuery('Projekt',
+function loadER(projektnr?: number): Promise<void> {
+    return PublicWFS.doQuery('Projekt',
         '<Filter><And>' +
         '<PropertyIsEqualTo><PropertyName>status</PropertyName>' +
         '<Literal>1</Literal>' +
@@ -46,10 +47,10 @@ function loadER(projektnr?: number, callback?: (...args: any[]) => void, ...args
         '<PropertyName>typ</PropertyName>' +
         '<Literal>D</Literal>' +
         '</PropertyIsEqualTo>' +
-        '</And></Filter>', readER, undefined, projektnr, callback, ...args);
+        '</And></Filter>').then((xml: Document) => { readER(xml, projektnr) });
 }
 
-function readER(xml: Document, projektnr?: number, callback?: (...args: any[]) => void, ...args: any[]) {
+function readER(xml: Document, projektnr?: number) {
     let proj = xml.getElementsByTagName("Projekt")
     select.innerHTML = ""
 
@@ -86,9 +87,6 @@ function readER(xml: Document, projektnr?: number, callback?: (...args: any[]) =
         projekt.anlagedat = proj[i].getElementsByTagName("anlagedat")[0].firstChild.textContent
 
         er.push(projekt);
-
-        if (callback)
-            callback(...args)
     }
 
     er.sort(function (a, b) {
@@ -136,7 +134,8 @@ function aenderung() {
 }
 
 function pruefeER() {
-    PublicWFS.testER((document.getElementById("ernr") as HTMLInputElement).value, pruefeCallback);
+    PublicWFS.testER((document.getElementById("ernr") as HTMLInputElement).value)
+        .then(({ erfolgreich, fehler }) => { pruefeCallback(erfolgreich, Array.from(fehler)) });
 }
 
 function pruefeCallback(erfolg: boolean, fehlerliste?: Element[]) {
@@ -185,16 +184,16 @@ function legeERan() {
         modal: true,
         buttons: {
             "Anlegen": function () {
-                PublicWFS.anlegenER(kurzBez.value, langBez.value, false, anlegenCallback)
+                PublicWFS.anlegenER(kurzBez.value, langBez.value, false)
+                    .then((xml) => {
+                        let projektnr = Number.parseInt(xml.getElementsByTagNameNS('http://interfaceTypes.ttsib5.novasib.de/', 'ProjektNr').item(0).innerHTML)
+                        return loadER(projektnr)
+                    })
+                    .then(() => { anlegenDialog.dialog("close") });
             },
             "Abbrechen": function () {
                 anlegenDialog.dialog("close");
             }
         }
     });
-}
-
-function anlegenCallback(xml: XMLDocument) {
-    let projektnr = Number.parseInt(xml.getElementsByTagNameNS('http://interfaceTypes.ttsib5.novasib.de/', 'ProjektNr').item(0).innerHTML)
-    loadER(projektnr, function () { anlegenDialog.dialog("close") });
 }

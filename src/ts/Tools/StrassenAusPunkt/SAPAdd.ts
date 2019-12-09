@@ -4,6 +4,7 @@ import AddTool from '../prototypes/AddTool';
 import Map from "../../openLayers/Map";
 import Daten from '../../Daten';
 import VectorLayer from 'ol/layer/Vector';
+import PunktObjekt from '../../Objekte/prototypes/PunktObjekt';
 
 var CONFIG = require('../../config.json');
 
@@ -33,14 +34,12 @@ export default class SAPAdd extends AddTool {
         event.preventDefault();
         // im ER?
         if (!(this.abschnitt.isOKinER("Otstrauspkt"))) {
-            PublicWFS.addInER(this.abschnitt, "Otstrauspkt", Daten.getInstanz().ereignisraum_nr, this.addInER_Callback.bind(this));
+            PublicWFS.addInER(this.abschnitt, "Otstrauspkt", Daten.getInstanz().ereignisraum_nr)
+                .then(() => { return StrassenAusPunkt.loadAbschnittER(this.abschnitt) })
+                .then(() => { this.wfsAddStrausPkt() });
         } else {
             this.wfsAddStrausPkt()
         }
-    }
-
-    private addInER_Callback() {
-        StrassenAusPunkt.loadAbschnittER(this.abschnitt, this.wfsAddStrausPkt.bind(this))
     }
 
     private wfsAddStrausPkt() {
@@ -61,14 +60,15 @@ export default class SAPAdd extends AddTool {
             '<art xlink:href="#S' + $(this.form).find('#art').val() + '" typeName="Itstrauspktart" />\n' +
             '<quelle xlink:href="#S' + $(this.form).find('#quelle').val() + '" typeName="Itquelle" />\n' +
             '</Otstrauspkt> </wfs:Insert>';
-        PublicWFS.doTransaction(soap, this.getInsertResults.bind(this));
+        PublicWFS.doTransaction(soap)
+            .then((xml) => { this.getInsertResults(xml) })
     }
 
     public getObjektklasse() {
         return 'Otstrauspkt';
     }
 
-    protected loadERCallback(xml: XMLDocument, ...args: any[]) {
-        StrassenAusPunkt.loadErCallback(xml, ...args);
+    protected loadERCallback(xml: XMLDocument): Promise<PunktObjekt[]> {
+        return StrassenAusPunkt.loadErCallback(xml);
     }
 }

@@ -103,7 +103,10 @@ class AvVzAdd extends Tool {
         buttonAbbrechen.style.marginBottom = "250px";
         this.popup.appendChild(buttonAbbrechen);
 
-        this.auswahl.getZeichen(this._zeichenGeladen.bind(this))
+        this.auswahl.getZeichen()
+            .then((zeichen) => {
+                this._zeichenGeladen(zeichen)
+            });
     }
 
     private mouseIsOver(event: SelectEvent) {
@@ -153,10 +156,11 @@ class AvVzAdd extends Tool {
         let img = document.createElement("img");
         img.classList.add('schildBild');
         img.style.height = "50px";
-        Klartext.load("Itvzstvoznr", function (_: KlartextMap) {
-            img.src = "http://gv-srv-w00118:8080/schilder/" + eintrag.getStvoznr().getKt() + ".svg";
-            img.title = eintrag.getStvoznr().getBeschreib() + (eintrag.getVztext() != null) ? ("\n" + eintrag.getVztext()) : ('');
-        });
+        Klartext.load("Itvzstvoznr")
+            .then(() => {
+                img.src = "http://gv-srv-w00118:8080/schilder/" + eintrag.getStvoznr().getKt() + ".svg";
+                img.title = eintrag.getStvoznr().getBeschreib() + (eintrag.getVztext() != null) ? ("\n" + eintrag.getVztext()) : ('');
+            });
         div.appendChild(img);
 
         //Formular
@@ -290,182 +294,179 @@ class AvVzAdd extends Tool {
 
         let update = ""
         let anzDelete = 0, anzUpdate = 0;
-        let zeichen = this.auswahl.getZeichen();
-        for (let oldZeichen_i in zeichen as Zeichen[]) {
-            let oldZeichen = zeichen[oldZeichen_i] as Zeichen;
-            if (oldZeichen.getObjektId() in alt) {
-                let modiZeichen = alt[oldZeichen.getObjektId()] as Zeichen;
-                let upd = "";
-                if (oldZeichen.getSort() != modiZeichen.getSort()) {
-                    upd += '<wfs:Property>\n<wfs:Name>sort</wfs:Name>\n<wfs:Value>' + modiZeichen.getSort() + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update sort");
-                }
-                if (oldZeichen.getStvoznr().getXlink() != modiZeichen.getStvoznr().getXlink()) {
-                    upd += '<wfs:Property>\n<wfs:Name>stvoznr/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getStvoznr().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update stvoznr");
-                }
-                if (oldZeichen.getVztext() != modiZeichen.getVztext()) {
-                    upd += '<wfs:Property>\n<wfs:Name>vztext</wfs:Name>\n<wfs:Value>' + ((modiZeichen.getVztext() != null) ? modiZeichen.getVztext() : '') + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update text");
-                }
-                if (oldZeichen.getLageFb() == null || oldZeichen.getLageFb().getXlink() != modiZeichen.getLageFb().getXlink()) {
-                    upd += '<wfs:Property>\n<wfs:Name>lageFb/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getLageFb().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update lageFb");
-                }
-                if (oldZeichen.getLesbarkeit() == null || oldZeichen.getLesbarkeit().getXlink() != modiZeichen.getLesbarkeit().getXlink()) {
-                    upd += '<wfs:Property>\n<wfs:Name>lesbarkeit/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getLesbarkeit().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update text");
-                }
-                if (oldZeichen.getBeleucht() == null || oldZeichen.getBeleucht().getXlink() != modiZeichen.getBeleucht().getXlink()) {
-                    upd += '<wfs:Property>\n<wfs:Name>beleucht/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getBeleucht().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update beleucht");
-                }
-                if (oldZeichen.getArt() == null || oldZeichen.getArt().getXlink() != modiZeichen.getArt().getXlink()) {
-                    upd += '<wfs:Property>\n<wfs:Name>art/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getArt().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update art");
-                }
+        let zeichen = this.auswahl.getZeichen()
+            .then((zeichen) => {
+                for (let oldZeichen_i in zeichen as Zeichen[]) {
+                    let oldZeichen = zeichen[oldZeichen_i] as Zeichen;
+                    if (oldZeichen.getObjektId() in alt) {
+                        let modiZeichen = alt[oldZeichen.getObjektId()] as Zeichen;
+                        let upd = "";
+                        if (oldZeichen.getSort() != modiZeichen.getSort()) {
+                            upd += '<wfs:Property>\n<wfs:Name>sort</wfs:Name>\n<wfs:Value>' + modiZeichen.getSort() + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update sort");
+                        }
+                        if (oldZeichen.getStvoznr().getXlink() != modiZeichen.getStvoznr().getXlink()) {
+                            upd += '<wfs:Property>\n<wfs:Name>stvoznr/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getStvoznr().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update stvoznr");
+                        }
+                        if (oldZeichen.getVztext() != modiZeichen.getVztext()) {
+                            upd += '<wfs:Property>\n<wfs:Name>vztext</wfs:Name>\n<wfs:Value>' + ((modiZeichen.getVztext() != null) ? modiZeichen.getVztext() : '') + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update text");
+                        }
+                        if (oldZeichen.getLageFb() == null || oldZeichen.getLageFb().getXlink() != modiZeichen.getLageFb().getXlink()) {
+                            upd += '<wfs:Property>\n<wfs:Name>lageFb/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getLageFb().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update lageFb");
+                        }
+                        if (oldZeichen.getLesbarkeit() == null || oldZeichen.getLesbarkeit().getXlink() != modiZeichen.getLesbarkeit().getXlink()) {
+                            upd += '<wfs:Property>\n<wfs:Name>lesbarkeit/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getLesbarkeit().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update text");
+                        }
+                        if (oldZeichen.getBeleucht() == null || oldZeichen.getBeleucht().getXlink() != modiZeichen.getBeleucht().getXlink()) {
+                            upd += '<wfs:Property>\n<wfs:Name>beleucht/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getBeleucht().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update beleucht");
+                        }
+                        if (oldZeichen.getArt() == null || oldZeichen.getArt().getXlink() != modiZeichen.getArt().getXlink()) {
+                            upd += '<wfs:Property>\n<wfs:Name>art/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getArt().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update art");
+                        }
 
-                if (oldZeichen.getGroesse() == null || oldZeichen.getGroesse().getXlink() != modiZeichen.getGroesse().getXlink()) {
-                    upd += '<wfs:Property>\n<wfs:Name>groesse/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getGroesse().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update groesse");
-                }
+                        if (oldZeichen.getGroesse() == null || oldZeichen.getGroesse().getXlink() != modiZeichen.getGroesse().getXlink()) {
+                            upd += '<wfs:Property>\n<wfs:Name>groesse/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getGroesse().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update groesse");
+                        }
 
-                if (oldZeichen.getStrbezug() == null || oldZeichen.getStrbezug().getXlink() != modiZeichen.getStrbezug().getXlink()) {
-                    upd += '<wfs:Property>\n<wfs:Name>strbezug/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getStrbezug().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update strbezug");
-                }
+                        if (oldZeichen.getStrbezug() == null || oldZeichen.getStrbezug().getXlink() != modiZeichen.getStrbezug().getXlink()) {
+                            upd += '<wfs:Property>\n<wfs:Name>strbezug/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getStrbezug().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update strbezug");
+                        }
 
-                if (oldZeichen.getAufstelldat() != modiZeichen.getAufstelldat() && !(oldZeichen.getAufstelldat() == null && modiZeichen.getAufstelldat() == "")) {
-                    upd += '<wfs:Property>\n<wfs:Name>aufstelldat</wfs:Name>\n<wfs:Value>' + modiZeichen.getAufstelldat() + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update aufstelldat");
-                }
+                        if (oldZeichen.getAufstelldat() != modiZeichen.getAufstelldat() && !(oldZeichen.getAufstelldat() == null && modiZeichen.getAufstelldat() == "")) {
+                            upd += '<wfs:Property>\n<wfs:Name>aufstelldat</wfs:Name>\n<wfs:Value>' + modiZeichen.getAufstelldat() + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update aufstelldat");
+                        }
 
-                if (oldZeichen.getErfart() == null || oldZeichen.getErfart().getXlink() != modiZeichen.getErfart().getXlink()) {
-                    upd += '<wfs:Property>\n<wfs:Name>erfart/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getErfart() + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update erfart");
-                }
+                        if (oldZeichen.getErfart() == null || oldZeichen.getErfart().getXlink() != modiZeichen.getErfart().getXlink()) {
+                            upd += '<wfs:Property>\n<wfs:Name>erfart/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getErfart() + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update erfart");
+                        }
 
-                if (oldZeichen.getQuelle() == null || oldZeichen.getQuelle().getXlink() != modiZeichen.getQuelle().getXlink()) {
-                    upd += '<wfs:Property>\n<wfs:Name>quelle/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getQuelle() + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update quelle");
-                }
+                        if (oldZeichen.getQuelle() == null || oldZeichen.getQuelle().getXlink() != modiZeichen.getQuelle().getXlink()) {
+                            upd += '<wfs:Property>\n<wfs:Name>quelle/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getQuelle() + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update quelle");
+                        }
 
-                if (oldZeichen.getObjektnr() != modiZeichen.getObjektnr()) {
-                    upd += '<wfs:Property>\n<wfs:Name>objektnr</wfs:Name>\n<wfs:Value>' + modiZeichen.getObjektnr() + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update objektnr");
-                }
+                        if (oldZeichen.getObjektnr() != modiZeichen.getObjektnr()) {
+                            upd += '<wfs:Property>\n<wfs:Name>objektnr</wfs:Name>\n<wfs:Value>' + modiZeichen.getObjektnr() + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update objektnr");
+                        }
 
-                if (upd != "") {
-                    anzUpdate += 1
-                    update += '<wfs:Update typeName="Otvzeichlp">\n' +
-                        '	<ogc:Filter>\n' +
-                        '		<ogc:And>\n' +
-                        '			<ogc:PropertyIsEqualTo>\n' +
-                        '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
-                        '				<ogc:Literal>' + oldZeichen.getObjektId() + '</ogc:Literal>\n' +
-                        '			</ogc:PropertyIsEqualTo>\n' +
-                        '			<ogc:PropertyIsEqualTo>\n' +
-                        '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
-                        '				<ogc:Literal>' + Daten.getInstanz().ereignisraum + '</ogc:Literal>\n' +
-                        '			</ogc:PropertyIsEqualTo>\n' +
-                        '		</ogc:And>\n' +
-                        '	</ogc:Filter>\n' + upd +
-                        '</wfs:Update>\n';
-                }
-            } else {
-                console.log("delete");
-                anzDelete += 1
-                update += '<wfs:Delete typeName="Otvzeichlp">\n' +
-                    '	<ogc:Filter>\n' +
-                    '		<ogc:And>\n' +
-                    '			<ogc:PropertyIsEqualTo>\n' +
-                    '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
-                    '				<ogc:Literal>' + oldZeichen.getObjektId() + '</ogc:Literal>\n' +
-                    '			</ogc:PropertyIsEqualTo>\n' +
-                    '			<ogc:PropertyIsEqualTo>\n' +
-                    '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
-                    '				<ogc:Literal>#' + Daten.getInstanz().ereignisraum + '</ogc:Literal>\n' +
-                    '			</ogc:PropertyIsEqualTo>\n' +
-                    '		</ogc:And>\n' +
-                    '	</ogc:Filter>\n' +
-                    '</wfs:Delete>\n';
-            }
-        }
-        for (let zeichen of neu) {
-            console.log("neu");
-            if (zeichen.getVztext == null) zeichen.setVztext("");
-            update += '<wfs:Insert>\n<Otvzeichlp>\n' +
-                '<projekt typeName="Projekt" xlink:href="#' + Daten.getInstanz().ereignisraum + '"/>\n' +
-                '<sort>' + zeichen.getSort() + '</sort>\n' +
-                '<stvoznr xlink:href="#S' + zeichen.getStvoznr() + '" typeName="Itvzstvoznr" />\n' +
-                '<vztext>' + ((zeichen.getVztext() != null) ? zeichen.getVztext() : '') + '</vztext>\n' +
-                '<lageFb xlink:href="#S' + zeichen.getLageFb() + '" typeName="Itvzlagefb" />\n' +
-                '<lesbarkeit xlink:href="#S' + zeichen.getLesbarkeit() + '" typeName="Itvzlesbarkeit" />\n' +
-                '<beleucht xlink:href="#S' + zeichen.getBeleucht() + '" typeName="Itvzbeleucht" />\n' +
-                '<art xlink:href="#' + zeichen.getArt() + '" typeName="Itvzart" />\n' +
-                '<parent typeName="Otaufstvor" xlink:href="#' + this.auswahl.getFid() + '"/>\n' +
-                '<groesse xlink:href="#' + zeichen.getGroesse() + '" typeName="Itvzgroesse" />\n' +
-                '<strbezug xlink:href="#' + zeichen.getStrbezug() + '" typeName="Itbesstrbezug" />\n' +
-                '<aufstelldat>' + zeichen.getAufstelldat() + '</aufstelldat>\n' +
-                ((zeichen.getObjektnr() != null && zeichen.getObjektnr() != '') ? ('<objektnr>' + zeichen.getObjektnr() + '</objektnr>\n') : '') +
-                '<erfart xlink:href="#' + zeichen.getErfart() + '" typeName="Iterfart" />\n' +
-                '<quelle xlink:href="#' + zeichen.getQuelle() + '" typeName="Itquelle" />\n' +
-                '<ADatum>' + new Date().toISOString().slice(0, 10) + '</ADatum>\n' +
-                '</Otvzeichlp>\n</wfs:Insert>';
-
-        }
-
-        if ((anzDelete + anzUpdate + neu.length) > 0) {
-            $("#dialog-confirm")[0].title = "Änderungen bestätigen";
-            $("#dialog-confirm #text")[0].innerHTML = "Es werden folgende Änderungen durchgeführt:<br /><br />" +
-                anzDelete + " Schilder löschen<br />" +
-                anzUpdate + " ändern<br />" +
-                neu.length + " hinzugefügen<br /><br />" +
-                "Wollen Sie fortfahren?";
-            $("#dialog-confirm").dialog({
-                resizable: false,
-                height: "auto",
-                width: 400,
-                modal: true,
-                buttons: {
-                    "Daten schreiben": () => {
-                        $((event.target as HTMLElement).parentElement.parentElement).remove();
-                        PublicWFS.addSekInER(this.auswahl, "Otaufstvor", "Otvzeichlp", Daten.getInstanz().ereignisraum_nr, this._erCallback.bind(this), this._erCallback.bind(this), update, this.auswahl);
-                        $("#dialog-confirm").dialog("close");
-                    },
-                    "Abbrechen": function () {
-                        $(this).dialog("close");
+                        if (upd != "") {
+                            anzUpdate += 1
+                            update += '<wfs:Update typeName="Otvzeichlp">\n' +
+                                '	<ogc:Filter>\n' +
+                                '		<ogc:And>\n' +
+                                '			<ogc:PropertyIsEqualTo>\n' +
+                                '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
+                                '				<ogc:Literal>' + oldZeichen.getObjektId() + '</ogc:Literal>\n' +
+                                '			</ogc:PropertyIsEqualTo>\n' +
+                                '			<ogc:PropertyIsEqualTo>\n' +
+                                '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
+                                '				<ogc:Literal>' + Daten.getInstanz().ereignisraum + '</ogc:Literal>\n' +
+                                '			</ogc:PropertyIsEqualTo>\n' +
+                                '		</ogc:And>\n' +
+                                '	</ogc:Filter>\n' + upd +
+                                '</wfs:Update>\n';
+                        }
+                    } else {
+                        console.log("delete");
+                        anzDelete += 1
+                        update += '<wfs:Delete typeName="Otvzeichlp">\n' +
+                            '	<ogc:Filter>\n' +
+                            '		<ogc:And>\n' +
+                            '			<ogc:PropertyIsEqualTo>\n' +
+                            '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
+                            '				<ogc:Literal>' + oldZeichen.getObjektId() + '</ogc:Literal>\n' +
+                            '			</ogc:PropertyIsEqualTo>\n' +
+                            '			<ogc:PropertyIsEqualTo>\n' +
+                            '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
+                            '				<ogc:Literal>#' + Daten.getInstanz().ereignisraum + '</ogc:Literal>\n' +
+                            '			</ogc:PropertyIsEqualTo>\n' +
+                            '		</ogc:And>\n' +
+                            '	</ogc:Filter>\n' +
+                            '</wfs:Delete>\n';
                     }
                 }
+                for (let zeichen of neu) {
+                    console.log("neu");
+                    if (zeichen.getVztext == null) zeichen.setVztext("");
+                    update += '<wfs:Insert>\n<Otvzeichlp>\n' +
+                        '<projekt typeName="Projekt" xlink:href="#' + Daten.getInstanz().ereignisraum + '"/>\n' +
+                        '<sort>' + zeichen.getSort() + '</sort>\n' +
+                        '<stvoznr xlink:href="#S' + zeichen.getStvoznr() + '" typeName="Itvzstvoznr" />\n' +
+                        '<vztext>' + ((zeichen.getVztext() != null) ? zeichen.getVztext() : '') + '</vztext>\n' +
+                        '<lageFb xlink:href="#S' + zeichen.getLageFb() + '" typeName="Itvzlagefb" />\n' +
+                        '<lesbarkeit xlink:href="#S' + zeichen.getLesbarkeit() + '" typeName="Itvzlesbarkeit" />\n' +
+                        '<beleucht xlink:href="#S' + zeichen.getBeleucht() + '" typeName="Itvzbeleucht" />\n' +
+                        '<art xlink:href="#' + zeichen.getArt() + '" typeName="Itvzart" />\n' +
+                        '<parent typeName="Otaufstvor" xlink:href="#' + this.auswahl.getFid() + '"/>\n' +
+                        '<groesse xlink:href="#' + zeichen.getGroesse() + '" typeName="Itvzgroesse" />\n' +
+                        '<strbezug xlink:href="#' + zeichen.getStrbezug() + '" typeName="Itbesstrbezug" />\n' +
+                        '<aufstelldat>' + zeichen.getAufstelldat() + '</aufstelldat>\n' +
+                        ((zeichen.getObjektnr() != null && zeichen.getObjektnr() != '') ? ('<objektnr>' + zeichen.getObjektnr() + '</objektnr>\n') : '') +
+                        '<erfart xlink:href="#' + zeichen.getErfart() + '" typeName="Iterfart" />\n' +
+                        '<quelle xlink:href="#' + zeichen.getQuelle() + '" typeName="Itquelle" />\n' +
+                        '<ADatum>' + new Date().toISOString().slice(0, 10) + '</ADatum>\n' +
+                        '</Otvzeichlp>\n</wfs:Insert>';
+
+                }
+
+                if ((anzDelete + anzUpdate + neu.length) > 0) {
+                    $("#dialog-confirm")[0].title = "Änderungen bestätigen";
+                    $("#dialog-confirm #text")[0].innerHTML = "Es werden folgende Änderungen durchgeführt:<br /><br />" +
+                        anzDelete + " Schilder löschen<br />" +
+                        anzUpdate + " ändern<br />" +
+                        neu.length + " hinzugefügen<br /><br />" +
+                        "Wollen Sie fortfahren?";
+                    $("#dialog-confirm").dialog({
+                        resizable: false,
+                        height: "auto",
+                        width: 400,
+                        modal: true,
+                        buttons: {
+                            "Daten schreiben": () => {
+                                this.writeData(update);
+                                $("#dialog-confirm").dialog("close");
+                            },
+                            "Abbrechen": function () {
+                                $(this).dialog("close");
+                            }
+                        }
+                    });
+                } else {
+                    $((event.target as HTMLElement).parentElement.parentElement).remove();
+                }
             });
-        } else {
-            $((event.target as HTMLElement).parentElement.parentElement).remove();
-        }
     }
 
     /**
      * Wird aufgerufen, nachdem erfolgreich oder erfolglos versucht wurde, die Aufstellvorrichtung in den Ereignisraum zu laden
-     * @param {*} __ 
      * @param {string} update Transaktion als Text
-     * @param {*} _auswahl 
+     * @param {*} auswahl 
      */
-    _erCallback(__: any, update: string, _auswahl: Aufstellvorrichtung) {
-        console.log("Update: " + update)
-        PublicWFS.doTransaction(update, this._updateCallback.bind(this), undefined, _auswahl);
+    private writeData(update: string): Promise<void> {
+        $((event.target as HTMLElement).parentElement.parentElement).remove();
+        return PublicWFS.addSekInER(this.auswahl, "Otaufstvor", "Otvzeichlp", Daten.getInstanz().ereignisraum_nr)
+            .finally(() => {
+                return PublicWFS.doTransaction(update)
+            })
+            .then(() => {
+                PublicWFS.showMessage("erfolgreich", false);
+                console.log("reload");
+                this.auswahl.reloadZeichen();
+                this.select.getFeatures().clear();
+            });
     }
 
-
-    /**
-     * wird nach der Ausführung des Updates ausgeführt
-     * @param {*} __ 
-     * @param {*} _auswahl 
-     */
-    _updateCallback(__: any, _auswahl: Aufstellvorrichtung) {
-        PublicWFS.showMessage("erfolgreich", false);
-        console.log("reload");
-        _auswahl.reloadZeichen();
-        this.select.getFeatures().clear();
-    }
 
     /**
      * Schließt das Popup mit den Schildern

@@ -9,6 +9,7 @@ import { MapBrowserEvent } from 'ol';
 import Map from "../../openLayers/Map";
 import Abschnitt, { StationObj } from '../../Objekte/Abschnitt';
 import PublicWFS from '../../PublicWFS';
+import PunktObjekt from '../../Objekte/prototypes/PunktObjekt';
 
 /**
  * Funktion zum Hinzufügen von Objekten
@@ -181,10 +182,12 @@ export default abstract class AddTool extends Tool {
             filter += '<FeatureId fid="' + (childs[i] as Element).getAttribute('fid') + '"/>';
         }
         filter += '</Filter>';
-        PublicWFS.doQuery(this.getObjektklasse(), filter, this.loadERCallback);
+        PublicWFS.doQuery(this.getObjektklasse(), filter).then(() => {
+            this.loadERCallback(xml);
+        });
     }
 
-    protected abstract loadERCallback(xml: XMLDocument, ...args: any[]): void;
+    protected abstract loadERCallback(xml: XMLDocument): Promise<PunktObjekt[]>;
     public abstract getObjektklasse(): string;
 
     start() {

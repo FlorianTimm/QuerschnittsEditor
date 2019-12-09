@@ -79,16 +79,15 @@ export default class DeleteTool extends Tool {
             '		</ogc:And>\n' +
             '	</ogc:Filter>\n' +
             '</wfs:Delete>';
-        PublicWFS.doTransaction(update, this._deleteCallback.bind(this));
-    }
-
-    _deleteCallback(_xml: XMLDocument) {
-        let feature = this.select.getFeatures().getArray()[0];
-        (<VectorSource>this.layer.getSource()).removeFeature(feature);
-        this.select.getFeatures().clear();
-        PublicWFS.showMessage("Objekt gelöscht!")
-        this.delField.style.display = "none";
-        this.infoField.innerHTML = "";
+        PublicWFS.doTransaction(update)
+            .then(() => {
+                let feature = this.select.getFeatures().getArray()[0];
+                (<VectorSource>this.layer.getSource()).removeFeature(feature);
+                this.select.getFeatures().clear();
+                PublicWFS.showMessage("Objekt gelöscht!")
+                this.delField.style.display = "none";
+                this.infoField.innerHTML = "";
+            })
     }
 
     start() {

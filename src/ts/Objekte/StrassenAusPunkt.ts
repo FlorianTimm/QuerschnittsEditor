@@ -56,28 +56,34 @@ export default class StrassenAusPunkt extends PunktObjekt {
         StrassenAusPunkt.createFields(ziel, this, changeable);
     }
 
-    static loadER(callback?: (...args: any[]) => void, ...args: any[]) {
+    static loadER(): Promise<StrassenAusPunkt[]> {
         let daten = Daten.getInstanz();
-        PublicWFS.doQuery('Otstrauspkt', '<Filter>' +
+        return PublicWFS.doQuery('Otstrauspkt', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', StrassenAusPunkt.loadErCallback, undefined, callback, ...args);
+            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>')
+            .then((xml) => { return StrassenAusPunkt.loadErCallback(xml) });
     }
 
-    static loadAbschnittER(abschnitt: Abschnitt, callback?: (...args: any[]) => void, ...args: any[]) {
-        PublicWFS.doQuery('Otstrauspkt', '<Filter>' +
+    static loadAbschnittER(abschnitt: Abschnitt): Promise<StrassenAusPunkt[]> {
+        return PublicWFS.doQuery('Otstrauspkt', '<Filter>' +
             '<And><PropertyIsEqualTo><PropertyName>abschnittId</PropertyName>' +
             '<Literal>' + abschnitt.getAbschnittid() + '</Literal></PropertyIsEqualTo><PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + Daten.getInstanz().ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>', StrassenAusPunkt.loadErCallback, undefined, callback, ...args);
+            '<Literal>' + Daten.getInstanz().ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>')
+            .then((xml) => { return StrassenAusPunkt.loadErCallback(xml) });
     }
 
-    public static loadErCallback(xml: XMLDocument, callback?: (...args: any[]) => void, ...args: any[]) {
+    public static loadErCallback(xml: XMLDocument): Promise<StrassenAusPunkt[]> {
         let straus = xml.getElementsByTagName("Otstrauspkt");
+        let tasks: Promise<StrassenAusPunkt>[] = [];
         for (let i = 0; i < straus.length; i++) {
             StrassenAusPunkt.loadErControlCounter += 1
-            let f = StrassenAusPunkt.fromXML(straus[i], StrassenAusPunkt.loadErControlCallback, callback, ...args);
-            StrassenAusPunkt.getLayer().getSource().addFeature(f);
+            tasks.push(StrassenAusPunkt.fromXML(straus[i])
+                .then((f: StrassenAusPunkt) => {
+                    StrassenAusPunkt.getLayer().getSource().addFeature(f)
+                    return f
+                }))
         }
-        if (straus.length == 0) StrassenAusPunkt.loadErControlCheck(callback, ...args)
+        return Promise.all(tasks);
     }
 
     private static loadErControlCallback(callback?: (...args: any[]) => void, ...args: any[]) {
@@ -90,10 +96,9 @@ export default class StrassenAusPunkt extends PunktObjekt {
         if (callback) callback(...args)
     }
 
-    public static fromXML(xml: Element, callback?: (...args: any[]) => void, ...args: any[]) {
+    public static fromXML(xml: Element): Promise<StrassenAusPunkt> {
         let r = new StrassenAusPunkt();
-        r.setDataFromXML(xml, callback, ...args);
-        return r;
+        return r.setDataFromXML(xml) as Promise<StrassenAusPunkt>;
     }
 
     protected static createFields(form: HTMLFormElement, ausstattung?: StrassenAusPunkt, changeable: boolean = false) {

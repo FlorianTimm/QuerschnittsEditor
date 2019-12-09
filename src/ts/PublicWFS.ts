@@ -38,7 +38,7 @@ export default class PublicWFS {
                     resolve(xmlhttp.responseXML);
                 }
                 else {
-                    reject(Error("Kommunikationsfehler"))
+                    reject(xmlhttp.responseXML)
                 }
             };
             xmlhttp.setRequestHeader('Content-Type', 'text/xml');
@@ -132,28 +132,27 @@ export default class PublicWFS {
         });
     }
 
-    static doTransaction(transaction: string) {
-        return new Promise(function (resolve, reject) {
-            var xml =
-                '<?xml version="1.0" encoding="ISO-8859-1"?>' +
-                '<wfs:Transaction service="WFS" version="1.0.0"' +
-                '		xmlns="http://xml.novasib.de"' +
-                '		xmlns:wfs="http://www.opengis.net/wfs" ' +
-                '		xmlns:gml="http://www.opengis.net/gml" ' +
-                '		xmlns:ogc="http://www.opengis.net/ogc" ' +
-                '		xmlns:xlink="http://www.w3.org/1999/xlink" ' +
-                '		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' +
-                '		xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-transaction.xsd">' +
-                transaction +
-                '</wfs:Transaction>';
-            PublicWFS.doSoapRequestWFS(xml).then((xml: Document) => {
+    static doTransaction(transaction: string): Promise<Document> {
+        var xml =
+            '<?xml version="1.0" encoding="ISO-8859-1"?>' +
+            '<wfs:Transaction service="WFS" version="1.0.0"' +
+            '		xmlns="http://xml.novasib.de"' +
+            '		xmlns:wfs="http://www.opengis.net/wfs" ' +
+            '		xmlns:gml="http://www.opengis.net/gml" ' +
+            '		xmlns:ogc="http://www.opengis.net/ogc" ' +
+            '		xmlns:xlink="http://www.w3.org/1999/xlink" ' +
+            '		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' +
+            '		xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-transaction.xsd">' +
+            transaction +
+            '</wfs:Transaction>';
+        return PublicWFS.doSoapRequestWFS(xml)
+            .then((xml: Document) => {
                 if (xml.getElementsByTagName('SUCCESS').length > 0) {
-                    resolve(xml);
+                    return Promise.resolve(xml);
                 } else {
-                    reject(xml);
+                    return Promise.reject(xml);
                 }
             })
-        })
     }
 
     public static doQuery(klasse: string, filter: string): Promise<Document> {

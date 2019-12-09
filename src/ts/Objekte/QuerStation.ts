@@ -138,7 +138,8 @@ export default class QuerStation {
 
     teilen(station: number) {
         if (this.vst < station && this.bst > station) {
-            this.abschnitt.getAufbauDaten(this.teilen_callback_aufbaudaten.bind(this), undefined, false, station);
+            this.abschnitt.getAufbauDaten()
+                .then(() => { this.teilen_callback_aufbaudaten(station) });
         } else {
             PublicWFS.showMessage("nicht möglich, da neue Station zu dicht an bestehenden", true);
         }
@@ -195,7 +196,8 @@ export default class QuerStation {
                 }, true);
             }
         }
-        PublicWFS.doTransaction(xml, this.neueQuerschnitteCallbackInsertResult.bind(this), undefined, station);
+        PublicWFS.doTransaction(xml)
+            .then((xml: Document) => { this.neueQuerschnitteCallbackInsertResult(xml, station) });
     }
 
     deleteAll() {
@@ -207,63 +209,65 @@ export default class QuerStation {
         this._querschnitte = {};
     }
 
-    rewrite() {
-        this.abschnitt.getAufbauDaten(this.rewriteCallbackAufbaudaten.bind(this))
+    rewrite(): Promise<void> {
+        return this.abschnitt.getAufbauDaten()
+            .then(() => {
+                let soap = '<wfs:Delete typeName="Dotquer">\n' +
+                    '<ogc:Filter>\n' +
+                    '  <ogc:And>\n' +
+                    '    <ogc:PropertyIsEqualTo>\n' +
+                    '       <ogc:PropertyName>abschnittId</ogc:PropertyName>\n' +
+                    '      <ogc:Literal>' + this.abschnitt.getAbschnittid() + '</ogc:Literal>\n' +
+                    '    </ogc:PropertyIsEqualTo>\n' +
+                    '    <ogc:PropertyIsEqualTo>\n' +
+                    '       <ogc:PropertyName>vst</ogc:PropertyName>\n' +
+                    '      <ogc:Literal>' + this.vst + '</ogc:Literal>\n' +
+                    '    </ogc:PropertyIsEqualTo>\n' +
+                    '    <ogc:PropertyIsEqualTo>\n' +
+                    '       <ogc:PropertyName>bst</ogc:PropertyName>\n' +
+                    '      <ogc:Literal>' + this.bst + '</ogc:Literal>\n' +
+                    '    </ogc:PropertyIsEqualTo>\n' +
+                    '    <ogc:PropertyIsEqualTo>\n' +
+                    '      <ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
+                    '      <ogc:Literal>' + this.daten.ereignisraum + '</ogc:Literal>\n' +
+                    '    </ogc:PropertyIsEqualTo>\n' +
+                    '  </ogc:And>\n' +
+                    '</ogc:Filter>\n' +
+                    '</wfs:Delete>\n' +
+                    '<wfs:Delete typeName="Otschicht">\n' +
+                    '<ogc:Filter>\n' +
+                    '  <ogc:And>\n' +
+                    '    <ogc:PropertyIsEqualTo>\n' +
+                    '       <ogc:PropertyName>abschnittId</ogc:PropertyName>\n' +
+                    '      <ogc:Literal>' + this.abschnitt.getAbschnittid() + '</ogc:Literal>\n' +
+                    '    </ogc:PropertyIsEqualTo>\n' +
+                    '    <ogc:PropertyIsEqualTo>\n' +
+                    '       <ogc:PropertyName>vst</ogc:PropertyName>\n' +
+                    '      <ogc:Literal>' + this.vst + '</ogc:Literal>\n' +
+                    '    </ogc:PropertyIsEqualTo>\n' +
+                    '    <ogc:PropertyIsEqualTo>\n' +
+                    '       <ogc:PropertyName>bst</ogc:PropertyName>\n' +
+                    '      <ogc:Literal>' + this.bst + '</ogc:Literal>\n' +
+                    '    </ogc:PropertyIsEqualTo>\n' +
+                    '    <ogc:PropertyIsEqualTo>\n' +
+                    '      <ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
+                    '      <ogc:Literal>' + this.daten.ereignisraum + '</ogc:Literal>\n' +
+                    '    </ogc:PropertyIsEqualTo>\n' +
+                    '  </ogc:And>\n' +
+                    '</ogc:Filter>\n' +
+                    '</wfs:Delete>\n';
+                for (let qs of this.getAllQuerschnitte()) {
+                    //console.log(qs);
+                    soap += qs.createInsertXML();
+                }
+                return PublicWFS.doTransaction(soap);
+            })
+            .then((xml) => {
+                this.neueQuerschnitteCallbackInsertResult(xml);
+            });
     }
 
-    private rewriteCallbackAufbaudaten() {
-        let soap = '<wfs:Delete typeName="Dotquer">\n' +
-            '<ogc:Filter>\n' +
-            '  <ogc:And>\n' +
-            '    <ogc:PropertyIsEqualTo>\n' +
-            '       <ogc:PropertyName>abschnittId</ogc:PropertyName>\n' +
-            '      <ogc:Literal>' + this.abschnitt.getAbschnittid() + '</ogc:Literal>\n' +
-            '    </ogc:PropertyIsEqualTo>\n' +
-            '    <ogc:PropertyIsEqualTo>\n' +
-            '       <ogc:PropertyName>vst</ogc:PropertyName>\n' +
-            '      <ogc:Literal>' + this.vst + '</ogc:Literal>\n' +
-            '    </ogc:PropertyIsEqualTo>\n' +
-            '    <ogc:PropertyIsEqualTo>\n' +
-            '       <ogc:PropertyName>bst</ogc:PropertyName>\n' +
-            '      <ogc:Literal>' + this.bst + '</ogc:Literal>\n' +
-            '    </ogc:PropertyIsEqualTo>\n' +
-            '    <ogc:PropertyIsEqualTo>\n' +
-            '      <ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
-            '      <ogc:Literal>' + this.daten.ereignisraum + '</ogc:Literal>\n' +
-            '    </ogc:PropertyIsEqualTo>\n' +
-            '  </ogc:And>\n' +
-            '</ogc:Filter>\n' +
-            '</wfs:Delete>\n' +
-            '<wfs:Delete typeName="Otschicht">\n' +
-            '<ogc:Filter>\n' +
-            '  <ogc:And>\n' +
-            '    <ogc:PropertyIsEqualTo>\n' +
-            '       <ogc:PropertyName>abschnittId</ogc:PropertyName>\n' +
-            '      <ogc:Literal>' + this.abschnitt.getAbschnittid() + '</ogc:Literal>\n' +
-            '    </ogc:PropertyIsEqualTo>\n' +
-            '    <ogc:PropertyIsEqualTo>\n' +
-            '       <ogc:PropertyName>vst</ogc:PropertyName>\n' +
-            '      <ogc:Literal>' + this.vst + '</ogc:Literal>\n' +
-            '    </ogc:PropertyIsEqualTo>\n' +
-            '    <ogc:PropertyIsEqualTo>\n' +
-            '       <ogc:PropertyName>bst</ogc:PropertyName>\n' +
-            '      <ogc:Literal>' + this.bst + '</ogc:Literal>\n' +
-            '    </ogc:PropertyIsEqualTo>\n' +
-            '    <ogc:PropertyIsEqualTo>\n' +
-            '      <ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
-            '      <ogc:Literal>' + this.daten.ereignisraum + '</ogc:Literal>\n' +
-            '    </ogc:PropertyIsEqualTo>\n' +
-            '  </ogc:And>\n' +
-            '</ogc:Filter>\n' +
-            '</wfs:Delete>\n';
-        for (let qs of this.getAllQuerschnitte()) {
-            //console.log(qs);
-            soap += qs.createInsertXML();
-        }
-        PublicWFS.doTransaction(soap, this.neueQuerschnitteCallbackInsertResult.bind(this))
-    }
-
-    private neueQuerschnitteCallbackInsertResult(xml: Document, station?: number) {
+    private neueQuerschnitteCallbackInsertResult(xml: Document, station?: number): Promise<void> {
         console.log(xml);
         let filter = '<Filter>';
         let childs = xml.getElementsByTagName('InsertResult')[0].childNodes;
@@ -271,46 +275,62 @@ export default class QuerStation {
             filter += '<FeatureId fid="' + (childs[i] as Element).getAttribute('fid') + '"/>';
         }
         filter += '</Filter>';
-        PublicWFS.doQuery('Dotquer', filter, this.neueQuerschnitteCallbackDotquer.bind(this), undefined, station);
+        return PublicWFS.doQuery('Dotquer', filter)
+            .then((xml: Document) => {
+                this.neueQuerschnitteCallbackDotquer(xml, station);
+            });
     }
 
-    private neueQuerschnitteCallbackDotquer(xml: Document, station?: number) {
+    private neueQuerschnitteCallbackDotquer(xml: Document, station?: number): Promise<void> {
         let insert = "<wfs:Insert>\n";
         let dotquer = Array.from(xml.getElementsByTagName("Dotquer"));
         let insertRows = 0;
+        let tasks: Promise<void>[] = [];
         for (let i = 0; i < dotquer.length; i++) {
-            let neu = Querschnitt.fromXML(dotquer[i], true);
-            let alt = this.getQuerschnitt(neu.getStreifen(), neu.getStreifennr())
-            if (alt == undefined) continue;
-            let aufbau = alt.getAufbau() as { [schicht: number]: Aufbau };
-            console.log(aufbau);
-            for (let schichtnr in aufbau) {
-                let schicht = aufbau[schichtnr];
-                if (schicht.getBst() <= neu.getVst() || schicht.getVst() >= neu.getBst()) continue;
-                insert += schicht.createXML({
-                    vst: schicht.getVst() < neu.getVst() ? neu.getVst() : schicht.getVst(),
-                    bst: schicht.getBst() > neu.getBst() ? neu.getBst() : schicht.getBst(),
-                    parent: neu.getFid()
-                }, true)
-                insertRows++;
-            }
-        }
-        insert += "</wfs:Insert>";
-        console.log(insert)
-        if (insertRows > 0) {
-            PublicWFS.doTransaction(insert);
-        }
+            let neu: Querschnitt;
+            tasks.push(Querschnitt.fromXML(dotquer[i], true)
+                .then((neuQuer: Querschnitt) => {
+                    neu = neuQuer;
+                    let alt = this.getQuerschnitt(neu.getStreifen(), neu.getStreifennr())
+                    if (alt == undefined) return Promise.reject();
 
-        if (station != undefined) {
-            let neueStation = new QuerStation(this.abschnitt, station, this.bst);
-            this.bst = station;
-            this.abschnitt.addStation(neueStation);
-            neueStation.reload();
-        }
-        this.reload()
+                    return alt.getAufbau();
+                })
+                .then((aufbau: { [schicht: number]: Aufbau }) => {
+                    for (let schichtnr in aufbau) {
+                        let schicht = aufbau[schichtnr];
+                        if (schicht.getBst() <= neu.getVst() || schicht.getVst() >= neu.getBst()) continue;
+                        insert += schicht.createXML({
+                            vst: schicht.getVst() < neu.getVst() ? neu.getVst() : schicht.getVst(),
+                            bst: schicht.getBst() > neu.getBst() ? neu.getBst() : schicht.getBst(),
+                            parent: neu.getFid()
+                        }, true)
+                        insertRows++;
+                    }
+                })
+                .finally());
+
+        };
+
+        return Promise.all(tasks).then(() => {
+            insert += "</wfs:Insert>";
+            console.log(insert)
+            if (insertRows > 0) {
+                PublicWFS.doTransaction(insert);
+            }
+
+            if (station != undefined) {
+                let neueStation = new QuerStation(this.abschnitt, station, this.bst);
+                this.bst = station;
+                this.abschnitt.addStation(neueStation);
+                neueStation.reload();
+            }
+            return this.reload()
+        })
+
     }
 
-    reload() {
+    private reload(): Promise<void> {
         let filter = '<Filter>' +
             '<And>' +
             '<PropertyIsEqualTo>' +
@@ -331,26 +351,32 @@ export default class QuerStation {
             '</PropertyIsEqualTo>' +
             '</And>' +
             '</Filter>';
-        PublicWFS.doQuery('Dotquer', filter, this.loadStationCallback.bind(this));
+        return PublicWFS.doQuery('Dotquer', filter)
+            .then((xml: Document) => { this.loadStationCallback(xml) });
     }
 
-    loadStationCallback(xml: Document) {
+    private loadStationCallback(xml: Document) {
         let first = true;
         this.deleteAll();
         let dotquer = xml.getElementsByTagName("Dotquer");
         let liste: Querschnitt[] = [];
-        for (let i = 0; i < dotquer.length; i++) {
-            let q = Querschnitt.fromXML(dotquer[i])
-            liste.push(q);
 
-            if (first) {
-                this.getPunkte(true);
-            }
+        let tasks: Promise<Querschnitt>[] = [];
+        for (let i = 0; i < dotquer.length; i++) {
+            tasks.push(
+                Querschnitt.fromXML(dotquer[i])
+                    .then((querschnitt) => {
+                        this.getPunkte(true);
+                        return querschnitt
+                    }));
         }
-        for (let i = 0; i < liste.length; i++) {
-            liste[i].check();
-        }
-        PublicWFS.showMessage("Fertig", false)
+        Promise.all(tasks)
+            .then(() => {
+                for (let i = 0; i < liste.length; i++) {
+                    liste[i].check();
+                }
+                PublicWFS.showMessage("Fertig", false)
+            });
     }
 
     public deleteStreifen(streifen: string, nummer: number) {

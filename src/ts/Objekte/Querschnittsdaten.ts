@@ -64,39 +64,33 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         return "Dotquer"
     }
 
-    static loadER(callback?: (...args: any[]) => void, ...args: any[]) {
+    static loadER(): Promise<Querschnitt[]> {
         let daten = Daten.getInstanz();
-        PublicWFS.doQuery('Dotquer', '<Filter>' +
+        return PublicWFS.doQuery('Dotquer', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Querschnitt._loadER_Callback, undefined, callback, ...args);
+            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>')
+            .then((xml) => {
+                return Querschnitt._loadER_Callback(xml)
+            });
     }
 
-    static loadAbschnittER(abschnitt: Abschnitt, callback: (...args: any[]) => void, ...args: any[]) {
+    static loadAbschnittER(abschnitt: Abschnitt): Promise<Querschnitt[]> {
         let daten = Daten.getInstanz();
-        PublicWFS.doQuery('Dotquer', '<Filter>' +
+        return PublicWFS.doQuery('Dotquer', '<Filter>' +
             '<And><PropertyIsEqualTo><PropertyName>abschnittId</PropertyName>' +
             '<Literal>' + abschnitt.getAbschnittid() + '</Literal></PropertyIsEqualTo><PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>', Querschnitt._loadER_Callback, undefined, callback, ...args);
+            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>')
+            .then((xml) => { return Querschnitt._loadER_Callback(xml) });
     }
 
-    static _loadER_Callback(xml: Document, callback: (...args: any[]) => void, ...args: any[]) {
+    static _loadER_Callback(xml: Document): Promise<Querschnitt[]> {
         let dotquer = xml.getElementsByTagName("Dotquer");
-        let liste: Querschnitt[] = [];
+        let tasks: Promise<Querschnitt>[] = [];
         for (let i = 0; i < dotquer.length; i++) {
             Querschnitt.loadErControlCounter += 1
-            liste.push(Querschnitt.fromXML(dotquer[i], undefined, Querschnitt.loadErControlCallback, callback, ...args));
+            tasks.push(Querschnitt.fromXML(dotquer[i], undefined));
         }
-        if (dotquer.length == 0) Querschnitt.loadErControlCheck(callback, ...args)
-    }
-
-    private static loadErControlCallback(callback?: (...args: any[]) => void, ...args: any[]) {
-        Querschnitt.loadErControlCounter -= 1
-        Querschnitt.loadErControlCheck(callback, ...args)
-    }
-
-    private static loadErControlCheck(callback?: (...args: any[]) => void, ...args: any[]) {
-        if (Querschnitt.loadErControlCounter > 0) return;
-        if (callback) callback(...args)
+        return Promise.all(tasks);
     }
 
     static checkQuerschnitte(liste: Querschnitt[]) {
@@ -190,27 +184,26 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         Querschnitt.createFields(ziel, "info", this, changeable);
     }
 
-    static fromXML(xml: Element, doNotAdd: boolean = false, callback?: (...args: any[]) => void, ...args: any[]) {
+    static fromXML(xml: Element, doNotAdd: boolean = false): Promise<Querschnitt> {
         let r = new Querschnitt();
         r.setDataFromXML(xml)
 
-        if (doNotAdd) return r;  // Abbruch, falls nur die Daten geparst werden sollen
+        if (doNotAdd) return Promise.resolve(r);  // Abbruch, falls nur die Daten geparst werden sollen
 
-        Abschnitt.getAbschnitt(r.abschnittId, function (abschnitt: Abschnitt, r: Querschnitt) {
-            abschnitt.addOKinER('Querschnitt');
-            r.abschnitt = abschnitt;
+        return Abschnitt.getAbschnitt(r.abschnittId)
+            .then((abschnitt: Abschnitt) => {
+                abschnitt.addOKinER('Querschnitt');
+                r.abschnitt = abschnitt;
 
-            if (!(r.abschnitt.existsStation(r.vst))) {
-                r.station = new QuerStation(r.abschnitt, r.vst, r.bst);
-            } else {
-                r.station = r.abschnitt.getStation(r.vst);
-            }
-            r.station.addQuerschnitt(r);
-            r.createGeom();
-
-            if (callback) callback(...args)
-        }, r);
-        return r;
+                if (!(r.abschnitt.existsStation(r.vst))) {
+                    r.station = new QuerStation(r.abschnitt, r.vst, r.bst);
+                } else {
+                    r.station = r.abschnitt.getStation(r.vst);
+                }
+                r.station.addQuerschnitt(r);
+                r.createGeom();
+                return r;
+            });
     }
 
     public addAufbau(schicht?: number, aufbau?: Aufbau) {
@@ -223,18 +216,12 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         this._aufbaudaten = aufbau;
     }
 
-    public getAufbau(callback?: (schichten: { [schicht: number]: Aufbau }) => void): { [schicht: number]: Aufbau } | void {
-        if (callback == undefined) return this._aufbaudaten
-
-        if (this._aufbaudaten == null) {
-            this.abschnitt.getAufbauDaten(this.getAufbauCallback.bind(this), undefined, false, callback)
+    public getAufbau(): Promise<{ [schicht: number]: Aufbau }> {
+        if (!this._aufbaudaten) {
+            return this.abschnitt.getAufbauDaten().then(() => { return this._aufbaudaten });
         } else {
-            this.getAufbauCallback(callback);
+            return Promise.resolve(this._aufbaudaten);
         }
-    }
-
-    private getAufbauCallback(callback: (schichten: { [schicht: number]: Aufbau }) => void) {
-        callback(this._aufbaudaten);
     }
 
     private createGeom() {
@@ -431,7 +418,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         this.XBstL += diffBst;
     }
 
-    public editBreiteOld(edit: 'Vst' | 'Bst', diff: number, fit: boolean) {
+    public editBreiteOld(edit: 'Vst' | 'Bst', diff: number, fit: boolean): Promise<Document> {
         let gesStreifen = this.station.getStreifen(this.streifen);
         let nr = this.streifennr;
 
@@ -464,7 +451,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         }
         this.createGeom();
 
-        PublicWFS.doTransaction(soap, undefined, undefined);
+        return PublicWFS.doTransaction(soap);
     }
 
     /**

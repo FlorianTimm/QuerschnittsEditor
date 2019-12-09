@@ -17,7 +17,7 @@ export default class SAPAdd2ER extends Add2ER {
     }
 
     loadAbschnitt(abschnitt: Abschnitt) {
-        StrassenAusPunkt.loadAbschnittER(abschnitt, PublicWFS.showMessage, "Erfolgreich in ER kopiert");
+        StrassenAusPunkt.loadAbschnittER(abschnitt).then(() => { PublicWFS.showMessage("Erfolgreich in ER kopiert") });
     }
 }
 

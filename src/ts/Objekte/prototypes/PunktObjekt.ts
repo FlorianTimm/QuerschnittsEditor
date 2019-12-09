@@ -11,6 +11,7 @@ import PObjektMitDokument from "./PObjektMitDateien";
 import { FeatureLike } from 'ol/Feature';
 import Abschnitt from '../Abschnitt';
 import Klartext from '../Klartext';
+import Aufstellvorrichtung from '../Aufstellvorrichtung';
 
 export default abstract class PunktObjekt extends PObjektMitDokument implements InfoToolEditable {
     protected vabstVst: number;
@@ -42,17 +43,18 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
         PublicWFS.doTransaction(xml);
     }
 
-    setDataFromXML(xml: Element, callback?: (...args: any[]) => void, ...args: any[]) {
+    public setDataFromXML(xml: Element): Promise<PunktObjekt> {
         super.setDataFromXML(xml);
         let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(',');
         this.setGeometry(new Point([parseFloat(koords[0]), parseFloat(koords[1])]));
-        Abschnitt.getLayer().changed();
 
-        Abschnitt.getAbschnitt(this.abschnittId, (abschnitt: Abschnitt) => {
-            this.abschnitt = abschnitt
-            abschnitt.addOKinER(this.getObjektKlassenName());
-            if (callback) callback(...args);
-        })
+        return Abschnitt.getAbschnitt(this.abschnittId)
+            .then((abschnitt: Abschnitt) => {
+                this.abschnitt = abschnitt
+                abschnitt.addOKinER(this.getObjektKlassenName());
+                Abschnitt.getLayer().changed();
+                return this;
+            })
     }
 
     protected static createLayer(map?: Map) {
@@ -116,7 +118,7 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
         return layer;
     }
 
-    setRlageVst(rlagevst: Klartext | string) {
+    public setRlageVst(rlagevst: Klartext | string) {
         this.rlageVst = Klartext.get("Itallglage", rlagevst);
     }
 }
