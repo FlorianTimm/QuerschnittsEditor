@@ -10,7 +10,7 @@ import 'chosen-js/chosen.css';
 import Daten from "../Daten";
 import PublicWFS from '../PublicWFS';
 import Abschnitt from './Abschnitt';
-import Klartext, { KlartextMap } from './Klartext';
+import Klartext from './Klartext';
 import PunktObjekt from './prototypes/PunktObjekt';
 import Zeichen from './Zeichen';
 import HTML from "../HTML";
@@ -20,12 +20,6 @@ import { Overlay, Map } from "ol";
 import { Point } from "ol/geom";
 import VectorLayer from "ol/layer/Vector";
 import { ColorLike } from "ol/colorlike";
-import { resolve } from "dns";
-
-class Callback {
-    callback: (zeichen: Zeichen[], ...args: any[]) => void;
-    param: any[]
-}
 
 export default class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay {
     static loadErControlCounter: number = 0;

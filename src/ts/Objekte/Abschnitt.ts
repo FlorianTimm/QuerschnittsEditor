@@ -28,7 +28,7 @@ interface Callback {
  */
 export default class Abschnitt extends Feature {
     private static abschnitte: { [absid: number]: Abschnitt } = {}
-    private static waitForAbschnitt: { [absid: number]: Callback[] } = {}
+    private static waitForAbschnitt: { [absid: number]: Promise<Abschnitt> } = {}
 
     private fid: string = null;
     private abschnittid: string = null;
@@ -50,6 +50,11 @@ export default class Abschnitt extends Feature {
     public aufbaudatenLoaded: Promise<{ [fid: string]: { [schichtnr: number]: Aufbaudaten } }>;
     private punkte: LinienPunkt[];
     static layer: VectorLayer;
+
+    private constructor() {
+        super();
+        Abschnitt.getLayer().getSource().addFeature(this);
+    }
 
     public static getAbschnitt(absId: string): Promise<Abschnitt> {
         if (absId in this.abschnitte) {
@@ -170,20 +175,22 @@ export default class Abschnitt extends Feature {
         }
     }
 
-    private static loadFromAbschnittWFS(abschnittid: string): Promise<Abschnitt> {
+    private static async loadFromAbschnittWFS(abschnittid: string): Promise<Abschnitt> {
         let r = new Abschnitt();
         r.abschnittid = abschnittid;
-        return AbschnittWFS.getById(abschnittid).then((xml) => { return r.loadCallback(xml) });
+        const xml = await AbschnittWFS.getById(abschnittid);
+        return r.loadCallback(xml);
     }
 
-    private static loadFromPublicWFS(abschnittid: string): Promise<Abschnitt> {
+    private static async loadFromPublicWFS(abschnittid: string): Promise<Abschnitt> {
         let r = new Abschnitt();
         r.abschnittid = abschnittid;
 
-        return PublicWFS.doQuery('VI_STRASSENNETZ', '<Filter>' +
+        const xml = await PublicWFS.doQuery('VI_STRASSENNETZ', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>ABSCHNITT_ID</PropertyName>' +
             '<Literal>' + r.abschnittid + '</Literal></PropertyIsEqualTo>' +
-            '</Filter>').then((xml) => { return r.loadCallback(xml) });
+            '</Filter>');
+        return r.loadCallback(xml);
     }
 
     private loadCallback(xml: Document): Abschnitt {
@@ -195,9 +202,15 @@ export default class Abschnitt extends Feature {
         return this;
     }
 
-    static fromXML(xml: Element) {
+    static fromXML(xml: Element): Abschnitt {
         //console.log(xml);
-        let r = new Abschnitt();
+        let abschnittid = xml.getElementsByTagName('ABSCHNITT_ID')[0].firstChild.textContent;
+        let r: Abschnitt;
+        if (abschnittid in this.abschnitte) {
+            r = this.abschnitte[abschnittid];
+        } else {
+            r = new Abschnitt();
+        }
         r.fromXML(xml);
         return r;
     }
@@ -225,8 +238,8 @@ export default class Abschnitt extends Feature {
         }
         //console.log(ak);
         this.setGeometry(new LineString(ak));
-        Abschnitt.getLayer().getSource().addFeature(this);
         Abschnitt.abschnitte[this.abschnittid] = this;
+
         return this;
     }
 
@@ -271,7 +284,7 @@ export default class Abschnitt extends Feature {
         return null;
     }
 
-    public getAufbauDaten(reload: boolean = false): Promise<{ [fid: string]: { [schichtnr: number]: Aufbaudaten } }> {
+    public async getAufbauDaten(reload: boolean = false): Promise<{ [fid: string]: { [schichtnr: number]: Aufbaudaten } }> {
         //console.log(callbackSuccess);
 
         if (!this.aufbaudatenLoaded || reload) {
@@ -284,11 +297,10 @@ export default class Abschnitt extends Feature {
                 '<PropertyName>abschnittOderAst/@xlink:href</PropertyName>' +
                 '<Literal>S' + this.abschnittid + '</Literal>' +
                 '</PropertyIsEqualTo>' +
-                '</And></Filter>').then((xml) => { return this.parseAufbaudaten(xml) });
-            return this.aufbaudatenLoaded;
-        } else {
-            return this.aufbaudatenLoaded;
+                '</And></Filter>')
+                .then((xml) => { return this.parseAufbaudaten(xml) });
         }
+        return this.aufbaudatenLoaded;
     }
 
     private parseAufbaudaten(xml: Document): { [fid: string]: { [schichtnr: number]: Aufbaudaten } } {

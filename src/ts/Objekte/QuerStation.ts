@@ -56,7 +56,7 @@ export default class QuerStation {
         return QuerStation.layerStation
     }
 
-    addQuerschnitt(querschnitt: Querschnitt) {
+    public addQuerschnitt(querschnitt: Querschnitt) {
         let streifen = querschnitt.getStreifen();
         let nr = querschnitt.getStreifennr();
         if (!(streifen in this._querschnitte)) {
@@ -64,7 +64,7 @@ export default class QuerStation {
         }
         this._querschnitte[streifen][nr] = querschnitt;
     }
-    getQuerschnitt(streifen: string, streifennr: number): Querschnitt {
+    public getQuerschnitt(streifen: string, streifennr: number): Querschnitt {
         if (!(streifen in this._querschnitte))
             return null;
         if (!(streifennr in this._querschnitte[streifen]))
@@ -72,7 +72,7 @@ export default class QuerStation {
         return this._querschnitte[streifen][streifennr];
     }
 
-    getAllQuerschnitte(): Querschnitt[] {
+    public getAllQuerschnitte(): Querschnitt[] {
         let r: Querschnitt[] = [];
         for (let streifen in this._querschnitte) {
             for (let nr in this._querschnitte[streifen]) {
@@ -81,13 +81,14 @@ export default class QuerStation {
         }
         return r;
     }
-    getStreifen(streifen: 'M' | 'L' | 'R'): { [streifennr: number]: Querschnitt } {
+
+    public getStreifen(streifen: 'M' | 'L' | 'R'): { [streifennr: number]: Querschnitt } {
         if (!(streifen in this._querschnitte))
             return {};
         return this._querschnitte[streifen];
     }
 
-    getQuerschnittByBstAbstand(XBstL: number, XBstR: number): Querschnitt {
+    public getQuerschnittByBstAbstand(XBstL: number, XBstR: number): Querschnitt {
         for (let streifen in this._querschnitte) {
             for (let querschnitt in this._querschnitte[streifen]) {
                 if (XBstL < 0 && this._querschnitte[streifen][querschnitt].getXBstL() == XBstL) return this._querschnitte[streifen][querschnitt];
@@ -97,7 +98,7 @@ export default class QuerStation {
         return null;
     }
 
-    getQuerschnittByVstAbstand(XVstL: number, XVstR: number): Querschnitt {
+    public getQuerschnittByVstAbstand(XVstL: number, XVstR: number): Querschnitt {
         for (let streifen in this._querschnitte) {
             for (let querschnitt in this._querschnitte[streifen]) {
                 if (XVstL < 0 && this._querschnitte[streifen][querschnitt].getXVstL() == XVstL) return this._querschnitte[streifen][querschnitt];
@@ -107,7 +108,7 @@ export default class QuerStation {
         return null;
     }
 
-    getPunkte(reload: boolean = false): LinienPunkt[] {
+    public getPunkte(reload: boolean = false): LinienPunkt[] {
         if (this.linienPunkte && !reload) return this.linienPunkte;
 
         this.linienPunkte = this.getAbschnitt().getAbschnitt(this.getVst(), this.getBst());
@@ -136,7 +137,7 @@ export default class QuerStation {
         return this.linienPunkte;
     }
 
-    teilen(station: number) {
+    public teilen(station: number) {
         if (this.vst < station && this.bst > station) {
             this.abschnitt.getAufbauDaten()
                 .then(() => { this.teilen_callback_aufbaudaten(station) });
@@ -209,65 +210,61 @@ export default class QuerStation {
         this._querschnitte = {};
     }
 
-    rewrite(): Promise<void> {
-        return this.abschnitt.getAufbauDaten()
-            .then(() => {
-                let soap = '<wfs:Delete typeName="Dotquer">\n' +
-                    '<ogc:Filter>\n' +
-                    '  <ogc:And>\n' +
-                    '    <ogc:PropertyIsEqualTo>\n' +
-                    '       <ogc:PropertyName>abschnittId</ogc:PropertyName>\n' +
-                    '      <ogc:Literal>' + this.abschnitt.getAbschnittid() + '</ogc:Literal>\n' +
-                    '    </ogc:PropertyIsEqualTo>\n' +
-                    '    <ogc:PropertyIsEqualTo>\n' +
-                    '       <ogc:PropertyName>vst</ogc:PropertyName>\n' +
-                    '      <ogc:Literal>' + this.vst + '</ogc:Literal>\n' +
-                    '    </ogc:PropertyIsEqualTo>\n' +
-                    '    <ogc:PropertyIsEqualTo>\n' +
-                    '       <ogc:PropertyName>bst</ogc:PropertyName>\n' +
-                    '      <ogc:Literal>' + this.bst + '</ogc:Literal>\n' +
-                    '    </ogc:PropertyIsEqualTo>\n' +
-                    '    <ogc:PropertyIsEqualTo>\n' +
-                    '      <ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
-                    '      <ogc:Literal>' + this.daten.ereignisraum + '</ogc:Literal>\n' +
-                    '    </ogc:PropertyIsEqualTo>\n' +
-                    '  </ogc:And>\n' +
-                    '</ogc:Filter>\n' +
-                    '</wfs:Delete>\n' +
-                    '<wfs:Delete typeName="Otschicht">\n' +
-                    '<ogc:Filter>\n' +
-                    '  <ogc:And>\n' +
-                    '    <ogc:PropertyIsEqualTo>\n' +
-                    '       <ogc:PropertyName>abschnittId</ogc:PropertyName>\n' +
-                    '      <ogc:Literal>' + this.abschnitt.getAbschnittid() + '</ogc:Literal>\n' +
-                    '    </ogc:PropertyIsEqualTo>\n' +
-                    '    <ogc:PropertyIsEqualTo>\n' +
-                    '       <ogc:PropertyName>vst</ogc:PropertyName>\n' +
-                    '      <ogc:Literal>' + this.vst + '</ogc:Literal>\n' +
-                    '    </ogc:PropertyIsEqualTo>\n' +
-                    '    <ogc:PropertyIsEqualTo>\n' +
-                    '       <ogc:PropertyName>bst</ogc:PropertyName>\n' +
-                    '      <ogc:Literal>' + this.bst + '</ogc:Literal>\n' +
-                    '    </ogc:PropertyIsEqualTo>\n' +
-                    '    <ogc:PropertyIsEqualTo>\n' +
-                    '      <ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
-                    '      <ogc:Literal>' + this.daten.ereignisraum + '</ogc:Literal>\n' +
-                    '    </ogc:PropertyIsEqualTo>\n' +
-                    '  </ogc:And>\n' +
-                    '</ogc:Filter>\n' +
-                    '</wfs:Delete>\n';
-                for (let qs of this.getAllQuerschnitte()) {
-                    //console.log(qs);
-                    soap += qs.createInsertXML();
-                }
-                return PublicWFS.doTransaction(soap);
-            })
-            .then((xml) => {
-                this.neueQuerschnitteCallbackInsertResult(xml);
-            });
+    public async rewrite(): Promise<void> {
+        await this.abschnitt.getAufbauDaten();
+        let soap = '<wfs:Delete typeName="Dotquer">\n' +
+            '<ogc:Filter>\n' +
+            '  <ogc:And>\n' +
+            '    <ogc:PropertyIsEqualTo>\n' +
+            '       <ogc:PropertyName>abschnittId</ogc:PropertyName>\n' +
+            '      <ogc:Literal>' + this.abschnitt.getAbschnittid() + '</ogc:Literal>\n' +
+            '    </ogc:PropertyIsEqualTo>\n' +
+            '    <ogc:PropertyIsEqualTo>\n' +
+            '       <ogc:PropertyName>vst</ogc:PropertyName>\n' +
+            '      <ogc:Literal>' + this.vst + '</ogc:Literal>\n' +
+            '    </ogc:PropertyIsEqualTo>\n' +
+            '    <ogc:PropertyIsEqualTo>\n' +
+            '       <ogc:PropertyName>bst</ogc:PropertyName>\n' +
+            '      <ogc:Literal>' + this.bst + '</ogc:Literal>\n' +
+            '    </ogc:PropertyIsEqualTo>\n' +
+            '    <ogc:PropertyIsEqualTo>\n' +
+            '      <ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
+            '      <ogc:Literal>' + this.daten.ereignisraum + '</ogc:Literal>\n' +
+            '    </ogc:PropertyIsEqualTo>\n' +
+            '  </ogc:And>\n' +
+            '</ogc:Filter>\n' +
+            '</wfs:Delete>\n' +
+            '<wfs:Delete typeName="Otschicht">\n' +
+            '<ogc:Filter>\n' +
+            '  <ogc:And>\n' +
+            '    <ogc:PropertyIsEqualTo>\n' +
+            '       <ogc:PropertyName>abschnittId</ogc:PropertyName>\n' +
+            '      <ogc:Literal>' + this.abschnitt.getAbschnittid() + '</ogc:Literal>\n' +
+            '    </ogc:PropertyIsEqualTo>\n' +
+            '    <ogc:PropertyIsEqualTo>\n' +
+            '       <ogc:PropertyName>vst</ogc:PropertyName>\n' +
+            '      <ogc:Literal>' + this.vst + '</ogc:Literal>\n' +
+            '    </ogc:PropertyIsEqualTo>\n' +
+            '    <ogc:PropertyIsEqualTo>\n' +
+            '       <ogc:PropertyName>bst</ogc:PropertyName>\n' +
+            '      <ogc:Literal>' + this.bst + '</ogc:Literal>\n' +
+            '    </ogc:PropertyIsEqualTo>\n' +
+            '    <ogc:PropertyIsEqualTo>\n' +
+            '      <ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
+            '      <ogc:Literal>' + this.daten.ereignisraum + '</ogc:Literal>\n' +
+            '    </ogc:PropertyIsEqualTo>\n' +
+            '  </ogc:And>\n' +
+            '</ogc:Filter>\n' +
+            '</wfs:Delete>\n';
+        for (let qs of this.getAllQuerschnitte()) {
+            //console.log(qs);
+            soap += qs.createInsertXML();
+        }
+        const xml = await PublicWFS.doTransaction(soap);
+        this.neueQuerschnitteCallbackInsertResult(xml);
     }
 
-    private neueQuerschnitteCallbackInsertResult(xml: Document, station?: number): Promise<void> {
+    private async neueQuerschnitteCallbackInsertResult(xml: Document, station?: number): Promise<void> {
         console.log(xml);
         let filter = '<Filter>';
         let childs = xml.getElementsByTagName('InsertResult')[0].childNodes;
@@ -275,13 +272,11 @@ export default class QuerStation {
             filter += '<FeatureId fid="' + (childs[i] as Element).getAttribute('fid') + '"/>';
         }
         filter += '</Filter>';
-        return PublicWFS.doQuery('Dotquer', filter)
-            .then((xml: Document) => {
-                this.neueQuerschnitteCallbackDotquer(xml, station);
-            });
+        const xml2 = await PublicWFS.doQuery('Dotquer', filter);
+        return this.neueQuerschnitteCallbackDotquer(xml2, station);
     }
 
-    private neueQuerschnitteCallbackDotquer(xml: Document, station?: number): Promise<void> {
+    private async neueQuerschnitteCallbackDotquer(xml: Document, station?: number): Promise<void> {
         let insert = "<wfs:Insert>\n";
         let dotquer = Array.from(xml.getElementsByTagName("Dotquer"));
         let insertRows = 0;
@@ -309,28 +304,25 @@ export default class QuerStation {
                     }
                 })
                 .finally());
-
         };
 
-        return Promise.all(tasks).then(() => {
-            insert += "</wfs:Insert>";
-            console.log(insert)
-            if (insertRows > 0) {
-                PublicWFS.doTransaction(insert);
-            }
-
-            if (station != undefined) {
-                let neueStation = new QuerStation(this.abschnitt, station, this.bst);
-                this.bst = station;
-                this.abschnitt.addStation(neueStation);
-                neueStation.reload();
-            }
-            return this.reload()
-        })
+        await Promise.all(tasks);
+        insert += "</wfs:Insert>";
+        console.log(insert);
+        if (insertRows > 0) {
+            PublicWFS.doTransaction(insert);
+        }
+        if (station != undefined) {
+            let neueStation = new QuerStation(this.abschnitt, station, this.bst);
+            this.bst = station;
+            this.abschnitt.addStation(neueStation);
+            neueStation.reload();
+        }
+        return this.reload();
 
     }
 
-    private reload(): Promise<void> {
+    private async reload(): Promise<void> {
         let filter = '<Filter>' +
             '<And>' +
             '<PropertyIsEqualTo>' +
@@ -351,11 +343,11 @@ export default class QuerStation {
             '</PropertyIsEqualTo>' +
             '</And>' +
             '</Filter>';
-        return PublicWFS.doQuery('Dotquer', filter)
-            .then((xml: Document) => { this.loadStationCallback(xml) });
+        const xml = await PublicWFS.doQuery('Dotquer', filter);
+        this.loadStationCallback(xml);
     }
 
-    private loadStationCallback(xml: Document) {
+    private async loadStationCallback(xml: Document): Promise<Querschnitt[]> {
         let first = true;
         this.deleteAll();
         let dotquer = xml.getElementsByTagName("Dotquer");
@@ -366,17 +358,19 @@ export default class QuerStation {
             tasks.push(
                 Querschnitt.fromXML(dotquer[i])
                     .then((querschnitt) => {
-                        this.getPunkte(true);
+                        if (first) {
+                            this.getPunkte(true);
+                            first = false;
+                        }
                         return querschnitt
                     }));
         }
-        Promise.all(tasks)
-            .then(() => {
-                for (let i = 0; i < liste.length; i++) {
-                    liste[i].check();
-                }
-                PublicWFS.showMessage("Fertig", false)
-            });
+        const querschnitte = await Promise.all(tasks);
+        for (let i = 0; i < liste.length; i++) {
+            liste[i].check();
+        }
+        PublicWFS.showMessage("Fertig", false);
+        return querschnitte;
     }
 
     public deleteStreifen(streifen: string, nummer: number) {

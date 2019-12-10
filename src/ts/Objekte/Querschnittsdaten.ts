@@ -64,23 +64,21 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         return "Dotquer"
     }
 
-    static loadER(): Promise<Querschnitt[]> {
+    static async loadER(): Promise<Querschnitt[]> {
         let daten = Daten.getInstanz();
-        return PublicWFS.doQuery('Dotquer', '<Filter>' +
+        const xml = await PublicWFS.doQuery('Dotquer', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>')
-            .then((xml) => {
-                return Querschnitt._loadER_Callback(xml)
-            });
+            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>');
+        return Querschnitt._loadER_Callback(xml);
     }
 
-    static loadAbschnittER(abschnitt: Abschnitt): Promise<Querschnitt[]> {
+    static async loadAbschnittER(abschnitt: Abschnitt): Promise<Querschnitt[]> {
         let daten = Daten.getInstanz();
-        return PublicWFS.doQuery('Dotquer', '<Filter>' +
+        const xml = await PublicWFS.doQuery('Dotquer', '<Filter>' +
             '<And><PropertyIsEqualTo><PropertyName>abschnittId</PropertyName>' +
             '<Literal>' + abschnitt.getAbschnittid() + '</Literal></PropertyIsEqualTo><PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>')
-            .then((xml) => { return Querschnitt._loadER_Callback(xml) });
+            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>');
+        return Querschnitt._loadER_Callback(xml);
     }
 
     static _loadER_Callback(xml: Document): Promise<Querschnitt[]> {
@@ -184,26 +182,24 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         Querschnitt.createFields(ziel, "info", this, changeable);
     }
 
-    static fromXML(xml: Element, doNotAdd: boolean = false): Promise<Querschnitt> {
+    static async fromXML(xml: Element, doNotAdd: boolean = false): Promise<Querschnitt> {
         let r = new Querschnitt();
         r.setDataFromXML(xml)
 
         if (doNotAdd) return Promise.resolve(r);  // Abbruch, falls nur die Daten geparst werden sollen
 
-        return Abschnitt.getAbschnitt(r.abschnittId)
-            .then((abschnitt: Abschnitt) => {
-                abschnitt.addOKinER('Querschnitt');
-                r.abschnitt = abschnitt;
-
-                if (!(r.abschnitt.existsStation(r.vst))) {
-                    r.station = new QuerStation(r.abschnitt, r.vst, r.bst);
-                } else {
-                    r.station = r.abschnitt.getStation(r.vst);
-                }
-                r.station.addQuerschnitt(r);
-                r.createGeom();
-                return r;
-            });
+        let abschnitt = await Abschnitt.getAbschnitt(r.abschnittId);
+        abschnitt.addOKinER('Querschnitt');
+        r.abschnitt = abschnitt;
+        if (!(r.abschnitt.existsStation(r.vst))) {
+            r.station = new QuerStation(r.abschnitt, r.vst, r.bst);
+        }
+        else {
+            r.station = r.abschnitt.getStation(r.vst);
+        }
+        r.station.addQuerschnitt(r);
+        r.createGeom();
+        return r;
     }
 
     public addAufbau(schicht?: number, aufbau?: Aufbau) {
@@ -216,9 +212,10 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         this._aufbaudaten = aufbau;
     }
 
-    public getAufbau(): Promise<{ [schicht: number]: Aufbau }> {
+    public async getAufbau(): Promise<{ [schicht: number]: Aufbau }> {
         if (!this._aufbaudaten) {
-            return this.abschnitt.getAufbauDaten().then(() => { return this._aufbaudaten });
+            await this.abschnitt.getAufbauDaten();
+            return this._aufbaudaten;
         } else {
             return Promise.resolve(this._aufbaudaten);
         }

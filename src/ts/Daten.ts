@@ -79,7 +79,8 @@ export default class Daten {
         WaitBlocker.warteAdd()
         let extent = this.map.getView().calculateExtent();
         if ("ABSCHNITT_WFS_URL" in CONFIG) {
-            AbschnittWFS.getByExtent(extent).then((xml: Document) => { this.loadExtent_Callback(xml) });
+            return AbschnittWFS.getByExtent(extent)
+                .then((xml: Document) => { return this.loadExtent_Callback(xml) });
         } else {
             let filter = '<Filter>\n' +
                 '	<BBOX>\n' +
@@ -90,16 +91,19 @@ export default class Daten {
                 '	</BBOX>\n' +
                 '</Filter>\n' +
                 '<maxFeatures>100</maxFeatures>\n';
-            PublicWFS.doQuery('VI_STRASSENNETZ', filter).then((xml: Document) => { this.loadExtent_Callback(xml) });
+            return PublicWFS.doQuery('VI_STRASSENNETZ', filter)
+                .then((xml: Document) => { return this.loadExtent_Callback(xml) });
         }
     }
 
     private loadExtent_Callback(xml: XMLDocument) {
         let netz = xml.getElementsByTagName("VI_STRASSENNETZ");
+        let r: Abschnitt[] = [];
         for (let i = 0; i < netz.length; i++) {
-            Abschnitt.fromXML(netz[i]);
+            r.push(Abschnitt.fromXML(netz[i]));
         }
         WaitBlocker.warteSub()
+
     }
 
     public searchForStreet(__?: Event) {
