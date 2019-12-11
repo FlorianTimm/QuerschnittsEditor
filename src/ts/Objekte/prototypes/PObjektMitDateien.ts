@@ -6,22 +6,22 @@ export default abstract class PObjektMitDokument extends PrimaerObjekt {
     protected dateien: Dokument[] = [];
     protected dateienLoaded: Promise<Dokument[]>;
 
-    public getDokumente(): Promise<Dokument[]> {
+    public getDokumente(blocking = true): Promise<Dokument[]> {
 
         if (!this.dateienLoaded)
-            this.reloadDokumente();
+            this.reloadDokumente(blocking);
         
         return this.dateienLoaded;
     }
 
-    private reloadDokumente(): Promise<Dokument[]> {
+    private reloadDokumente(blocking = true): Promise<Dokument[]> {
         let filter = '<Filter>\n' +
             '  <PropertyIsEqualTo>\n' +
             '    <PropertyName>parent/@xlink:href</PropertyName>\n' +
             '    <Literal>' + this.fid + '</Literal>\n' +
             '  </PropertyIsEqualTo>\n' +
             '</Filter>';
-        this.dateienLoaded = PublicWFS.doQuery("Otdokument", filter)
+        this.dateienLoaded = PublicWFS.doQuery("Otdokument", filter, blocking)
             .then((xml: Document) => { return this.getDokumenteCallback(xml) });
         return this.dateienLoaded;
     }

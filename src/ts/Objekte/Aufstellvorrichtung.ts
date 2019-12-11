@@ -20,6 +20,7 @@ import { Overlay, Map } from "ol";
 import { Point } from "ol/geom";
 import VectorLayer from "ol/layer/Vector";
 import { ColorLike } from "ol/colorlike";
+import WaitBlocker from "../WaitBlocker";
 
 export default class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay {
     static loadErControlCounter: number = 0;
@@ -55,16 +56,16 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         return Aufstellvorrichtung.layer;
     }
 
-    private vzAddHTML(zeichen: Zeichen[], ziel: HTMLElement) {
+    private async vzAddHTML(zeichen: Zeichen[], ziel: HTMLElement): Promise<void> {
+        await Klartext.load("Itvzstvoznr", false);
+        ziel.innerHTML = "";
         let div = document.createElement('div');
         div.style.marginTop = '5px';
         for (let eintrag of zeichen) {
             let img = document.createElement("img");
             img.style.height = "30px";
-            Klartext.load("Itvzstvoznr").then(() => {
-                img.src = "http://gv-srv-w00118:8080/schilder/" + eintrag.getStvoznr().getKt() + ".svg";
-                img.title = eintrag.getStvoznr().getBeschreib() + (eintrag.getVztext() ?? '');
-            });
+            img.src = "http://gv-srv-w00118:8080/schilder/" + eintrag.getStvoznr().getKt() + ".svg";
+            img.title = eintrag.getStvoznr().getBeschreib() + (eintrag.getVztext() ?? '');
             div.appendChild(img);
         }
         ziel.appendChild(div);
@@ -112,22 +113,23 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         return r.setDataFromXML(xml) as Promise<Aufstellvorrichtung>;
     }
 
-    public getZeichen(): Promise<Zeichen[]> {
+    public async getZeichen(blocking = true): Promise<Zeichen[]> {
+        if (blocking) WaitBlocker.warteAdd();
         if (this.zeichen == null && this.hasSekObj > 0) {
-            return this.reloadZeichen();
-        } else {
-            return Promise.resolve(this.zeichen ?? []);
+            await this.reloadZeichen(blocking);
         }
+        if (blocking) WaitBlocker.warteSub();
+        return this.zeichen ?? [];
     }
 
-    public reloadZeichen(): Promise<Zeichen[]> {
+    public reloadZeichen(blocking = true): Promise<Zeichen[]> {
         if (this.loadingZeichen) return this.loadingZeichen;
         this.loadingZeichen = PublicWFS.doQuery('Otvzeichlp', '<Filter>\n' +
             '  <PropertyIsEqualTo>\n' +
             '    <PropertyName>parent/@xlink:href</PropertyName>\n' +
             '    <Literal>' + this.fid + '</Literal>\n' +
             '  </PropertyIsEqualTo>\n' +
-            '</Filter>').then((xml) => {
+            '</Filter>', blocking).then((xml) => {
                 return this.parseZeichen(xml)
             });
         return this.loadingZeichen;
@@ -149,24 +151,24 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         return this.zeichen;
     }
 
-    public static createForm(sidebar: HTMLDivElement, formId: string, aufstell?: Aufstellvorrichtung, changeable: boolean = false, showForm: boolean = true): HTMLFormElement {
+    public static createForm(sidebar: HTMLDivElement, formId: string, aufstell?: Aufstellvorrichtung, changeable: boolean = false, showForm: boolean = true): { form: HTMLFormElement, promise: Promise<void> } {
         let form = HTML.createToolForm(sidebar, showForm, formId);
-        Aufstellvorrichtung.createFields(form, aufstell, changeable);
-        return form;
+        let promise = Aufstellvorrichtung.createFields(form, aufstell, changeable);
+        return { form: form, promise: promise };
     }
 
-    private static createFields(form: HTMLFormElement, aufstell?: Aufstellvorrichtung, changeable: boolean = false) {
+    private static createFields(form: HTMLFormElement, aufstell?: Aufstellvorrichtung, changeable: boolean = false): Promise<void> {
         // Art
         let art = Klartext.createKlartextSelectForm("Itaufstvorart", form, "Art", "art", aufstell != undefined ? aufstell.art : undefined);
-        $(art).prop('disabled', !changeable).trigger("chosen:updated");
+        $(art.select).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Lage
         let lage = Klartext.createKlartextSelectForm("Itallglage", form, "Lage", "lage", aufstell != undefined ? aufstell.rlageVst : undefined);
-        $(lage).prop('disabled', !changeable).trigger("chosen:updated");
+        $(lage.select).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Quelle
         let quelle = Klartext.createKlartextSelectForm("Itquelle", form, "Quelle", "quelle", aufstell != undefined ? aufstell.quelle : undefined);
-        $(quelle).prop('disabled', !changeable).trigger("chosen:updated");
+        $(quelle.select).prop('disabled', !changeable).trigger("chosen:updated");
 
         // ext: Objektid
         let objektnr = HTML.createTextInput(form, "ext. Objektnummer", "extid", aufstell != undefined ? aufstell.objektnr : undefined);
@@ -198,10 +200,16 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         if (aufstell != undefined) {
             let schilder = document.createElement("div");
             schilder.style.marginTop = "10px";
+            let warten = document.createElement("img");
+            warten.src = "img/ajax-loader.gif"
+            schilder.appendChild(warten)
             form.appendChild(schilder);
-            aufstell.getZeichen().then((zeichen) => { aufstell.vzAddHTML(zeichen, schilder) });
-            aufstell.getDokumente().then((doks: Dokument[]) => { aufstell.dokuAdd(doks, form) });
+            aufstell.getZeichen(false).then((zeichen) => { return aufstell.vzAddHTML(zeichen, schilder) });
+            aufstell.getDokumente(false).then((doks: Dokument[]) => { aufstell.dokuAdd(doks, form) });
         }
+        return Promise.all([art.promise, lage.promise, quelle.promise])
+            .then(() => { Promise.resolve() })
+            .catch(() => { Promise.reject() })
     }
 
     private dokuAdd(doku: Dokument[], ziel: HTMLElement) {
@@ -245,11 +253,11 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
             });
     }
 
-    public getInfoForm(ziel: HTMLFormElement, changeable: boolean = false): void {
-        Aufstellvorrichtung.createFields(ziel, this, changeable);
+    public getInfoForm(ziel: HTMLFormElement, changeable: boolean = false): Promise<void> {
+        return Aufstellvorrichtung.createFields(ziel, this, changeable);
     }
 
-    public changeAttributes(form: HTMLFormElement): void {
+    public changeAttributes(form: HTMLFormElement): Promise<void> {
         this.setArt($(form).find("#art").children("option:selected").val() as string);
         this.setRlageVst($(form).find("#lage").children("option:selected").val() as string);
         this.setQuelle($(form).find("#quelle").children("option:selected").val() as string);
@@ -261,7 +269,9 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
             'quelle/@xlink:href': this.getQuelle(),
             'objektnr': this.getObjektnr(),
         });
-        PublicWFS.doTransaction(xml);
+        return PublicWFS.doTransaction(xml)
+            .then(() => { Promise.resolve() })
+            .catch(() => { Promise.reject() });
     }
 
     // Getter
@@ -297,7 +307,7 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
 
     public showOverlay(map: Map) {
         this.overlayShowing = true;
-        this.getZeichen().then((zeichen: Zeichen[]) => { this.generateOverlay(zeichen, map) })
+        this.getZeichen(false).then((zeichen: Zeichen[]) => { this.generateOverlay(zeichen, map) })
     }
 
     private generateOverlay(alleZeichen: Zeichen[], map: Map) {

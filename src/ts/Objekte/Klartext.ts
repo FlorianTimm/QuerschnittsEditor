@@ -7,6 +7,7 @@
 
 import PublicWFS from '../PublicWFS';
 import HTML from '../HTML';
+import WaitBlocker from '../WaitBlocker';
 
 export interface KlartextMap { [oid: string]: Klartext };
 
@@ -25,8 +26,6 @@ export default class Klartext {
 
     private static liste: { [klartext: string]: { [xlink: string]: Klartext } } = {}
     private static loadedKlartexte: { [klartext: string]: Promise<KlartextMap> } = {};
-    private static openRequests: { [klartext: string]: boolean } = {}
-    private static requestCallbacks: { [klartext: string]: Callback[] } = {}
 
     private constructor(objekt: string, xlink: string, kt: string, beschreib?: string) {
         if (!(objekt in Klartext.liste)) Klartext.liste[objekt] = {}
@@ -82,20 +81,21 @@ export default class Klartext {
     }
 
     toString() {
-        console.trace()
         return this.getXlink();
     }
 
 
     // STATIC METHODS
 
-    public static load(klartext: string): Promise<KlartextMap> {
-
-        if (klartext in Klartext.loadedKlartexte) {
-            return Klartext.loadedKlartexte[klartext];
-        }
-
-        return PublicWFS.doQuery(klartext, '').then((xml) => { return Klartext.read(xml, klartext) });
+    public static async load(klartext: string, blocking = true): Promise<KlartextMap> {
+        if (blocking)
+            WaitBlocker.warteAdd();
+        if (!(klartext in Klartext.loadedKlartexte))
+            Klartext.loadedKlartexte[klartext] = PublicWFS.doQuery(klartext, '', blocking).then((xml) => { return Klartext.read(xml, klartext) });
+        const map = await Klartext.loadedKlartexte[klartext];
+        if (blocking)
+            WaitBlocker.warteSub();
+        return map;
     }
 
     private static read(xml: Document, klartext: string): KlartextMap {
@@ -154,23 +154,23 @@ export default class Klartext {
     }
 
     // HTML-Form-Methods
-    static createKlartextSelectForm(klartext: string, form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, value?: Klartext, platzhalter?: string) {
+    static createKlartextSelectForm(klartext: string, form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, value?: Klartext, platzhalter?: string): { select: HTMLSelectElement, promise: Promise<void> } {
         let field = HTML.createSelectForm(form, beschriftung, id, platzhalter);
-        Klartext.klartext2select(klartext, field, value, platzhalter);
-        return field;
+        let promise = Klartext.klartext2select(klartext, field, value, platzhalter);
+        return { select: field, promise: promise };
     }
 
-    static klartext2select(klartext: string, selectInput: HTMLSelectElement, value?: Klartext, platzhalter?: string) {
-        Klartext.load(klartext)
-            .then(() => {
-                let arten = Klartext.getAllSorted(klartext);
-                for (let a of arten) {
-                    let isSelected = (value && value.getXlink() == a.getXlink());
-                    HTML.createSelectNode(selectInput, a.getKt() + ' - ' + a.getBeschreib(), a.getXlink(), isSelected);
-                }
-                if (value == null && platzhalter != undefined) selectInput.value = null;
-
-                $(selectInput).chosen({ width: "99%", search_contains: true, no_results_text: "Keine Übereinstimmung gefunden für ", placeholder_text_single: platzhalter });
-            });
+    static async klartext2select(klartext: string, selectInput: HTMLSelectElement, value?: Klartext, platzhalter?: string): Promise<void> {
+        const chosen = $(selectInput).chosen({ width: "99%", search_contains: true, no_results_text: "Keine Übereinstimmung gefunden für ", placeholder_text_single: "Lädt..." });
+        await Klartext.load(klartext, false);
+        let arten = Klartext.getAllSorted(klartext);
+        for (let a of arten) {
+            let isSelected = (value && value.getXlink() == a.getXlink());
+            HTML.createSelectNode(selectInput, a.getKt() + ' - ' + a.getBeschreib(), a.getXlink(), isSelected);
+        }
+        if (value == null && platzhalter != undefined)
+            selectInput.value = null;
+        chosen.chosen('destroy')
+        chosen.chosen({ width: "99%", search_contains: true, no_results_text: "Keine Übereinstimmung gefunden für ", placeholder_text_single: platzhalter });
     }
 }

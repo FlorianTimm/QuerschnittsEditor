@@ -17,6 +17,7 @@ export default class AvAdd2ER extends Add2ER {
 
     loadAbschnitt(abschnitt: Abschnitt) {
         Aufstellvorrichtung.loadAbschnittER(abschnitt)
-            .then(() => { PublicWFS.showMessage("Erfolgreich in ER kopiert") });
+            .then(() => { PublicWFS.showMessage("Erfolgreich in ER kopiert") })
+            .catch(() => { PublicWFS.showMessage("Fehler", true) });;
     }
 }

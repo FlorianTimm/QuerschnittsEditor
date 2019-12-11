@@ -43,33 +43,33 @@ export default class StrassenAusPunkt extends PunktObjekt {
         return "Otstrauspkt";
     }
 
-    public static createForm(sidebar: HTMLDivElement, ausstattung?: StrassenAusPunkt, changeable: boolean = false, showForm: boolean = true): HTMLFormElement {
+    public static createForm(sidebar: HTMLDivElement, ausstattung?: StrassenAusPunkt, changeable: boolean = false, showForm: boolean = true): { form: HTMLFormElement, promise: Promise<void> } {
         let form = HTML.createToolForm(sidebar, showForm);
 
         // Art
-        StrassenAusPunkt.createFields(form, ausstattung, changeable);
+        let promise = StrassenAusPunkt.createFields(form, ausstattung, changeable);
 
-        return form;
+        return { form: form, promise: promise }
     }
 
-    public getInfoForm(ziel: HTMLFormElement, changeable: boolean = false): void {
-        StrassenAusPunkt.createFields(ziel, this, changeable);
+    public getInfoForm(ziel: HTMLFormElement, changeable: boolean = false): Promise<void> {
+        return StrassenAusPunkt.createFields(ziel, this, changeable);
     }
 
-    static loadER(): Promise<StrassenAusPunkt[]> {
+    static async loadER(): Promise<StrassenAusPunkt[]> {
         let daten = Daten.getInstanz();
-        return PublicWFS.doQuery('Otstrauspkt', '<Filter>' +
+        const xml = await PublicWFS.doQuery('Otstrauspkt', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>')
-            .then((xml) => { return StrassenAusPunkt.loadErCallback(xml) });
+            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>');
+        return StrassenAusPunkt.loadErCallback(xml);
     }
 
-    static loadAbschnittER(abschnitt: Abschnitt): Promise<StrassenAusPunkt[]> {
-        return PublicWFS.doQuery('Otstrauspkt', '<Filter>' +
+    static async loadAbschnittER(abschnitt: Abschnitt): Promise<StrassenAusPunkt[]> {
+        const xml = await PublicWFS.doQuery('Otstrauspkt', '<Filter>' +
             '<And><PropertyIsEqualTo><PropertyName>abschnittId</PropertyName>' +
             '<Literal>' + abschnitt.getAbschnittid() + '</Literal></PropertyIsEqualTo><PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + Daten.getInstanz().ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>')
-            .then((xml) => { return StrassenAusPunkt.loadErCallback(xml) });
+            '<Literal>' + Daten.getInstanz().ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>');
+        return StrassenAusPunkt.loadErCallback(xml);
     }
 
     public static loadErCallback(xml: XMLDocument): Promise<StrassenAusPunkt[]> {
@@ -86,32 +86,22 @@ export default class StrassenAusPunkt extends PunktObjekt {
         return Promise.all(tasks);
     }
 
-    private static loadErControlCallback(callback?: (...args: any[]) => void, ...args: any[]) {
-        StrassenAusPunkt.loadErControlCounter -= 1
-        StrassenAusPunkt.loadErControlCheck(callback, ...args)
-    }
-
-    private static loadErControlCheck(callback?: (...args: any[]) => void, ...args: any[]) {
-        if (StrassenAusPunkt.loadErControlCounter > 0) return;
-        if (callback) callback(...args)
-    }
-
     public static fromXML(xml: Element): Promise<StrassenAusPunkt> {
         let r = new StrassenAusPunkt();
         return r.setDataFromXML(xml) as Promise<StrassenAusPunkt>;
     }
 
-    protected static createFields(form: HTMLFormElement, ausstattung?: StrassenAusPunkt, changeable: boolean = false) {
+    protected static createFields(form: HTMLFormElement, ausstattung?: StrassenAusPunkt, changeable: boolean = false): Promise<void> {
         let art = KlartextManager.createKlartextSelectForm("Itstrauspktart", form, "Art", "art", ausstattung != undefined ? ausstattung.art : undefined);
-        $(art).prop('disabled', !changeable).trigger("chosen:updated");
+        $(art.select).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Lage
         let lage = KlartextManager.createKlartextSelectForm("Itallglage", form, "Lage", "lage", ausstattung != undefined ? ausstattung.rlageVst : undefined);
-        $(lage).prop('disabled', !changeable).trigger("chosen:updated");
+        $(lage.select).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Quelle
         let quelle = KlartextManager.createKlartextSelectForm("Itquelle", form, "Quelle", "quelle", ausstattung != undefined ? ausstattung.quelle : undefined);
-        $(quelle).prop('disabled', !changeable).trigger("chosen:updated");
+        $(quelle.select).prop('disabled', !changeable).trigger("chosen:updated");
 
         // VNK
         let vnk = HTML.createTextInput(form, "VNK", "vnk", ausstattung != undefined ? ausstattung.abschnitt.getVnk() : undefined);
@@ -135,9 +125,13 @@ export default class StrassenAusPunkt extends PunktObjekt {
         }
         let abstand = HTML.createTextInput(form, "Abstand", "abstand", abstTxt);
         abstand.disabled = true;
+
+        return Promise.all([art.promise, lage.promise, quelle.promise])
+            .then(() => { Promise.resolve() })
+            .catch(() => { Promise.reject() })
     }
 
-    public changeAttributes(form: HTMLFormElement): void {
+    public async changeAttributes(form: HTMLFormElement): Promise<void> {
         this.setArt($(form).find("#art").children("option:selected").val() as string);
         this.setRlageVst($(form).find("#lage").children("option:selected").val() as string);
         this.setQuelle($(form).find("#quelle").children("option:selected").val() as string);
@@ -149,7 +143,9 @@ export default class StrassenAusPunkt extends PunktObjekt {
             'quelle/@xlink:href': this.quelle,
             'objektnr': this.objektnr,
         });
-        PublicWFS.doTransaction(xml);
+        return PublicWFS.doTransaction(xml)
+            .then(() => { Promise.resolve() })
+            .catch(() => { Promise.reject() });
     }
 
     // Setter

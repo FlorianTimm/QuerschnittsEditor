@@ -135,7 +135,8 @@ function aenderung() {
 
 function pruefeER() {
     PublicWFS.testER((document.getElementById("ernr") as HTMLInputElement).value)
-        .then(({ erfolgreich, fehler }) => { pruefeCallback(erfolgreich, Array.from(fehler)) });
+        .then((erg) => { pruefeCallback(erg.erfolgreich, erg.fehler ?? undefined) })
+        .catch(() => { PublicWFS.showMessage("Fehler beim Prüfen", true) });
 }
 
 function pruefeCallback(erfolg: boolean, fehlerliste?: Element[]) {

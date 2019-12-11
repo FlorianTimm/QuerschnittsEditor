@@ -7,7 +7,6 @@ import { Map } from 'ol';
 import Event from 'ol/events/Event';
 import StrassenAusPunkt from './Objekte/StrassenAusPunkt';
 import WaitBlocker from './WaitBlocker';
-import Objekt from './Objekte/prototypes/Objekt';
 
 var CONFIG: { [name: string]: string } = require('./config.json');
 
@@ -26,8 +25,6 @@ export default class Daten {
     public ereignisraum_nr: string;
 
     private map: Map;
-    private warteAufObjektklassen: number;
-
 
     constructor(map: Map, ereignisraum: string, ereignisraum_nr: string) {
         Daten.daten = this;
@@ -45,6 +42,7 @@ export default class Daten {
             Aufstellvorrichtung.loadER(),
             StrassenAusPunkt.loadER()]
         Promise.all(tasks).then(() => {
+            (document.getElementById("zoomToExtent") as HTMLFormElement).disabled = false;
             if (zoomToExtentWhenReady)
                 this.zoomToExtent();
         })
@@ -75,12 +73,12 @@ export default class Daten {
         return Daten.daten;
     }
 
-    public loadExtent() {
+    public async loadExtent() {
         WaitBlocker.warteAdd()
         let extent = this.map.getView().calculateExtent();
         if ("ABSCHNITT_WFS_URL" in CONFIG) {
-            return AbschnittWFS.getByExtent(extent)
-                .then((xml: Document) => { return this.loadExtent_Callback(xml) });
+            const xml = await AbschnittWFS.getByExtent(extent);
+            return this.loadExtent_Callback(xml);
         } else {
             let filter = '<Filter>\n' +
                 '	<BBOX>\n' +
@@ -91,8 +89,8 @@ export default class Daten {
                 '	</BBOX>\n' +
                 '</Filter>\n' +
                 '<maxFeatures>100</maxFeatures>\n';
-            return PublicWFS.doQuery('VI_STRASSENNETZ', filter)
-                .then((xml: Document) => { return this.loadExtent_Callback(xml) });
+            const xml = await PublicWFS.doQuery('VI_STRASSENNETZ', filter);
+            return this.loadExtent_Callback(xml);
         }
     }
 

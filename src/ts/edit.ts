@@ -184,7 +184,7 @@ function createMap() {
             }),
             new TileLayer({
                 name: 'LGV DOP 2017',
-                visible: true,
+                visible: false,
                 switchable: true,
                 opacity: 0.7,
                 source: new TileWMS({
@@ -198,13 +198,13 @@ function createMap() {
             }),
             new TileLayer({
                 name: 'LGV DOP 2018',
-                visible: false,
+                visible: true,
                 switchable: true,
-                opacity: 0.7,
+                opacity: 0.85,
                 source: new TileWMS({
                     url: 'https://geodienste.hamburg.de/HH_WMS_DOP_hochaufloesend',
                     params: {
-                        'LAYERS': 'DOP5',
+                        'LAYERS': 'dop_hochaufloesend',
                         'FORMAT': 'image/png'
                     },
                     attributions: ['Freie und Hansestadt Hamburg, LGV 2019']

@@ -18,6 +18,7 @@ export default class QuerAdd2ER extends Add2ER {
 
     loadAbschnitt(abschnitt: Abschnitt) {
         Querschnittsdaten.loadAbschnittER(abschnitt)
-            .then(() => { PublicWFS.showMessage("Erfolgreich in ER kopiert") });
+            .then(() => { PublicWFS.showMessage("Erfolgreich in ER kopiert") })
+            .catch(() => { PublicWFS.showMessage("Fehler", true) });;
     }
 }

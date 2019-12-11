@@ -88,6 +88,7 @@ export default class DeleteTool extends Tool {
                 this.delField.style.display = "none";
                 this.infoField.innerHTML = "";
             })
+            .catch(() => { PublicWFS.showMessage("Fehler", true) });
     }
 
     start() {

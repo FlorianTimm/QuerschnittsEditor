@@ -20,29 +20,32 @@ export default class SAPAdd extends AddTool {
         super(map, sidebar, layerAchse);
     }
 
-    protected createForm() {
-        this.form = StrassenAusPunkt.createForm(this.sidebar, undefined, true, false);
+    protected createForm():Promise<void>{
+        let form = StrassenAusPunkt.createForm(this.sidebar, undefined, true, false);
+        this.form = form.form;
         let input = document.createElement("input");
         input.type = "submit"
         input.value = "Hinzufügen"
         input.disabled = true;
         this.form.appendChild(input);
         $(this.form).on("submit", this.addSAPButton.bind(this));
+        return form.promise;
     }
 
-    private addSAPButton(event: Event) {
+    private async addSAPButton(event: Event) {
         event.preventDefault();
         // im ER?
+        let load: Promise<StrassenAusPunkt>;
         if (!(this.abschnitt.isOKinER("Otstrauspkt"))) {
-            PublicWFS.addInER(this.abschnitt, "Otstrauspkt", Daten.getInstanz().ereignisraum_nr)
+            await PublicWFS.addInER(this.abschnitt, "Otstrauspkt", Daten.getInstanz().ereignisraum_nr)
                 .then(() => { return StrassenAusPunkt.loadAbschnittER(this.abschnitt) })
-                .then(() => { this.wfsAddStrausPkt() });
-        } else {
-            this.wfsAddStrausPkt()
         }
+        return this.wfsAddStrausPkt().then(() => {
+            PublicWFS.showMessage("erfolgreich");
+        })
     }
 
-    private wfsAddStrausPkt() {
+    private async wfsAddStrausPkt(): Promise<StrassenAusPunkt[]> {
         let soap = '<wfs:Insert>\n' +
             '<Otstrauspkt>\n' +
             '<projekt xlink:href="#' + Daten.getInstanz().ereignisraum + '" typeName="Projekt" />\n' +
@@ -60,8 +63,8 @@ export default class SAPAdd extends AddTool {
             '<art xlink:href="#S' + $(this.form).find('#art').val() + '" typeName="Itstrauspktart" />\n' +
             '<quelle xlink:href="#S' + $(this.form).find('#quelle').val() + '" typeName="Itquelle" />\n' +
             '</Otstrauspkt> </wfs:Insert>';
-        PublicWFS.doTransaction(soap)
-            .then((xml) => { this.getInsertResults(xml) })
+        const xml = await PublicWFS.doTransaction(soap);
+        return this.getInsertResults(xml) as Promise<StrassenAusPunkt[]>;
     }
 
     public getObjektklasse() {

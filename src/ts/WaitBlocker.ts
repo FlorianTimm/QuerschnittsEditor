@@ -26,7 +26,8 @@ export default class WaitBlocker {
     public static warteSub() {
         this.counter -= 1;
         this.generateBlocker();
-        if (this.counter == 0) {
+        if (this.counter <= 0) {
+            this.counter = 0;
             document.body.style.cursor = ''
             this.blocker.style.display = "none";
         }

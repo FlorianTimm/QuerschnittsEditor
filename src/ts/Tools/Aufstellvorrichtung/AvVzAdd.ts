@@ -32,6 +32,7 @@ class AvVzAdd extends Tool {
     private select: SelectInteraction;
     private mouseOver: SelectInteraction;
     private lastOverlay: Aufstellvorrichtung;
+    buttonSpeichern: HTMLButtonElement;
 
     /**
      * Erzeugt eine Instanz des Verkehrszeichen-Hinzufügen-Tools
@@ -70,12 +71,11 @@ class AvVzAdd extends Tool {
         // Popup erzeugen
         this.ausblenden = document.createElement("div");
         this.ausblenden.id = "vzadd_ausblenden";
-        document.body.appendChild(this.ausblenden);
         this.popup = document.createElement("div");
         this.popup.id = "vz_popup";
         this.popup.style.textAlign = "left";
-
         this.ausblenden.appendChild(this.popup);
+
 
         this.liste = document.createElement("div");
         $(this.liste).sortable({
@@ -88,14 +88,15 @@ class AvVzAdd extends Tool {
 
         let stvoZNrNeu = KlartextManager.createKlartextSelectForm('Itvzstvoznr', this.popup, 'Verkehrszeichen', 'stvoznr_neu', undefined, "Neues Schild hinzufügen...")
 
-        $(stvoZNrNeu).on("change", this.newSchild.bind(this));
+        $(stvoZNrNeu.select).on("change", this.newSchild.bind(this));
 
         this.popup.appendChild(document.createElement("br"));
 
-        let buttonSpeichern = document.createElement('button');
-        buttonSpeichern.addEventListener("click", this._save.bind(this));
-        buttonSpeichern.innerHTML = "Speichern";
-        this.popup.appendChild(buttonSpeichern);
+        this.buttonSpeichern = document.createElement('button');
+        this.buttonSpeichern.addEventListener("click", this.save.bind(this));
+        this.buttonSpeichern.innerHTML = "Speichern";
+        this.buttonSpeichern.disabled = true;
+        this.popup.appendChild(this.buttonSpeichern);
 
         let buttonAbbrechen = document.createElement('button');
         buttonAbbrechen.addEventListener("click", this._closePopup.bind(this));
@@ -103,10 +104,18 @@ class AvVzAdd extends Tool {
         buttonAbbrechen.style.marginBottom = "250px";
         this.popup.appendChild(buttonAbbrechen);
 
-        this.auswahl.getZeichen()
-            .then((zeichen) => {
-                this._zeichenGeladen(zeichen)
-            });
+        Promise.all([
+            this.auswahl.getZeichen(true)
+                .then((zeichen) => {
+                    $(this.ausblenden).hide()
+                    document.body.appendChild(this.ausblenden);
+                    $(this.ausblenden).fadeIn("fast")
+                    return this._zeichenGeladen(zeichen)
+                }),
+            stvoZNrNeu.promise
+        ]).then(() => {
+            this.buttonSpeichern.disabled = false;
+        });
     }
 
     private mouseIsOver(event: SelectEvent) {
@@ -126,26 +135,39 @@ class AvVzAdd extends Tool {
     private newSchild(event: JQueryEventObject) {
         let schild = new Zeichen();
         schild.setStvoznr((event.target as HTMLInputElement).value);
-        this._createSchildForm(schild);
+        let vorherDisabled = false;
+        if (!this.buttonSpeichern.disabled) {
+            this.buttonSpeichern.disabled = true;
+            vorherDisabled = true;
+        }
+        this.createSchildForm(schild)
+            .then(() => {
+                if (vorherDisabled)
+                    this.buttonSpeichern.disabled = false;
+            });
+
     }
 
-    private _zeichenGeladen(zeichen: Zeichen[]) {
+    private _zeichenGeladen(zeichen: Zeichen[]): Promise<void> {
         zeichen.sort(function (a: Zeichen, b: Zeichen) {
             if (a.getSort() == null && b.getSort() == null) return 0;
             if (a.getSort() == null) return -1;
             if (b.getSort() == null) return 1;
             return Number(a.getSort()) - Number(b.getSort());
         });
+        let tasks = [];
         for (let eintrag of zeichen) {
-            this._createSchildForm(eintrag);
+            tasks.push(this.createSchildForm(eintrag));
         }
+        return Promise.all(tasks)
+            .then(() => { Promise.resolve() });
     }
 
     /**
      * Erzeugt pro Schild ein Änderungsformular
      * @param {Zeichen} eintrag Schild, für welches das Formular erzeugt werden soll
      */
-    private _createSchildForm(eintrag: Zeichen) {
+    private async createSchildForm(eintrag: Zeichen): Promise<void> {
         let div = document.createElement("form");
         this.liste.appendChild(div);
         div.dataset.oid = eintrag.getObjektId();
@@ -165,13 +187,15 @@ class AvVzAdd extends Tool {
 
         //Formular
         let text = document.createElement("div");
+        let tasks: Promise<void>[] = [];
         div.appendChild(text);
         text.classList.add('schildText');
 
         // StVOZNR
         let stvoznr = Klartext.createKlartextSelectForm('Itvzstvoznr', text, 'Verkehrszeichen', 'stvoznr', eintrag.getStvoznr())
-        $(stvoznr).on("change", function () {
-            let schild = Klartext.get("Itvzstvoznr", stvoznr.value)
+        tasks.push(stvoznr.promise)
+        $(stvoznr.select).on("change", function () {
+            let schild = Klartext.get("Itvzstvoznr", stvoznr.select.value)
             img.src = "http://gv-srv-w00118:8080/schilder/" + schild.getKt() + ".svg";
             img.title = schild['beschreib'];
         });
@@ -181,27 +205,27 @@ class AvVzAdd extends Tool {
 
         // Lage FB
         if (eintrag.getLageFb() == undefined) eintrag.setLageFb(CONFIG.LAGEFB);
-        KlartextManager.createKlartextSelectForm('Itvzlagefb', text, 'Lage', 'lageFb', eintrag.getLageFb())
+        tasks.push(KlartextManager.createKlartextSelectForm('Itvzlagefb', text, 'Lage', 'lageFb', eintrag.getLageFb()).promise)
 
         // Lesbarkeit
         if (eintrag.getLesbarkeit() == undefined) eintrag.setLesbarkeit(CONFIG.LESBARKEIT);
-        KlartextManager.createKlartextSelectForm('Itvzlesbarkeit', text, 'Lesbarkeit', 'lesbarkeit', eintrag.getLesbarkeit())
+        tasks.push(KlartextManager.createKlartextSelectForm('Itvzlesbarkeit', text, 'Lesbarkeit', 'lesbarkeit', eintrag.getLesbarkeit()).promise)
 
         // Beleuchtet
         if (eintrag.getBeleucht() == undefined) eintrag.setBeleucht(CONFIG.BELEUCHTET);
-        KlartextManager.createKlartextSelectForm('Itvzbeleucht', text, 'Beleuchtung', 'beleucht', eintrag.getBeleucht())
+        tasks.push(KlartextManager.createKlartextSelectForm('Itvzbeleucht', text, 'Beleuchtung', 'beleucht', eintrag.getBeleucht()).promise)
 
         //Einzelschild
         if (eintrag.getArt() == undefined) eintrag.setArt(CONFIG.EINZELSCHILD);
-        KlartextManager.createKlartextSelectForm('Itvzart', text, 'Art', 'art', eintrag.getArt())
+        tasks.push(KlartextManager.createKlartextSelectForm('Itvzart', text, 'Art', 'art', eintrag.getArt()).promise)
 
         // Größe des Schilder
         if (eintrag.getGroesse() == undefined) eintrag.setGroesse(CONFIG.GROESSE);
-        KlartextManager.createKlartextSelectForm('Itvzgroesse', text, 'Größe', 'groesse', eintrag.getGroesse())
+        tasks.push(KlartextManager.createKlartextSelectForm('Itvzgroesse', text, 'Größe', 'groesse', eintrag.getGroesse()).promise)
 
         // Straßenbezug
         if (eintrag.getStrbezug() == undefined) eintrag.setStrbezug(CONFIG.STRASSENBEZUG);
-        KlartextManager.createKlartextSelectForm('Itbesstrbezug', text, 'Straßenbezug', 'strbezug', eintrag.getStrbezug())
+        tasks.push(KlartextManager.createKlartextSelectForm('Itbesstrbezug', text, 'Straßenbezug', 'strbezug', eintrag.getStrbezug()).promise)
 
         // Aufstelldatum
         let aufstdat = HTML.createDateInput(text, "Aufstelldatum", "aufstelldat" + Math.round(Math.random() * 2000), ((eintrag.getAufstelldat() != null) ? (eintrag.getAufstelldat()) : ('')));
@@ -212,11 +236,11 @@ class AvVzAdd extends Tool {
 
         // Erfassungsart
         if (eintrag.getErfart() == undefined) eintrag.setErfart(CONFIG.ERFASSUNG);
-        KlartextManager.createKlartextSelectForm('Iterfart', text, 'Erfassung', 'erfart', eintrag.getErfart())
+        tasks.push(KlartextManager.createKlartextSelectForm('Iterfart', text, 'Erfassung', 'erfart', eintrag.getErfart()).promise)
 
         // Quelle
         if (eintrag.getQuelle() == undefined) eintrag.setQuelle(CONFIG.QUELLE);
-        KlartextManager.createKlartextSelectForm('Itquelle', text, 'Quelle', 'quelle', eintrag.getQuelle())
+        tasks.push(KlartextManager.createKlartextSelectForm('Itquelle', text, 'Quelle', 'quelle', eintrag.getQuelle()).promise)
 
         // Löschen
         let del_group = document.createElement("div");
@@ -248,13 +272,16 @@ class AvVzAdd extends Tool {
         $(buttonLoeschen).button();
         del_group.appendChild(buttonLoeschen);
         text.appendChild(del_group);
+        return Promise.all(tasks)
+            .then(() => { Promise.resolve() })
+            .catch(() => { Promise.reject() });
     }
 
     /**
      * Wird durch Klick auf "Speichern" ausgelöst, prüft Änderungen und listet diese auf
      * @param {MouseEvent} event 
      */
-    _save(event: MouseEvent) {
+    private save(event: MouseEvent) {
         let neu: Zeichen[] = [];
         let alt: { [objektid: string]: Zeichen } = {};
 
@@ -427,18 +454,21 @@ class AvVzAdd extends Tool {
                         anzUpdate + " ändern<br />" +
                         neu.length + " hinzugefügen<br /><br />" +
                         "Wollen Sie fortfahren?";
-                    $("#dialog-confirm").dialog({
+                    let dialog = $("#dialog-confirm").dialog({
                         resizable: false,
                         height: "auto",
                         width: 400,
                         modal: true,
                         buttons: {
                             "Daten schreiben": () => {
-                                this.writeData(update);
-                                $("#dialog-confirm").dialog("close");
+                                this.writeData(update).then(() => {
+                                    $(this.ausblenden).fadeOut();
+                                })
+                                    .catch()
+                                    .finally(() => { dialog.dialog("close") });
                             },
                             "Abbrechen": function () {
-                                $(this).dialog("close");
+                                dialog.dialog("close");
                             }
                         }
                     });
@@ -453,20 +483,31 @@ class AvVzAdd extends Tool {
      * @param {string} update Transaktion als Text
      * @param {*} auswahl 
      */
-    private writeData(update: string): Promise<void> {
+    private async writeData(update: string): Promise<void> {
         $((event.target as HTMLElement).parentElement.parentElement).remove();
+
         return PublicWFS.addSekInER(this.auswahl, "Otaufstvor", "Otvzeichlp", Daten.getInstanz().ereignisraum_nr)
-            .finally(() => {
-                return PublicWFS.doTransaction(update)
+            .catch(() => {
+                console.log("Nicht in ER kopiert")
             })
             .then(() => {
-                PublicWFS.showMessage("erfolgreich", false);
-                console.log("reload");
-                this.auswahl.reloadZeichen();
+                console.log("Update wird ausgeführt...")
+                return PublicWFS.doTransaction(update);
+            })
+            .then(() => {
+                console.log("Zeichen wird neugeladen...")
                 this.select.getFeatures().clear();
-            });
-    }
+                return this.auswahl.reloadZeichen()
+            })
+            .then(() => {
+                PublicWFS.showMessage("erfolgreich", false)
+                return Promise.resolve();
+            }).catch(() => {
+                PublicWFS.showMessage("Fehler beim Schreiben von Daten", true);
+                return Promise.reject();
+            })
 
+    }
 
     /**
      * Schließt das Popup mit den Schildern

@@ -33,8 +33,9 @@ export default abstract class AddTool extends Tool {
     protected form: HTMLFormElement = null;
     protected sidebar: HTMLDivElement;
     private layerAchse: VectorLayer;
+    private promise: Promise<void>;
 
-    protected abstract createForm(): void;
+    protected abstract createForm(): Promise<void>;
 
     constructor(map: Map, sidebar: HTMLDivElement, layerAchse: VectorLayer) {
         super(map);
@@ -147,7 +148,10 @@ export default abstract class AddTool extends Tool {
         let daten = this.calcStation(event);
         if (daten == null) return
         this.refreshStationierung(daten);
-        $(this.form).find("input[type='submit']").prop("disabled", false);
+        this.promise.then(() => {
+            $(this.form).find("input[type='submit']").prop("disabled", false);
+        })
+
     }
 
     private refreshStationierung(daten: { achse: Abschnitt; pos: StationObj; }) {
@@ -170,8 +174,7 @@ export default abstract class AddTool extends Tool {
         }
     }
 
-    protected getInsertResults(xml: XMLDocument) {
-        PublicWFS.showMessage("erfolgreich");
+    protected async getInsertResults(xml: XMLDocument): Promise<PunktObjekt[]> {
         this.abschnitt = null;
         this.station = null;
         this.seite = null;
@@ -182,16 +185,15 @@ export default abstract class AddTool extends Tool {
             filter += '<FeatureId fid="' + (childs[i] as Element).getAttribute('fid') + '"/>';
         }
         filter += '</Filter>';
-        PublicWFS.doQuery(this.getObjektklasse(), filter).then(() => {
-            this.loadERCallback(xml);
-        });
+        const xml2 = await PublicWFS.doQuery(this.getObjektklasse(), filter);
+        return this.loadERCallback(xml2);
     }
 
     protected abstract loadERCallback(xml: XMLDocument): Promise<PunktObjekt[]>;
     public abstract getObjektklasse(): string;
 
     start() {
-        if (this.form == null) this.createForm();
+        if (this.form == null) this.promise = this.createForm();
         $(this.form).show("fast");
         this.map.addInteraction(this.select);
         this.map.on("pointermove", this.part_move.bind(this));

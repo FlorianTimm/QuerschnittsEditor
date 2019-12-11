@@ -22,8 +22,9 @@ export default class AvAdd extends AddTool {
         return 'Otaufstvor';
     }
 
-    createForm() {
-        this.form = Aufstellvorrichtung.createForm(this.sidebar, 'avadd', undefined, true, false);
+    protected createForm(): Promise<void> {
+        let form = Aufstellvorrichtung.createForm(this.sidebar, 'avadd', undefined, true, false);
+        this.form = form.form;
         let input = document.createElement("input");
         input.type = "submit"
         input.value = "Hinzufügen"
@@ -33,6 +34,7 @@ export default class AvAdd extends AddTool {
             event.preventDefault();
             this.addAufstellButton();
         });
+        return form.promise;
     }
 
     private addAufstellButton() {

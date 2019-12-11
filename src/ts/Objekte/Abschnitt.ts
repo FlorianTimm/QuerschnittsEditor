@@ -285,8 +285,6 @@ export default class Abschnitt extends Feature {
     }
 
     public async getAufbauDaten(reload: boolean = false): Promise<{ [fid: string]: { [schichtnr: number]: Aufbaudaten } }> {
-        //console.log(callbackSuccess);
-
         if (!this.aufbaudatenLoaded || reload) {
             this.aufbaudatenLoaded = PublicWFS.doQuery('Otschicht', '<Filter><And>' +
                 '<PropertyIsEqualTo>' +

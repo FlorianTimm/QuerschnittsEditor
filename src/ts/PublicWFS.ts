@@ -31,13 +31,11 @@ export default class PublicWFS {
             var xmlhttp = new XMLHttpRequest();
             xmlhttp.open('POST', url, true);
             xmlhttp.onreadystatechange = function () {
-                if (xmlhttp.readyState != 4)
-                    return;
+                if (xmlhttp.readyState != 4) return;
                 WaitBlocker.warteSub();
                 if (xmlhttp.status == 200) {
                     resolve(xmlhttp.responseXML);
-                }
-                else {
+                } else {
                     reject(xmlhttp.responseXML)
                 }
             };
@@ -47,23 +45,25 @@ export default class PublicWFS {
         })
     }
 
-    private static doGetRequest(url_param: string): Promise<Document> {
+    private static doGetRequest(url_param: string, blocking: boolean = true): Promise<Document> {
         return new Promise(function (resolve, reject) {
-            WaitBlocker.warteAdd()
+            if (blocking) WaitBlocker.warteAdd()
             var xmlhttp = new XMLHttpRequest();
             xmlhttp.open('GET', CONFIG.PUBLIC_WFS_URL + '?' + url_param, true);
 
             xmlhttp.onreadystatechange = function () {
                 if (xmlhttp.readyState != 4) return;
                 if (xmlhttp.status == 200) {
-                    WaitBlocker.warteSub()
+                    if (blocking) WaitBlocker.warteSub()
                     resolve(xmlhttp.responseXML)
                 } else if (xmlhttp.status != 200) {
-                    WaitBlocker.warteSub()
+                    if (blocking) WaitBlocker.warteSub()
                     reject(xmlhttp.responseXML)
                 }
             }
             xmlhttp.onerror = function () {
+                PublicWFS.showMessage("Fehler bei der Kommunikation mit WFS", true)
+                if (blocking) WaitBlocker.warteSub()
                 reject(Error("Network Error"));
             };
             xmlhttp.send();
@@ -98,12 +98,13 @@ export default class PublicWFS {
                 abschnitt.addOKinER(objekt);
                 resolve(xml)
             }).catch((xml: Document) => {
+                PublicWFS.showMessage("Fehler bei der Kommunikation mit WFS", true)
                 reject(xml);
             });
         });
     }
 
-    static addSekInER(objektPrim: PrimaerObjekt, objektTypePrim: string, objektSek: string, ereignisraum_nr: string) {
+    static async addSekInER(objektPrim: PrimaerObjekt, objektTypePrim: string, objektSek: string, ereignisraum_nr: string): Promise<Document> {
         return new Promise(function (resolve, reject) {
             let xml = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
                 'xmlns:pub="http://ttsib.novasib.de/PublicServices" xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">\n' +
@@ -127,13 +128,14 @@ export default class PublicWFS {
                 objektPrim.addSekOKinER(objektSek);
                 resolve(xml)
             }).catch((xml: Document) => {
+                PublicWFS.showMessage("Fehler bei der Kommunikation mit WFS", true)
                 reject(xml);
             });
         });
     }
 
-    static doTransaction(transaction: string): Promise<Document> {
-        var xml =
+    static async doTransaction(transaction: string): Promise<Document> {
+        var transactXML =
             '<?xml version="1.0" encoding="ISO-8859-1"?>' +
             '<wfs:Transaction service="WFS" version="1.0.0"' +
             '		xmlns="http://xml.novasib.de"' +
@@ -145,70 +147,75 @@ export default class PublicWFS {
             '		xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-transaction.xsd">' +
             transaction +
             '</wfs:Transaction>';
-        return PublicWFS.doSoapRequestWFS(xml)
-            .then((xml: Document) => {
-                if (xml.getElementsByTagName('SUCCESS').length > 0) {
-                    return Promise.resolve(xml);
+
+        return PublicWFS.doSoapRequestWFS(transactXML)
+            .then((responseXML) => {
+                if (responseXML.getElementsByTagName('SUCCESS').length > 0) {
+                    return Promise.resolve(responseXML);
                 } else {
-                    return Promise.reject(xml);
+                    return Promise.reject(responseXML);
                 }
+            })
+            .catch((responseXML) => {
+                PublicWFS.showMessage("Fehler bei der Kommunikation mit WFS", true);
+                return Promise.reject(responseXML)
             })
     }
 
-    public static doQuery(klasse: string, filter: string): Promise<Document> {
+    public static doQuery(klasse: string, filter: string, blocking: boolean = true): Promise<Document> {
         let url_param = "Request=GetFeature&TYPENAME=" + klasse + "&MPP=0&filter=" + encodeURIComponent(filter);
-        return PublicWFS.doGetRequest(url_param);
+        return PublicWFS.doGetRequest(url_param, blocking);
     }
 
 
-    public static testER(ereignisraum_nr: string): Promise<{ erfolgreich: boolean, fehler?: HTMLCollectionOf<Element> }> {
-        return new Promise(function (resolve, reject) {
+    public static async testER(ereignisraum_nr: string): Promise<{ erfolgreich: boolean, fehler?: Element[] }> {
+        let xmlPruefung = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
+            'xmlns:pub="http://ttsib.novasib.de/PublicServices" xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">\n' +
+            '<soapenv:Header/>\n' +
+            '<soapenv:Body>\n' +
+            '     <pub:testProjekt>\n' +
+            '            <projekt>\n' +
+            '                   <int:ProjektNr>' + ereignisraum_nr + '</int:ProjektNr>\n' +
+            '            </projekt>\n' +
+            '     </pub:testProjekt>\n' +
+            '</soapenv:Body>\n' +
+            '</soapenv:Envelope>'
+        let erfolgreich = await PublicWFS.doSoapRequestERWFS(xmlPruefung)
+            .then((xmlResponse: Document) => {
+                let success = xmlResponse.getElementsByTagName("testSuccess");
+                if (!success || success.length == 0) {
+                    PublicWFS.showMessage("Fehler bei der Kommunikation mit WFS", true)
+                    Promise.reject(Error("Fehler beim Prüfen"))
+                }
+
+                if (success.item(0).innerHTML != "false") {
+                    return true;
+                }
+                return false;
+            });
+
+        if (erfolgreich) return Promise.resolve({ erfolgreich: true });
 
 
-            let xml = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
-                'xmlns:pub="http://ttsib.novasib.de/PublicServices" xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">\n' +
-                '<soapenv:Header/>\n' +
-                '<soapenv:Body>\n' +
-                '     <pub:testProjekt>\n' +
-                '            <projekt>\n' +
-                '                   <int:ProjektNr>' + ereignisraum_nr + '</int:ProjektNr>\n' +
-                '            </projekt>\n' +
-                '     </pub:testProjekt>\n' +
-                '</soapenv:Body>\n' +
-                '</soapenv:Envelope>'
-            PublicWFS.doSoapRequestERWFS(xml)
-                .then((xmlResponse: Document) => {
-                    let success = xmlResponse.getElementsByTagName("testSuccess");
-                    if (!success || success.length == 0) {
-                        reject(Error("Fehler beim Prüfen"))
-                    }
+        let xmlListe = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
+            'xmlns:pub="http://ttsib.novasib.de/PublicServices" xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">\n' +
+            '<soapenv:Header/>\n' +
+            '<soapenv:Body>\n' +
+            '     <pub:queryTestresult>\n' +
+            '            <projekt>\n' +
+            '                   <int:ProjektNr>' + ereignisraum_nr + '</int:ProjektNr>\n' +
+            '            </projekt>\n' +
+            '     </pub:queryTestresult>\n' +
+            '</soapenv:Body>\n' +
+            '</soapenv:Envelope>';
 
-                    if (success.item(0).innerHTML != "false") {
-                        resolve({ erfolgreich: true });
-                    }
-
-
-                    let xml = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
-                        'xmlns:pub="http://ttsib.novasib.de/PublicServices" xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">\n' +
-                        '<soapenv:Header/>\n' +
-                        '<soapenv:Body>\n' +
-                        '     <pub:queryTestresult>\n' +
-                        '            <projekt>\n' +
-                        '                   <int:ProjektNr>' + ereignisraum_nr + '</int:ProjektNr>\n' +
-                        '            </projekt>\n' +
-                        '     </pub:queryTestresult>\n' +
-                        '</soapenv:Body>\n' +
-                        '</soapenv:Envelope>'
-                    PublicWFS.doSoapRequestERWFS(xml)
-                        .then((xmlResponse: XMLDocument) => {
-                            let results = xmlResponse.getElementsByTagName("testResult");
-                            if (!results || results.length == 0) {
-                                reject(Error("Fehler beim Prüfen"))
-                            }
-                            reject({ erfolgreich: false, fehler: Array.from(results) });
-                        })
-                })
-        })
+        const xmlResponse_1 = await PublicWFS.doSoapRequestERWFS(xmlListe);
+        let results = xmlResponse_1.getElementsByTagName("testResult");
+        if (!results || results.length == 0) {
+            PublicWFS.showMessage("Fehler bei der Kommunikation mit WFS", true);
+            return Promise.reject(Error("Fehler beim Prüfen"));
+        }
+        return Promise.resolve({ erfolgreich: false, fehler: Array.from(results) });
     }
 
     public static anlegenER(

@@ -7,6 +7,7 @@ import Querschnitt from "../../Objekte/Querschnittsdaten";
 import InfoTool from "../InfoTool";
 import { VectorLayer } from "../../openLayers/Layer";
 import Map from "../../openLayers/Map";
+import PublicWFS from "../../PublicWFS";
 
 /**
  * Funktion zum Löschen von Querschnitten
@@ -82,7 +83,13 @@ class QuerDelTool extends Tool {
 
         this.selectLinien.getFeatures().clear();
         this.selectFlaechen.getFeatures().clear();
-        querschnitt.getStation().rewrite();
+        querschnitt.getStation().rewrite()
+            .then(() => {
+                PublicWFS.showMessage("Erfolgreich gelöscht")
+            })
+            .catch(() => {
+                PublicWFS.showMessage("Fehler beim Löschen", true)
+            });
     }
 
     private createLinienSelect(layerTrenn: VectorLayer) {
