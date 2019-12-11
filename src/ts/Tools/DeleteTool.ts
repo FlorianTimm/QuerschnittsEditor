@@ -36,10 +36,10 @@ export default class DeleteTool extends Tool {
         this.delField.appendChild(this.infoField);
 
         let button = document.createElement("button");
-        button.addEventListener("click", function (this: DeleteTool, event: MouseEvent) {
+        button.addEventListener("click", (event: MouseEvent) => {
             event.preventDefault();
             this._featureDelete()
-        }.bind(this))
+        })
         button.innerHTML = "L&ouml;schen";
         this.delField.appendChild(button);
 
@@ -79,16 +79,16 @@ export default class DeleteTool extends Tool {
             '		</ogc:And>\n' +
             '	</ogc:Filter>\n' +
             '</wfs:Delete>';
-        PublicWFS.doTransaction(update, this._deleteCallback.bind(this));
-    }
-
-    _deleteCallback(_xml: XMLDocument) {
-        let feature = this.select.getFeatures().getArray()[0];
-        (<VectorSource>this.layer.getSource()).removeFeature(feature);
-        this.select.getFeatures().clear();
-        PublicWFS.showMessage("Objekt gelöscht!")
-        this.delField.style.display = "none";
-        this.infoField.innerHTML = "";
+        PublicWFS.doTransaction(update)
+            .then(() => {
+                let feature = this.select.getFeatures().getArray()[0];
+                (<VectorSource>this.layer.getSource()).removeFeature(feature);
+                this.select.getFeatures().clear();
+                PublicWFS.showMessage("Objekt gelöscht!")
+                this.delField.style.display = "none";
+                this.infoField.innerHTML = "";
+            })
+            .catch(() => { PublicWFS.showMessage("Fehler", true) });
     }
 
     start() {

@@ -11,6 +11,7 @@ import Map from "../../openLayers/Map";
 import "../../import_jquery.js";
 import 'jquery-ui-bundle';
 import 'jquery-ui-bundle/jquery-ui.css'
+import PublicWFS from '../../PublicWFS';
 
 /**
  * Funktion zum Hinzufügen von Querschnittsflächen
@@ -75,7 +76,7 @@ class QuerAddTool extends Tool {
     }
 
 
-    addQuerschnitt() {
+    private addQuerschnitt() {
         let selection = this._select.getFeatures();
         if (this._select.getFeatures().getLength() != 1) return;
         let querschnitt = <Querschnitt>selection.item(0).get('objekt');
@@ -101,14 +102,14 @@ class QuerAddTool extends Tool {
             title: "Querschnitt hinzufügen",
             modal: true,
             buttons: {
-                "Links": function (this: QuerAddTool) {
+                "Links": () => {
                     this.loadAufbaudaten(querschnitt, "L");
                     jqueryDialog.dialog("close");
-                }.bind(this),
-                "Rechts": function (this: QuerAddTool) {
+                },
+                "Rechts": () => {
                     this.loadAufbaudaten(querschnitt, "R");
                     jqueryDialog.dialog("close");
-                }.bind(this),
+                },
                 "Abbrechen": function () {
                     jqueryDialog.dialog("close");
                 }
@@ -116,11 +117,9 @@ class QuerAddTool extends Tool {
         });
     }
 
-    private loadAufbaudaten(querschnitt: Querschnitt, seite: "R" | "L") {
-        querschnitt.getStation().getAbschnitt().getAufbauDaten(this.addQuerschnittCallback.bind(this), undefined, undefined, seite, querschnitt);
-    }
+    private async loadAufbaudaten(querschnitt: Querschnitt, seite: "R" | "L"): Promise<void> {
+        await querschnitt.getStation().getAbschnitt().getAufbauDaten();
 
-    private addQuerschnittCallback(seite: 'L' | 'R', querschnitt: Querschnitt) {
         let gesStreifen = querschnitt.getStation().getStreifen(seite);
         let querschnittNeu = new Querschnitt();
         querschnittNeu.setBreite(275);
@@ -178,7 +177,15 @@ class QuerAddTool extends Tool {
         //querschnittNeu.createGeom();
         querschnitt.getStation().addQuerschnitt(querschnittNeu);
 
-        querschnitt.getStation().rewrite();
+        return querschnitt.getStation().rewrite()
+            .then(() => {
+                PublicWFS.showMessage("Erfolgreich");
+                Promise.resolve();
+            })
+            .catch(() => {
+                PublicWFS.showMessage("Konnte den Streifen nicht hinzufügen", true);
+                Promise.reject();
+            })
     }
 
 }

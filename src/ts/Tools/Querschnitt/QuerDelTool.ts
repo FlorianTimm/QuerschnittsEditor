@@ -7,6 +7,7 @@ import Querschnitt from "../../Objekte/Querschnittsdaten";
 import InfoTool from "../InfoTool";
 import { VectorLayer } from "../../openLayers/Layer";
 import Map from "../../openLayers/Map";
+import PublicWFS from "../../PublicWFS";
 
 /**
  * Funktion zum Löschen von Querschnitten
@@ -44,11 +45,11 @@ class QuerDelTool extends Tool {
             width: 400,
             modal: true,
             buttons: {
-                "Ja": function (this: QuerDelTool) {
+                "Ja": () => {
                     this.confirmedDelete(querschnitt);
                     jqueryDialog.dialog("close");
-                }.bind(this),
-                "Nein": function () {
+                },
+                "Nein": () => {
                     jqueryDialog.dialog("close");
                 }
             }
@@ -82,7 +83,13 @@ class QuerDelTool extends Tool {
 
         this.selectLinien.getFeatures().clear();
         this.selectFlaechen.getFeatures().clear();
-        querschnitt.getStation().rewrite();
+        querschnitt.getStation().rewrite()
+            .then(() => {
+                PublicWFS.showMessage("Erfolgreich gelöscht")
+            })
+            .catch(() => {
+                PublicWFS.showMessage("Fehler beim Löschen", true)
+            });
     }
 
     private createLinienSelect(layerTrenn: VectorLayer) {
@@ -106,9 +113,9 @@ class QuerDelTool extends Tool {
     private flaecheSelected() {
         this.selectLinien.getFeatures().clear();
         let auswahl = (this.selectFlaechen as SelectInteraction).getFeatures();
-        auswahl.forEach(function (this: QuerDelTool, feat: Feature) {
+        auswahl.forEach((feat: Feature) => {
             this.selectLinien.getFeatures().push((feat as Querschnitt).trenn);
-        }.bind(this))
+        })
         this.featureSelected()
     }
 

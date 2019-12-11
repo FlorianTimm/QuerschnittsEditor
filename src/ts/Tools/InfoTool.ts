@@ -10,6 +10,7 @@ import { Style, Stroke, Fill } from 'ol/style';
 import GeometryType from 'ol/geom/GeometryType';
 import CircleStyle from 'ol/style/Circle';
 import { FeatureLike } from 'ol/Feature';
+import PublicWFS from '../PublicWFS';
 
 /**
  * Funktion zum Anzeigen von Informationen zu Aufstellvorrichtungen und Schildern
@@ -69,19 +70,23 @@ export default class InfoTool extends Tool {
 
     public getInfoFieldForFeature(feature: Feature, changeable: boolean = false) {
         this.infoField.innerHTML = "";
-        (feature as InfoToolSelectable).getInfoForm(this.infoField, changeable);
+        let promise = (feature as InfoToolSelectable).getInfoForm(this.infoField, changeable);
         if (changeable) {
             // Button
             let input = document.createElement("input");
             input.id = "info_button";
             input.type = "submit"
             input.value = "Speichern"
+            input.disabled = true;
+            promise.then(() => { input.disabled = false })
             this.infoField.appendChild(input);
             $(this.infoField).off("submit");
-            $(this.infoField).on("submit", function (this: InfoTool, event: Event) {
+            $(this.infoField).on("submit", (event: Event) => {
                 event.preventDefault();
-                (feature as InfoToolEditable).changeAttributes(this.infoField);
-            }.bind(this));
+                (feature as InfoToolEditable).changeAttributes(this.infoField)
+                    .then(() => { PublicWFS.showMessage("Erfolgreich") })
+                    .catch(() => { PublicWFS.showMessage("Fehler", true) });
+            });
         }
         this.showInfoBox();
     }
@@ -92,9 +97,9 @@ export default class InfoTool extends Tool {
 
     public hideInfoBox() {
         $(this.infoField).off("submit");
-        $(this.infoField).hide("fast", "linear", undefined, function (this: InfoTool) {
+        $(this.infoField).hide("fast", "linear", undefined, () => {
             this.infoField.innerHTML = "";
-        }.bind(this))
+        })
         this.removeOverlays();
     }
 
@@ -157,10 +162,10 @@ export default class InfoTool extends Tool {
 }
 
 export interface InfoToolSelectable extends Feature {
-    getInfoForm: (sidebar: HTMLElement, changeable?: boolean) => void;
+    getInfoForm: (sidebar: HTMLElement, changeable?: boolean) => Promise<void>;
 }
 export interface InfoToolEditable extends Feature {
-    changeAttributes: (form: HTMLFormElement) => void;
+    changeAttributes: (form: HTMLFormElement) => Promise<void>;
 }
 
 export interface InfoToolOverlay {

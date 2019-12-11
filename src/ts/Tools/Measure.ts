@@ -89,7 +89,7 @@ class Measure extends Tool {
         };
 
         this.draw.on('drawstart',
-            function (this: Measure, evt: DrawEvent) {
+            (evt: DrawEvent) => {
                 // set sketch
                 this.source.clear();
 
@@ -97,21 +97,20 @@ class Measure extends Tool {
                 let tooltipCoord = (evt.feature.getGeometry() as LineString).getFirstCoordinate();
                 measureTooltipElement.className = 'tooltip tooltip-measure';
 
-                listener = evt.feature.getGeometry().on('change', function (this: Measure, evt: Event) {
+                listener = evt.feature.getGeometry().on('change', (evt: Event) => {
                     var geom = evt.target;
                     var output = formatLength(geom);
                     tooltipCoord = geom.getLastCoordinate();
                     measureTooltipElement.innerHTML = output;
                     this.measureTooltip.setPosition(tooltipCoord);
-                }.bind(this));
-            }.bind(this));
+                });
+            });
 
-        this.draw.on('drawend',
-            function (this: Measure) {
-                measureTooltipElement.className = 'tooltip tooltip-static';
-                this.measureTooltip.setOffset([0, -7]);
-                unByKey(listener);
-            }.bind(this));
+        this.draw.on('drawend', () => {
+            measureTooltipElement.className = 'tooltip tooltip-static';
+            this.measureTooltip.setOffset([0, -7]);
+            unByKey(listener);
+        });
     }
 
     start() {

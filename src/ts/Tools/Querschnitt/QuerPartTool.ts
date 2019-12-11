@@ -11,6 +11,7 @@ import { MapBrowserPointerEvent } from 'ol';
 import Map from "../../openLayers/Map";
 import Abschnitt, { StationObj } from '../../Objekte/Abschnitt';
 import HTML from '../../HTML';
+import PublicWFS from '../../PublicWFS';
 
 /**
  * Funktion zum Teilen von Querschnittsflächen
@@ -149,7 +150,9 @@ class QuerPartTool extends Tool {
     private querschnittButton() {
         if (!this.abschnitt) return;
         let sta = this.abschnitt.getStationByStation(this.station);
-        sta.teilen(this.station);
+        sta.teilen(this.station)
+            .then(() => { PublicWFS.showMessage("erfolgreich", false) })
+            .catch(() => { PublicWFS.showMessage("Fehler", true) });;
         this.restartSelection();
     }
 

@@ -40,9 +40,9 @@ export default class QuerInfoTool extends InfoTool {
     private featureSelectedFlaeche() {
         console.log("Select Fläche")
         this.selectLinie.getFeatures().clear()
-        this.select.getFeatures().forEach(function (this: QuerInfoTool, feature: Feature) {
+        this.select.getFeatures().forEach((feature: Feature) => {
             this.selectLinie.getFeatures().push((feature as Querschnitt).trenn)
-        }.bind(this));
+        });
     }
 
     /** Startet das Werkzeug */

@@ -6,7 +6,7 @@ export default abstract class PrimaerObjekt extends Objekt implements InfoToolSe
     protected vst: number = null;
 	protected bst: number = null;
 	
-	abstract getInfoForm(sidebar: HTMLElement, changeable?: boolean): void;
+	abstract getInfoForm(sidebar: HTMLElement, changeable?: boolean): Promise<void>;
 
     public getVst() {
 		return this.vst;
