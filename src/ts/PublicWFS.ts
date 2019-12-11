@@ -17,156 +17,125 @@ type xmlCallback = (xml: Document, ...args: any[]) => void
 
 
 export default class PublicWFS {
-    private static doSoapRequestWFS(
-        xml: string,
-        callbackSuccess: xmlCallback,
-        callbackFailed: xmlCallback,
-        ...args: any[]) {
-        PublicWFS.doSoapRequest(CONFIG.PUBLIC_WFS_URL, xml, callbackSuccess, callbackFailed, ...args);
+    private static doSoapRequestWFS(xml: string): Promise<Document> {
+        return PublicWFS.doSoapRequest(CONFIG.PUBLIC_WFS_URL, xml);
     }
 
-    private static doSoapRequestERWFS(
-        xml: string,
-        callbackSuccess: xmlCallback,
-        callbackFailed: xmlCallback,
-        ...args: any[]) {
-        PublicWFS.doSoapRequest(CONFIG.ER_WFS_URL, xml, callbackSuccess, callbackFailed, ...args);
+    private static doSoapRequestERWFS(xml: string): Promise<Document> {
+        return PublicWFS.doSoapRequest(CONFIG.ER_WFS_URL, xml);
     }
 
-    private static doSoapRequest(url: string, xml: string, callbackSuccess: xmlCallback, callbackFailed: xmlCallback, ...args: any[]) {
-        WaitBlocker.warteAdd();
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.open('POST', url, true);
-        xmlhttp.onreadystatechange = function () {
-            if (xmlhttp.readyState != 4)
-                return;
-            WaitBlocker.warteSub();
-            if (xmlhttp.status == 200) {
-                callbackSuccess(xmlhttp.responseXML, ...args);
+    private static doSoapRequest(url: string, xml: string): Promise<Document> {
+        return new Promise(function (resolve, reject) {
+            WaitBlocker.warteAdd();
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.open('POST', url, true);
+            xmlhttp.onreadystatechange = function () {
+                if (xmlhttp.readyState != 4) return;
+                WaitBlocker.warteSub();
+                if (xmlhttp.status == 200) {
+                    resolve(xmlhttp.responseXML);
+                } else {
+                    reject(xmlhttp.responseXML)
+                }
+            };
+            xmlhttp.setRequestHeader('Content-Type', 'text/xml');
+            //xmlhttp.setRequestHeader('Content-Type', 'text/xml; charset=ISO-8859-1');
+            xmlhttp.send(xml);
+        })
+    }
+
+    private static doGetRequest(url_param: string, blocking: boolean = true): Promise<Document> {
+        return new Promise(function (resolve, reject) {
+            if (blocking) WaitBlocker.warteAdd()
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.open('GET', CONFIG.PUBLIC_WFS_URL + '?' + url_param, true);
+
+            xmlhttp.onreadystatechange = function () {
+                if (xmlhttp.readyState != 4) return;
+                if (xmlhttp.status == 200) {
+                    if (blocking) WaitBlocker.warteSub()
+                    resolve(xmlhttp.responseXML)
+                } else if (xmlhttp.status != 200) {
+                    if (blocking) WaitBlocker.warteSub()
+                    reject(xmlhttp.responseXML)
+                }
             }
-            else {
-                if (callbackFailed != undefined)
-                    callbackFailed(xmlhttp.responseXML, ...args);
-                else
-                    PublicWFS.showMessage("Kommunikationsfehler", true);
-            }
-        };
-        xmlhttp.setRequestHeader('Content-Type', 'text/xml');
-        //xmlhttp.setRequestHeader('Content-Type', 'text/xml; charset=ISO-8859-1');
-        xmlhttp.send(xml);
+            xmlhttp.onerror = function () {
+                PublicWFS.showMessage("Fehler bei der Kommunikation mit WFS", true)
+                if (blocking) WaitBlocker.warteSub()
+                reject(Error("Network Error"));
+            };
+            xmlhttp.send();
+        });
     }
 
-    private static doGetRequest(
-        url_param: string,
-        callbackSuccess?: xmlCallback,
-        callbackFailed?: xmlCallback,
-        ...args: any[]) {
-        WaitBlocker.warteAdd()
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.open('GET', CONFIG.PUBLIC_WFS_URL + '?' + url_param, true);
-
-        xmlhttp.onreadystatechange = function () {
-            if (xmlhttp.readyState != 4) return;
-            if (xmlhttp.status == 200 && callbackSuccess != undefined) {
-                WaitBlocker.warteSub()
-                callbackSuccess(xmlhttp.responseXML, ...args)
-            } else if (xmlhttp.status != 200) {
-                WaitBlocker.warteSub()
-                if (callbackFailed != undefined)
-                    callbackFailed(xmlhttp.responseXML, ...args)
-                else
-                    PublicWFS.showMessage("Kommunikationsfehler", true);
-            }
-        }
-        xmlhttp.send();
+    static addInER(abschnitt: Abschnitt, objekt: string, ereignisraum_nr: string) {
+        return new Promise(function (resolve, reject) {
+            let xml = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
+                'xmlns:pub="http://ttsib.novasib.de/PublicServices" xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">\n' +
+                '<soapenv:Header/>\n' +
+                '<soapenv:Body>\n' +
+                '     <pub:expandProjektAbsObj>\n' +
+                '            <projekt>\n' +
+                '                   <int:ProjektNr>' + ereignisraum_nr + '</int:ProjektNr>\n' +
+                '            </projekt>\n' +
+                '            <abschnitte>\n' +
+                '                   <int:vonKartenblatt>' + abschnitt.getVtknr() + '</int:vonKartenblatt>\n' +
+                '                   <int:vonNkLfd>' + abschnitt.getVnklfd() + '</int:vonNkLfd>\n' +
+                '                   <int:vonZusatz>' + abschnitt.getVzusatz() + '</int:vonZusatz>\n' +
+                '                   <int:nachKartenblatt>' + abschnitt.getNtknr() + '</int:nachKartenblatt>\n' +
+                '                   <int:nachNkLfd>' + abschnitt.getNnklfd() + '</int:nachNkLfd>\n' +
+                '                   <int:nachZusatz>' + abschnitt.getNzusatz() + '</int:nachZusatz>\n' +
+                '            </abschnitte>\n' +
+                '            <objektKlassen>\n' +
+                '                   <int:objektKlasse>' + objekt + '</int:objektKlasse>\n' +
+                '            </objektKlassen>\n' +
+                '     </pub:expandProjektAbsObj>\n' +
+                '</soapenv:Body>\n' +
+                '</soapenv:Envelope>'
+            PublicWFS.doSoapRequestERWFS(xml).then((xml: Document) => {
+                abschnitt.addOKinER(objekt);
+                resolve(xml)
+            }).catch((xml: Document) => {
+                PublicWFS.showMessage("Fehler bei der Kommunikation mit WFS", true)
+                reject(xml);
+            });
+        });
     }
 
-    static addInER(
-        abschnitt: Abschnitt,
-        objekt: string, ereignisraum_nr: string,
-        callbackSuccess?: xmlCallback,
-        callbackFailed?: xmlCallback,
-        ...args: any[]) {
-
-        let xml = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
-            'xmlns:pub="http://ttsib.novasib.de/PublicServices" xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">\n' +
-            '<soapenv:Header/>\n' +
-            '<soapenv:Body>\n' +
-            '     <pub:expandProjektAbsObj>\n' +
-            '            <projekt>\n' +
-            '                   <int:ProjektNr>' + ereignisraum_nr + '</int:ProjektNr>\n' +
-            '            </projekt>\n' +
-            '            <abschnitte>\n' +
-            '                   <int:vonKartenblatt>' + abschnitt.getVtknr() + '</int:vonKartenblatt>\n' +
-            '                   <int:vonNkLfd>' + abschnitt.getVnklfd() + '</int:vonNkLfd>\n' +
-            '                   <int:vonZusatz>' + abschnitt.getVzusatz() + '</int:vonZusatz>\n' +
-            '                   <int:nachKartenblatt>' + abschnitt.getNtknr() + '</int:nachKartenblatt>\n' +
-            '                   <int:nachNkLfd>' + abschnitt.getNnklfd() + '</int:nachNkLfd>\n' +
-            '                   <int:nachZusatz>' + abschnitt.getNzusatz() + '</int:nachZusatz>\n' +
-            '            </abschnitte>\n' +
-            '            <objektKlassen>\n' +
-            '                   <int:objektKlasse>' + objekt + '</int:objektKlasse>\n' +
-            '            </objektKlassen>\n' +
-            '     </pub:expandProjektAbsObj>\n' +
-            '</soapenv:Body>\n' +
-            '</soapenv:Envelope>'
-        PublicWFS.doSoapRequestERWFS(xml, function (xml, abschnitt, objekt, callbackSuccess, __, ...args) {
-            abschnitt.addOKinER(objekt);
-            if (callbackSuccess != undefined) {
-                callbackSuccess(xml, ...args)
-            } else {
-                PublicWFS.showMessage("Objekt in ER kopiert");
-            }
-        }, function (xml, _, __, ___, callbackFailed, ...args) {
-            if (callbackFailed != undefined)
-                callbackFailed(xml, ...args)
-            else
-                PublicWFS.showMessage("Objekt konnte nicht in ER kopiert werden", true);
-        }, abschnitt, objekt, callbackSuccess, callbackFailed, ...args)
+    static async addSekInER(objektPrim: PrimaerObjekt, objektTypePrim: string, objektSek: string, ereignisraum_nr: string): Promise<Document> {
+        return new Promise(function (resolve, reject) {
+            let xml = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
+                'xmlns:pub="http://ttsib.novasib.de/PublicServices" xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">\n' +
+                '<soapenv:Header/>\n' +
+                '<soapenv:Body>\n' +
+                '     <pub:expandProjektPrimObj>\n' +
+                '            <projekt>\n' +
+                '                   <int:ProjektNr>' + ereignisraum_nr + '</int:ProjektNr>\n' +
+                '            </projekt>\n' +
+                '            <primObjekte>\n' +
+                '                   <int:objektId>' + objektPrim.getObjektId() + '</int:objektId>\n' +
+                '                   <int:objektKlasse>' + objektTypePrim + '</int:objektKlasse>\n' +
+                '            </primObjekte>\n' +
+                '            <objektKlassen>\n' +
+                '                   <int:objektKlasse>' + objektSek + '</int:objektKlasse>\n' +
+                '            </objektKlassen>\n' +
+                '     </pub:expandProjektPrimObj>\n' +
+                '</soapenv:Body>\n' +
+                '</soapenv:Envelope>'
+            PublicWFS.doSoapRequestERWFS(xml).then((xml: Document) => {
+                objektPrim.addSekOKinER(objektSek);
+                resolve(xml)
+            }).catch((xml: Document) => {
+                PublicWFS.showMessage("Fehler bei der Kommunikation mit WFS", true)
+                reject(xml);
+            });
+        });
     }
 
-    static addSekInER(objektPrim: PrimaerObjekt, objektTypePrim: string, objekt: string, ereignisraum_nr: string,
-        callbackSuccess: (xml: XMLDocument, ...args: any[]) => void, callbackFailed: (xml: XMLDocument, ...args: any[]) => void, ...args: any[]) {
-
-        let xml = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
-            'xmlns:pub="http://ttsib.novasib.de/PublicServices" xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">\n' +
-            '<soapenv:Header/>\n' +
-            '<soapenv:Body>\n' +
-            '     <pub:expandProjektPrimObj>\n' +
-            '            <projekt>\n' +
-            '                   <int:ProjektNr>' + ereignisraum_nr + '</int:ProjektNr>\n' +
-            '            </projekt>\n' +
-            '            <primObjekte>\n' +
-            '                   <int:objektId>' + objektPrim.getObjektId() + '</int:objektId>\n' +
-            '                   <int:objektKlasse>' + objektTypePrim + '</int:objektKlasse>\n' +
-            '            </primObjekte>\n' +
-            '            <objektKlassen>\n' +
-            '                   <int:objektKlasse>' + objekt + '</int:objektKlasse>\n' +
-            '            </objektKlassen>\n' +
-            '     </pub:expandProjektPrimObj>\n' +
-            '</soapenv:Body>\n' +
-            '</soapenv:Envelope>'
-        PublicWFS.doSoapRequestERWFS(xml, function (xml, objektPrim: Objekt, objektSek: string, callbackSuccess, __, ...args) {
-            console.log(objektPrim)
-            objektPrim.addSekOKinER(objektSek);
-            if (callbackSuccess != undefined) {
-                callbackSuccess(xml, ...args)
-            } else {
-                PublicWFS.showMessage("Objekt in ER kopiert");
-            }
-        }, function (xml, _, __, ___, callbackFailed, ...args) {
-            if (callbackFailed != undefined)
-                callbackFailed(xml, ...args)
-            else
-                PublicWFS.showMessage("Objekt konnte nicht in ER kopiert werden", true);
-        }, objektPrim, objekt, callbackSuccess, callbackFailed, ...args)
-    }
-
-    static doTransaction(transaction: string,
-        callbackSuccess?: xmlCallback,
-        callbackFailed?: xmlCallback, ...args: any[]) {
-
-        var xml =
+    static async doTransaction(transaction: string): Promise<Document> {
+        var transactXML =
             '<?xml version="1.0" encoding="ISO-8859-1"?>' +
             '<wfs:Transaction service="WFS" version="1.0.0"' +
             '		xmlns="http://xml.novasib.de"' +
@@ -178,51 +147,29 @@ export default class PublicWFS {
             '		xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-transaction.xsd">' +
             transaction +
             '</wfs:Transaction>';
-        return PublicWFS.doSoapRequestWFS(xml, this._checkTransacktionSuccess, this._checkTransacktionFailed,
-            callbackSuccess, callbackFailed, ...args)
+
+        return PublicWFS.doSoapRequestWFS(transactXML)
+            .then((responseXML) => {
+                if (responseXML.getElementsByTagName('SUCCESS').length > 0) {
+                    return Promise.resolve(responseXML);
+                } else {
+                    return Promise.reject(responseXML);
+                }
+            })
+            .catch((responseXML) => {
+                PublicWFS.showMessage("Fehler bei der Kommunikation mit WFS", true);
+                return Promise.reject(responseXML)
+            })
     }
 
-    private static _checkTransacktionSuccess(xml: Document,
-        callbackSuccess?: (xml: XMLDocument, ...args: any[]) => void,
-        callbackFailed?: (xml: XMLDocument, ...args: any[]) => void,
-        ...args: any[]) {
-
-        if (xml.getElementsByTagName('SUCCESS').length > 0) {
-            if (callbackSuccess != undefined)
-                callbackSuccess(xml, ...args);
-            else
-                PublicWFS.showMessage("Erfolgreich");
-        } else {
-            if (callbackFailed != undefined)
-                callbackFailed(xml, ...args);
-            else
-                PublicWFS.showMessage("Konnte nicht gespeichert werden", true);
-        }
-    }
-
-    private static _checkTransacktionFailed(xml: XMLDocument,
-        __?: (xml: XMLDocument, ...args: any[]) => void,
-        callbackFailed?: (xml: XMLDocument, ...args: any[]) => void,
-        ...args: any[]) {
-
-        callbackFailed(xml, ...args);
-    }
-
-    public static doQuery(klasse: string, filter: string,
-        callbackSuccess?: (xml: XMLDocument, ...args: any[]) => void,
-        callbackFailed?: (xml: XMLDocument, ...args: any[]) => void,
-        ...args: any[]) {
+    public static doQuery(klasse: string, filter: string, blocking: boolean = true): Promise<Document> {
         let url_param = "Request=GetFeature&TYPENAME=" + klasse + "&MPP=0&filter=" + encodeURIComponent(filter);
-        return PublicWFS.doGetRequest(url_param, callbackSuccess, callbackFailed, ...args);
+        return PublicWFS.doGetRequest(url_param, blocking);
     }
 
 
-    public static testER(
-        ereignisraum_nr: string,
-        callback?: (success: boolean, errorListe?: Element[], ...args: any[]) => void,
-        ...args: any[]) {
-
-        let xml = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
+    public static async testER(ereignisraum_nr: string): Promise<{ erfolgreich: boolean, fehler?: Element[] }> {
+        let xmlPruefung = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
             'xmlns:pub="http://ttsib.novasib.de/PublicServices" xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">\n' +
             '<soapenv:Header/>\n' +
             '<soapenv:Body>\n' +
@@ -233,28 +180,24 @@ export default class PublicWFS {
             '     </pub:testProjekt>\n' +
             '</soapenv:Body>\n' +
             '</soapenv:Envelope>'
-        PublicWFS.doSoapRequestERWFS(xml, PublicWFS.testErCallback, undefined, ereignisraum_nr, callback, ...args)
-    }
+        let erfolgreich = await PublicWFS.doSoapRequestERWFS(xmlPruefung)
+            .then((xmlResponse: Document) => {
+                let success = xmlResponse.getElementsByTagName("testSuccess");
+                if (!success || success.length == 0) {
+                    PublicWFS.showMessage("Fehler bei der Kommunikation mit WFS", true)
+                    Promise.reject(Error("Fehler beim Prüfen"))
+                }
 
-    private static testErCallback(xmlResponse: XMLDocument, ereignisraum_nr: string, callback?: (success: boolean, errorListe?: Element[], ...args: any[]) => void, ...args: any[]) {
-        let success = xmlResponse.getElementsByTagName("testSuccess");
-        if (!success || success.length == 0) {
-            PublicWFS.showMessage("Fehler beim Prüfen", true);
-            return;
-        }
+                if (success.item(0).innerHTML != "false") {
+                    return true;
+                }
+                return false;
+            });
 
-        if (success.item(0).innerHTML != "false") {
-            if (callback) {
-                callback(true, ...args)
-            } else {
-                PublicWFS.showMessage("Erfolgreich geprüft");
-            }
-            return;
-        }
+        if (erfolgreich) return Promise.resolve({ erfolgreich: true });
 
-        if (!callback) return;
 
-        let xml = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
+        let xmlListe = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
             'xmlns:pub="http://ttsib.novasib.de/PublicServices" xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">\n' +
             '<soapenv:Header/>\n' +
             '<soapenv:Body>\n' +
@@ -264,26 +207,19 @@ export default class PublicWFS {
             '            </projekt>\n' +
             '     </pub:queryTestresult>\n' +
             '</soapenv:Body>\n' +
-            '</soapenv:Envelope>'
-        PublicWFS.doSoapRequestERWFS(xml, PublicWFS.testErCallback2, undefined, callback, ...args)
-    }
+            '</soapenv:Envelope>';
 
-    private static testErCallback2(xmlResponse: XMLDocument, callback: (success: boolean, errorListe?: Element[], ...args: any[]) => void, ...args: any[]) {
-        let results = xmlResponse.getElementsByTagName("testResult");
+        const xmlResponse_1 = await PublicWFS.doSoapRequestERWFS(xmlListe);
+        let results = xmlResponse_1.getElementsByTagName("testResult");
         if (!results || results.length == 0) {
-            PublicWFS.showMessage("Fehler beim Prüfen", true);
-            return;
+            PublicWFS.showMessage("Fehler bei der Kommunikation mit WFS", true);
+            return Promise.reject(Error("Fehler beim Prüfen"));
         }
-        if (callback) {
-            callback(false, Array.from(results), ...args);
-        }
+        return Promise.resolve({ erfolgreich: false, fehler: Array.from(results) });
     }
 
     public static anlegenER(
-        kurzBez: string, langBez: string, autoER: boolean = false,
-        callbackSuccess?: xmlCallback,
-        callbackFailed?: xmlCallback,
-        ...args: any[]) {
+        kurzBez: string, langBez: string, autoER: boolean = false): Promise<Document> {
 
         let xml = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
             'xmlns:pub="http://ttsib.novasib.de/PublicServices" xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">\n' +
@@ -297,7 +233,7 @@ export default class PublicWFS {
             '  </pub:createProjekt>\n' +
             '</soapenv:Body>\n' +
             '</soapenv:Envelope>'
-        PublicWFS.doSoapRequestERWFS(xml, callbackSuccess, callbackFailed, ...args)
+        return PublicWFS.doSoapRequestERWFS(xml)
     }
 
     public static showMessage(text: string, error: boolean = false) {

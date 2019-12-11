@@ -4,6 +4,7 @@ import AddTool from '../prototypes/AddTool';
 import Map from "../../openLayers/Map";
 import Daten from '../../Daten';
 import VectorLayer from 'ol/layer/Vector';
+import PunktObjekt from '../../Objekte/prototypes/PunktObjekt';
 var CONFIG = require('../../config.json');
 
 /**
@@ -21,8 +22,9 @@ export default class AvAdd extends AddTool {
         return 'Otaufstvor';
     }
 
-    createForm() {
-        this.form = Aufstellvorrichtung.createForm(this.sidebar, 'avadd', undefined, true, false);
+    protected createForm(): Promise<void> {
+        let form = Aufstellvorrichtung.createForm(this.sidebar, 'avadd', undefined, true, false);
+        this.form = form.form;
         let input = document.createElement("input");
         input.type = "submit"
         input.value = "Hinzufügen"
@@ -32,19 +34,18 @@ export default class AvAdd extends AddTool {
             event.preventDefault();
             this.addAufstellButton();
         });
+        return form.promise;
     }
 
     private addAufstellButton() {
         // im ER?
         if (!(this.abschnitt.isOKinER("Otaufstvor"))) {
-            PublicWFS.addInER(this.abschnitt, "Otaufstvor", Daten.getInstanz().ereignisraum_nr, this.addInER_Callback.bind(this));
+            PublicWFS.addInER(this.abschnitt, "Otaufstvor", Daten.getInstanz().ereignisraum_nr)
+                .then(() => { return Aufstellvorrichtung.loadAbschnittER(this.abschnitt) })
+                .then(() => { this.wfsAddAufstell() });
         } else {
             this.wfsAddAufstell()
         }
-    }
-
-    private addInER_Callback(__: XMLDocument) {
-        Aufstellvorrichtung.loadAbschnittER(this.abschnitt, this.wfsAddAufstell.bind(this))
     }
 
     private wfsAddAufstell() {
@@ -67,10 +68,11 @@ export default class AvAdd extends AddTool {
             '<quelle xlink:href="#S' + $(this.form).find("#quelle").val() + '" typeName="Itquelle" />\n' +
             '</Otaufstvor> </wfs:Insert>';
         //console.log(soap)
-        PublicWFS.doTransaction(soap, this.getInsertResults.bind(this));
+        PublicWFS.doTransaction(soap)
+            .then((xml) => { this.getInsertResults(xml) });
     }
 
-    protected loadERCallback(xml: XMLDocument, ...args: any[]): void {
-        Aufstellvorrichtung.loadErCallback(xml, ...args)
+    protected loadERCallback(xml: XMLDocument): Promise<PunktObjekt[]> {
+        return Aufstellvorrichtung.loadErCallback(xml);
     }
 }

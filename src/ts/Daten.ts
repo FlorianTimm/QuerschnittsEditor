@@ -25,8 +25,6 @@ export default class Daten {
     public ereignisraum_nr: string;
 
     private map: Map;
-    private warteAufObjektklassen: number;
-
 
     constructor(map: Map, ereignisraum: string, ereignisraum_nr: string) {
         Daten.daten = this;
@@ -39,19 +37,15 @@ export default class Daten {
      * Lädt Daten aus den ERs
      */
     public loadER(zoomToExtentWhenReady: boolean = true) {
-        this.warteAufObjektklassen = 3;
-        Querschnitt.loadER(this.loadErCallback.bind(this), zoomToExtentWhenReady);
-        Aufstellvorrichtung.loadER(this.loadErCallback.bind(this), zoomToExtentWhenReady);
-        StrassenAusPunkt.loadER(this.loadErCallback.bind(this), zoomToExtentWhenReady);
-    }
-
-    private loadErCallback(zoomToExtentWhenReady?: boolean) {
-        this.warteAufObjektklassen -= 1;
-        if (this.warteAufObjektklassen <= 0) {
-            (document.getElementById("zoomToExtent") as HTMLButtonElement).disabled = false;
+        let tasks: Promise<any>[] = [
+            Querschnitt.loadER(),
+            Aufstellvorrichtung.loadER(),
+            StrassenAusPunkt.loadER()]
+        Promise.all(tasks).then(() => {
+            (document.getElementById("zoomToExtent") as HTMLFormElement).disabled = false;
             if (zoomToExtentWhenReady)
                 this.zoomToExtent();
-        }
+        })
     }
 
     public zoomToExtent() {
@@ -79,11 +73,12 @@ export default class Daten {
         return Daten.daten;
     }
 
-    public loadExtent() {
+    public async loadExtent() {
         WaitBlocker.warteAdd()
         let extent = this.map.getView().calculateExtent();
         if ("ABSCHNITT_WFS_URL" in CONFIG) {
-            AbschnittWFS.getByExtent(extent, this.loadExtent_Callback.bind(this));
+            const xml = await AbschnittWFS.getByExtent(extent);
+            return this.loadExtent_Callback(xml);
         } else {
             let filter = '<Filter>\n' +
                 '	<BBOX>\n' +
@@ -94,16 +89,19 @@ export default class Daten {
                 '	</BBOX>\n' +
                 '</Filter>\n' +
                 '<maxFeatures>100</maxFeatures>\n';
-            PublicWFS.doQuery('VI_STRASSENNETZ', filter, this.loadExtent_Callback.bind(this));
+            const xml = await PublicWFS.doQuery('VI_STRASSENNETZ', filter);
+            return this.loadExtent_Callback(xml);
         }
     }
 
     private loadExtent_Callback(xml: XMLDocument) {
         let netz = xml.getElementsByTagName("VI_STRASSENNETZ");
+        let r: Abschnitt[] = [];
         for (let i = 0; i < netz.length; i++) {
-            Abschnitt.fromXML(netz[i]);
+            r.push(Abschnitt.fromXML(netz[i]));
         }
         WaitBlocker.warteSub()
+
     }
 
     public searchForStreet(__?: Event) {
@@ -119,7 +117,8 @@ export default class Daten {
                 console.log(found1)
                 let vnk = found1[1];
                 let nnk = found1[2];
-                AbschnittWFS.getByVNKNNK(vnk, nnk, this.loadSearch_Callback.bind(this));
+                AbschnittWFS.getByVNKNNK(vnk, nnk)
+                    .then((xml: Document) => { this.loadSearch_Callback(xml) });
                 return;
             }
 
@@ -130,10 +129,12 @@ export default class Daten {
                 let klasse = found2[1];
                 let nummer = found2[2];
                 let buchstabe = (found2.length > 2) ? found2[3] : '';
-                AbschnittWFS.getByWegenummer(klasse, nummer, buchstabe, this.loadSearch_Callback.bind(this));
+                AbschnittWFS.getByWegenummer(klasse, nummer, buchstabe)
+                    .then((xml: Document) => { this.loadSearch_Callback(xml) });
                 return;
             }
-            AbschnittWFS.getByStrName(wert, this.loadSearch_Callback.bind(this));
+            AbschnittWFS.getByStrName(wert)
+                .then((xml: Document) => { this.loadSearch_Callback(xml) });
         } else {
             PublicWFS.showMessage("Straßennamen-Suche ist nur über den AbschnittWFS möglich");
             /*let filter = '<Filter><Like><PropertyName><PropertyName><Literal><Literal></Like></Filter>'

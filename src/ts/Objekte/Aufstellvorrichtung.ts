@@ -10,7 +10,7 @@ import 'chosen-js/chosen.css';
 import Daten from "../Daten";
 import PublicWFS from '../PublicWFS';
 import Abschnitt from './Abschnitt';
-import Klartext, { KlartextMap } from './Klartext';
+import Klartext from './Klartext';
 import PunktObjekt from './prototypes/PunktObjekt';
 import Zeichen from './Zeichen';
 import HTML from "../HTML";
@@ -20,11 +20,7 @@ import { Overlay, Map } from "ol";
 import { Point } from "ol/geom";
 import VectorLayer from "ol/layer/Vector";
 import { ColorLike } from "ol/colorlike";
-
-class Callback {
-    callback: (zeichen: Zeichen[], ...args: any[]) => void;
-    param: any[]
-}
+import WaitBlocker from "../WaitBlocker";
 
 export default class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay {
     static loadErControlCounter: number = 0;
@@ -32,8 +28,7 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
 
     private overlay: Overlay;
     private overlayShowing: boolean;
-    private loadingZeichen: boolean;
-    private loadingZeichenCallback: Callback[] = [];
+    private loadingZeichen: Promise<Zeichen[]>;
     private zeichen: Zeichen[] = null;
     private hasSekObj: number;
     private art: Klartext;
@@ -61,92 +56,86 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         return Aufstellvorrichtung.layer;
     }
 
-    private vzAddHTML(zeichen: Zeichen[], ziel: HTMLElement) {
+    private async vzAddHTML(zeichen: Zeichen[], ziel: HTMLElement): Promise<void> {
+        await Klartext.load("Itvzstvoznr", false);
+        ziel.innerHTML = "";
         let div = document.createElement('div');
         div.style.marginTop = '5px';
         for (let eintrag of zeichen) {
             let img = document.createElement("img");
             img.style.height = "30px";
-            Klartext.load("Itvzstvoznr", function (_: KlartextMap) {
-                img.src = "http://gv-srv-w00118:8080/schilder/" + eintrag.getStvoznr().getKt() + ".svg";
-                img.title = eintrag.getStvoznr().getBeschreib() + (eintrag.getVztext() ?? '');
-            });
+            img.src = "http://gv-srv-w00118:8080/schilder/" + eintrag.getStvoznr().getKt() + ".svg";
+            img.title = eintrag.getStvoznr().getBeschreib() + (eintrag.getVztext() ?? '');
             div.appendChild(img);
         }
         ziel.appendChild(div);
     }
 
-    static loadER(callback?: (...args: any[]) => void, ...args: any[]) {
+    static loadER(): Promise<Aufstellvorrichtung[]> {
         let daten = Daten.getInstanz();
-        PublicWFS.doQuery('Otaufstvor', '<Filter>' +
+        let query = PublicWFS.doQuery('Otaufstvor', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>', Aufstellvorrichtung.loadErCallback, undefined, callback, ...args);
+            '<Literal>' + daten.ereignisraum + '</Literal></PropertyIsEqualTo></Filter>')
+            .then((xml) => {
+                return Aufstellvorrichtung.loadErCallback(xml)
+            });
+        return query;
     }
 
-    static loadAbschnittER(abschnitt: Abschnitt, callback?: (...args: any[]) => void, ...args: any[]) {
-        PublicWFS.doQuery('Otaufstvor', '<Filter>' +
+    static loadAbschnittER(abschnitt: Abschnitt): Promise<Document> {
+        let query = PublicWFS.doQuery('Otaufstvor', '<Filter>' +
             '<And><PropertyIsEqualTo><PropertyName>abschnittId</PropertyName>' +
             '<Literal>' + abschnitt.getAbschnittid() + '</Literal></PropertyIsEqualTo><PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
-            '<Literal>' + Daten.getInstanz().ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>', Aufstellvorrichtung.loadErCallback, undefined, callback, ...args);
+            '<Literal>' + Daten.getInstanz().ereignisraum + '</Literal></PropertyIsEqualTo></And></Filter>');
+        query.then((xml) => {
+            new Promise((resolve) => {
+                Aufstellvorrichtung.loadErCallback(xml)
+                resolve(xml);
+            });
+        });
+        return query;
     }
 
-    public static loadErCallback(xml: XMLDocument, callback?: (...args: any[]) => void, ...args: any[]) {
+    public static loadErCallback(xml: XMLDocument): Promise<Aufstellvorrichtung[]> {
         let straus = xml.getElementsByTagName("Otaufstvor");
+        let tasks: Promise<Aufstellvorrichtung>[] = []
         for (let i = 0; i < straus.length; i++) {
-            Aufstellvorrichtung.loadErControlCounter += 1
-            let f = Aufstellvorrichtung.fromXML(straus[i], Aufstellvorrichtung.loadErControlCallback, callback, ...args);
-            Aufstellvorrichtung.getLayer().getSource().addFeature(f);
+            tasks.push(Aufstellvorrichtung.fromXML(straus[i]).then((aufstell: Aufstellvorrichtung) => {
+                Aufstellvorrichtung.getLayer().getSource().addFeature(aufstell);
+                return aufstell;
+            }))
         }
-        if (straus.length == 0) Aufstellvorrichtung.loadErControlCheck(callback, ...args)
+        return Promise.all(tasks)
     }
 
-    private static loadErControlCallback(callback?: (...args: any[]) => void, ...args: any[]) {
-        Aufstellvorrichtung.loadErControlCounter -= 1
-        Aufstellvorrichtung.loadErControlCheck(callback, ...args)
-    }
-
-    private static loadErControlCheck(callback?: (...args: any[]) => void, ...args: any[]) {
-        if (Aufstellvorrichtung.loadErControlCounter > 0) return;
-        if (callback) callback(...args)
-    }
-
-    public static fromXML(xml: Element, callback?: (...args: any[]) => void, ...args: any[]) {
+    public static fromXML(xml: Element): Promise<Aufstellvorrichtung> {
         let r = new Aufstellvorrichtung();
-        r.setDataFromXML(xml, callback, ...args);
-        return r;
+        return r.setDataFromXML(xml) as Promise<Aufstellvorrichtung>;
     }
 
-    public getZeichen(callback: (zeichen: Zeichen[], ...args: any[]) => void, ...args: any[]): void;
-    public getZeichen(): Zeichen[];
-    public getZeichen(callback?: (zeichen: Zeichen[], ...args: any[]) => void, ...args: any[]): void | Zeichen[] {
-        if (callback != undefined && this.zeichen == null && this.hasSekObj > 0) {
-            this.reloadZeichen(callback, ...args);
-            return;
-        } else if (this.hasSekObj > 0) {
-            if (callback) callback(this.zeichen, ...args);
-            else return this.zeichen ?? [];
-        } else {
-            return [];
+    public async getZeichen(blocking = true): Promise<Zeichen[]> {
+        if (blocking) WaitBlocker.warteAdd();
+        if (this.zeichen == null && this.hasSekObj > 0) {
+            await this.reloadZeichen(blocking);
         }
+        if (blocking) WaitBlocker.warteSub();
+        return this.zeichen ?? [];
     }
 
-    public reloadZeichen(callback?: (zeichen: Zeichen[], ...args: any[]) => void, ...args: any[]) {
-        if (callback) {
-            if (!this.loadingZeichenCallback) this.loadingZeichenCallback = [];
-            this.loadingZeichenCallback.push({ callback: callback, param: args })
-
-        }
-        if (this.loadingZeichen) return;
-        this.loadingZeichen = true;
-        PublicWFS.doQuery('Otvzeichlp', '<Filter>\n' +
+    public reloadZeichen(blocking = true): Promise<Zeichen[]> {
+        if (this.loadingZeichen) return this.loadingZeichen;
+        this.loadingZeichen = PublicWFS.doQuery('Otvzeichlp', '<Filter>\n' +
             '  <PropertyIsEqualTo>\n' +
             '    <PropertyName>parent/@xlink:href</PropertyName>\n' +
             '    <Literal>' + this.fid + '</Literal>\n' +
             '  </PropertyIsEqualTo>\n' +
-            '</Filter>', this.parseZeichen.bind(this));
+            '</Filter>', blocking).then((xml) => {
+                return this.parseZeichen(xml)
+            });
+        return this.loadingZeichen;
     }
 
-    private parseZeichen(xml: XMLDocument) {
+    private parseZeichen(xml: XMLDocument): Zeichen[] {
         let zeichen: Zeichen[] = [];
         let zeichenXML = xml.getElementsByTagName('Otvzeichlp');
 
@@ -158,34 +147,28 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         }
         this.zeichen = zeichen;
         if (this.hasSekObj == 0 && zeichen.length > 0) this.hasSekObj = 1
-
         this.loadingZeichen = undefined;
-        if (this.loadingZeichenCallback == undefined || this.loadingZeichenCallback.length == 0)
-            return;
-        let callback: Callback;
-        while (callback = this.loadingZeichenCallback.pop()) {
-            callback.callback(this.zeichen, ...callback.param);
-        }
+        return this.zeichen;
     }
 
-    public static createForm(sidebar: HTMLDivElement, formId: string, aufstell?: Aufstellvorrichtung, changeable: boolean = false, showForm: boolean = true): HTMLFormElement {
+    public static createForm(sidebar: HTMLDivElement, formId: string, aufstell?: Aufstellvorrichtung, changeable: boolean = false, showForm: boolean = true): { form: HTMLFormElement, promise: Promise<void> } {
         let form = HTML.createToolForm(sidebar, showForm, formId);
-        Aufstellvorrichtung.createFields(form, aufstell, changeable);
-        return form;
+        let promise = Aufstellvorrichtung.createFields(form, aufstell, changeable);
+        return { form: form, promise: promise };
     }
 
-    private static createFields(form: HTMLFormElement, aufstell?: Aufstellvorrichtung, changeable: boolean = false) {
+    private static createFields(form: HTMLFormElement, aufstell?: Aufstellvorrichtung, changeable: boolean = false): Promise<void> {
         // Art
         let art = Klartext.createKlartextSelectForm("Itaufstvorart", form, "Art", "art", aufstell != undefined ? aufstell.art : undefined);
-        $(art).prop('disabled', !changeable).trigger("chosen:updated");
+        $(art.select).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Lage
         let lage = Klartext.createKlartextSelectForm("Itallglage", form, "Lage", "lage", aufstell != undefined ? aufstell.rlageVst : undefined);
-        $(lage).prop('disabled', !changeable).trigger("chosen:updated");
+        $(lage.select).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Quelle
         let quelle = Klartext.createKlartextSelectForm("Itquelle", form, "Quelle", "quelle", aufstell != undefined ? aufstell.quelle : undefined);
-        $(quelle).prop('disabled', !changeable).trigger("chosen:updated");
+        $(quelle.select).prop('disabled', !changeable).trigger("chosen:updated");
 
         // ext: Objektid
         let objektnr = HTML.createTextInput(form, "ext. Objektnummer", "extid", aufstell != undefined ? aufstell.objektnr : undefined);
@@ -217,11 +200,16 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         if (aufstell != undefined) {
             let schilder = document.createElement("div");
             schilder.style.marginTop = "10px";
+            let warten = document.createElement("img");
+            warten.src = "img/ajax-loader.gif"
+            schilder.appendChild(warten)
             form.appendChild(schilder);
-            aufstell.getZeichen(aufstell.vzAddHTML.bind(aufstell), schilder);
-
-            aufstell.getDokumente(aufstell.dokuAdd.bind(aufstell), form);
+            aufstell.getZeichen(false).then((zeichen) => { return aufstell.vzAddHTML(zeichen, schilder) });
+            aufstell.getDokumente(false).then((doks: Dokument[]) => { aufstell.dokuAdd(doks, form) });
         }
+        return Promise.all([art.promise, lage.promise, quelle.promise])
+            .then(() => { Promise.resolve() })
+            .catch(() => { Promise.reject() })
     }
 
     private dokuAdd(doku: Dokument[], ziel: HTMLElement) {
@@ -235,38 +223,41 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
     }
 
     private showDokuPopup(__: Event) {
-        this.getDokumente((doks: Dokument[]) => {
-            Klartext.load("Itdokart", () => {
-                let dialog = document.createElement("table");
-                dialog.className = "tableWithBorder"
-                for (let dok of doks) {
-                    dialog.innerHTML += "<tr><td>" + dok.getArt().getBeschreib() + "</td><td>" + dok.getBeschreib() + "</td><td>" + dok.getPfad() + "</td></tr>"
-                }
-                document.body.appendChild(dialog);
-                let jqueryDialog = $(dialog).dialog({
-                    resizable: false,
-                    height: "auto",
-                    title: "Dokumente",
-                    width: 600,
-                    modal: true,
-                    buttons: {
-                        /* "Speichern": () => {
-                             jqueryDialog.dialog("close");
-                         },*/
-                        "Schließen": function () {
-                            jqueryDialog.dialog("close");
+        this.getDokumente()
+            .then((doks: Dokument[]) => {
+                Klartext.load("Itdokart")
+                    .then(() => {
+                        let dialog = document.createElement("table");
+                        dialog.className = "tableWithBorder"
+                        for (let dok of doks) {
+                            dialog.innerHTML += "<tr><td>" + dok.getArt().getBeschreib() + "</td><td>" + dok.getBeschreib();
+                            dialog.innerHTML += "</td><td>" + dok.getPfad() + "</td></tr>"
                         }
-                    }
-                });
-            })
-        });
+                        document.body.appendChild(dialog);
+                        let jqueryDialog = $(dialog).dialog({
+                            resizable: false,
+                            height: "auto",
+                            title: "Dokumente",
+                            width: 600,
+                            modal: true,
+                            buttons: {
+                                /* "Speichern": () => {
+                                     jqueryDialog.dialog("close");
+                                 },*/
+                                "Schließen": function () {
+                                    jqueryDialog.dialog("close");
+                                }
+                            }
+                        });
+                    })
+            });
     }
 
-    public getInfoForm(ziel: HTMLFormElement, changeable: boolean = false): void {
-        Aufstellvorrichtung.createFields(ziel, this, changeable);
+    public getInfoForm(ziel: HTMLFormElement, changeable: boolean = false): Promise<void> {
+        return Aufstellvorrichtung.createFields(ziel, this, changeable);
     }
 
-    public changeAttributes(form: HTMLFormElement): void {
+    public changeAttributes(form: HTMLFormElement): Promise<void> {
         this.setArt($(form).find("#art").children("option:selected").val() as string);
         this.setRlageVst($(form).find("#lage").children("option:selected").val() as string);
         this.setQuelle($(form).find("#quelle").children("option:selected").val() as string);
@@ -278,7 +269,9 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
             'quelle/@xlink:href': this.getQuelle(),
             'objektnr': this.getObjektnr(),
         });
-        PublicWFS.doTransaction(xml);
+        return PublicWFS.doTransaction(xml)
+            .then(() => { Promise.resolve() })
+            .catch(() => { Promise.reject() });
     }
 
     // Getter
@@ -314,7 +307,7 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
 
     public showOverlay(map: Map) {
         this.overlayShowing = true;
-        this.getZeichen(this.generateOverlay.bind(this), map)
+        this.getZeichen(false).then((zeichen: Zeichen[]) => { this.generateOverlay(zeichen, map) })
     }
 
     private generateOverlay(alleZeichen: Zeichen[], map: Map) {

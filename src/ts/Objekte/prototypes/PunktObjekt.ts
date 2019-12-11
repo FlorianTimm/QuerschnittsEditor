@@ -6,7 +6,6 @@ import { ColorLike } from "ol/colorlike";
 import PublicWFS from "../../PublicWFS";
 import { InfoToolEditable } from "../../Tools/InfoTool";
 import { Point } from "ol/geom";
-import Daten from "../../Daten";
 import PObjektMitDokument from "./PObjektMitDateien";
 import { FeatureLike } from 'ol/Feature';
 import Abschnitt from '../Abschnitt';
@@ -22,8 +21,8 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
     // Abstrakte Funktionen
     abstract colorFunktion1(): ColorLike;
     abstract colorFunktion2(): ColorLike;
-    abstract getInfoForm(sidebar: HTMLElement, changeable?: boolean): void;
-    abstract changeAttributes(form: HTMLFormElement): void;
+    abstract getInfoForm(sidebar: HTMLElement, changeable?: boolean): Promise<void>;
+    abstract changeAttributes(form: HTMLFormElement): Promise<void>;
 
     public updateStation(station: number, abstand: number) {
         this.vabstVst = Math.round(abstand * 10) / 10;
@@ -39,20 +38,21 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
             'vst': this.vst,
             'bst': this.bst
         });
-        PublicWFS.doTransaction(xml);
+        PublicWFS.doTransaction(xml)
+            .then(() => { PublicWFS.showMessage("erfolgreich", false) })
+            .catch(() => { PublicWFS.showMessage("Fehler", true) });
     }
 
-    setDataFromXML(xml: Element, callback?: (...args: any[]) => void, ...args: any[]) {
+    public async setDataFromXML(xml: Element): Promise<PunktObjekt> {
         super.setDataFromXML(xml);
         let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(',');
         this.setGeometry(new Point([parseFloat(koords[0]), parseFloat(koords[1])]));
-        Abschnitt.getLayer().changed();
 
-        Abschnitt.getAbschnitt(this.abschnittId, (abschnitt: Abschnitt) => {
-            this.abschnitt = abschnitt
-            abschnitt.addOKinER(this.getObjektKlassenName());
-            if (callback) callback(...args);
-        })
+        const abschnitt = await Abschnitt.getAbschnitt(this.abschnittId);
+        this.abschnitt = abschnitt;
+        abschnitt.addOKinER(this.getObjektKlassenName());
+        Abschnitt.getLayer().changed();
+        return this;
     }
 
     protected static createLayer(map?: Map) {
@@ -116,7 +116,7 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
         return layer;
     }
 
-    setRlageVst(rlagevst: Klartext | string) {
+    public setRlageVst(rlagevst: Klartext | string) {
         this.rlageVst = Klartext.get("Itallglage", rlagevst);
     }
 }

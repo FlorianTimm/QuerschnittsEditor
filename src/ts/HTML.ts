@@ -15,9 +15,9 @@ export default class HTML {
     static createSelectForm(form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, platzhalter?: string) {
         let formGroup = HTML.createFormGroup(form, 'group_' + id);
         let label = HTML.createLabel(beschriftung, id, formGroup, 'label_' + id);
-        label.className = "label_select"
+        label.className = 'label_select'
         HTML.createBreak(formGroup);
-        let select = document.createElement("select");
+        let select = document.createElement('select');
         select.id = id;
         if (platzhalter != undefined) select.dataset.placeholder = platzhalter;
         formGroup.appendChild(select);
@@ -26,9 +26,9 @@ export default class HTML {
 
     static createButton(form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string) {
         let formGroup = HTML.createFormGroup(form, 'group_' + id);
-        let input = document.createElement("input");
+        let input = document.createElement('input');
         input.id = id;
-        input.type = "button";
+        input.type = 'button';
         formGroup.appendChild(input);
         input.value = beschriftung;
         return input;

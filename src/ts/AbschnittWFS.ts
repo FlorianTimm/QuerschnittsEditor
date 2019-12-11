@@ -10,70 +10,50 @@ import { Extent } from 'ol/extent';
  */
 export default class AbschnittWFS {
 
-    static getById(id: string,
-        callbackSuccess?: (xml: XMLDocument, ...args: any[]) => void,
-        callbackFailed?: (xml: XMLDocument, ...args: any[]) => void,
-        ...args: any[]) {
-
+    static getById(id: string): Promise<XMLDocument> {
         let param = '?ABSCHNITTID=' + id;
-        AbschnittWFS._makeRequest(param, callbackSuccess, callbackFailed, ...args)
+        return AbschnittWFS._makeRequest(param)
     }
 
-    static getByStrName(name: string,
-        callbackSuccess?: (xml: XMLDocument, ...args: any[]) => void,
-        callbackFailed?: (xml: XMLDocument, ...args: any[]) => void,
-        ...args: any[]) {
+    static getByStrName(name: string): Promise<XMLDocument> {
 
         let param = '?STRNAME=' + encodeURIComponent(name);
-        AbschnittWFS._makeRequest(param, callbackSuccess, callbackFailed, ...args)
+        return AbschnittWFS._makeRequest(param)
     }
 
-    static getByWegenummer(klasse: string, nummer: string, buchstabe: string,
-        callbackSuccess?: (xml: XMLDocument, ...args: any[]) => void,
-        callbackFailed?: (xml: XMLDocument, ...args: any[]) => void,
-        ...args: any[]) {
+    static getByWegenummer(klasse: string, nummer: string, buchstabe: string): Promise<XMLDocument> {
 
         let param = '?KLASSE=' + klasse + '&NR=' + nummer + '&BUCHSTABE=' + buchstabe;
-        AbschnittWFS._makeRequest(param, callbackSuccess, callbackFailed, ...args)
+        return AbschnittWFS._makeRequest(param)
     }
 
-    static getByVNKNNK(vnk: string, nnk: string,
-        callbackSuccess?: (xml: XMLDocument, ...args: any[]) => void,
-        callbackFailed?: (xml: XMLDocument, ...args: any[]) => void,
-        ...args: any[]) {
+    static getByVNKNNK(vnk: string, nnk: string): Promise<XMLDocument> {
 
         let param = '?VNK=' + vnk + '&NNK=' + nnk;
-        AbschnittWFS._makeRequest(param, callbackSuccess, callbackFailed, ...args)
+        return AbschnittWFS._makeRequest(param)
     }
 
-    static getByExtent(extent: Extent,
-        callbackSuccess?: (xml: XMLDocument, ...args: any[]) => void,
-        callbackFailed?: (xml: XMLDocument, ...args: any[]) => void,
-        ...args: any[]) {
+    static getByExtent(extent: Extent): Promise<XMLDocument> {
 
         let param = '?BBOX=' + extent.join(',');
-        AbschnittWFS._makeRequest(param, callbackSuccess, callbackFailed, ...args)
+        return AbschnittWFS._makeRequest(param)
     }
 
-    static _makeRequest(param: string,
-        callbackSuccess?: (xml: XMLDocument, ...args: any[]) => void,
-        callbackFailed?: (xml: XMLDocument, ...args: any[]) => void,
-        ...args: any[]) {
+    static _makeRequest(param: string): Promise<XMLDocument> {
 
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.open('POST', CONFIG.ABSCHNITT_WFS_URL + param, true);
-
-        xmlhttp.onreadystatechange = function () {
-            if (xmlhttp.readyState != 4) return;
-            if (callbackSuccess != undefined && xmlhttp.status == 200) {
-                callbackSuccess(xmlhttp.responseXML, ...args)
-            } else if (xmlhttp.status != 200) {
-                if (callbackFailed != undefined)
-                    callbackFailed(xmlhttp.responseXML, ...args)
-                else
-                    PublicWFS.showMessage("Kommunikationsfehler", true);
+        return new Promise((resolve, reject) => {
+            xmlhttp.onreadystatechange = function () {
+                if (xmlhttp.readyState != 4) return;
+                if (xmlhttp.status == 200) {
+                    resolve(xmlhttp.responseXML)
+                } else if (xmlhttp.status != 200) {
+                    reject(xmlhttp.responseXML)
+                }
             }
-        }
-        xmlhttp.send();
+            xmlhttp.send();
+        });
+
     }
 }
