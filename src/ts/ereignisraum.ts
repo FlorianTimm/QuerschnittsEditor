@@ -26,6 +26,7 @@ var er: {
     kurzbez: string,
     langbez: string,
     ownerName: string,
+    bearbeiter: string,
     anlagedat: string
 }[] = []
 let select: HTMLSelectElement = document.getElementById("er_select") as HTMLSelectElement;
@@ -61,6 +62,7 @@ function readER(xml: Document, projektnr?: number) {
             kurzbez: string,
             langbez: string,
             ownerName: string,
+            bearbeiter: string,
             anlagedat: string
         } = {
             fid: null,
@@ -68,6 +70,7 @@ function readER(xml: Document, projektnr?: number) {
             kurzbez: "",
             langbez: "",
             ownerName: "",
+            bearbeiter: "",
             anlagedat: null
         };
 
@@ -84,6 +87,7 @@ function readER(xml: Document, projektnr?: number) {
         else
             projekt.langbez = ""
         projekt.ownerName = proj[i].getElementsByTagName("ownerName")[0].firstChild.textContent
+        projekt.bearbeiter = proj[i].getElementsByTagName("bearbeiter")[0].firstChild.textContent
         projekt.anlagedat = proj[i].getElementsByTagName("anlagedat")[0].firstChild.textContent
 
         er.push(projekt);
@@ -127,7 +131,7 @@ function aenderung() {
         document.getElementById("nummer").innerHTML = projekt.nr.toString();
         document.getElementById("kurzbez").innerHTML = projekt.kurzbez;
         document.getElementById("langbez").innerHTML = projekt.langbez;
-        document.getElementById("bearbeiter").innerHTML = projekt.ownerName;
+        document.getElementById("bearbeiter").innerHTML = (projekt.ownerName != projekt.bearbeiter) ? (projekt.ownerName + "/" + projekt.bearbeiter) : projekt.bearbeiter;
         document.getElementById("datum").innerHTML = projekt.anlagedat;
         break;
     }
