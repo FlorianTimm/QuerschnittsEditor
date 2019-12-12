@@ -187,7 +187,7 @@ form#suche {
 
 div#zurueck {
     position: absolute;
-    bottom: 2.5em;
+    bottom: 2.7em;
     left: .5em;
     display: block;
     background: rgba(255, 255, 255, 0.4);
@@ -261,4 +261,35 @@ button#loadExtent {
     padding: 5px 5px;
     width: 100%;
     transition: 0.3s;
+}
+
+div#othermaps {
+    position: absolute;
+    display: block;
+    left: 8px;
+    bottom: 6px;
+}
+
+div#othermaps button {
+    display: block;
+    float: left;
+    width: inherit;
+    font-weight: inherit;
+    padding: 3px;
+    border-radius: 0px;
+}
+
+div#othermaps button:first-child {
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+}
+
+div#othermaps button:last-child {
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+
+}
+
+.ol-scale-line {
+    left: 17em;
 }

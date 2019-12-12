@@ -10,7 +10,7 @@ import { MapEvent, View } from 'ol';
 import { defaults as defaultControls, ScaleLine, ZoomSlider } from 'ol/control';
 import { defaults as defaultInteractions } from 'ol/interaction';
 import { Layer } from 'ol/layer';
-import { fromLonLat, transform } from 'ol/proj';
+import { fromLonLat, toLonLat, transform } from 'ol/proj';
 import { register } from 'ol/proj/proj4';
 import { TileWMS as TileWMS } from 'ol/source';
 import StaticImage from 'ol/source/ImageStatic';
@@ -79,6 +79,46 @@ window.addEventListener('load', function () {
     document.forms.namedItem("suche").addEventListener('submit', function (event: { preventDefault: () => void; }) {
         event.preventDefault();
         daten.searchForStreet();
+    })
+
+
+    let other_div = document.createElement("div");
+    other_div.id = "othermaps";
+    other_div.className = "ol-control ol-unselectable";
+    document.body.appendChild(other_div);
+
+    let mapillary = document.createElement("button");
+    mapillary.innerHTML = "Mappillary";
+    other_div.appendChild(mapillary);
+    mapillary.addEventListener("click", () => {
+        let view = map.getView();
+        let middle = toLonLat(view.getCenter(), CONFIG["EPSG_CODE"])
+        let url = "https://www.mapillary.com/app/?lat=" + middle[1] + "&lng=" + middle[0] + "&z=" + (view.getZoom() - 2);
+        let win = window.open(url, 'zweitkarte');
+        win.focus();
+    })
+
+    let google = document.createElement("button");
+    google.innerHTML = "Google";
+    other_div.appendChild(google);
+    google.addEventListener("click", () => {
+        let view = map.getView();
+        let middle = toLonLat(view.getCenter(), CONFIG["EPSG_CODE"])
+        let url = "https://www.google.com/maps/@" + middle[1] + "," + middle[0] + "," + (view.getZoom() - 1) + "z";
+        let win = window.open(url, 'zweitkarte');
+        win.focus();
+    })
+
+    let geoportal = document.createElement("button");
+    geoportal.innerHTML = "Geoportal";
+    other_div.appendChild(geoportal);
+    geoportal.addEventListener("click", () => {
+        let view = map.getView();
+        let middle = transform(view.getCenter(), CONFIG["EPSG_CODE"], "EPSG:25832")
+        let zoom = Math.round(((view.getZoom() - 10) > 9) ? 9 : (view.getZoom() - 11))
+        let url = "https://geofos.fhhnet.stadt.hamburg.de/FHH-Atlas/?center=" + middle[0] + "," + middle[1] + "&zoomlevel=" + zoom;
+        let win = window.open(url, 'zweitkarte');
+        win.focus();
     })
 });
 
