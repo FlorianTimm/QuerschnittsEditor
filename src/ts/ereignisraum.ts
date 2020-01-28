@@ -16,6 +16,7 @@ import '../css/html_forms.css';
 import '../css/index.css';
 
 import HTML from './HTML';
+import { Collection } from 'ol';
 
 window.addEventListener('load', function () { loadER() });
 
@@ -25,6 +26,7 @@ var er: {
     kurzbez: string,
     langbez: string,
     ownerName: string,
+    bearbeiter: string,
     anlagedat: string
 }[] = []
 let select: HTMLSelectElement = document.getElementById("er_select") as HTMLSelectElement;
@@ -37,8 +39,8 @@ document.getElementById("anlegen").addEventListener("click", legeERan);
 
 //?Service=WFS&Request=GetFeature&TypeName=Projekt&Filter=<Filter><PropertyIsEqualTo><PropertyName>status</PropertyName><Literal>1</Literal></PropertyIsEqualTo></Filter>
 
-function loadER(projektnr?: number, callback?: (...args: any[]) => void, ...args: any[]) {
-    PublicWFS.doQuery('Projekt',
+function loadER(projektnr?: number): Promise<void> {
+    return PublicWFS.doQuery('Projekt',
         '<Filter><And>' +
         '<PropertyIsEqualTo><PropertyName>status</PropertyName>' +
         '<Literal>1</Literal>' +
@@ -46,10 +48,10 @@ function loadER(projektnr?: number, callback?: (...args: any[]) => void, ...args
         '<PropertyName>typ</PropertyName>' +
         '<Literal>D</Literal>' +
         '</PropertyIsEqualTo>' +
-        '</And></Filter>', readER, undefined, projektnr, callback, ...args);
+        '</And></Filter>').then((xml: Document) => { readER(xml, projektnr) });
 }
 
-function readER(xml: Document, projektnr?: number, callback?: (...args: any[]) => void, ...args: any[]) {
+function readER(xml: Document, projektnr?: number) {
     let proj = xml.getElementsByTagName("Projekt")
     select.innerHTML = ""
 
@@ -60,6 +62,7 @@ function readER(xml: Document, projektnr?: number, callback?: (...args: any[]) =
             kurzbez: string,
             langbez: string,
             ownerName: string,
+            bearbeiter: string,
             anlagedat: string
         } = {
             fid: null,
@@ -67,6 +70,7 @@ function readER(xml: Document, projektnr?: number, callback?: (...args: any[]) =
             kurzbez: "",
             langbez: "",
             ownerName: "",
+            bearbeiter: "",
             anlagedat: null
         };
 
@@ -83,12 +87,10 @@ function readER(xml: Document, projektnr?: number, callback?: (...args: any[]) =
         else
             projekt.langbez = ""
         projekt.ownerName = proj[i].getElementsByTagName("ownerName")[0].firstChild.textContent
+        projekt.bearbeiter = proj[i].getElementsByTagName("bearbeiter")[0].firstChild.textContent
         projekt.anlagedat = proj[i].getElementsByTagName("anlagedat")[0].firstChild.textContent
 
         er.push(projekt);
-
-        if (callback)
-            callback(...args)
     }
 
     er.sort(function (a, b) {
@@ -129,14 +131,16 @@ function aenderung() {
         document.getElementById("nummer").innerHTML = projekt.nr.toString();
         document.getElementById("kurzbez").innerHTML = projekt.kurzbez;
         document.getElementById("langbez").innerHTML = projekt.langbez;
-        document.getElementById("bearbeiter").innerHTML = projekt.ownerName;
+        document.getElementById("bearbeiter").innerHTML = (projekt.ownerName != projekt.bearbeiter) ? (projekt.ownerName + "/" + projekt.bearbeiter) : projekt.bearbeiter;
         document.getElementById("datum").innerHTML = projekt.anlagedat;
         break;
     }
 }
 
 function pruefeER() {
-    PublicWFS.testER((document.getElementById("ernr") as HTMLInputElement).value, pruefeCallback);
+    PublicWFS.testER((document.getElementById("ernr") as HTMLInputElement).value)
+        .then((erg) => { pruefeCallback(erg.erfolgreich, erg.fehler ?? undefined) })
+        .catch(() => { PublicWFS.showMessage("Fehler beim Prüfen", true) });
 }
 
 function pruefeCallback(erfolg: boolean, fehlerliste?: Element[]) {
@@ -185,16 +189,16 @@ function legeERan() {
         modal: true,
         buttons: {
             "Anlegen": function () {
-                PublicWFS.anlegenER(kurzBez.value, langBez.value, false, anlegenCallback)
+                PublicWFS.anlegenER(kurzBez.value, langBez.value, false)
+                    .then((xml) => {
+                        let projektnr = Number.parseInt(xml.getElementsByTagNameNS('http://interfaceTypes.ttsib5.novasib.de/', 'ProjektNr').item(0).innerHTML)
+                        return loadER(projektnr)
+                    })
+                    .then(() => { anlegenDialog.dialog("close") });
             },
             "Abbrechen": function () {
                 anlegenDialog.dialog("close");
             }
         }
     });
-}
-
-function anlegenCallback(xml: XMLDocument) {
-    let projektnr = Number.parseInt(xml.getElementsByTagNameNS('http://interfaceTypes.ttsib5.novasib.de/', 'ProjektNr').item(0).innerHTML)
-    loadER(projektnr, function () { anlegenDialog.dialog("close") });
 }

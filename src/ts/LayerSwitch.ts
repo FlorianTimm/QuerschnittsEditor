@@ -26,7 +26,7 @@ class LayerSwitch extends Control {
 		element.className = 'layerswitch ol-unselectable ol-control';
 		element.appendChild(button);
 
-		element.addEventListener('mouseenter', function (this: LayerSwitch) {
+		element.addEventListener('mouseenter', () => {
 			//layerswi.style.height = "20em";
 			//layerswi.style.overflow = "auto";
 			let layers = (this as LayerSwitch).getMap().getLayers();
@@ -72,12 +72,12 @@ class LayerSwitch extends Control {
 					element.appendChild(div_layer);
 				}
 			});
-		}.bind(this), false);
-		element.addEventListener('mouseleave', function () {
+		}, false);
+		element.addEventListener('mouseleave', () => {
 			element.innerHTML = "";
 			button.innerHTML = 'Layer';
 			element.appendChild(button);
-		}.bind(this), false);
+		}, false);
 	}
 }
 

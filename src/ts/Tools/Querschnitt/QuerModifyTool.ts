@@ -75,13 +75,19 @@ export default class QuerModifyTool extends Tool {
         if (this.multiEditForm) return;
         this.multiEditForm = HTML.createToolForm(this.sidebar, false, "qsMultiMod");
 
-        this.multiArtSelect = KlartextManager.createKlartextSelectForm("Itquerart", this.multiEditForm, "Art", 'qsmm_art', undefined, "- verschiedene -")
-        this.multiOberSelect = KlartextManager.createKlartextSelectForm("Itquerober", this.multiEditForm, "Art der Oberfläche", 'qsmm_ober', undefined, "- verschiedene -")
+        let art = KlartextManager.createKlartextSelectForm("Itquerart", this.multiEditForm, "Art", 'qsmm_art', undefined, "- verschiedene -")
+        this.multiArtSelect = art.select;
+
+        let ober = KlartextManager.createKlartextSelectForm("Itquerober", this.multiEditForm, "Art der Oberfläche", 'qsmm_ober', undefined, "- verschiedene -")
+        this.multiOberSelect = ober.select;
+
         this.multiCountInput = HTML.createNumberInput(this.multiEditForm, "Anzahl", "qsmm_anzahl");
         this.multiCountInput.disabled = true;
 
-        $(this.multiArtSelect).on("change", this.updateMultiArt.bind(this));
-        $(this.multiOberSelect).on("change", this.updateMultiOber.bind(this));
+        Promise.all([ober.promise, art.promise]).then(() => {
+            $(this.multiArtSelect).on("change", this.updateMultiArt.bind(this));
+            $(this.multiOberSelect).on("change", this.updateMultiOber.bind(this));
+        });
     }
 
     private createModify() {
@@ -281,9 +287,9 @@ export default class QuerModifyTool extends Tool {
     private flaecheSelected() {
         this.selectLinien.getFeatures().clear();
         let auswahl = this.selectFlaechen.getFeatures();
-        auswahl.forEach(function (this: QuerModifyTool, feat: Feature) {
+        auswahl.forEach((feat: Feature) => {
             this.selectLinien.getFeatures().push((feat as Querschnitt).trenn);
-        }.bind(this))
+        })
 
         this.featureSelected();
     }
@@ -294,9 +300,9 @@ export default class QuerModifyTool extends Tool {
         this.selectLinien.getFeatures().clear()
         this.modifyLayer.getSource().clear();
 
-        this.selectFlaechen.getFeatures().forEach(function (this: QuerModifyTool, feature: Feature) {
+        this.selectFlaechen.getFeatures().forEach((feature: Feature) => {
             this.selectLinien.getFeatures().push((feature as Querschnitt).trenn)
-        }.bind(this));
+        });
 
         if (selection.length == 1) {
             this.singleSelect();
@@ -382,23 +388,47 @@ export default class QuerModifyTool extends Tool {
         });
     }
 
-    private updateMultiArt() {
+    private updateMultiArt(): Promise<void> {
         let querschnitte = this.selectFlaechen.getFeatures().getArray() as Querschnitt[];
         let art = this.multiArtSelect.value;
 
+        let tasks: Promise<any>[] = [];
         for (let querschnitt of querschnitte) {
-            querschnitt.updateArtEinzeln(art);
+            tasks.push(
+                querschnitt.updateArtEinzeln(art)
+            );
         }
+        return Promise.all(tasks)
+            .then(() => {
+                PublicWFS.showMessage("Erfolgreich")
+                Promise.resolve()
+            })
+            .catch(() => {
+                PublicWFS.showMessage("Fehler", true)
+                Promise.reject()
+            });
     }
 
 
-    private updateMultiOber() {
+    private updateMultiOber(): Promise<void> {
         let querschnitte = this.selectFlaechen.getFeatures().getArray() as Querschnitt[];
         let artober = this.multiOberSelect.value;
 
+        let tasks: Promise<any>[] = [];
         for (let querschnitt of querschnitte) {
-            querschnitt.updateOberEinzeln(artober);
+            tasks.push(
+                querschnitt.updateOberEinzeln(artober)
+            );
         }
+        return Promise.all(tasks)
+            .then(() => {
+                PublicWFS.showMessage("Erfolgreich")
+                Promise.resolve()
+            })
+            .catch(() => {
+                PublicWFS.showMessage("Fehler", true)
+                Promise.reject()
+            });
     }
 
     public start() {

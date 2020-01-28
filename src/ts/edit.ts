@@ -10,16 +10,15 @@ import { MapEvent, View } from 'ol';
 import { defaults as defaultControls, ScaleLine, ZoomSlider } from 'ol/control';
 import { defaults as defaultInteractions } from 'ol/interaction';
 import { Layer } from 'ol/layer';
-import { fromLonLat, transform } from 'ol/proj';
+import { fromLonLat, toLonLat, transform } from 'ol/proj';
 import { register } from 'ol/proj/proj4';
 import { TileWMS as TileWMS } from 'ol/source';
-import StaticImage from 'ol/source/ImageStatic';
 import OSM from 'ol/source/OSM';
 import proj4 from 'proj4';
 import Daten from './Daten';
 import LayerSwitch from './LayerSwitch';
 import Measure from './Tools/Measure';
-import { ImageLayer, TileLayer } from './openLayers/Layer';
+import { TileLayer } from './openLayers/Layer';
 import Map from './openLayers/Map';
 import PublicWFS from './PublicWFS';
 import QuerschnittToolBox from './Klassen/QuerschnittToolBox';
@@ -79,6 +78,46 @@ window.addEventListener('load', function () {
     document.forms.namedItem("suche").addEventListener('submit', function (event: { preventDefault: () => void; }) {
         event.preventDefault();
         daten.searchForStreet();
+    })
+
+
+    let other_div = document.createElement("div");
+    other_div.id = "othermaps";
+    other_div.className = "ol-control ol-unselectable";
+    document.body.appendChild(other_div);
+
+    let mapillary = document.createElement("button");
+    mapillary.innerHTML = "Mappillary";
+    other_div.appendChild(mapillary);
+    mapillary.addEventListener("click", () => {
+        let view = map.getView();
+        let middle = toLonLat(view.getCenter(), CONFIG["EPSG_CODE"])
+        let url = "https://www.mapillary.com/app/?lat=" + middle[1] + "&lng=" + middle[0] + "&z=" + (view.getZoom() - 2);
+        let win = window.open(url, 'zweitkarte');
+        win.focus();
+    })
+
+    let google = document.createElement("button");
+    google.innerHTML = "Google";
+    other_div.appendChild(google);
+    google.addEventListener("click", () => {
+        let view = map.getView();
+        let middle = toLonLat(view.getCenter(), CONFIG["EPSG_CODE"])
+        let url = "https://www.google.com/maps/@" + middle[1] + "," + middle[0] + "," + (view.getZoom() - 1) + "z";
+        let win = window.open(url, 'zweitkarte');
+        win.focus();
+    })
+
+    let geoportal = document.createElement("button");
+    geoportal.innerHTML = "Geoportal";
+    other_div.appendChild(geoportal);
+    geoportal.addEventListener("click", () => {
+        let view = map.getView();
+        let middle = transform(view.getCenter(), CONFIG["EPSG_CODE"], "EPSG:25832")
+        let zoom = Math.round(((view.getZoom() - 10) > 9) ? 9 : (view.getZoom() - 11))
+        let url = "https://geofos.fhhnet.stadt.hamburg.de/FHH-Atlas/?center=" + middle[0] + "," + middle[1] + "&zoomlevel=" + zoom;
+        let win = window.open(url, 'zweitkarte');
+        win.focus();
     })
 });
 
@@ -184,7 +223,7 @@ function createMap() {
             }),
             new TileLayer({
                 name: 'LGV DOP 2017',
-                visible: true,
+                visible: false,
                 switchable: true,
                 opacity: 0.7,
                 source: new TileWMS({
@@ -198,27 +237,46 @@ function createMap() {
             }),
             new TileLayer({
                 name: 'LGV DOP 2018',
-                visible: false,
+                visible: true,
                 switchable: true,
-                opacity: 0.7,
+                opacity: 1.00,
                 source: new TileWMS({
                     url: 'https://geodienste.hamburg.de/HH_WMS_DOP_hochaufloesend',
                     params: {
-                        'LAYERS': 'DOP5',
+                        'LAYERS': 'dop_hochaufloesend_highres,dop_hochaufloesend_downscale',
                         'FORMAT': 'image/png'
                     },
                     attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
                 })
             }),
 
-            new ImageLayer({
-                name: 'LGV DOP5 (nur LGV)',
+            new TileLayer({
+                name: 'CAD-Daten',
                 visible: false,
                 switchable: true,
-                source: new StaticImage({
-                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019'],
-                    url: 'http://gv-srv-w00118:8080/dop5rgb_3256650_592800_hh_2018.jpg',
-                    imageExtent: transform([566500, 5928000, 566750, 5928250], 'EPSG:25832', CONFIG["EPSG_CODE"])
+                opacity: 0.85,
+                source: new TileWMS({
+                    url: 'http://gv-srv-w00118:20031/deegree/services/wms',
+                    params: {
+                        'LAYERS': 'wburg',
+                        'FORMAT': 'image/png'
+                    },
+                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
+                })
+            }),
+
+            new TileLayer({
+                name: 'Kreuzungsskizzen',
+                visible: false,
+                switchable: true,
+                opacity: 0.85,
+                source: new TileWMS({
+                    url: 'https://geodienste.hamburg.de/HH_WMS_Kreuzungsskizzen',
+                    params: {
+                        'LAYERS': 'poldata_text,poldata_lines,poldata_poly',
+                        'FORMAT': 'image/png'
+                    },
+                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
                 })
             }),
 

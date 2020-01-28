@@ -6,7 +6,6 @@ import Vektor from '../Vektor';
 import Aufbaudaten from './Aufbaudaten';
 import Daten from '../Daten';
 import QuerStation from './QuerStation';
-import Aufbau from './Aufbaudaten';
 import { VectorLayer } from '../openLayers/Layer';
 import VectorSource from 'ol/source/Vector';
 import { Style, Stroke, Fill, Icon, Text } from 'ol/style';
@@ -29,7 +28,7 @@ interface Callback {
  */
 export default class Abschnitt extends Feature {
     private static abschnitte: { [absid: number]: Abschnitt } = {}
-    private static waitForAbschnitt: { [absid: number]: Callback[] } = {}
+    private static waitForAbschnitt: { [absid: number]: Promise<Abschnitt> } = {}
 
     private fid: string = null;
     private abschnittid: string = null;
@@ -48,26 +47,24 @@ export default class Abschnitt extends Feature {
     private _station: { [vst: number]: QuerStation } = {};
 
     private _feature: any;
-    public aufbaudatenLoaded: boolean = false;
+    public aufbaudatenLoaded: Promise<{ [fid: string]: { [schichtnr: number]: Aufbaudaten } }>;
     private punkte: LinienPunkt[];
     static layer: VectorLayer;
 
-    public static getAbschnitt(absId: string, callback: (abs: Abschnitt, ...args: any[]) => void, ...args: any[]) {
+    private constructor() {
+        super();
+        Abschnitt.getLayer().getSource().addFeature(this);
+    }
+
+    public static getAbschnitt(absId: string): Promise<Abschnitt> {
         if (absId in this.abschnitte) {
-            callback(this.abschnitte[absId], ...args);
-            return;
+            return Promise.resolve(this.abschnitte[absId]);
+        } else if (absId in Abschnitt.waitForAbschnitt) {
+            return Abschnitt.waitForAbschnitt[absId];
         } else {
-            let laedtSchon = true;
-            if (!(absId in Abschnitt.waitForAbschnitt)) {
-                Abschnitt.waitForAbschnitt[absId] = [];
-                laedtSchon = false;
-            }
-            Abschnitt.waitForAbschnitt[absId].push({ callback, args })
-
-            if (!laedtSchon)
-                Abschnitt.load(absId);
+            Abschnitt.waitForAbschnitt[absId] = Abschnitt.load(absId)
+            return Abschnitt.waitForAbschnitt[absId];
         }
-
     }
 
     public static getLayer(map?: Map): VectorLayer {
@@ -170,47 +167,55 @@ export default class Abschnitt extends Feature {
         return this._faktor;
     }
 
-    private static load(abschnittid: string) {
+    private static load(abschnittid: string): Promise<Abschnitt> {
         if ("ABSCHNITT_WFS_URL" in CONFIG) {
-            Abschnitt.loadFromAbschnittWFS(abschnittid);
+            return Abschnitt.loadFromAbschnittWFS(abschnittid);
         } else {
-            Abschnitt.loadFromPublicWFS(abschnittid);
+            return Abschnitt.loadFromPublicWFS(abschnittid);
         }
     }
 
-    private static loadFromAbschnittWFS(abschnittid: string) {
+    private static async loadFromAbschnittWFS(abschnittid: string): Promise<Abschnitt> {
         let r = new Abschnitt();
         r.abschnittid = abschnittid;
-        AbschnittWFS.getById(abschnittid, r.loadCallback.bind(r));
-        return r;
+        const xml = await AbschnittWFS.getById(abschnittid);
+        return r.loadCallback(xml);
     }
 
-    private static loadFromPublicWFS(abschnittid: string) {
+    private static async loadFromPublicWFS(abschnittid: string): Promise<Abschnitt> {
         let r = new Abschnitt();
         r.abschnittid = abschnittid;
 
-        PublicWFS.doQuery('VI_STRASSENNETZ', '<Filter>' +
+        const xml = await PublicWFS.doQuery('VI_STRASSENNETZ', '<Filter>' +
             '<PropertyIsEqualTo><PropertyName>ABSCHNITT_ID</PropertyName>' +
             '<Literal>' + r.abschnittid + '</Literal></PropertyIsEqualTo>' +
-            '</Filter>', r.loadCallback.bind(r));
+            '</Filter>');
+        return r.loadCallback(xml);
     }
 
-    private loadCallback(xml: Document) {
+    private loadCallback(xml: Document): Abschnitt {
         let netz = xml.getElementsByTagName('VI_STRASSENNETZ');
 
         if (netz.length > 0) {
             this.fromXML(netz[0]);
         }
+        return this;
     }
 
-    static fromXML(xml: Element) {
+    static fromXML(xml: Element): Abschnitt {
         //console.log(xml);
-        let r = new Abschnitt();
+        let abschnittid = xml.getElementsByTagName('ABSCHNITT_ID')[0].firstChild.textContent;
+        let r: Abschnitt;
+        if (abschnittid in this.abschnitte) {
+            r = this.abschnitte[abschnittid];
+        } else {
+            r = new Abschnitt();
+        }
         r.fromXML(xml);
         return r;
     }
 
-    private fromXML(xml: Element) {
+    private fromXML(xml: Element): Abschnitt {
         this.len = Number(xml.getElementsByTagName('LEN')[0].firstChild.textContent);
         this.abschnittid = xml.getElementsByTagName('ABSCHNITT_ID')[0].firstChild.textContent;
         this.fid = "S" + this.abschnittid;
@@ -233,16 +238,9 @@ export default class Abschnitt extends Feature {
         }
         //console.log(ak);
         this.setGeometry(new LineString(ak));
-        Abschnitt.getLayer().getSource().addFeature(this);
         Abschnitt.abschnitte[this.abschnittid] = this;
 
-        if (this.abschnittid in Abschnitt.waitForAbschnitt) {
-            let callback: Callback;
-            while (callback = Abschnitt.waitForAbschnitt[this.abschnittid].pop()) {
-                callback.callback(this, ...callback.args);
-            }
-        }
-
+        return this;
     }
 
     public getFeature() {
@@ -286,11 +284,9 @@ export default class Abschnitt extends Feature {
         return null;
     }
 
-    public getAufbauDaten(callbackSuccess?: (...args: any[]) => void, callbackError?: (...args: any[]) => void, reload: boolean = false, ...args: any[]) {
-        //console.log(callbackSuccess);
-
+    public async getAufbauDaten(reload: boolean = false): Promise<{ [fid: string]: { [schichtnr: number]: Aufbaudaten } }> {
         if (!this.aufbaudatenLoaded || reload) {
-            PublicWFS.doQuery('Otschicht', '<Filter><And>' +
+            this.aufbaudatenLoaded = PublicWFS.doQuery('Otschicht', '<Filter><And>' +
                 '<PropertyIsEqualTo>' +
                 '<PropertyName>projekt/@xlink:href</PropertyName>' +
                 '<Literal>' + Daten.getInstanz().ereignisraum + '</Literal>' +
@@ -299,13 +295,15 @@ export default class Abschnitt extends Feature {
                 '<PropertyName>abschnittOderAst/@xlink:href</PropertyName>' +
                 '<Literal>S' + this.abschnittid + '</Literal>' +
                 '</PropertyIsEqualTo>' +
-                '</And></Filter>', this.parseAufbaudaten.bind(this), callbackError, callbackSuccess, ...args);
+                '</And></Filter>')
+                .then((xml) => { return this.parseAufbaudaten(xml) });
         }
+        return this.aufbaudatenLoaded;
     }
 
-    private parseAufbaudaten(xml: Document, callbackSuccess?: (...args: any[]) => void, ...args: any[]) {
+    private parseAufbaudaten(xml: Document): { [fid: string]: { [schichtnr: number]: Aufbaudaten } } {
         let aufbau = xml.getElementsByTagName('Otschicht');
-        let aufbaudaten: { [fid: string]: { [schichtnr: number]: Aufbau } } = {};
+        let aufbaudaten: { [fid: string]: { [schichtnr: number]: Aufbaudaten } } = {};
 
         for (let i = 0; i < aufbau.length; i++) {
             let a = Aufbaudaten.fromXML(aufbau[i]);
@@ -326,11 +324,7 @@ export default class Abschnitt extends Feature {
                 }
             }
         }
-
-
-        if (callbackSuccess != undefined) {
-            callbackSuccess(...args);
-        }
+        return aufbaudaten;
     }
 
     /**

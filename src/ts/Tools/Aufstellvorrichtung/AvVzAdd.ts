@@ -32,6 +32,7 @@ class AvVzAdd extends Tool {
     private select: SelectInteraction;
     private mouseOver: SelectInteraction;
     private lastOverlay: Aufstellvorrichtung;
+    buttonSpeichern: HTMLButtonElement;
 
     /**
      * Erzeugt eine Instanz des Verkehrszeichen-Hinzufügen-Tools
@@ -70,12 +71,11 @@ class AvVzAdd extends Tool {
         // Popup erzeugen
         this.ausblenden = document.createElement("div");
         this.ausblenden.id = "vzadd_ausblenden";
-        document.body.appendChild(this.ausblenden);
         this.popup = document.createElement("div");
         this.popup.id = "vz_popup";
         this.popup.style.textAlign = "left";
-
         this.ausblenden.appendChild(this.popup);
+
 
         this.liste = document.createElement("div");
         $(this.liste).sortable({
@@ -88,14 +88,15 @@ class AvVzAdd extends Tool {
 
         let stvoZNrNeu = KlartextManager.createKlartextSelectForm('Itvzstvoznr', this.popup, 'Verkehrszeichen', 'stvoznr_neu', undefined, "Neues Schild hinzufügen...")
 
-        $(stvoZNrNeu).on("change", this.newSchild.bind(this));
+        $(stvoZNrNeu.select).on("change", this.newSchild.bind(this));
 
         this.popup.appendChild(document.createElement("br"));
 
-        let buttonSpeichern = document.createElement('button');
-        buttonSpeichern.addEventListener("click", this._save.bind(this));
-        buttonSpeichern.innerHTML = "Speichern";
-        this.popup.appendChild(buttonSpeichern);
+        this.buttonSpeichern = document.createElement('button');
+        this.buttonSpeichern.addEventListener("click", this.save.bind(this));
+        this.buttonSpeichern.innerHTML = "Speichern";
+        this.buttonSpeichern.disabled = true;
+        this.popup.appendChild(this.buttonSpeichern);
 
         let buttonAbbrechen = document.createElement('button');
         buttonAbbrechen.addEventListener("click", this._closePopup.bind(this));
@@ -103,7 +104,18 @@ class AvVzAdd extends Tool {
         buttonAbbrechen.style.marginBottom = "250px";
         this.popup.appendChild(buttonAbbrechen);
 
-        this.auswahl.getZeichen(this._zeichenGeladen.bind(this))
+        Promise.all([
+            this.auswahl.getZeichen(true)
+                .then((zeichen) => {
+                    $(this.ausblenden).hide()
+                    document.body.appendChild(this.ausblenden);
+                    $(this.ausblenden).fadeIn("fast")
+                    return this._zeichenGeladen(zeichen)
+                }),
+            stvoZNrNeu.promise
+        ]).then(() => {
+            this.buttonSpeichern.disabled = false;
+        });
     }
 
     private mouseIsOver(event: SelectEvent) {
@@ -123,26 +135,39 @@ class AvVzAdd extends Tool {
     private newSchild(event: JQueryEventObject) {
         let schild = new Zeichen();
         schild.setStvoznr((event.target as HTMLInputElement).value);
-        this._createSchildForm(schild);
+        let vorherDisabled = false;
+        if (!this.buttonSpeichern.disabled) {
+            this.buttonSpeichern.disabled = true;
+            vorherDisabled = true;
+        }
+        this.createSchildForm(schild)
+            .then(() => {
+                if (vorherDisabled)
+                    this.buttonSpeichern.disabled = false;
+            });
+
     }
 
-    private _zeichenGeladen(zeichen: Zeichen[]) {
+    private _zeichenGeladen(zeichen: Zeichen[]): Promise<void> {
         zeichen.sort(function (a: Zeichen, b: Zeichen) {
             if (a.getSort() == null && b.getSort() == null) return 0;
             if (a.getSort() == null) return -1;
             if (b.getSort() == null) return 1;
             return Number(a.getSort()) - Number(b.getSort());
         });
+        let tasks = [];
         for (let eintrag of zeichen) {
-            this._createSchildForm(eintrag);
+            tasks.push(this.createSchildForm(eintrag));
         }
+        return Promise.all(tasks)
+            .then(() => { Promise.resolve() });
     }
 
     /**
      * Erzeugt pro Schild ein Änderungsformular
      * @param {Zeichen} eintrag Schild, für welches das Formular erzeugt werden soll
      */
-    private _createSchildForm(eintrag: Zeichen) {
+    private async createSchildForm(eintrag: Zeichen): Promise<void> {
         let div = document.createElement("form");
         this.liste.appendChild(div);
         div.dataset.oid = eintrag.getObjektId();
@@ -153,21 +178,24 @@ class AvVzAdd extends Tool {
         let img = document.createElement("img");
         img.classList.add('schildBild');
         img.style.height = "50px";
-        Klartext.load("Itvzstvoznr", function (_: KlartextMap) {
-            img.src = "http://gv-srv-w00118:8080/schilder/" + eintrag.getStvoznr().getKt() + ".svg";
-            img.title = eintrag.getStvoznr().getBeschreib() + (eintrag.getVztext() != null) ? ("\n" + eintrag.getVztext()) : ('');
-        });
+        Klartext.load("Itvzstvoznr")
+            .then(() => {
+                img.src = "http://gv-srv-w00118:8080/schilder/" + eintrag.getStvoznr().getKt() + ".svg";
+                img.title = eintrag.getStvoznr().getBeschreib() + (eintrag.getVztext() != null) ? ("\n" + eintrag.getVztext()) : ('');
+            });
         div.appendChild(img);
 
         //Formular
         let text = document.createElement("div");
+        let tasks: Promise<void>[] = [];
         div.appendChild(text);
         text.classList.add('schildText');
 
         // StVOZNR
         let stvoznr = Klartext.createKlartextSelectForm('Itvzstvoznr', text, 'Verkehrszeichen', 'stvoznr', eintrag.getStvoznr())
-        $(stvoznr).on("change", function () {
-            let schild = Klartext.get("Itvzstvoznr", stvoznr.value)
+        tasks.push(stvoznr.promise)
+        $(stvoznr.select).on("change", function () {
+            let schild = Klartext.get("Itvzstvoznr", stvoznr.select.value)
             img.src = "http://gv-srv-w00118:8080/schilder/" + schild.getKt() + ".svg";
             img.title = schild['beschreib'];
         });
@@ -177,27 +205,27 @@ class AvVzAdd extends Tool {
 
         // Lage FB
         if (eintrag.getLageFb() == undefined) eintrag.setLageFb(CONFIG.LAGEFB);
-        KlartextManager.createKlartextSelectForm('Itvzlagefb', text, 'Lage', 'lageFb', eintrag.getLageFb())
+        tasks.push(KlartextManager.createKlartextSelectForm('Itvzlagefb', text, 'Lage', 'lageFb', eintrag.getLageFb()).promise)
 
         // Lesbarkeit
         if (eintrag.getLesbarkeit() == undefined) eintrag.setLesbarkeit(CONFIG.LESBARKEIT);
-        KlartextManager.createKlartextSelectForm('Itvzlesbarkeit', text, 'Lesbarkeit', 'lesbarkeit', eintrag.getLesbarkeit())
+        tasks.push(KlartextManager.createKlartextSelectForm('Itvzlesbarkeit', text, 'Lesbarkeit', 'lesbarkeit', eintrag.getLesbarkeit()).promise)
 
         // Beleuchtet
         if (eintrag.getBeleucht() == undefined) eintrag.setBeleucht(CONFIG.BELEUCHTET);
-        KlartextManager.createKlartextSelectForm('Itvzbeleucht', text, 'Beleuchtung', 'beleucht', eintrag.getBeleucht())
+        tasks.push(KlartextManager.createKlartextSelectForm('Itvzbeleucht', text, 'Beleuchtung', 'beleucht', eintrag.getBeleucht()).promise)
 
         //Einzelschild
         if (eintrag.getArt() == undefined) eintrag.setArt(CONFIG.EINZELSCHILD);
-        KlartextManager.createKlartextSelectForm('Itvzart', text, 'Art', 'art', eintrag.getArt())
+        tasks.push(KlartextManager.createKlartextSelectForm('Itvzart', text, 'Art', 'art', eintrag.getArt()).promise)
 
         // Größe des Schilder
         if (eintrag.getGroesse() == undefined) eintrag.setGroesse(CONFIG.GROESSE);
-        KlartextManager.createKlartextSelectForm('Itvzgroesse', text, 'Größe', 'groesse', eintrag.getGroesse())
+        tasks.push(KlartextManager.createKlartextSelectForm('Itvzgroesse', text, 'Größe', 'groesse', eintrag.getGroesse()).promise)
 
         // Straßenbezug
         if (eintrag.getStrbezug() == undefined) eintrag.setStrbezug(CONFIG.STRASSENBEZUG);
-        KlartextManager.createKlartextSelectForm('Itbesstrbezug', text, 'Straßenbezug', 'strbezug', eintrag.getStrbezug())
+        tasks.push(KlartextManager.createKlartextSelectForm('Itbesstrbezug', text, 'Straßenbezug', 'strbezug', eintrag.getStrbezug()).promise)
 
         // Aufstelldatum
         let aufstdat = HTML.createDateInput(text, "Aufstelldatum", "aufstelldat" + Math.round(Math.random() * 2000), ((eintrag.getAufstelldat() != null) ? (eintrag.getAufstelldat()) : ('')));
@@ -208,11 +236,11 @@ class AvVzAdd extends Tool {
 
         // Erfassungsart
         if (eintrag.getErfart() == undefined) eintrag.setErfart(CONFIG.ERFASSUNG);
-        KlartextManager.createKlartextSelectForm('Iterfart', text, 'Erfassung', 'erfart', eintrag.getErfart())
+        tasks.push(KlartextManager.createKlartextSelectForm('Iterfart', text, 'Erfassung', 'erfart', eintrag.getErfart()).promise)
 
         // Quelle
         if (eintrag.getQuelle() == undefined) eintrag.setQuelle(CONFIG.QUELLE);
-        KlartextManager.createKlartextSelectForm('Itquelle', text, 'Quelle', 'quelle', eintrag.getQuelle())
+        tasks.push(KlartextManager.createKlartextSelectForm('Itquelle', text, 'Quelle', 'quelle', eintrag.getQuelle()).promise)
 
         // Löschen
         let del_group = document.createElement("div");
@@ -244,13 +272,16 @@ class AvVzAdd extends Tool {
         $(buttonLoeschen).button();
         del_group.appendChild(buttonLoeschen);
         text.appendChild(del_group);
+        return Promise.all(tasks)
+            .then(() => { Promise.resolve() })
+            .catch(() => { Promise.reject() });
     }
 
     /**
      * Wird durch Klick auf "Speichern" ausgelöst, prüft Änderungen und listet diese auf
      * @param {MouseEvent} event 
      */
-    _save(event: MouseEvent) {
+    private save(event: MouseEvent) {
         let neu: Zeichen[] = [];
         let alt: { [objektid: string]: Zeichen } = {};
 
@@ -290,181 +321,192 @@ class AvVzAdd extends Tool {
 
         let update = ""
         let anzDelete = 0, anzUpdate = 0;
-        let zeichen = this.auswahl.getZeichen();
-        for (let oldZeichen_i in zeichen as Zeichen[]) {
-            let oldZeichen = zeichen[oldZeichen_i] as Zeichen;
-            if (oldZeichen.getObjektId() in alt) {
-                let modiZeichen = alt[oldZeichen.getObjektId()] as Zeichen;
-                let upd = "";
-                if (oldZeichen.getSort() != modiZeichen.getSort()) {
-                    upd += '<wfs:Property>\n<wfs:Name>sort</wfs:Name>\n<wfs:Value>' + modiZeichen.getSort() + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update sort");
-                }
-                if (oldZeichen.getStvoznr().getXlink() != modiZeichen.getStvoznr().getXlink()) {
-                    upd += '<wfs:Property>\n<wfs:Name>stvoznr/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getStvoznr().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update stvoznr");
-                }
-                if (oldZeichen.getVztext() != modiZeichen.getVztext()) {
-                    upd += '<wfs:Property>\n<wfs:Name>vztext</wfs:Name>\n<wfs:Value>' + ((modiZeichen.getVztext() != null) ? modiZeichen.getVztext() : '') + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update text");
-                }
-                if (oldZeichen.getLageFb() == null || oldZeichen.getLageFb().getXlink() != modiZeichen.getLageFb().getXlink()) {
-                    upd += '<wfs:Property>\n<wfs:Name>lageFb/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getLageFb().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update lageFb");
-                }
-                if (oldZeichen.getLesbarkeit() == null || oldZeichen.getLesbarkeit().getXlink() != modiZeichen.getLesbarkeit().getXlink()) {
-                    upd += '<wfs:Property>\n<wfs:Name>lesbarkeit/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getLesbarkeit().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update text");
-                }
-                if (oldZeichen.getBeleucht() == null || oldZeichen.getBeleucht().getXlink() != modiZeichen.getBeleucht().getXlink()) {
-                    upd += '<wfs:Property>\n<wfs:Name>beleucht/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getBeleucht().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update beleucht");
-                }
-                if (oldZeichen.getArt() == null || oldZeichen.getArt().getXlink() != modiZeichen.getArt().getXlink()) {
-                    upd += '<wfs:Property>\n<wfs:Name>art/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getArt().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update art");
-                }
+        let zeichen = this.auswahl.getZeichen()
+            .then((zeichen) => {
+                for (let oldZeichen_i in zeichen as Zeichen[]) {
+                    let oldZeichen = zeichen[oldZeichen_i] as Zeichen;
+                    if (oldZeichen.getObjektId() in alt) {
+                        let modiZeichen = alt[oldZeichen.getObjektId()] as Zeichen;
+                        let upd = "";
+                        if (oldZeichen.getSort() != modiZeichen.getSort()) {
+                            upd += '<wfs:Property>\n<wfs:Name>sort</wfs:Name>\n<wfs:Value>' + modiZeichen.getSort() + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update sort");
+                        }
+                        if (oldZeichen.getStvoznr().getXlink() != modiZeichen.getStvoznr().getXlink()) {
+                            upd += '<wfs:Property>\n<wfs:Name>stvoznr/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getStvoznr().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update stvoznr");
+                        }
+                        if (oldZeichen.getVztext() != modiZeichen.getVztext()) {
+                            upd += '<wfs:Property>\n<wfs:Name>vztext</wfs:Name>\n<wfs:Value>' + ((modiZeichen.getVztext() != null) ? modiZeichen.getVztext() : '') + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update text");
+                        }
+                        if (oldZeichen.getLageFb() == null || oldZeichen.getLageFb().getXlink() != modiZeichen.getLageFb().getXlink()) {
+                            upd += '<wfs:Property>\n<wfs:Name>lageFb/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getLageFb().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update lageFb");
+                        }
+                        if (oldZeichen.getLesbarkeit() == null || oldZeichen.getLesbarkeit().getXlink() != modiZeichen.getLesbarkeit().getXlink()) {
+                            upd += '<wfs:Property>\n<wfs:Name>lesbarkeit/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getLesbarkeit().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update text");
+                        }
+                        if (oldZeichen.getBeleucht() == null || oldZeichen.getBeleucht().getXlink() != modiZeichen.getBeleucht().getXlink()) {
+                            upd += '<wfs:Property>\n<wfs:Name>beleucht/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getBeleucht().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update beleucht");
+                        }
+                        if (oldZeichen.getArt() == null || oldZeichen.getArt().getXlink() != modiZeichen.getArt().getXlink()) {
+                            upd += '<wfs:Property>\n<wfs:Name>art/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getArt().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update art");
+                        }
 
-                if (oldZeichen.getGroesse() == null || oldZeichen.getGroesse().getXlink() != modiZeichen.getGroesse().getXlink()) {
-                    upd += '<wfs:Property>\n<wfs:Name>groesse/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getGroesse().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update groesse");
-                }
+                        if (oldZeichen.getGroesse() == null || oldZeichen.getGroesse().getXlink() != modiZeichen.getGroesse().getXlink()) {
+                            upd += '<wfs:Property>\n<wfs:Name>groesse/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getGroesse().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update groesse");
+                        }
 
-                if (oldZeichen.getStrbezug() == null || oldZeichen.getStrbezug().getXlink() != modiZeichen.getStrbezug().getXlink()) {
-                    upd += '<wfs:Property>\n<wfs:Name>strbezug/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getStrbezug().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update strbezug");
-                }
+                        if (oldZeichen.getStrbezug() == null || oldZeichen.getStrbezug().getXlink() != modiZeichen.getStrbezug().getXlink()) {
+                            upd += '<wfs:Property>\n<wfs:Name>strbezug/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getStrbezug().getXlink() + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update strbezug");
+                        }
 
-                if (oldZeichen.getAufstelldat() != modiZeichen.getAufstelldat() && !(oldZeichen.getAufstelldat() == null && modiZeichen.getAufstelldat() == "")) {
-                    upd += '<wfs:Property>\n<wfs:Name>aufstelldat</wfs:Name>\n<wfs:Value>' + modiZeichen.getAufstelldat() + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update aufstelldat");
-                }
+                        if (oldZeichen.getAufstelldat() != modiZeichen.getAufstelldat() && !(oldZeichen.getAufstelldat() == null && modiZeichen.getAufstelldat() == "")) {
+                            upd += '<wfs:Property>\n<wfs:Name>aufstelldat</wfs:Name>\n<wfs:Value>' + modiZeichen.getAufstelldat() + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update aufstelldat");
+                        }
 
-                if (oldZeichen.getErfart() == null || oldZeichen.getErfart().getXlink() != modiZeichen.getErfart().getXlink()) {
-                    upd += '<wfs:Property>\n<wfs:Name>erfart/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getErfart() + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update erfart");
-                }
+                        if (oldZeichen.getErfart() == null || oldZeichen.getErfart().getXlink() != modiZeichen.getErfart().getXlink()) {
+                            upd += '<wfs:Property>\n<wfs:Name>erfart/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getErfart() + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update erfart");
+                        }
 
-                if (oldZeichen.getQuelle() == null || oldZeichen.getQuelle().getXlink() != modiZeichen.getQuelle().getXlink()) {
-                    upd += '<wfs:Property>\n<wfs:Name>quelle/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getQuelle() + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update quelle");
-                }
+                        if (oldZeichen.getQuelle() == null || oldZeichen.getQuelle().getXlink() != modiZeichen.getQuelle().getXlink()) {
+                            upd += '<wfs:Property>\n<wfs:Name>quelle/@xlink:href</wfs:Name>\n<wfs:Value>' + modiZeichen.getQuelle() + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update quelle");
+                        }
 
-                if (oldZeichen.getObjektnr() != modiZeichen.getObjektnr()) {
-                    upd += '<wfs:Property>\n<wfs:Name>objektnr</wfs:Name>\n<wfs:Value>' + modiZeichen.getObjektnr() + '</wfs:Value>\n</wfs:Property>\n';
-                    console.log("update objektnr");
-                }
+                        if (oldZeichen.getObjektnr() != modiZeichen.getObjektnr()) {
+                            upd += '<wfs:Property>\n<wfs:Name>objektnr</wfs:Name>\n<wfs:Value>' + modiZeichen.getObjektnr() + '</wfs:Value>\n</wfs:Property>\n';
+                            console.log("update objektnr");
+                        }
 
-                if (upd != "") {
-                    anzUpdate += 1
-                    update += '<wfs:Update typeName="Otvzeichlp">\n' +
-                        '	<ogc:Filter>\n' +
-                        '		<ogc:And>\n' +
-                        '			<ogc:PropertyIsEqualTo>\n' +
-                        '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
-                        '				<ogc:Literal>' + oldZeichen.getObjektId() + '</ogc:Literal>\n' +
-                        '			</ogc:PropertyIsEqualTo>\n' +
-                        '			<ogc:PropertyIsEqualTo>\n' +
-                        '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
-                        '				<ogc:Literal>' + Daten.getInstanz().ereignisraum + '</ogc:Literal>\n' +
-                        '			</ogc:PropertyIsEqualTo>\n' +
-                        '		</ogc:And>\n' +
-                        '	</ogc:Filter>\n' + upd +
-                        '</wfs:Update>\n';
-                }
-            } else {
-                console.log("delete");
-                anzDelete += 1
-                update += '<wfs:Delete typeName="Otvzeichlp">\n' +
-                    '	<ogc:Filter>\n' +
-                    '		<ogc:And>\n' +
-                    '			<ogc:PropertyIsEqualTo>\n' +
-                    '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
-                    '				<ogc:Literal>' + oldZeichen.getObjektId() + '</ogc:Literal>\n' +
-                    '			</ogc:PropertyIsEqualTo>\n' +
-                    '			<ogc:PropertyIsEqualTo>\n' +
-                    '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
-                    '				<ogc:Literal>#' + Daten.getInstanz().ereignisraum + '</ogc:Literal>\n' +
-                    '			</ogc:PropertyIsEqualTo>\n' +
-                    '		</ogc:And>\n' +
-                    '	</ogc:Filter>\n' +
-                    '</wfs:Delete>\n';
-            }
-        }
-        for (let zeichen of neu) {
-            console.log("neu");
-            if (zeichen.getVztext == null) zeichen.setVztext("");
-            update += '<wfs:Insert>\n<Otvzeichlp>\n' +
-                '<projekt typeName="Projekt" xlink:href="#' + Daten.getInstanz().ereignisraum + '"/>\n' +
-                '<sort>' + zeichen.getSort() + '</sort>\n' +
-                '<stvoznr xlink:href="#S' + zeichen.getStvoznr() + '" typeName="Itvzstvoznr" />\n' +
-                '<vztext>' + ((zeichen.getVztext() != null) ? zeichen.getVztext() : '') + '</vztext>\n' +
-                '<lageFb xlink:href="#S' + zeichen.getLageFb() + '" typeName="Itvzlagefb" />\n' +
-                '<lesbarkeit xlink:href="#S' + zeichen.getLesbarkeit() + '" typeName="Itvzlesbarkeit" />\n' +
-                '<beleucht xlink:href="#S' + zeichen.getBeleucht() + '" typeName="Itvzbeleucht" />\n' +
-                '<art xlink:href="#' + zeichen.getArt() + '" typeName="Itvzart" />\n' +
-                '<parent typeName="Otaufstvor" xlink:href="#' + this.auswahl.getFid() + '"/>\n' +
-                '<groesse xlink:href="#' + zeichen.getGroesse() + '" typeName="Itvzgroesse" />\n' +
-                '<strbezug xlink:href="#' + zeichen.getStrbezug() + '" typeName="Itbesstrbezug" />\n' +
-                '<aufstelldat>' + zeichen.getAufstelldat() + '</aufstelldat>\n' +
-                ((zeichen.getObjektnr() != null && zeichen.getObjektnr() != '') ? ('<objektnr>' + zeichen.getObjektnr() + '</objektnr>\n') : '') +
-                '<erfart xlink:href="#' + zeichen.getErfart() + '" typeName="Iterfart" />\n' +
-                '<quelle xlink:href="#' + zeichen.getQuelle() + '" typeName="Itquelle" />\n' +
-                '<ADatum>' + new Date().toISOString().slice(0, 10) + '</ADatum>\n' +
-                '</Otvzeichlp>\n</wfs:Insert>';
-
-        }
-
-        if ((anzDelete + anzUpdate + neu.length) > 0) {
-            $("#dialog-confirm")[0].title = "Änderungen bestätigen";
-            $("#dialog-confirm #text")[0].innerHTML = "Es werden folgende Änderungen durchgeführt:<br /><br />" +
-                anzDelete + " Schilder löschen<br />" +
-                anzUpdate + " ändern<br />" +
-                neu.length + " hinzugefügen<br /><br />" +
-                "Wollen Sie fortfahren?";
-            $("#dialog-confirm").dialog({
-                resizable: false,
-                height: "auto",
-                width: 400,
-                modal: true,
-                buttons: {
-                    "Daten schreiben": function (this: AvVzAdd) {
-                        $((event.target as HTMLElement).parentElement.parentElement).remove();
-                        PublicWFS.addSekInER(this.auswahl, "Otaufstvor", "Otvzeichlp", Daten.getInstanz().ereignisraum_nr, this._erCallback.bind(this), this._erCallback.bind(this), update, this.auswahl);
-                        $("#dialog-confirm").dialog("close");
-                    }.bind(this),
-                    "Abbrechen": function () {
-                        $(this).dialog("close");
+                        if (upd != "") {
+                            anzUpdate += 1
+                            update += '<wfs:Update typeName="Otvzeichlp">\n' +
+                                '	<ogc:Filter>\n' +
+                                '		<ogc:And>\n' +
+                                '			<ogc:PropertyIsEqualTo>\n' +
+                                '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
+                                '				<ogc:Literal>' + oldZeichen.getObjektId() + '</ogc:Literal>\n' +
+                                '			</ogc:PropertyIsEqualTo>\n' +
+                                '			<ogc:PropertyIsEqualTo>\n' +
+                                '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
+                                '				<ogc:Literal>' + Daten.getInstanz().ereignisraum + '</ogc:Literal>\n' +
+                                '			</ogc:PropertyIsEqualTo>\n' +
+                                '		</ogc:And>\n' +
+                                '	</ogc:Filter>\n' + upd +
+                                '</wfs:Update>\n';
+                        }
+                    } else {
+                        console.log("delete");
+                        anzDelete += 1
+                        update += '<wfs:Delete typeName="Otvzeichlp">\n' +
+                            '	<ogc:Filter>\n' +
+                            '		<ogc:And>\n' +
+                            '			<ogc:PropertyIsEqualTo>\n' +
+                            '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
+                            '				<ogc:Literal>' + oldZeichen.getObjektId() + '</ogc:Literal>\n' +
+                            '			</ogc:PropertyIsEqualTo>\n' +
+                            '			<ogc:PropertyIsEqualTo>\n' +
+                            '				<ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName>\n' +
+                            '				<ogc:Literal>#' + Daten.getInstanz().ereignisraum + '</ogc:Literal>\n' +
+                            '			</ogc:PropertyIsEqualTo>\n' +
+                            '		</ogc:And>\n' +
+                            '	</ogc:Filter>\n' +
+                            '</wfs:Delete>\n';
                     }
                 }
+                for (let zeichen of neu) {
+                    console.log("neu");
+                    if (zeichen.getVztext == null) zeichen.setVztext("");
+                    update += '<wfs:Insert>\n<Otvzeichlp>\n' +
+                        '<projekt typeName="Projekt" xlink:href="#' + Daten.getInstanz().ereignisraum + '"/>\n' +
+                        '<sort>' + zeichen.getSort() + '</sort>\n' +
+                        '<stvoznr xlink:href="#S' + zeichen.getStvoznr() + '" typeName="Itvzstvoznr" />\n' +
+                        '<vztext>' + ((zeichen.getVztext() != null) ? zeichen.getVztext() : '') + '</vztext>\n' +
+                        '<lageFb xlink:href="#S' + zeichen.getLageFb() + '" typeName="Itvzlagefb" />\n' +
+                        '<lesbarkeit xlink:href="#S' + zeichen.getLesbarkeit() + '" typeName="Itvzlesbarkeit" />\n' +
+                        '<beleucht xlink:href="#S' + zeichen.getBeleucht() + '" typeName="Itvzbeleucht" />\n' +
+                        '<art xlink:href="#' + zeichen.getArt() + '" typeName="Itvzart" />\n' +
+                        '<parent typeName="Otaufstvor" xlink:href="#' + this.auswahl.getFid() + '"/>\n' +
+                        '<groesse xlink:href="#' + zeichen.getGroesse() + '" typeName="Itvzgroesse" />\n' +
+                        '<strbezug xlink:href="#' + zeichen.getStrbezug() + '" typeName="Itbesstrbezug" />\n' +
+                        '<aufstelldat>' + zeichen.getAufstelldat() + '</aufstelldat>\n' +
+                        ((zeichen.getObjektnr() != null && zeichen.getObjektnr() != '') ? ('<objektnr>' + zeichen.getObjektnr() + '</objektnr>\n') : '') +
+                        '<erfart xlink:href="#' + zeichen.getErfart() + '" typeName="Iterfart" />\n' +
+                        '<quelle xlink:href="#' + zeichen.getQuelle() + '" typeName="Itquelle" />\n' +
+                        '<ADatum>' + new Date().toISOString().slice(0, 10) + '</ADatum>\n' +
+                        '</Otvzeichlp>\n</wfs:Insert>';
+
+                }
+
+                if ((anzDelete + anzUpdate + neu.length) > 0) {
+                    $("#dialog-confirm")[0].title = "Änderungen bestätigen";
+                    $("#dialog-confirm #text")[0].innerHTML = "Es werden folgende Änderungen durchgeführt:<br /><br />" +
+                        anzDelete + " Schilder löschen<br />" +
+                        anzUpdate + " ändern<br />" +
+                        neu.length + " hinzugefügen<br /><br />" +
+                        "Wollen Sie fortfahren?";
+                    let dialog = $("#dialog-confirm").dialog({
+                        resizable: false,
+                        height: "auto",
+                        width: 400,
+                        modal: true,
+                        buttons: {
+                            "Daten schreiben": () => {
+                                this.writeData(update).then(() => {
+                                    $(this.ausblenden).fadeOut();
+                                })
+                                    .catch()
+                                    .finally(() => { dialog.dialog("close") });
+                            },
+                            "Abbrechen": function () {
+                                dialog.dialog("close");
+                            }
+                        }
+                    });
+                } else {
+                    $((event.target as HTMLElement).parentElement.parentElement).remove();
+                }
             });
-        } else {
-            $((event.target as HTMLElement).parentElement.parentElement).remove();
-        }
     }
 
     /**
      * Wird aufgerufen, nachdem erfolgreich oder erfolglos versucht wurde, die Aufstellvorrichtung in den Ereignisraum zu laden
-     * @param {*} __ 
      * @param {string} update Transaktion als Text
-     * @param {*} _auswahl 
+     * @param {*} auswahl 
      */
-    _erCallback(__: any, update: string, _auswahl: Aufstellvorrichtung) {
-        console.log("Update: " + update)
-        PublicWFS.doTransaction(update, this._updateCallback.bind(this), undefined, _auswahl);
-    }
+    private async writeData(update: string): Promise<void> {
+        $((event.target as HTMLElement).parentElement.parentElement).remove();
 
+        return PublicWFS.addSekInER(this.auswahl, "Otaufstvor", "Otvzeichlp", Daten.getInstanz().ereignisraum_nr)
+            .catch(() => {
+                console.log("Nicht in ER kopiert")
+            })
+            .then(() => {
+                console.log("Update wird ausgeführt...")
+                return PublicWFS.doTransaction(update);
+            })
+            .then(() => {
+                console.log("Zeichen wird neugeladen...")
+                this.select.getFeatures().clear();
+                return this.auswahl.reloadZeichen()
+            })
+            .then(() => {
+                PublicWFS.showMessage("erfolgreich", false)
+                return Promise.resolve();
+            }).catch(() => {
+                PublicWFS.showMessage("Fehler beim Schreiben von Daten", true);
+                return Promise.reject();
+            })
 
-    /**
-     * wird nach der Ausführung des Updates ausgeführt
-     * @param {*} __ 
-     * @param {*} _auswahl 
-     */
-    _updateCallback(__: any, _auswahl: Aufstellvorrichtung) {
-        PublicWFS.showMessage("erfolgreich", false);
-        console.log("reload");
-        _auswahl.reloadZeichen();
-        this.select.getFeatures().clear();
     }
 
     /**

@@ -56,7 +56,7 @@ export default class QuerStation {
         return QuerStation.layerStation
     }
 
-    addQuerschnitt(querschnitt: Querschnitt) {
+    public addQuerschnitt(querschnitt: Querschnitt) {
         let streifen = querschnitt.getStreifen();
         let nr = querschnitt.getStreifennr();
         if (!(streifen in this._querschnitte)) {
@@ -64,7 +64,7 @@ export default class QuerStation {
         }
         this._querschnitte[streifen][nr] = querschnitt;
     }
-    getQuerschnitt(streifen: string, streifennr: number): Querschnitt {
+    public getQuerschnitt(streifen: string, streifennr: number): Querschnitt {
         if (!(streifen in this._querschnitte))
             return null;
         if (!(streifennr in this._querschnitte[streifen]))
@@ -72,7 +72,7 @@ export default class QuerStation {
         return this._querschnitte[streifen][streifennr];
     }
 
-    getAllQuerschnitte(): Querschnitt[] {
+    public getAllQuerschnitte(): Querschnitt[] {
         let r: Querschnitt[] = [];
         for (let streifen in this._querschnitte) {
             for (let nr in this._querschnitte[streifen]) {
@@ -81,13 +81,14 @@ export default class QuerStation {
         }
         return r;
     }
-    getStreifen(streifen: 'M' | 'L' | 'R'): { [streifennr: number]: Querschnitt } {
+
+    public getStreifen(streifen: 'M' | 'L' | 'R'): { [streifennr: number]: Querschnitt } {
         if (!(streifen in this._querschnitte))
             return {};
         return this._querschnitte[streifen];
     }
 
-    getQuerschnittByBstAbstand(XBstL: number, XBstR: number): Querschnitt {
+    public getQuerschnittByBstAbstand(XBstL: number, XBstR: number): Querschnitt {
         for (let streifen in this._querschnitte) {
             for (let querschnitt in this._querschnitte[streifen]) {
                 if (XBstL < 0 && this._querschnitte[streifen][querschnitt].getXBstL() == XBstL) return this._querschnitte[streifen][querschnitt];
@@ -97,7 +98,7 @@ export default class QuerStation {
         return null;
     }
 
-    getQuerschnittByVstAbstand(XVstL: number, XVstR: number): Querschnitt {
+    public getQuerschnittByVstAbstand(XVstL: number, XVstR: number): Querschnitt {
         for (let streifen in this._querschnitte) {
             for (let querschnitt in this._querschnitte[streifen]) {
                 if (XVstL < 0 && this._querschnitte[streifen][querschnitt].getXVstL() == XVstL) return this._querschnitte[streifen][querschnitt];
@@ -107,7 +108,7 @@ export default class QuerStation {
         return null;
     }
 
-    getPunkte(reload: boolean = false): LinienPunkt[] {
+    public getPunkte(reload: boolean = false): LinienPunkt[] {
         if (this.linienPunkte && !reload) return this.linienPunkte;
 
         this.linienPunkte = this.getAbschnitt().getAbschnitt(this.getVst(), this.getBst());
@@ -136,15 +137,16 @@ export default class QuerStation {
         return this.linienPunkte;
     }
 
-    teilen(station: number) {
+    public async teilen(station: number): Promise<void> {
         if (this.vst < station && this.bst > station) {
-            this.abschnitt.getAufbauDaten(this.teilen_callback_aufbaudaten.bind(this), undefined, false, station);
+            return this.abschnitt.getAufbauDaten()
+                .then(() => { this.teilen_callback_aufbaudaten(station) });
         } else {
             PublicWFS.showMessage("nicht möglich, da neue Station zu dicht an bestehenden", true);
         }
     }
 
-    private teilen_callback_aufbaudaten(station: number) {
+    private async teilen_callback_aufbaudaten(station: number): Promise<Querschnitt[]> {
         let xml = '<wfs:Delete typeName="Dotquer">\n' +
             '	<ogc:Filter>\n' +
             '		<ogc:And>\n' +
@@ -195,10 +197,12 @@ export default class QuerStation {
                 }, true);
             }
         }
-        PublicWFS.doTransaction(xml, this.neueQuerschnitteCallbackInsertResult.bind(this), undefined, station);
+        return PublicWFS.doTransaction(xml)
+            .then((xml: Document) => { return this.getInsertedQuerschnitte(xml, station) });
     }
 
     deleteAll() {
+        this.linienPunkte = undefined;
         for (let streifen in this._querschnitte) {
             for (let nr in this._querschnitte[streifen]) {
                 this._querschnitte[streifen][nr].delete();
@@ -207,11 +211,8 @@ export default class QuerStation {
         this._querschnitte = {};
     }
 
-    rewrite() {
-        this.abschnitt.getAufbauDaten(this.rewriteCallbackAufbaudaten.bind(this))
-    }
-
-    private rewriteCallbackAufbaudaten() {
+    public async rewrite(): Promise<Querschnitt[]> {
+        await this.abschnitt.getAufbauDaten();
         let soap = '<wfs:Delete typeName="Dotquer">\n' +
             '<ogc:Filter>\n' +
             '  <ogc:And>\n' +
@@ -260,45 +261,33 @@ export default class QuerStation {
             //console.log(qs);
             soap += qs.createInsertXML();
         }
-        PublicWFS.doTransaction(soap, this.neueQuerschnitteCallbackInsertResult.bind(this))
+        const xml = await PublicWFS.doTransaction(soap);
+        return this.getInsertedQuerschnitte(xml);
     }
 
-    private neueQuerschnitteCallbackInsertResult(xml: Document, station?: number) {
-        console.log(xml);
+    private async getInsertedQuerschnitte(xmlInsertResults: Document, station?: number): Promise<Querschnitt[]> {
+        console.log(xmlInsertResults);
         let filter = '<Filter>';
-        let childs = xml.getElementsByTagName('InsertResult')[0].childNodes;
+        let childs = xmlInsertResults.getElementsByTagName('InsertResult')[0].childNodes;
         for (let i = 0; i < childs.length; i++) {
             filter += '<FeatureId fid="' + (childs[i] as Element).getAttribute('fid') + '"/>';
         }
         filter += '</Filter>';
-        PublicWFS.doQuery('Dotquer', filter, this.neueQuerschnitteCallbackDotquer.bind(this), undefined, station);
+        const xmlInsertedQuerschnitte = await PublicWFS.doQuery('Dotquer', filter);
+        return this.neueQuerschnitteCallbackDotquer(xmlInsertedQuerschnitte, station);
     }
 
-    private neueQuerschnitteCallbackDotquer(xml: Document, station?: number) {
-        let insert = "<wfs:Insert>\n";
+    private async neueQuerschnitteCallbackDotquer(xml: Document, station?: number): Promise<Querschnitt[]> {
         let dotquer = Array.from(xml.getElementsByTagName("Dotquer"));
-        let insertRows = 0;
+        let tasks: Promise<string>[] = [];
         for (let i = 0; i < dotquer.length; i++) {
-            let neu = Querschnitt.fromXML(dotquer[i], true);
-            let alt = this.getQuerschnitt(neu.getStreifen(), neu.getStreifennr())
-            if (alt == undefined) continue;
-            let aufbau = alt.getAufbau() as { [schicht: number]: Aufbau };
-            console.log(aufbau);
-            for (let schichtnr in aufbau) {
-                let schicht = aufbau[schichtnr];
-                if (schicht.getBst() <= neu.getVst() || schicht.getVst() >= neu.getBst()) continue;
-                insert += schicht.createXML({
-                    vst: schicht.getVst() < neu.getVst() ? neu.getVst() : schicht.getVst(),
-                    bst: schicht.getBst() > neu.getBst() ? neu.getBst() : schicht.getBst(),
-                    parent: neu.getFid()
-                }, true)
-                insertRows++;
-            }
-        }
-        insert += "</wfs:Insert>";
-        console.log(insert)
-        if (insertRows > 0) {
-            PublicWFS.doTransaction(insert);
+            tasks.push(this.createAufbauAddXML(dotquer[i]));
+        };
+
+        let insertXML = (await Promise.all(tasks)).join();
+
+        if (insertXML.length > 0) {
+            PublicWFS.doTransaction("<wfs:Insert>\n" + insertXML + "</wfs:Insert>");
         }
 
         if (station != undefined) {
@@ -307,10 +296,31 @@ export default class QuerStation {
             this.abschnitt.addStation(neueStation);
             neueStation.reload();
         }
-        this.reload()
+
+        return this.reload();
     }
 
-    reload() {
+    private async createAufbauAddXML(xml: Element): Promise<string> {
+        let insert = ""
+        let neuQuer = await Querschnitt.fromXML(xml, true);
+
+        let alt = this.getQuerschnitt(neuQuer.getStreifen(), neuQuer.getStreifennr())
+        if (alt == undefined) return "";
+        let aufbau = await alt.getAufbau();
+
+        for (let schichtnr in aufbau) {
+            let schicht = aufbau[schichtnr];
+            if (schicht.getBst() <= neuQuer.getVst() || schicht.getVst() >= neuQuer.getBst()) continue;
+            insert += schicht.createXML({
+                vst: schicht.getVst() < neuQuer.getVst() ? neuQuer.getVst() : schicht.getVst(),
+                bst: schicht.getBst() > neuQuer.getBst() ? neuQuer.getBst() : schicht.getBst(),
+                parent: neuQuer.getFid()
+            }, true);
+        }
+        return insert;
+    }
+
+    private async reload(): Promise<Querschnitt[]> {
         let filter = '<Filter>' +
             '<And>' +
             '<PropertyIsEqualTo>' +
@@ -331,26 +341,33 @@ export default class QuerStation {
             '</PropertyIsEqualTo>' +
             '</And>' +
             '</Filter>';
-        PublicWFS.doQuery('Dotquer', filter, this.loadStationCallback.bind(this));
+        const xml = await PublicWFS.doQuery('Dotquer', filter);
+        return this.loadStationCallback(xml);
     }
 
-    loadStationCallback(xml: Document) {
+    private async loadStationCallback(xml: Document): Promise<Querschnitt[]> {
         let first = true;
         this.deleteAll();
         let dotquer = xml.getElementsByTagName("Dotquer");
         let liste: Querschnitt[] = [];
-        for (let i = 0; i < dotquer.length; i++) {
-            let q = Querschnitt.fromXML(dotquer[i])
-            liste.push(q);
 
-            if (first) {
-                this.getPunkte(true);
-            }
+        let tasks: Promise<Querschnitt>[] = [];
+        for (let i = 0; i < dotquer.length; i++) {
+            tasks.push(
+                Querschnitt.fromXML(dotquer[i])
+                    .then((querschnitt) => {
+                        if (first) {
+                            this.getPunkte(true);
+                            first = false;
+                        }
+                        return querschnitt
+                    }));
         }
+        const querschnitte = await Promise.all(tasks);
         for (let i = 0; i < liste.length; i++) {
             liste[i].check();
         }
-        PublicWFS.showMessage("Fertig", false)
+        return querschnitte;
     }
 
     public deleteStreifen(streifen: string, nummer: number) {

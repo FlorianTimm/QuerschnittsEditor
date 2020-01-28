@@ -39,19 +39,18 @@ export default abstract class Add2ER extends Tool {
         let abschnitt = this.select.getFeatures().getArray()[0] as Abschnitt;
         if (abschnitt.isOKinER(this.objektklasse)) return;
         WaitBlocker.warteAdd()
-        PublicWFS.addInER(abschnitt, this.objektklasse, this.daten.ereignisraum_nr, this._onSelect_Callback.bind(this),
-            function () {
+        PublicWFS.addInER(abschnitt, this.objektklasse, this.daten.ereignisraum_nr)
+            .then(() => {
+                abschnitt.addOKinER(this.objektklasse);
+                this.loadAbschnitt(abschnitt);
+                this.select.getFeatures().clear();
+                Abschnitt.getLayer().changed();
+                WaitBlocker.warteSub()
+            })
+            .catch(() => {
                 WaitBlocker.warteSub()
                 PublicWFS.showMessage("Konnte Abschnitt nicht zum ER hinzufügen", true)
-            }, abschnitt);
-    }
-
-    _onSelect_Callback(__: XMLDocument, abschnitt: Abschnitt) {
-        abschnitt.addOKinER(this.objektklasse);
-        this.loadAbschnitt(abschnitt);
-        this.select.getFeatures().clear();
-        Abschnitt.getLayer().changed();
-        WaitBlocker.warteSub()
+            });
     }
 
     start() {
