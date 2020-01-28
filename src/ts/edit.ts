@@ -13,13 +13,12 @@ import { Layer } from 'ol/layer';
 import { fromLonLat, toLonLat, transform } from 'ol/proj';
 import { register } from 'ol/proj/proj4';
 import { TileWMS as TileWMS } from 'ol/source';
-import StaticImage from 'ol/source/ImageStatic';
 import OSM from 'ol/source/OSM';
 import proj4 from 'proj4';
 import Daten from './Daten';
 import LayerSwitch from './LayerSwitch';
 import Measure from './Tools/Measure';
-import { ImageLayer, TileLayer } from './openLayers/Layer';
+import { TileLayer } from './openLayers/Layer';
 import Map from './openLayers/Map';
 import PublicWFS from './PublicWFS';
 import QuerschnittToolBox from './Klassen/QuerschnittToolBox';
@@ -240,25 +239,44 @@ function createMap() {
                 name: 'LGV DOP 2018',
                 visible: true,
                 switchable: true,
-                opacity: 0.85,
+                opacity: 1.00,
                 source: new TileWMS({
                     url: 'https://geodienste.hamburg.de/HH_WMS_DOP_hochaufloesend',
                     params: {
-                        'LAYERS': 'dop_hochaufloesend',
+                        'LAYERS': 'dop_hochaufloesend_highres,dop_hochaufloesend_downscale',
                         'FORMAT': 'image/png'
                     },
                     attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
                 })
             }),
 
-            new ImageLayer({
-                name: 'LGV DOP5 (nur LGV)',
+            new TileLayer({
+                name: 'CAD-Daten',
                 visible: false,
                 switchable: true,
-                source: new StaticImage({
-                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019'],
-                    url: 'http://gv-srv-w00118:8080/dop5rgb_3256650_592800_hh_2018.jpg',
-                    imageExtent: transform([566500, 5928000, 566750, 5928250], 'EPSG:25832', CONFIG["EPSG_CODE"])
+                opacity: 0.85,
+                source: new TileWMS({
+                    url: 'http://gv-srv-w00118:20031/deegree/services/wms',
+                    params: {
+                        'LAYERS': 'wburg',
+                        'FORMAT': 'image/png'
+                    },
+                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
+                })
+            }),
+
+            new TileLayer({
+                name: 'Kreuzungsskizzen',
+                visible: false,
+                switchable: true,
+                opacity: 0.85,
+                source: new TileWMS({
+                    url: 'https://geodienste.hamburg.de/HH_WMS_Kreuzungsskizzen',
+                    params: {
+                        'LAYERS': 'poldata_text,poldata_lines,poldata_poly',
+                        'FORMAT': 'image/png'
+                    },
+                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
                 })
             }),
 
