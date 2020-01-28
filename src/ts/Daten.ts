@@ -7,6 +7,7 @@ import { Map } from 'ol';
 import Event from 'ol/events/Event';
 import StrassenAusPunkt from './Objekte/StrassenAusPunkt';
 import WaitBlocker from './WaitBlocker';
+import { Extent } from 'ol/extent';
 
 var CONFIG: { [name: string]: string } = require('./config.json');
 
@@ -162,7 +163,7 @@ export default class Daten {
         WaitBlocker.warteSub();
     }
 
-    public static calcAbschnitteExtent(abschnitte: Abschnitt[]) {
+    public static calcAbschnitteExtent(abschnitte: Abschnitt[]): Extent {
         let minX = null, maxX = null, minY = null, maxY = null;
         for (let i = 0; i < abschnitte.length; i++) {
             let f = abschnitte[i];

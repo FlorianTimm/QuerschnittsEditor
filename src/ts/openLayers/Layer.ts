@@ -1,7 +1,7 @@
 import { Tile, Image, Vector } from "ol/layer";
-import { Options as TileOptionsOl } from "ol/layer/Tile";
-import { Options as ImageOptionsOl } from "ol/layer/Image";
-import { Options as VectorOptionsOl } from "ol/layer/Vector";
+import { Options as TileOptionsOl } from "ol/layer/BaseTile";
+import { Options as ImageOptionsOl } from "ol/layer/BaseImage";
+import { Options as VectorOptionsOl } from "ol/layer/BaseVector";
 import Daten from "../Daten";
 
 /**
@@ -24,6 +24,7 @@ export interface TileOptions extends TileOptionsOl {
 export class TileLayer extends Tile {
     name: string = "";
     switchable: boolean = true;
+
 
     constructor(option: TileOptions) {
         super(option);
