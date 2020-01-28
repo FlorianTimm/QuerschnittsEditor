@@ -1,13 +1,14 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import SekundaerObjekt from "./prototypes/SekundaerObjekt";
 import Klartext from "./Klartext";
 
 /**
-* Zeichen
-* @author Florian Timm, LGV HH 
-* @version 2019.10.29
-* @copyright MIT
+ * Zeichen
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
+ * @version 2019.10.29
+ * @license GPL-3.0-or-later
 */
-
 class Zeichen extends SekundaerObjekt {
     private hasSekObj: string = null;
     private stvoznr: Klartext = null;

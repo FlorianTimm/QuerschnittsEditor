@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import { Circle, Style, Stroke, Fill } from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
 import { Vector as VectorSource } from 'ol/source';
@@ -18,11 +20,10 @@ import Map from "../openLayers/Map";
 
 /**
  * Funktion zum Verschieben von Punktobjekten
- * @author Florian Timm, LGV HH 
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
  * @version 2019.10.29
- * @copyright MIT
- */
-
+ * @license GPL-3.0-or-later
+*/
 export default class MoveTool extends Tool {
     private infoTool: InfoTool;
     private select: SelectInteraction;

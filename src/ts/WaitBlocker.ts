@@ -1,3 +1,12 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+/**
+ * Ausblenden des Tools bei Hintergrundjobs
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
+ * @version
+ * @license GPL-3.0-or-later
+*/
+
 export default class WaitBlocker {
     private static counter: number = 0;
     private static blocker: HTMLElement;

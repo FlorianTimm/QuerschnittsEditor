@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import { Select as SelectInteraction } from 'ol/interaction';
 import '../../../css/vzadd.css';
 import "../../import_jquery.js";
@@ -20,10 +22,10 @@ var CONFIG = require('../../config.json');
 
 /**
  * Funktion zum Hinzufügen von Verkehrsschildern
- * @author Florian Timm, LGV HH 
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
  * @version 2019.10.29
- * @copyright MIT
- */
+ * @license GPL-3.0-or-later
+*/
 class AvVzAdd extends Tool {
     private ausblenden: any = null;
     private liste: any = null;

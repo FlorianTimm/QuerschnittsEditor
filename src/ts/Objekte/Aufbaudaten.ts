@@ -1,11 +1,13 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import SekundaerObjekt from "./prototypes/SekundaerObjekt";
 import Klartext from "./Klartext";
 
 /**
-* Aufbaudaten
-* @author Florian Timm, LGV HH 
-* @version 2019.10.29
-* @copyright MIT
+ * Aufbaudaten
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
+ * @version 2019.10.29
+ * @license GPL-3.0-or-later
 */
 export default class Aufbau extends SekundaerObjekt {
 	public getObjektKlassenName(): string {

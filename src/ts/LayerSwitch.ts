@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import Control from 'ol/control/Control.js';
 import { Options as ControlOptions } from 'ol/control/Control.js';
 import '../css/layerswitch.css';
@@ -5,11 +7,10 @@ import BaseLayer from 'ol/layer/Base';
 
 /**
  * OpenLayers-Control zum Wechseln des Layers
- * @author Florian Timm, LGV HH 
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
  * @version 2019.06.06
- * @copyright MIT
- */
-
+ * @license GPL-3.0-or-later
+*/
 class LayerSwitch extends Control {
 	constructor(opt_options?: ControlOptions) {
 		var options = opt_options || {};

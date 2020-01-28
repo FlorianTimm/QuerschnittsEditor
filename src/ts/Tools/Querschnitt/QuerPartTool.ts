@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import { Style, Stroke } from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
 import Vektor from '../../Vektor';
@@ -15,10 +17,10 @@ import PublicWFS from '../../PublicWFS';
 
 /**
  * Funktion zum Teilen von Querschnittsflächen
- * @author Florian Timm, LGV HH 
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
  * @version 2019.05.20
- * @copyright MIT
- */
+ * @license GPL-3.0-or-later
+*/
 class QuerPartTool extends Tool {
     private info: QuerInfoTool;
     private select: SelectInteraction;

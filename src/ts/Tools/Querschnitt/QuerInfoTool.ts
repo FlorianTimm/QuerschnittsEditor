@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import { Select as SelectInteraction } from 'ol/interaction';
 import { never } from 'ol/events/condition';
 import Querschnitt from '../../Objekte/Querschnittsdaten';
@@ -8,10 +10,10 @@ import { Feature } from 'ol';
 
 /**
  * Funktion zum Anzeigen von Informationen über Querschnitte
- * @author Florian Timm, LGV HH 
- * @version 2019-11-20
- * @copyright MIT
- */
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
+ * @version 2019.11.20
+ * @license GPL-3.0-or-later
+*/
 export default class QuerInfoTool extends InfoTool {
     /** Linienauswahl */
     private selectLinie: SelectInteraction;

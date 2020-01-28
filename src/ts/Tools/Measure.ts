@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import { Vector as VectorSource } from 'ol/source';
 import Draw, { DrawEvent } from 'ol/interaction/Draw';
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
@@ -17,10 +19,10 @@ var CONFIG = require('../config.json');
 
 /**
  * Messfunktion
- * @author Florian Timm, LGV HH 
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
  * @version 2019.06.06
- * @copyright MIT
- */
+ * @license GPL-3.0-or-later
+*/
 class Measure extends Tool {
     private source: VectorSource;
     private vector: VectorLayer;

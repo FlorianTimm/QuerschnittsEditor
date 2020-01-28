@@ -1,13 +1,15 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 var CONFIG = require('./config.json');
 import PublicWFS from './PublicWFS';
 import { Extent } from 'ol/extent';
 
 /**
  * Schnittstelle zur eigenen Geometrie-Schnittstelle
- * @author Florian Timm, LGV HH 
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
  * @version 2019.06.06
- * @copyright MIT
- */
+ * @license GPL-3.0-or-later
+*/
 export default class AbschnittWFS {
 
     static getById(id: string): Promise<XMLDocument> {

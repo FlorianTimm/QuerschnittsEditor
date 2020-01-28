@@ -1,8 +1,10 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 /**
  * Startscript edit.html
- * @author Florian Timm, LGV HH 
- * @version 2019.10.29
- * @copyright MIT
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
+ * @version 2019-10-29
+ * @license GPL-3.0-or-later
  */
 
 import 'babel-polyfill';

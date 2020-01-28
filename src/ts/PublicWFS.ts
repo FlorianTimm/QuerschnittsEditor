@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import Abschnitt from './Objekte/Abschnitt'
 import PrimaerObjekt from './Objekte/prototypes/PrimaerObjekt';
 import WaitBlocker from './WaitBlocker';
@@ -5,17 +7,14 @@ import Objekt from './Objekte/prototypes/Objekt';
 import SekundaerObjekt from './Objekte/prototypes/SekundaerObjekt';
 var CONFIG = require('./config.json');
 
+type xmlCallback = (xml: Document, ...args: any[]) => void
 
 /**
  * Schnittstelle zum PublicWFS
- * @author Florian Timm, LGV HH 
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
  * @version 2019.10.29
- * @copyright MIT
- */
-
-type xmlCallback = (xml: Document, ...args: any[]) => void
-
-
+ * @license GPL-3.0-or-later
+*/
 export default class PublicWFS {
     private static doSoapRequestWFS(xml: string): Promise<Document> {
         return PublicWFS.doSoapRequest(CONFIG.PUBLIC_WFS_URL, xml);
