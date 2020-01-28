@@ -1,9 +1,11 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 /**
- * Startscript edit.html
- * @author Florian Timm, LGV HH 
- * @version 2019.10.29
- * @copyright MIT
- */
+ * Vektor-Rechnung
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
+ * @version 2020.01.28
+ * @license GPL-3.0-or-later
+*/
 
 export default class Vektor {
     static add3(v: number[]) {

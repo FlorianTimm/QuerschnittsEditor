@@ -1,9 +1,11 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 /**
  * Startscript ereignisraum.html
- * @author Florian Timm, LGV HH 
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
  * @version 2019.10.29
- * @copyright MIT
- */
+ * @license GPL-3.0-or-later
+*/
 
 import PublicWFS from './PublicWFS';
 import "./import_jquery.js";

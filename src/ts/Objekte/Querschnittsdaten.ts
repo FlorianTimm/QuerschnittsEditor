@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import { Feature, Map } from 'ol';
 import { MultiLineString, Polygon } from 'ol/geom';
 import Daten from '../Daten';
@@ -16,12 +18,11 @@ import { Style, Stroke, Text, Fill } from 'ol/style';
 import { FeatureLike } from 'ol/Feature';
 
 /**
-* @author Florian Timm, LGV HH 
-* @version 2019.11.15
-* @copyright MIT
+ * Querschnittsdaten
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
+ * @version 2019.11.15
+ * @license GPL-3.0-or-later
 */
-
-
 export default class Querschnitt extends PrimaerObjekt implements InfoToolEditable {
     private _daten: Daten;
     private _aufbaudaten: { [schicht: number]: Aufbau } = null;

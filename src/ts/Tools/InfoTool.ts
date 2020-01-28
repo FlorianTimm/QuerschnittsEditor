@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import { Select as SelectInteraction } from 'ol/interaction';
 import Map from '../openLayers/Map';
 import { Layer } from 'ol/layer';
@@ -14,11 +16,10 @@ import PublicWFS from '../PublicWFS';
 
 /**
  * Funktion zum Anzeigen von Informationen zu Aufstellvorrichtungen und Schildern
- * @author Florian Timm, LGV HH 
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
  * @version 2019.10.29
- * @copyright MIT
- */
-
+ * @license GPL-3.0-or-later
+*/
 export default class InfoTool extends Tool {
     private layer: Layer;
     private infoField: HTMLFormElement;

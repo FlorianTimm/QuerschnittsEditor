@@ -1,9 +1,4 @@
-/**
- * Strassenausstrattung (punktuell)
- * @author Florian Timm, LGV HH 
- * @version 2019.10.29
- * @copyright MIT
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 import PublicWFS from '../PublicWFS';
 import "../import_jquery.js";
@@ -18,6 +13,12 @@ import { VectorLayer } from '../openLayers/Layer';
 import { Map } from 'ol';
 import Klartext from './Klartext';
 
+/**
+ * Strassenausstrattung (punktuell)
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
+ * @version 2019.10.29
+ * @license GPL-3.0-or-later
+*/
 export default class StrassenAusPunkt extends PunktObjekt {
     static loadErControlCounter: number = 0;
     static layer: any;

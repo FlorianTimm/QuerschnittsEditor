@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import ToolBox from "./ToolBox";
 import Map from "../openLayers/Map";
 import InfoTool from "../Tools/InfoTool";
@@ -9,12 +11,12 @@ import Abschnitt from "../Objekte/Abschnitt";
 import StrassenAusPunkt from "../Objekte/StrassenAusPunkt";
 
 /**
- * Klasse zum Erzeugen eines Werkzeugkasten zur Bearbeitung von 
+ * Klasse zum Erzeugen eines Werkzeugkasten zur Bearbeitung von
  * Straßenausstattung punktuell
- * @author Florian Timm
- * @version 2019-11-20
- * @license MIT
- */
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
+ * @version 2019.11.20
+ * @license GPL-3.0-or-later
+*/
 export default class AusstPktToolBox extends ToolBox {
     private infoTool: InfoTool;
     private addTool: SAPAdd;

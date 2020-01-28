@@ -1,9 +1,4 @@
-/**
- * Klartexte (Singleton)
- * @author Florian Timm, LGV HH 
- * @version 2019.08.22
- * @copyright MIT
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 import PublicWFS from '../PublicWFS';
 import HTML from '../HTML';
@@ -11,13 +6,12 @@ import WaitBlocker from '../WaitBlocker';
 
 export interface KlartextMap { [oid: string]: Klartext };
 
-
-class Callback {
-    public callback: (klartext: {}, ...args: any[]) => void;
-    public args: any[];
-}
-
-
+/**
+ * Klartexte (Singleton)
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
+ * @version 2019.08.22
+ * @license GPL-3.0-or-later
+*/
 export default class Klartext {
     private objekt: string;
     private xlink: string;
