@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import Feature, { FeatureLike } from 'ol/Feature';
 import LineString from 'ol/geom/LineString';
 import PublicWFS from '../PublicWFS';
@@ -15,17 +17,12 @@ import { Map } from 'ol';
 
 var CONFIG: { [index: string]: string } = require('../config.json');
 
-interface Callback {
-    callback: (abschnitt: Abschnitt, ...args: any[]) => void;
-    args: any[];
-}
-
 /**
  * Straßenabschnitt
- * @author Florian Timm, LGV HH 
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
  * @version 2019.10.29
- * @copyright MIT
- */
+ * @license GPL-3.0-or-later
+*/
 export default class Abschnitt extends Feature {
     private static abschnitte: { [absid: number]: Abschnitt } = {}
     private static waitForAbschnitt: { [absid: number]: Promise<Abschnitt> } = {}

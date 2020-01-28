@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import { Select as SelectInteraction } from 'ol/interaction';
 import Querschnitt from '../../Objekte/Querschnittsdaten';
 import QuerInfoTool from './QuerInfoTool';
@@ -15,10 +17,10 @@ import PublicWFS from '../../PublicWFS';
 
 /**
  * Funktion zum Hinzufügen von Querschnittsflächen
- * @author Florian Timm, LGV HH 
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
  * @version 2019.10.29
- * @copyright MIT
- */
+ * @license GPL-3.0-or-later
+*/
 class QuerAddTool extends Tool {
     private _info: QuerInfoTool;
     private _select: SelectInteraction;

@@ -1,9 +1,5 @@
-/**
- * Aufstellvorrichtung
- * @author Florian Timm, LGV HH 
- * @version 2019.10.29
- * @copyright MIT
- */
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import "../import_jquery.js";
 import 'chosen-js';
 import 'chosen-js/chosen.css';
@@ -22,6 +18,12 @@ import VectorLayer from "ol/layer/Vector";
 import { ColorLike } from "ol/colorlike";
 import WaitBlocker from "../WaitBlocker";
 
+/**
+ * Aufstellvorrichtung
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
+ * @version 2019.10.29
+ * @license GPL-3.0-or-later
+*/
 export default class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay {
     static loadErControlCounter: number = 0;
     static layer: VectorLayer;

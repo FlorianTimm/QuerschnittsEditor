@@ -1,6 +1,14 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import SekundaerObjekt from "./prototypes/SekundaerObjekt";
 import Klartext from "./Klartext";
 
+/**
+ *
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
+ * @version 2020.01.28
+ * @license GPL-3.0-or-later
+*/
 export default class Dokument extends SekundaerObjekt {
     protected art: Klartext
     protected beschreib: string

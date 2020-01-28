@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import { Circle, Style, Stroke, Fill } from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
 import VectorSource from 'ol/source/Vector';
@@ -13,11 +15,10 @@ import PunktObjekt from '../../Objekte/prototypes/PunktObjekt';
 
 /**
  * Funktion zum Hinzufügen von Objekten
- * @author Florian Timm, LGV HH 
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
  * @version 2019.09.20
- * @copyright MIT
- */
-
+ * @license GPL-3.0-or-later
+*/
 export default abstract class AddTool extends Tool {
     protected map: Map;
     protected abschnitt: Abschnitt = null;

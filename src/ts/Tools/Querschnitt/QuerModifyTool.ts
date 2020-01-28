@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import { Snap } from 'ol/interaction';
 import { platformModifierKeyOnly, never } from 'ol/events/condition';
 import QuerInfoTool from './QuerInfoTool';
@@ -11,7 +13,6 @@ import { MultiLineString, Point, LineString } from 'ol/geom';
 import HTML from '../../HTML';
 import KlartextManager from '../../Objekte/Klartext';
 import Map from "../../openLayers/Map";
-
 import "../../import_jquery.js";
 import 'chosen-js';
 import 'chosen-js/chosen.css';
@@ -26,10 +27,10 @@ import PublicWFS from '../../PublicWFS';
 
 /**
  * Funktion zum Verändern von Querschnittsflächen
- * @author Florian Timm, LGV HH 
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
  * @version 2019.10.29
- * @copyright MIT
- */
+ * @license GPL-3.0-or-later
+*/
 export default class QuerModifyTool extends Tool {
     private info: QuerInfoTool;
     private modify: ModifyInteraction;

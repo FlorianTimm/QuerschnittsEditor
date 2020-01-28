@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import Vektor from '../Vektor';
 import Feature from 'ol/Feature';
 import MultiLineString from 'ol/geom/MultiLineString';
@@ -13,12 +15,11 @@ import { Map } from 'ol';
 import { Stroke, Style } from 'ol/style';
 
 /**
-* Querschnitts-Station
-* @author Florian Timm, LGV HH 
-* @version 2019.10.29
-* @copyright MIT
+ * Querschnitts-Station
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
+ * @version 2019.10.29
+ * @license GPL-3.0-or-later
 */
-
 export default class QuerStation {
 
     private daten: Daten;

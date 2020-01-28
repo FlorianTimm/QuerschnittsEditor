@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import PublicWFS from '../../PublicWFS';
 import StrassenAusPunkt from '../../Objekte/StrassenAusPunkt';
 import AddTool from '../prototypes/AddTool';
@@ -10,11 +12,10 @@ var CONFIG = require('../../config.json');
 
 /**
  * Funktion zum Hinzufügen von Straßenausstattung (punktuell)
- * @author Florian Timm, LGV HH 
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
  * @version 2019.10.29
- * @copyright MIT
- */
-
+ * @license GPL-3.0-or-later
+*/
 export default class SAPAdd extends AddTool {
     constructor(map: Map, sidebar: HTMLDivElement, layerAchse: VectorLayer) {
         super(map, sidebar, layerAchse);

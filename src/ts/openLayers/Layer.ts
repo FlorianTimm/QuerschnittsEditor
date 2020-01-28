@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import { Tile, Image, Vector } from "ol/layer";
 import { Options as TileOptionsOl } from "ol/layer/BaseTile";
 import { Options as ImageOptionsOl } from "ol/layer/BaseImage";
@@ -6,10 +8,10 @@ import Daten from "../Daten";
 
 /**
  * OpenLayers: Interface TileOptions
- * @author Florian Timm, LGV HH 
- * @version 2019.06.05
- * @copyright MIT
- */
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
+ * @version 2019-06-05
+ * @license GPL-3.0-or-later
+*/
 export interface TileOptions extends TileOptionsOl {
     name?: string;
     switchable?: boolean;
@@ -17,10 +19,10 @@ export interface TileOptions extends TileOptionsOl {
 
 /**
  * OpenLayers: TileLayer
- * @author Florian Timm, LGV HH 
- * @version 2019.06.05
- * @copyright MIT
- */
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
+ * @version 2019-06-05
+ * @license GPL-3.0-or-later
+*/
 export class TileLayer extends Tile {
     name: string = "";
     switchable: boolean = true;

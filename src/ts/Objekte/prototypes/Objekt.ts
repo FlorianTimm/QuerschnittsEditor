@@ -1,16 +1,17 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import Abschnitt from "../Abschnitt";
 import { Feature } from "ol";
 import Klartext from "../Klartext";
 
-/**
- * Interface für SIB-Objekte
- * @author Florian Timm, LGV HH 
- * @version 2019.10.29
- * @copyright MIT
- */
-
 var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../../config_wfs.json');
 
+/**
+ * Interface für SIB-Objekte
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
+ * @version 2019.10.29
+ * @license GPL-3.0-or-later
+*/
 export default abstract class Objekt extends Feature {
 	protected kherk: Klartext = null;
 	protected baujahrGew: string = null;

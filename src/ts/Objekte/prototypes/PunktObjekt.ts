@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import VectorSource from 'ol/source/Vector';
 import { Vector as VectorLayer } from 'ol/layer';
 import { Style, Stroke, Fill, Circle, Text, RegularShape } from 'ol/style';
@@ -11,6 +13,12 @@ import { FeatureLike } from 'ol/Feature';
 import Abschnitt from '../Abschnitt';
 import Klartext from '../Klartext';
 
+/**
+ * PunktObjekt
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
+ * @version 2020.01.28
+ * @license GPL-3.0-or-later
+*/
 export default abstract class PunktObjekt extends PObjektMitDokument implements InfoToolEditable {
     protected vabstVst: number;
     protected vabstBst: number;

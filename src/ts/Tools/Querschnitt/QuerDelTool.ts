@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import { Feature, Collection } from "ol";
 import QuerInfoTool from "./QuerInfoTool";
 import Tool from '../prototypes/Tool';
@@ -11,11 +13,10 @@ import PublicWFS from "../../PublicWFS";
 
 /**
  * Funktion zum Löschen von Querschnitten
- * @author Florian Timm, LGV HH 
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
  * @version 2019.10.29
- * @copyright MIT
- */
-
+ * @license GPL-3.0-or-later
+*/
 class QuerDelTool extends Tool {
     private info: QuerInfoTool;
     private selectLinien: SelectInteraction;

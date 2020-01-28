@@ -1,14 +1,15 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import ToolBox from "./ToolBox";
 import Map from "../openLayers/Map";
 import Measure from "../Tools/Measure";
 
 /**
- * Klasse zum Erzeugen eines Werkzeugkasten zur Bearbeitung von
- * Aufstellvorrichtungen
- * @author Florian Timm
- * @version 2019-11-20
- * @license MIT
- */
+ * Klasse zum Erzeugen eines Werkzeugkasten
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
+ * @version 2019.11.20
+ * @license GPL-3.0-or-later
+*/
 export default class AufstellToolBox extends ToolBox {
     private measureTool: Measure;
 

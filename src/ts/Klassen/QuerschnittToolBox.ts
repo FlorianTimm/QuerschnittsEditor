@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import QuerAdd2ER from '../Tools/Querschnitt/QuerAdd2ER';
 import QuerAddTool from '../Tools/Querschnitt/QuerAddTool';
 import QuerDelTool from '../Tools/Querschnitt/QuerDelTool';
@@ -12,12 +14,11 @@ import QuerStation from '../Objekte/QuerStation';
 import { VectorLayer } from '../openLayers/Layer';
 
 /**
- * Klasse zum Erzeugen eines Werkzeugkasten zur Bearbeitung von
- * Querschnitten
- * @author Florian Timm
- * @version 2019-11-20
- * @license MIT
- */
+ * QuerschnittsToolBox
+ * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
+ * @version 2019.11.20
+ * @license GPL-3.0-or-later
+*/
 export default class QuerschnittToolBox extends ToolBox {
     private infoTool: QuerInfoTool;
     private modifyTool: QuerModifyTool;
