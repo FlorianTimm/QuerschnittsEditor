@@ -32,7 +32,7 @@
     "@types/chosen-js": "^1.8.1",
     "@types/jquery": "^3.3.31",
     "@types/jqueryui": "^1.12.10",
-    "@types/node": "^13.5.0",
+    "@types/node": "^13.5.1",
     "@types/ol": "^6.1.0",
     "@types/proj4": "^2.5.0",
     "babel-polyfill": "^6.26.0",

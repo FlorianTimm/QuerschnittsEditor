@@ -168,7 +168,7 @@ class QuerAddTool extends Tool {
         querschnittNeu.setStreifen(seite);
         querschnittNeu.setStreifennr(querschnitt.getStreifennr() + 1);
         querschnittNeu.setArt(querschnitt.getArt());
-        querschnittNeu.setArtober(querschnitt.getArtober());
+        if (querschnitt.getArtober()) querschnittNeu.setArtober(querschnitt.getArtober());
         querschnittNeu.setStation(querschnitt.getStation());
         querschnittNeu.setVst(querschnitt.getVst());
         querschnittNeu.setBst(querschnitt.getBst());
