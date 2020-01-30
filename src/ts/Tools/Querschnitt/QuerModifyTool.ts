@@ -349,14 +349,14 @@ export default class QuerModifyTool extends Tool {
         this.setModifyActive(false);
         $(this.moveTypeForm).hide("fast");
 
-        let art = selection[0].getArt().getXlink();
-        let ober = selection[0].getArtober().getXlink();
+        let art = selection[0].getArt() ? selection[0].getArt().getXlink() : null;
+        let ober = selection[0].getArtober() ? selection[0].getArtober().getXlink() : null;
         console.log(art)
         for (let querschnitt of selection) {
             console.log(querschnitt.getArt());
-            if (art != querschnitt.getArt().getXlink())
+            if (art != (querschnitt.getArt() ? querschnitt.getArt().getXlink() : null))
                 art = null;
-            if (ober != querschnitt.getArtober().getXlink())
+            if (ober != (querschnitt.getArtober() ? querschnitt.getArtober().getXlink() : null))
                 ober = null;
             if (art == null && ober == null)
                 break;
