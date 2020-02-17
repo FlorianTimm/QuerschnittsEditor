@@ -110,7 +110,7 @@ Stand: 17. Feb. 2020\\
 \setcounter{page}{1} 
 
 \section{Grundlagen}
-Der LGV-QuerschnittsEditor dient zur Bearbeitung von \Gls{Querschnitt}en, Schildern und punktueller Straßenausstattung in der TTSIB. Er ermöglicht eine graphische Stationierung von Elementen, ohne das hierbei manuell Stationierungen festgelegt werden müssen.
+Der LGV-QuerschnittsEditor dient zur Bearbeitung von \Gls{Querschnitt}en, Verkehrszeichen und punktueller Straßenausstattung in der TTSIB. Er ermöglicht eine graphische Stationierung von Elementen, ohne das hierbei manuell Stationierungen festgelegt werden müssen.
 
 \subsection{Login}
 \begin{figure}
@@ -171,14 +171,12 @@ Die Schaltfläche Abschnitte laden (hellblauer Kasten) lädt alle Straßenabschn
 \paragraph{Suche}
 Mit der Suche im violetten Kasten in \autoref{img:bearbeitung} kann nach Straßen gesucht werden. Die Suche ist möglich über Wegenummern, Netzknoten und Straßennamen. Nach dem Klick auf Laden werden die zutreffenden Abschnitte geladen und auf diese gezoomt.
 
-\
-
 \subsubsection{Bearbeitungswerkzeuge}
 Mit dem Schaltflächen im braunen Kasten werden die Bearbeitungswerkzeuge gesteuert. Diese werden in einzelnen Abschnitten erläutert.
 
 \begin{itemize}
     \item \Gls{Querschnitt}e in \autoref{s:querschnitte}
-    \item Aufstellvorrichtungen und Schilder in \autoref{s:schilder}
+    \item Aufstellvorrichtungen und Verkehrszeichen in \autoref{s:schilder}
     \item Straßenausstattung in \autoref{s:straus}
 \end{itemize}
 
@@ -234,19 +232,57 @@ Um Flächen zu Löschen muss nach dem Aktivieren des Werkzeuges die zu löschend
 Zwischen den einzelnen Objektarten-Modi kann mit den Tabs auf der rechten Seite umgeschaltet werden. Durch Klick auf \verb|Aufstell.| wird die Bearbeitung von Aufstellvorrichtungen und Verkehrszeichen ermöglicht.
 
 \subsection{Aufstellvorrichtungen laden}
+Sofern von Abschnitten nicht schon eine andere Objektklasse im Editor im Ereignisraum liegt, muss der gewünschte Abschnitt erst einmal in das Programm geladen werden. Hierfür kann die Suche oder der Button Abschnitte laden verwendet werden (siehe \autoref{ss:abschnitteladen}). Nach dem Klick auf \verb|zum ER hinzufügen| kann der Abschnitt durch Klick auf diesen in der Karte dem Ereignisraum hinzugefügt werden.
 
+Der Abschnitt wird nun in den Ereignisraum geladen und die an ihm liegenden Aufstellvorrichtungen geladen.
 
 \subsection{Aufstellvorrichtungen hinzufügen}
+Mit dem Werkzeug \verb|Aufstellv. hinzufügen| können neue Aufstellvorrichtungen erzeugt werden. Es erscheint nach der Aktivierung eine blaue Stationierungslinie. Mit dieser ist es möglich, die gewünschte Position der neuen Aufstellvorrichtung festzulegen. Sie rastet automatisch auf den möglichen Stationierungen ein. Es kann bei Bedarf mit einem Klick auf einen Abschnitt festgelegt werden, dass nur auf diesem Abschnitt stationiert werden soll.
+
+Rechts am Bildschirmrand lassen sich die Attribute der neu anzulegenden Aufstellvorrichtung einstellen und anschließend mit einem Klick auf \verb|Hinzufügen| speichern. Nun wird die neue Aufstellvorrichtung gespeichert.
+
+\subsection{Aufstellvorrichtung verändern}
+Mit dem Tool \verb|Verschieben| lassen sich Attribute ändern und Aufstellvorrichtungen verschieben. 
+
+\paragraph{Verschieben} 
+Hierfür wird die zu ändernde Aufstellvorrichtung ausgewählt und kann anschließend per Klicken und Ziehen an einen neuen Standort verschoben werden. Ein Verschieben einer Aufstellvorrichtung an einen neuen Abschnitt ist nicht möglich.
+
+\paragraph{Attribute ändern}
+Attribute können nach dem Auswählen einer Aufstellvorrichtung in dem Formular am rechten Rand verändert und dann mit einem Klick auf \verb|Speichern| übernommen werden.
 
 \subsection{Verkehrszeichen verändern}
+Mit dem Werkzeug \verb|Schilder ändern| lassen sich die an einer Aufstellvorrichtung angehäng\-ten Verkehrszeichen verändern. Nach dem Aktivieren des Tools und dem  Auswählen einer Aufstellvorrichtung öffnet sich ein Dialogfenster mit den aktuell angehängten Verkehrszeichen. Diese werden in der Reihenfolge, in der sie an der Aufstellvorrichtung hängen angezeigt. Die Reihenfolge lässt sich durch Klicken und Ziehen des hellgrauen Kastens verändern.
+
+Außerdem lassen sich die Attribute der einzelnen Verkehrszeichen verändern. Mit dem Auswahlfeld ganz unten in dem Dialogfenster lassen sich neue Zeichen hinzufügen. Mit dem Button "Speichern" wird das Fenster geschlossen und die Änderungen gespeichert.
 
 \subsection{Aufstellvorrichtungen löschen}
-
+Um Aufstellvorrichtungen zu löschen, wird das Werkzeug \verb|Aufstellv. löschen| aktiviert. Anschließend kann mit einem Klick auf eine Aufstellvorrichtung in der Karte diese zum Löschen vorausgewählt werden. Am rechten Rand werden die Attribute und die angehängten Verkehrszeichen der Aufstellvorrichtung angezeigt. Mit einem Klick auf \verb|Löschen| wird das Objekt gelöscht.
 
 \section{Straßenausstattung bearbeiten}
 \label{s:straus}
 Zwischen den einzelnen Objektarten-Modi kann mit den Tabs auf der rechten Seite umgeschaltet werden. Durch Klick auf \verb|Ausst.| wird die Bearbeitung von punktueller Straßenausstattung ermöglicht.
 
+\subsection{Straßenausstattung laden}
+Sofern von Abschnitten nicht schon eine andere Objektklasse im Editor im Ereignisraum liegt, muss der gewünschte Abschnitt erst einmal in das Programm geladen werden. Hierfür kann die Suche oder der Button Abschnitte laden verwendet werden (siehe \autoref{ss:abschnitteladen}). Nach dem Klick auf \verb|zum ER hinzufügen| kann der Abschnitt durch Klick auf diesen in der Karte dem Ereignisraum hinzugefügt werden.
+
+Der Abschnitt wird nun in den Ereignisraum geladen und die an ihm liegenden Straßenausstattung geladen.
+
+\subsection{Straßenausstattung hinzufügen}
+Mit dem Werkzeug \verb|Austatt. hinzufügen| können neue Straßenausstattungen erzeugt werden. Es erscheint nach der Aktivierung eine blaue Stationierungslinie. Mit dieser ist es möglich, die gewünschte Position der neuen Straßenausstattung festzulegen. Sie rastet automatisch auf den möglichen Stationierungen ein. Es kann bei Bedarf mit einem Klick auf einen Abschnitt festgelegt werden, dass nur auf diesem Abschnitt stationiert werden soll.
+
+Rechts am Bildschirmrand lassen sich die Attribute der neu anzulegenden Straßenausstattung einstellen und anschließend mit einem Klick auf \verb|Hinzufügen| speichern. Nun wird die neue Straßenausstattung gespeichert.
+
+\subsection{Straßenausstattung verändern}
+Mit dem Tool \verb|Verschieben| lassen sich Attribute ändern und Straßenausstattungen verschieben. 
+
+\paragraph{Verschieben} 
+Hierfür wird die zu ändernde Straßenausstattung ausgewählt und kann anschließend per Klicken und Ziehen an einen neuen Standort verschoben werden. Ein Verschieben einer Straßenausstattung an einen neuen Abschnitt ist nicht möglich.
+
+\paragraph{Attribute ändern}
+Attribute können nach dem Auswählen einer Straßenausstattung in dem Formular am rechten Rand verändert und dann mit einem Klick auf \verb|Speichern| übernommen werden.
+
+\subsection{Straßenausstattung löschen}
+Um Straßenausstattungen zu löschen, wird das Werkzeug \verb|Ausstatt. löschen| aktiviert. Anschließend kann mit einem Klick auf eine Straßenausstattung in der Karte diese zum Löschen vorausgewählt werden. Am rechten Rand werden die Attribute angezeigt. Mit einem Klick auf \verb|Löschen| wird das Objekt gelöscht.
 
 \clearpage
 
