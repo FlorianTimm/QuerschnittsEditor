@@ -18,6 +18,9 @@
 \usepackage{todonotes}
 \usepackage{amsmath}
 
+\usepackage[toc]{glossaries}
+\makeglossaries
+
 \usepackage{multirow}
 
 \newcommand*\justify{%
@@ -87,7 +90,7 @@ Neuenfelder Straße 19\\
 {\large Florian Timm}\\
 
 \vspace{10cm}
-Stand: 14. Feb. 2020\\
+Stand: 17. Feb. 2020\\
 \end{center}
 \setcounter{page}{0} 
 \end{titlepage}
@@ -107,7 +110,7 @@ Stand: 14. Feb. 2020\\
 \setcounter{page}{1} 
 
 \section{Grundlagen}
-Der LGV-QuerschnittsEditor dient zur Bearbeitung von Querschnitten, Schildern und punktueller Straßenausstattung in der TTSIB. Er ermöglicht eine graphische Stationierung von Elementen, ohne das hierbei manuell Stationierungen festgelegt werden müssen.
+Der LGV-QuerschnittsEditor dient zur Bearbeitung von \Gls{Querschnitt}en, Schildern und punktueller Straßenausstattung in der TTSIB. Er ermöglicht eine graphische Stationierung von Elementen, ohne das hierbei manuell Stationierungen festgelegt werden müssen.
 
 \subsection{Login}
 \begin{figure}
@@ -161,6 +164,7 @@ Mit den mittleren Schaltfläche im hellblauen Kasten wird auf die geladenen Obje
 \paragraph{Layerbaum} Mit der Schaltfläche Layer im roten Kasten auf \autoref{img:bearbeitung} können die Hintergrundkarten umgeschaltet werden. Beim Überfahren der Schaltfläche mit der Maus öffnet sich der Layerbaum (\autoref{img:layerbaum}). Durch Klick auf die grauen Schaltflächen wird der Layer aktiviert, mit Klick auf eine grüne Schaltfläche wird der Layer wieder deaktiviert. Außerdem besteht die Möglichkeit, die Transparenz einzelner Layer anzupassen (oranger Kasten). 
 
 \subsubsection{Abschnitte laden}
+\label{ss:abschnitteladen}
 \paragraph{Abschnitte laden nach Kartenausschnitt}
 Die Schaltfläche Abschnitte laden (hellblauer Kasten) lädt alle Straßenabschnitte, die sich im Kartenausschnitt befinden (jedoch maximal 1000) aus der TTSIB.
 
@@ -173,14 +177,14 @@ Mit der Suche im violetten Kasten in \autoref{img:bearbeitung} kann nach Straße
 Mit dem Schaltflächen im braunen Kasten werden die Bearbeitungswerkzeuge gesteuert. Diese werden in einzelnen Abschnitten erläutert.
 
 \begin{itemize}
-    \item Querschnitte in \autoref{s:querschnitte}
+    \item \Gls{Querschnitt}e in \autoref{s:querschnitte}
     \item Aufstellvorrichtungen und Schilder in \autoref{s:schilder}
     \item Straßenausstattung in \autoref{s:straus}
 \end{itemize}
 
 \subsubsection{Weitere Tools}
 \paragraph{Messen}
-Mit der Schaltfläche Messen lässt sich ein Messwerkzeug aktivieren. Mittels einfachen Klick in die Karte können Stützpunkte gesetzt werden, mittel Doppelklick wird die Messung beendet. Beim Wechsel des Werkzeuges oder beim Beginn einer neuen Messung wird die alte Messung gelöscht.
+Mit der Schaltfläche \verb|Messen| lässt sich ein Messwerkzeug aktivieren. Mittels einfachen Klick in die Karte können Stützpunkte gesetzt werden, mittel Doppelklick wird die Messung beendet. Beim Wechsel des Werkzeuges oder beim Beginn einer neuen Messung wird die alte Messung gelöscht.
 
 \paragraph{Andere Kartendienste}
 Mit den Schaltflächen unten links (grüner Kasten) kann zu anderen Kartenportalen gesprungen werden. Hierbei wird das Kartenzentrum und der Maßstab annährend beibehalten. Die Seite wird in einem neuen Browser-Tab geöffnet. Bei einem weiteren Klick wird dieser Browser-Tab aktualisiert.
@@ -188,15 +192,75 @@ Mit den Schaltflächen unten links (grüner Kasten) kann zu anderen Kartenportal
 \section{Querschnitte bearbeiten}
 \label{s:querschnitte}
 
-\subsection{Querschnitte laden}
-\subsection{Querschnitte hinzufügen}
-\subsection{Attribute ändern}
-\subsection{Flächen anpassen}
+Zwischen den einzelnen Objektarten-Modi kann mit den Tabs auf der rechten Seite umgeschaltet werden. Durch Klick auf \verb|Quer.| wird die Bearbeitung von \Gls{Querschnitt}en ermöglicht.
 
-\section{Aufstellvorrichtungen und Schilder bearbeiten}
+\subsection{Querschnitte laden}
+Sofern von Abschnitten nicht schon eine andere Objektklasse im Editor im Ereignisraum liegt, muss der gewünschte Abschnitt erst einmal in das Programm geladen werden. Hierfür kann die Suche oder der Button Abschnitte laden verwendet werden (siehe \autoref{ss:abschnitteladen}). Nach dem Klick auf \verb|zum ER hinzufügen| kann der Abschnitt durch Klick auf diesen in der Karte dem Ereignisraum hinzugefügt werden.
+
+Der Abschnitt wird nun in den Ereignisraum geladen, die Daten aus der TTSIB übertragen und in der Karte die bestehenden \Gls{Querschnitt}e des Abschnittes angezeigt.
+
+\subsection{Querschnitte hinzufügen}
+Fehlende \Gls{Querschnitt}sflächen können mit dem Tool \verb|Fläche hinzufügen| hinzugefügt werden. Nachdem Aktivieren des Tools kann eine Trennlinie oder die Bestandsachse ausgewählt werden. Rechts unten werden nochmals Informationen zu dem ausgewählten \Gls{Querschnitt} angezeigt. Die neue Fläche wird auf der der Bestandsachse abgewandten Seite der ausgewählten \Gls{Querschnitt}sfläche hinzugefügt (also an der Stelle, an der die Trennlinie gewählt wurde). Durch Klick auf \verb|Querschnitt hinzufügen| wird die Fläche erzeugt. Falls die Bestandsachse gewählte wurde, folgt nach dem Klick auf \verb|Querschnitt hinzufügen| ein Dialog, in dem abgefragt wird, auf welcher Seite der Mittelachse der Streifen angefügt werden soll. In allen Fällen wird eine neue Fläche mit den Eigenschaften des ausgewählten Streifen und einer Breite von 275~cm hinzugefügt. Diese muss dann mit dem Tool \verb|Fläche ändern| (siehe \autoref{ss:flaecheaendern}) verändert werden -- vor allem falls eine Bestandsachse angefügt wurde, da hiervon nur eine existieren darf.
+
+\subsection{Attribute ändern}
+\label{ss:flaecheaendern}
+Attribute von \Gls{Querschnitt}sflächen können mit dem Tool \verb|Fläche ändern| angepasst werden. Das Tool unterstützt die Änderungen von einzelnen und mehreren Flächen.
+
+\paragraph{Einzeländerung}
+\label{p:flächeeinzeln}
+Um eine Fläche einzeln zu bearbeiten, kann diese einfach in der Karte per Klick ausgewählt werden. Im rechten Rand werden nun die Informationen der Fläche angezeigt. Die Eigenschaften Art und Art der Oberfläche lassen sich mit \Gls{Suchfenster}n auswählen und ändern. Die Breite der Fläche kann per Zahleneingabe in Zentimetern angepasst werden. Alle Änderungen in diesem Menü müssen mit \verb|Speichern| übernommen werden. Ansonsten werden bei der Auswahl einer anderen Fläche oder beim Umschalten des Werkzeuges die neuen Eigenschaften verworfen.
+
+\paragraph{Mehrfachänderung}
+Das Werkzeug unterstützt auch die Änderung mehrerer Flächen mit einmal hierfür muss die \verb|Strg|-Taste auf der Tastatur gedrückt werden, während die zu ändern\-den Flächen mit der Maus ausgewählt werden.
+
+Im rechten Rand wird nun die Art und die Art der Oberfläche der gewählten Flächen sowie deren Anzahl angezeigt. Sofern sich die Attribute der einzelnen Flächen unterscheiden, wird im entsprechenden Feld ``- verschiedene -'' angezeigt. Durch Auswahl eines anderen Wertes in den beiden \Gls{Suchfenster}n, wird das geänderte Attribut für alle ausgewählten Abschnitte gesetzt.
+
+\subsection{Flächen anpassen}
+Neben der Bearbeitung von Flächen durch Eingabe von Breiten in der Attributtabelle (siehe \autoref{p:flächeeinzeln}) ist es auch möglich, diese in der Karte zu verändern. Auch hierfür dient das Werkzeug \verb|Fläche ändern|. Durch Auswahl einer Querschnittsfläche erscheinen auf der der Achse abgewandten Trennlinie ein roter und ein grüner Punkt. An diesen Punkten kann mittels Klicken und Ziehen die Breite verändert werden. Die Punkte können nur auf der schwarzen Linie der von- oder bis-Station verschoben werden. Während des Verschiebens erscheint eine Vorschau der neuen Trennlinie. Beim Loslassen des Punktes wird die veränderte Fläche gespeichert.
+
+Mit den Schaltflächen unter der Attributtabelle lassen sich Einstellungen der Manipulation der Flächen anpassen. Mit den Radioknöpfen \verb|...verschieben| und \verb|...anpassen| verändert sich das Verhalten der weiter außen liegenden Querschnitte. Bei der Manipulation werden diese je nach gewählter Einstellung verschoben oder in ihrer Breite so verändert, dass die Änderung der manipulierten Fläche ausgeglichen wird.
+
+Mit dem Kontrollkästchen \verb|angrenzende Querschnitte mitziehen| wird dafür gesorgt, dass der auf der anderen Seite der Querschnittsstation liegende Querschnitt mit angepasst wird.
+
+\subsection{Flächen teilen}
+Die Funktion ``Querschnitt teilen'' ermöglicht es, Querschnittsflächen in ihrer Längsrichtung zu teilen. Nach Aktivierung des Werkzeuges erscheint beim Überfahren des Abschnittes mit der Maus eine Vorschau der Trennlinie. Durch Klicken kann diese fixiert werden. Die Teilung findet dann nach einem Klick auf Teilen in der rechten Bildschirmleiste statt.
+
+
+\subsection{Flächen löschen}
+Um Flächen zu Löschen muss nach dem Aktivieren des Werkzeuges die zu löschende Fläche ausgewählt werden. Am rechten Rand erscheint dann eine rote Schaltfläche zum Löschen der ausgewählten Fläche.
+
+\section{Aufstellvorrichtungen und Verkehrszeichen bearbeiten}
 \label{s:schilder}
+Zwischen den einzelnen Objektarten-Modi kann mit den Tabs auf der rechten Seite umgeschaltet werden. Durch Klick auf \verb|Aufstell.| wird die Bearbeitung von Aufstellvorrichtungen und Verkehrszeichen ermöglicht.
+
+\subsection{Aufstellvorrichtungen laden}
+
+
+\subsection{Aufstellvorrichtungen hinzufügen}
+
+\subsection{Verkehrszeichen verändern}
+
+\subsection{Aufstellvorrichtungen löschen}
+
 
 \section{Straßenausstattung bearbeiten}
 \label{s:straus}
+Zwischen den einzelnen Objektarten-Modi kann mit den Tabs auf der rechten Seite umgeschaltet werden. Durch Klick auf \verb|Ausst.| wird die Bearbeitung von punktueller Straßenausstattung ermöglicht.
+
+
+\clearpage
+
+\newglossaryentry{Suchfenster}
+{
+    name=Suchfenster,
+    description={Dieses Auswahlmenü unterstützt die Suche in den Klartexten. Hierbei kann auch nach Teilen gesucht werden. Bei Eingabe von ``rad'' würde nicht nur der ``Fahrradweg'' gefunden werden sondern auch der ``Mehrzweckstreifen mit Fahrradbenutzung''}
+}
+\newglossaryentry{Querschnitt}
+{
+    name=Querschnitt,
+    description={Ein Querschnitt ist eine Fläche.}
+}
+
+\printglossaries
 
 \end{document}
