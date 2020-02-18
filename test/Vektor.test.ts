@@ -2,7 +2,7 @@
 
 /**
  * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
- * @version 2020.01.28
+ * @version 2020.02.18
  * @license GPL-3.0-or-later
 */
 
@@ -52,9 +52,34 @@ describe('Vektor', function () {
 
     it('skalar()', function () {
         expect(function () { Vektor.skalar([0, 2, 1], [1, 1]) }).to.throw()
+        expect(Vektor.skalar([1, 2, 3], [4, 5, 6])).eq(32)
     })
 
     it('kreuz()', function () {
+        let vec = Vektor.kreuz([1, 2, 3], [4, 5, 6]);
+        expect(vec[0]).eq(-3)
+        expect(vec[1]).eq(6)
+        expect(vec[2]).eq(-3)
+
         expect(function () { Vektor.kreuz([0, 2, 1], [1, 1]) }).to.throw()
+    })
+
+    it('line_len()', function () {
+        expect(Vektor.line_len([[0, 2], [3, 6]])).eq(5);
+    })
+
+    it('azi()', function () {
+        expect(Vektor.azi([0, 2], [1, 3])).approximately(0.785398, 0.0001);
+        expect(Vektor.azi([0, 2], [1, 1])).approximately(5.49779, 0.0001);
+    })
+
+    it('azi2vec()', function () {
+        let vec = Vektor.azi2vec(0.785398);
+        expect(vec[0]).approximately(0.70710, 0.0001);
+        expect(vec[1]).approximately(0.70710, 0.0001);
+    })
+
+    it('winkel()', function () {
+        expect(Vektor.winkel([1, 1])).approximately(0.785398, 0.0001);
     })
 })

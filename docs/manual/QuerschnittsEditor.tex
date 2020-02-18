@@ -18,9 +18,6 @@
 \usepackage{todonotes}
 \usepackage{amsmath}
 
-\usepackage[toc]{glossaries}
-\makeglossaries
-
 \usepackage{multirow}
 
 \newcommand*\justify{%
@@ -65,7 +62,22 @@
 %\usepackage[style=authoryear,citestyle=authoryear,natbib=true]{biblatex}
 %\bibliography{Thesis.bib}
 \usepackage[round]{natbib}
-\bibliographystyle{hcu}
+%\bibliographystyle{hcu}
+
+
+\usepackage[toc]{glossaries}
+\makeglossaries
+
+\newglossaryentry{Suchfenster}
+{
+    name=Suchfenster,
+    description={Dieses Auswahlmenü unterstützt die Suche in den Klartexten. Hierbei kann auch nach Teilen gesucht werden. Bei Eingabe von ``rad'' würde nicht nur der ``Fahrradweg'' gefunden werden sondern auch der ``Mehrzweckstreifen mit Fahrradbenutzung''}
+}
+\newglossaryentry{Querschnitt}
+{
+    name=Querschnitt,
+    description={Ein Querschnitt ist eine Fläche eines Querschnittes.}
+}
 
 \begin{document}
 \pagenumbering{Roman}
@@ -205,7 +217,7 @@ Fehlende \Gls{Querschnitt}sflächen können mit dem Tool \verb|Fläche hinzufüg
 Attribute von \Gls{Querschnitt}sflächen können mit dem Tool \verb|Fläche ändern| angepasst werden. Das Tool unterstützt die Änderungen von einzelnen und mehreren Flächen.
 
 \paragraph{Einzeländerung}
-\label{p:flächeeinzeln}
+\label{p:flaecheeinzeln}
 Um eine Fläche einzeln zu bearbeiten, kann diese einfach in der Karte per Klick ausgewählt werden. Im rechten Rand werden nun die Informationen der Fläche angezeigt. Die Eigenschaften Art und Art der Oberfläche lassen sich mit \Gls{Suchfenster}n auswählen und ändern. Die Breite der Fläche kann per Zahleneingabe in Zentimetern angepasst werden. Alle Änderungen in diesem Menü müssen mit \verb|Speichern| übernommen werden. Ansonsten werden bei der Auswahl einer anderen Fläche oder beim Umschalten des Werkzeuges die neuen Eigenschaften verworfen.
 
 \paragraph{Mehrfachänderung}
@@ -214,7 +226,7 @@ Das Werkzeug unterstützt auch die Änderung mehrerer Flächen mit einmal hierf�
 Im rechten Rand wird nun die Art und die Art der Oberfläche der gewählten Flächen sowie deren Anzahl angezeigt. Sofern sich die Attribute der einzelnen Flächen unterscheiden, wird im entsprechenden Feld ``- verschiedene -'' angezeigt. Durch Auswahl eines anderen Wertes in den beiden \Gls{Suchfenster}n, wird das geänderte Attribut für alle ausgewählten Abschnitte gesetzt.
 
 \subsection{Flächen anpassen}
-Neben der Bearbeitung von Flächen durch Eingabe von Breiten in der Attributtabelle (siehe \autoref{p:flächeeinzeln}) ist es auch möglich, diese in der Karte zu verändern. Auch hierfür dient das Werkzeug \verb|Fläche ändern|. Durch Auswahl einer Querschnittsfläche erscheinen auf der der Achse abgewandten Trennlinie ein roter und ein grüner Punkt. An diesen Punkten kann mittels Klicken und Ziehen die Breite verändert werden. Die Punkte können nur auf der schwarzen Linie der von- oder bis-Station verschoben werden. Während des Verschiebens erscheint eine Vorschau der neuen Trennlinie. Beim Loslassen des Punktes wird die veränderte Fläche gespeichert.
+Neben der Bearbeitung von Flächen durch Eingabe von Breiten in der Attributtabelle (siehe \autoref{p:flaecheeinzeln}) ist es auch möglich, diese in der Karte zu verändern. Auch hierfür dient das Werkzeug \verb|Fläche ändern|. Durch Auswahl einer Querschnittsfläche erscheinen auf der der Achse abgewandten Trennlinie ein roter und ein grüner Punkt. An diesen Punkten kann mittels Klicken und Ziehen die Breite verändert werden. Die Punkte können nur auf der schwarzen Linie der von- oder bis-Station verschoben werden. Während des Verschiebens erscheint eine Vorschau der neuen Trennlinie. Beim Loslassen des Punktes wird die veränderte Fläche gespeichert.
 
 Mit den Schaltflächen unter der Attributtabelle lassen sich Einstellungen der Manipulation der Flächen anpassen. Mit den Radioknöpfen \verb|...verschieben| und \verb|...anpassen| verändert sich das Verhalten der weiter außen liegenden Querschnitte. Bei der Manipulation werden diese je nach gewählter Einstellung verschoben oder in ihrer Breite so verändert, dass die Änderung der manipulierten Fläche ausgeglichen wird.
 
@@ -285,17 +297,6 @@ Attribute können nach dem Auswählen einer Straßenausstattung in dem Formular 
 Um Straßenausstattungen zu löschen, wird das Werkzeug \verb|Ausstatt. löschen| aktiviert. Anschließend kann mit einem Klick auf eine Straßenausstattung in der Karte diese zum Löschen vorausgewählt werden. Am rechten Rand werden die Attribute angezeigt. Mit einem Klick auf \verb|Löschen| wird das Objekt gelöscht.
 
 \clearpage
-
-\newglossaryentry{Suchfenster}
-{
-    name=Suchfenster,
-    description={Dieses Auswahlmenü unterstützt die Suche in den Klartexten. Hierbei kann auch nach Teilen gesucht werden. Bei Eingabe von ``rad'' würde nicht nur der ``Fahrradweg'' gefunden werden sondern auch der ``Mehrzweckstreifen mit Fahrradbenutzung''}
-}
-\newglossaryentry{Querschnitt}
-{
-    name=Querschnitt,
-    description={Ein Querschnitt ist eine Fläche.}
-}
 
 \printglossaries
 
