@@ -41,6 +41,7 @@
     "jquery": "^3.4.1",
     "jquery-ui": "^1.12.1",
     "jquery-ui-bundle": "^1.12.1-migrate",
+    "mocha": "^7.0.1",
     "ol": "^6.2.1",
     "proj4": "^2.6.0",
     "regenerator-runtime": "^0.13.2",
@@ -50,7 +51,7 @@
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@types/chai": "^4.2.9",
-    "@types/mocha": "^5.2.7",
+    "@types/mocha": "^7.0.1",
     "chai": "^4.2.0",
     "cssnano": "^4.1.10",
     "nyc": "^15.0.0",
