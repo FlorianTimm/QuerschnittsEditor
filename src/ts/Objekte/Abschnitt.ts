@@ -377,6 +377,27 @@ export default class Abschnitt extends Feature {
         return posi.sort(Abschnitt.sortStationierungen)[0]
     }
 
+
+    /**
+ * Berechnet eine Station
+ */
+    public stationierePunkt(station: number, abstand: number): number[] {
+        let punkte = this.calcPunkte();
+        let r: LinienPunkt[] = []
+
+        station = station / this.getFaktor();
+
+        for (let i = 0; i < punkte.length; i++) {
+            let pkt = punkte[i]
+            if (pkt.vorherLaenge <= station && pkt.vorherLaenge + pkt.laengeZumNaechsten >= station) {
+                let fusspkt = Vektor.sum(pkt.pkt, Vektor.multi(pkt.vektorZumNaechsten, (station - pkt.vorherLaenge) / pkt.laengeZumNaechsten))
+                return Vektor.sum(fusspkt, Vektor.multi(pkt.seitlicherVektorAmPunkt, -abstand))
+            }
+        }
+
+        return null;
+    }
+
     getWinkel(station: number): number {
         let punkte = this.calcPunkte()
 
