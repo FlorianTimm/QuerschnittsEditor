@@ -320,6 +320,7 @@ export default class QuerModifyTool extends Tool {
     private singleSelect() {
         console.log("singleSelect")
         $(this.multiEditForm).hide("fast");
+        $(this.moveTypeForm).show("fast");
 
         this.setModifyActive(true);
         this.info.featureSelect(this.selectFlaechen, true);

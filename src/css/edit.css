@@ -26,6 +26,9 @@ body,
     right: 20px;
     top: 10px;
     width: 210px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: 95%;
 }
 
 #tabs .ui-tabs-panel,

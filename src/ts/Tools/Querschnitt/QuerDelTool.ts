@@ -59,7 +59,7 @@ class QuerDelTool extends Tool {
 
     private confirmedDelete(querschnitt: Querschnitt) {
         if (querschnitt.getStreifen() == 'M') return; // Keine Mittelstreifen löschen
-        querschnitt.getStreifennr
+        this.info.hideInfoBox();
         let gesStreifen = querschnitt.getStation().getStreifen(querschnitt.getStreifen());
         querschnitt.getStation().deleteStreifen(querschnitt.getStreifen(), querschnitt.getStreifennr());
 

@@ -39,7 +39,7 @@ export default class DeleteTool extends Tool {
         let button = document.createElement("button");
         button.addEventListener("click", (event: MouseEvent) => {
             event.preventDefault();
-            this._featureDelete()
+            this.featureDelete()
         })
         button.innerHTML = "L&ouml;schen";
         this.delField.appendChild(button);
@@ -48,10 +48,10 @@ export default class DeleteTool extends Tool {
             layers: [this.layer],
             hitTolerance: 10
         });
-        this.select.on('select', this._featureSelected.bind(this))
+        this.select.on('select', this.featureSelected.bind(this))
     }
 
-    _featureSelected(event: SelectEvent) {
+    protected featureSelected(event: SelectEvent) {
         if (event.selected.length == 0) {
             this.delField.style.display = "none";
             return;
@@ -59,11 +59,10 @@ export default class DeleteTool extends Tool {
         this.delField.style.display = "block";
         let auswahl = <InfoToolSelectable>event.selected[0];
 
-        this.delField;
         auswahl.getInfoForm(this.infoField);
     }
 
-    _featureDelete() {
+    protected featureDelete() {
         let feature = this.select.getFeatures().getArray()[0] as PunktObjekt;
         console.log(feature);
         let update = '<wfs:Delete typeName="' + this.objekt + '">\n' +
