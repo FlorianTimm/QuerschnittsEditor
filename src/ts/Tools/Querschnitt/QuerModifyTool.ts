@@ -157,7 +157,9 @@ export default class QuerModifyTool extends Tool {
         for (let i = 0; i < punkte.length; i++) {
             let pkt = punkte[i]
             let faktor = (pkt.vorherLaenge - erster.vorherLaenge) / (letzter.vorherLaenge - erster.vorherLaenge);
-            let coord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff2 + abstVst)));
+            if (pkt.vektorZumNaechsten)
+                pkt.seitenFaktor = 1. / Math.sin(Vektor.winkel(pkt.seitlicherVektorAmPunkt, pkt.vektorZumNaechsten))
+            let coord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff2 + abstVst) * pkt.seitenFaktor));
             if (isNaN(coord[0]) || isNaN(coord[1])) {
                 console.log("Fehler: keine Koordinaten");
                 continue;
@@ -352,9 +354,7 @@ export default class QuerModifyTool extends Tool {
 
         let art = selection[0].getArt() ? selection[0].getArt().getXlink() : null;
         let ober = selection[0].getArtober() ? selection[0].getArtober().getXlink() : null;
-        console.log(art)
         for (let querschnitt of selection) {
-            console.log(querschnitt.getArt());
             if (art != (querschnitt.getArt() ? querschnitt.getArt().getXlink() : null))
                 art = null;
             if (ober != (querschnitt.getArtober() ? querschnitt.getArtober().getXlink() : null))
@@ -452,7 +452,9 @@ export default class QuerModifyTool extends Tool {
         this.map.removeInteraction(this.modify);
         this.map.removeInteraction(this.snapTrenn);
         this.map.removeInteraction(this.snapStation);
-
+        this.modifyLayer.getSource().clear();
+        this.selectFlaechen.getFeatures().clear();
+        this.selectLinien.getFeatures().clear();
         $(this.multiEditForm).hide("hide");
     }
 }

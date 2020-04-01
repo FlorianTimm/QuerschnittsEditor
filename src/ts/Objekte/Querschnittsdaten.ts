@@ -82,7 +82,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         return Querschnitt._loadER_Callback(xml);
     }
 
-    static _loadER_Callback(xml: Document): Promise<Querschnitt[]> {
+    static async _loadER_Callback(xml: Document): Promise<Querschnitt[]> {
         let dotquer = xml.getElementsByTagName("Dotquer");
         let tasks: Promise<Querschnitt>[] = [];
         for (let i = 0; i < dotquer.length; i++) {
@@ -103,6 +103,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         let seite = this.station.getStreifen(this.streifen);
 
         if (this.streifen == "M") {
+            // Faktor 0.005 => cm -> m und Halbieren bei Mittelstreifen
             this.XVstL = 0.005 * this.breite;
             this.XVstR = 0.005 * this.breite;
             this.XBstL = 0.005 * this.bisBreite;
@@ -145,7 +146,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         $(art.select).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Lage
-        let lage = Klartext.createKlartextSelectForm("Itquerober", form, "Lage", "ober", querschnitt != undefined ? querschnitt.artober : undefined);
+        let lage = Klartext.createKlartextSelectForm("Itquerober", form, "Art der Oberfläche", "ober", querschnitt != undefined ? querschnitt.artober : undefined);
         $(lage.select).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Breite
@@ -233,6 +234,12 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         let l = [];
         let r = [];
 
+        if (this.XVstR == null) {
+            console.log("keine X-Abstände")
+            this.check();
+            console.log(this)
+        }
+
         let abst1 = this.XVstR
         let diff1 = this.XBstR - abst1
         let abst2 = this.XVstL
@@ -246,7 +253,9 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         for (let i = 0; i < punkte.length; i++) {
             let pkt = punkte[i]
             let faktor = (pkt.vorherLaenge - erster.vorherLaenge) / (letzter.vorherLaenge - erster.vorherLaenge);
-            let coord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff2 + abst2)));
+            if (pkt.vektorZumNaechsten)
+                pkt.seitenFaktor = 1. / Math.sin(Vektor.winkel(pkt.seitlicherVektorAmPunkt, pkt.vektorZumNaechsten))
+            let coord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff2 + abst2) * pkt.seitenFaktor));
             if (isNaN(coord[0]) || isNaN(coord[1])) {
                 console.log("Fehler: keine Koordinaten");
                 continue;
@@ -258,7 +267,9 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         for (let i = punkte.length - 1; i >= 0; i--) {
             let pkt = punkte[i]
             let faktor = (pkt.vorherLaenge - erster.vorherLaenge) / (letzter.vorherLaenge - erster.vorherLaenge);
-            let coord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff1 + abst1)));
+            if (pkt.vektorZumNaechsten)
+                pkt.seitenFaktor = 1. / Math.sin(Vektor.winkel(pkt.seitlicherVektorAmPunkt, pkt.vektorZumNaechsten))
+            let coord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff1 + abst1) * pkt.seitenFaktor));
             if (isNaN(coord[0]) || isNaN(coord[1])) {
                 console.log("Fehler: keine Koordinaten");
                 continue;
@@ -303,24 +314,28 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         }));
     }
 
-    public changeAttributes(form: HTMLFormElement): Promise<void> {
+    public async changeAttributes(form: HTMLFormElement): Promise<void> {
         let changes: { [attribut: string]: any } = {}
         let artXlink = $(form).children().children("#art").val() as string
-        if (artXlink != this.getArt().getXlink()) {
+        if (!this.getArt() || artXlink != this.getArt().getXlink()) {
             this.setArt(artXlink as string)
             changes["art"] = artXlink
         }
         let oberXlink = $(form).children().children("#ober").val() as string
-        if (oberXlink != this.getArtober().getXlink()) {
+        if (!this.getArtober() || oberXlink != this.getArtober().getXlink()) {
             this.setArtober(oberXlink as string)
             changes["artober"] = oberXlink;
         }
-
-        return Promise.all([
-            PublicWFS.doTransaction(this.createUpdateXML(changes)),
-            this.updateInfoBreite(form)
-        ]).then(() => { Promise.resolve() })
-            .catch(() => { Promise.reject() });;
+        try {
+            await Promise.all([
+                PublicWFS.doTransaction(this.createUpdateXML(changes)),
+                this.updateInfoBreite(form)
+            ]);
+            Promise.resolve();
+        }
+        catch (e) {
+            Promise.reject();
+        };
     };
 
     private updateInfoBreite(form: HTMLFormElement): Promise<any> {

@@ -1,17 +1,20 @@
+Ãœberschneidung bei starken Radien von Kurven
+M0 hatte eine Breite - Bearbeitung ermÃ¶glichen
+Mittelachsen hinzufÃ¼gen, falls nicht vorhanden
 
-Auch mittlere Punkte von Querschnitten können verschoben werden
+
+
+Auch mittlere Punkte von Querschnitten kÃ¶nnen verschoben werden
 Keine Anzeige bei Multiselect und gleichen Attributen (Art/ArtOber)
-Absturz bei großen Daten
+Absturz bei groÃŸen Daten
 
 
-
-
-
+x Lage unausgefÃ¼llt - Ã¤nderbar machen
 x Suchfeld sortieren, nach erster Zahl sortieren
 x Suchfeld maximale Breite festlegen
 x neue Querschnitte ohn VstL usw anzeigen
-x Straßenbezug (3 Optionen, voreingestellt: aktuelle Straße)
+x StraÃŸenbezug (3 Optionen, voreingestellt: aktuelle StraÃŸe)
 x Aufstelldatum (leer, Datum)
 x Variable Text bei Schild (Zeichensatz)
 x Externe Objektnummer bei Schildern
-x Schild wirklich löschen, wenn Löschen gewählt wird
+x Schild wirklich lÃ¶schen, wenn LÃ¶schen gewÃ¤hlt wird
