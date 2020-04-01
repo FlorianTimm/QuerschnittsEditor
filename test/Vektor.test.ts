@@ -80,6 +80,6 @@ describe('Vektor', function () {
     })
 
     it('winkel()', function () {
-        expect(Vektor.winkel([1, 1])).approximately(0.785398, 0.0001);
+        expect(Vektor.richtung([1, 1])).approximately(0.785398, 0.0001);
     })
 })

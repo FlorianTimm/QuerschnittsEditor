@@ -383,7 +383,7 @@ export default class Abschnitt extends Feature {
         for (let i = 0; i < punkte.length - 1; i++) {
             let pkt = punkte[i]
             if (station > pkt.vorherLaenge && station < pkt.vorherLaenge + pkt.laengeZumNaechsten)
-                return Vektor.winkel(pkt.vektorZumNaechsten)
+                return Vektor.richtung(pkt.vektorZumNaechsten)
         }
         return 0;
     }
@@ -521,6 +521,7 @@ export class LinienPunkt {
     vorherLaenge: number;
     vektorZumNaechsten: number[] | null = null;
     laengeZumNaechsten: number | null = null;
+    seitenFaktor: number = 1.;
 
     constructor(pkt: number[], seitlicherVektorAmPunkt: number[], vorherLaenge: number, vektorZumNaechsten: number[] | null = null) {
         this.pkt = pkt;
