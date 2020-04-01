@@ -227,7 +227,7 @@ function createMap() {
                 name: 'LGV DOP 2017',
                 visible: false,
                 switchable: true,
-                opacity: 0.7,
+                opacity: 1.0,
                 source: new TileWMS({
                     url: 'http://geodienste.hamburg.de/HH_WMS_DOP10',
                     params: {
@@ -251,7 +251,20 @@ function createMap() {
                     attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
                 })
             }),
-
+            new TileLayer({
+                name: 'LGV DOP 2019 belaubt',
+                visible: false,
+                switchable: true,
+                opacity: 1.0,
+                source: new TileWMS({
+                    url: 'https://geodienste.hamburg.de/HH_WMS_DOP_belaubt',
+                    params: {
+                        'LAYERS': '1',
+                        'FORMAT': 'image/png'
+                    },
+                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
+                })
+            }),
             new TileLayer({
                 name: 'CAD-Daten',
                 visible: false,
