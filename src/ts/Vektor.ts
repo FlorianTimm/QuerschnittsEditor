@@ -119,8 +119,14 @@ export default class Vektor {
         return [Math.cos(azi), Math.sin(azi)]
     }
 
-    static winkel(vek: number[]) {
+    static richtung(vek: number[]) {
         return Math.atan2(vek[0], vek[1]);
+    }
+
+    static winkel(vektor1: number[], vektor2: number[]) {
+        let winkel = Vektor.richtung(vektor2) - Vektor.richtung(vektor1);
+        if (winkel < 0) winkel += 2 * Math.PI;
+        return winkel;
     }
 
 }
