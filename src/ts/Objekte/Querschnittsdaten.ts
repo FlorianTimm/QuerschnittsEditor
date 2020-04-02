@@ -12,7 +12,7 @@ import Klartext from './Klartext';
 import HTML from '../HTML';
 import { InfoToolEditable } from '../Tools/InfoTool';
 import PrimaerObjekt from './prototypes/PrimaerObjekt';
-import VectorLayer from 'ol/layer/Vector';
+import { VectorLayer } from '../openLayers/Layer';
 import VectorSource from 'ol/source/Vector';
 import { Style, Stroke, Text, Fill } from 'ol/style';
 import { FeatureLike } from 'ol/Feature';
@@ -630,6 +630,8 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             }
 
             Querschnitt.layerQuer = new VectorLayer({
+                name: "Querschnitte (Bearbeitung)",
+                switchable: true,
                 source: new VectorSource(),
                 style: createStyle
             });
