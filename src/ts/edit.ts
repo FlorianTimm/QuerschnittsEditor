@@ -296,7 +296,7 @@ function createMap() {
             }),
 
             new TileLayer({
-                name: "Querschnitte gruppiert",
+                name: "Querschnitte (vorberechnet)",
                 visible: false,
                 switchable: true,
                 opacity: 0.6,
