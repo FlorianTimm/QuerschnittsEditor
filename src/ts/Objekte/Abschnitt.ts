@@ -398,7 +398,7 @@ export default class Abschnitt extends Feature<LineString> {
         for (let i = 0; i < punkte.length; i++) {
             let pkt = punkte[i]
             if (pkt.vorherLaenge <= station && pkt.vorherLaenge + pkt.laengeZumNaechsten >= station) {
-                let fusspkt = Vektor.sum(pkt.pkt, Vektor.multi(pkt.vektorZumNaechsten, (station - pkt.vorherLaenge) / pkt.laengeZumNaechsten))
+                let fusspkt = Vektor.sum(pkt.getCoordinates(), Vektor.multi(pkt.vektorZumNaechsten, (station - pkt.vorherLaenge) / pkt.laengeZumNaechsten))
                 return Vektor.sum(fusspkt, Vektor.multi(pkt.seitlicherVektorAmPunkt, -abstand))
             }
         }
