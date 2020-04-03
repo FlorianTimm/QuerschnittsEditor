@@ -4,7 +4,7 @@ import { Circle, Style, Stroke, Fill } from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
 import { Vector as VectorSource } from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
-import { LineString, Point } from 'ol/geom';
+import { LineString, Point, Geometry } from 'ol/geom';
 import Feature from 'ol/Feature';
 import { never as neverCondition } from 'ol/events/condition';
 import { MapBrowserEvent } from 'ol';
@@ -21,15 +21,15 @@ import Map from "../openLayers/Map";
 /**
  * Funktion zum Verschieben von Punktobjekten
  * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
- * @version 2019.10.29
+ * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
 export default class MoveTool extends Tool {
     private infoTool: InfoTool;
     private select: SelectInteraction;
-    private v_overlay: VectorSource;
+    private v_overlay: VectorSource<Geometry>;
     private l_overlay: VectorLayer;
-    private feat_station_line: Feature;
+    private feat_station_line: Feature<LineString>;
     private modify: ModifyInteraction;
 
     constructor(map: Map, avInfoTool: InfoTool, selectLayer: VectorLayer) {
@@ -66,7 +66,7 @@ export default class MoveTool extends Tool {
                 }),
             })
         });
-        this.feat_station_line = new Feature({ geometry: new LineString([[0, 0], [0, 0]]) });
+        this.feat_station_line = new Feature<LineString>({ geometry: new LineString([[0, 0], [0, 0]]) });
         this.feat_station_line.setStyle(new Style({
             stroke: new Stroke({
                 color: 'rgba(0, 0, 255, 0.5)',

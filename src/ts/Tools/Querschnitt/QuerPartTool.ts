@@ -9,7 +9,7 @@ import { LineString } from 'ol/geom';
 import Feature, { FeatureLike } from 'ol/Feature';
 import Tool from '../prototypes/Tool';
 import QuerInfoTool from './QuerInfoTool';
-import { MapBrowserPointerEvent } from 'ol';
+import { MapBrowserPointerEvent, MapBrowserEvent } from 'ol';
 import Map from "../../openLayers/Map";
 import Abschnitt, { StationObj } from '../../Objekte/Abschnitt';
 import HTML from '../../HTML';
@@ -18,15 +18,15 @@ import PublicWFS from '../../PublicWFS';
 /**
  * Funktion zum Teilen von Querschnittsflächen
  * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
- * @version 2019.05.20
+ * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
 class QuerPartTool extends Tool {
     private info: QuerInfoTool;
     private select: SelectInteraction;
     private l_overlay: VectorLayer;
-    private feat_teilung: Feature;
-    private feat_station_line: Feature;
+    private feat_teilung: Feature<LineString>;
+    private feat_station_line: Feature<LineString>;
     private abschnitt: Abschnitt | undefined;
     private station: number;
     private init: boolean = false;
@@ -83,12 +83,12 @@ class QuerPartTool extends Tool {
                 });
             }
         });
-        this.feat_teilung = new Feature({
+        this.feat_teilung = new Feature<LineString>({
             geometry: new LineString([[0, 0], [0, 0]]),
             color: 'rgba(255, 0, 0, 1)'
         });
         v_overlay.addFeature(this.feat_teilung);
-        this.feat_station_line = new Feature({
+        this.feat_station_line = new Feature<LineString>({
             geometry: new LineString([[0, 0], [0, 0]]),
             color: 'rgba(0, 0, 255, 0.5)'
         });

@@ -118,11 +118,11 @@ export default class QuerStation {
         let erster = this.linienPunkte[0]
         let letzter = this.linienPunkte[this.linienPunkte.length - 1];
         let statTrenn = [];
-        statTrenn.push([Vektor.sum(letzter.pkt, Vektor.multi(letzter.seitlicherVektorAmPunkt, 30)), Vektor.sum(letzter.pkt, Vektor.multi(letzter.seitlicherVektorAmPunkt, -30))]);
-        QuerStation.layerStation.getSource().addFeature(new Feature({ geom: new Point(letzter.pkt) }));
+        statTrenn.push([Vektor.sum(letzter.getCoordinates(), Vektor.multi(letzter.seitlicherVektorAmPunkt, 30)), Vektor.sum(letzter.getCoordinates(), Vektor.multi(letzter.seitlicherVektorAmPunkt, -30))]);
+        QuerStation.layerStation.getSource().addFeature(new Feature({ geom: new Point(letzter.getCoordinates()) }));
         if (this.vst == 0) {
-            statTrenn.push([Vektor.sum(erster.pkt, Vektor.multi(erster.seitlicherVektorAmPunkt, 30)), Vektor.sum(erster.pkt, Vektor.multi(erster.seitlicherVektorAmPunkt, -30))]);
-            QuerStation.layerStation.getSource().addFeature(new Feature({ geom: new Point(erster.pkt) }));
+            statTrenn.push([Vektor.sum(erster.getCoordinates(), Vektor.multi(erster.seitlicherVektorAmPunkt, 30)), Vektor.sum(erster.getCoordinates(), Vektor.multi(erster.seitlicherVektorAmPunkt, -30))]);
+            QuerStation.layerStation.getSource().addFeature(new Feature({ geom: new Point(erster.getCoordinates()) }));
         }
 
         if (this.linie) {

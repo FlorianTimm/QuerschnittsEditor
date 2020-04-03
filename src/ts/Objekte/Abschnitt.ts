@@ -20,10 +20,10 @@ var CONFIG: { [index: string]: string } = require('../config.json');
 /**
  * Straßenabschnitt
  * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
- * @version 2019.10.29
+ * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
-export default class Abschnitt extends Feature {
+export default class Abschnitt extends Feature<LineString> {
     private static abschnitte: { [absid: number]: Abschnitt } = {}
     private static waitForAbschnitt: { [absid: number]: Promise<Abschnitt> } = {}
 
@@ -51,6 +51,10 @@ export default class Abschnitt extends Feature {
     private constructor() {
         super();
         Abschnitt.getLayer().getSource().addFeature(this);
+    }
+
+    public static getAll(): { [absid: number]: Abschnitt } {
+        return this.abschnitte;
     }
 
     public static getAbschnitt(absId: string): Promise<Abschnitt> {
@@ -248,6 +252,10 @@ export default class Abschnitt extends Feature {
         this._station[station.getVst()] = station;
     }
 
+    public getAlleStationen(): { [vst: number]: QuerStation } {
+        return this._station;
+    }
+
     public getStation(station: number): QuerStation {
         return this._station[station];
     }
@@ -337,10 +345,10 @@ export default class Abschnitt extends Feature {
             let obj: StationObj = new StationObj();
 
             // Position des Fusspunktes auf dem Segment relativ zwischen 0 und 1
-            let faktor = (Vektor.skalar(Vektor.diff(point, pkt.pkt), pkt.vektorZumNaechsten)) / (Vektor.skalar(pkt.vektorZumNaechsten, pkt.vektorZumNaechsten))
+            let faktor = (Vektor.skalar(Vektor.diff(point, pkt.getCoordinates()), pkt.vektorZumNaechsten)) / (Vektor.skalar(pkt.vektorZumNaechsten, pkt.vektorZumNaechsten))
 
             // Abstand und Lot berechnen
-            let fusspkt_genau = Vektor.sum(pkt.pkt, Vektor.multi(pkt.vektorZumNaechsten, faktor))
+            let fusspkt_genau = Vektor.sum(pkt.getCoordinates(), Vektor.multi(pkt.vektorZumNaechsten, faktor))
             let lot = Vektor.diff(point, fusspkt_genau)
             obj.abstand = Math.round(Vektor.len(lot) * Math.pow(10, anzNachKomma)) / Math.pow(10, anzNachKomma)
 
@@ -357,7 +365,7 @@ export default class Abschnitt extends Feature {
 
             // Position des Fußpunktes der gerundeten Station bestimmen
             faktor = (obj.station - minStation_genau) / (maxStation_genau - minStation_genau)
-            obj.fusspkt = Vektor.sum(pkt.pkt, Vektor.multi(pkt.vektorZumNaechsten, faktor))
+            obj.fusspkt = Vektor.sum(pkt.getCoordinates(), Vektor.multi(pkt.vektorZumNaechsten, faktor))
 
             obj.seite = 'M'
             if (obj.abstand > 0.01) {
@@ -389,6 +397,8 @@ export default class Abschnitt extends Feature {
     }
 
     public getAbschnitt(vst: number, bst: number) {
+        if (vst > bst || bst > this.getLen()) throw Error("VST größer BST oder BST größer als Abschnitt");
+
         let punkte = this.calcPunkte();
         let r: LinienPunkt[] = []
 
@@ -401,14 +411,14 @@ export default class Abschnitt extends Feature {
                 r.push(pkt);
             } else if (pkt.laengeZumNaechsten && pkt.vorherLaenge < vst && pkt.vorherLaenge + pkt.laengeZumNaechsten > vst) {
                 let faktor = (vst - pkt.vorherLaenge) / pkt.laengeZumNaechsten
-                let koord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.vektorZumNaechsten, faktor));
+                let koord = Vektor.sum(pkt.getCoordinates(), Vektor.multi(pkt.vektorZumNaechsten, faktor));
                 let pktNeu = new LinienPunkt(koord, Vektor.einheit(Vektor.lot(pkt.vektorZumNaechsten)), vst);
                 r.push(pktNeu)
             }
 
             if (pkt.laengeZumNaechsten && pkt.vorherLaenge < bst && pkt.vorherLaenge + pkt.laengeZumNaechsten > bst) {
                 let faktor = (bst - pkt.vorherLaenge) / pkt.laengeZumNaechsten
-                let koord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.vektorZumNaechsten, faktor));
+                let koord = Vektor.sum(pkt.getCoordinates(), Vektor.multi(pkt.vektorZumNaechsten, faktor));
                 let pktNeu = new LinienPunkt(koord, Vektor.einheit(Vektor.lot(pkt.vektorZumNaechsten)), bst);
                 r.push(pktNeu)
             }
@@ -500,6 +510,10 @@ export default class Abschnitt extends Feature {
         return this.fid;
     }
 
+    getLen(): number {
+        return this.len;
+    }
+
     //Setter
     addOKinER(ok: string, value: boolean = true) {
         this.inER[ok] = value;
@@ -515,8 +529,7 @@ export class StationObj {
     neuerPkt: number[] = [];
 }
 
-export class LinienPunkt {
-    pkt: number[];
+export class LinienPunkt extends Point {
     seitlicherVektorAmPunkt: number[];
     vorherLaenge: number;
     vektorZumNaechsten: number[] | null = null;
@@ -524,7 +537,7 @@ export class LinienPunkt {
     seitenFaktor: number = 1.;
 
     constructor(pkt: number[], seitlicherVektorAmPunkt: number[], vorherLaenge: number, vektorZumNaechsten: number[] | null = null) {
-        this.pkt = pkt;
+        super(pkt);
         this.seitlicherVektorAmPunkt = seitlicherVektorAmPunkt;
         this.vorherLaenge = vorherLaenge;
         this.vektorZumNaechsten = vektorZumNaechsten;

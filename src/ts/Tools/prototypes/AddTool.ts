@@ -4,7 +4,7 @@ import { Circle, Style, Stroke, Fill } from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
 import VectorSource from 'ol/source/Vector';
 import { Vector as VectorLayer } from 'ol/layer';
-import { Point, LineString } from 'ol/geom';
+import { Point, LineString, Geometry } from 'ol/geom';
 import Feature from 'ol/Feature';
 import Tool from '../prototypes/Tool';
 import { MapBrowserEvent } from 'ol';
@@ -16,7 +16,7 @@ import PunktObjekt from '../../Objekte/prototypes/PunktObjekt';
 /**
  * Funktion zum Hinzufügen von Objekten
  * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
- * @version 2019.09.20
+ * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
 export default abstract class AddTool extends Tool {
@@ -26,11 +26,11 @@ export default abstract class AddTool extends Tool {
     protected abstand: number = null;
     protected seite: string = null;
     protected select: SelectInteraction;
-    protected v_overlay: VectorSource;
+    protected v_overlay: VectorSource<Geometry>;
     protected l_overlay: VectorLayer;
-    protected feat_station: Feature;
-    protected feat_neu: Feature;
-    protected feat_station_line: Feature;
+    protected feat_station: Feature<Point>;
+    protected feat_neu: Feature<Point>;
+    protected feat_station_line: Feature<LineString>;
     protected form: HTMLFormElement = null;
     protected sidebar: HTMLDivElement;
     private layerAchse: VectorLayer;
@@ -83,7 +83,7 @@ export default abstract class AddTool extends Tool {
                 }),
             })
         });
-        this.feat_station = new Feature({ geometry: new Point([0, 0]) });
+        this.feat_station = new Feature<Point>({ geometry: new Point([0, 0]) });
         this.feat_station.setStyle(new Style({
             image: new Circle({
                 radius: 3,
@@ -94,7 +94,7 @@ export default abstract class AddTool extends Tool {
             }),
         }));
         this.v_overlay.addFeature(this.feat_station);
-        this.feat_neu = new Feature({ geometry: new Point([0, 0]) });
+        this.feat_neu = new Feature<Point>({ geometry: new Point([0, 0]) });
         this.feat_neu.setStyle(new Style({
             image: new Circle({
                 radius: 3,
@@ -106,7 +106,7 @@ export default abstract class AddTool extends Tool {
 
         }));
         this.v_overlay.addFeature(this.feat_neu);
-        this.feat_station_line = new Feature({ geometry: new LineString([[0, 0], [0, 0]]) });
+        this.feat_station_line = new Feature<LineString>({ geometry: new LineString([[0, 0], [0, 0]]) });
         this.feat_station_line.setStyle(new Style({
             stroke: new Stroke({
                 color: 'rgba(0, 0, 255, 0.5)',
