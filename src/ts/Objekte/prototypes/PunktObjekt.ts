@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import VectorSource from 'ol/source/Vector';
-import { Vector as VectorLayer } from 'ol/layer';
 import { Style, Stroke, Fill, Circle, Text, RegularShape } from 'ol/style';
 import { Map } from 'ol';
 import { ColorLike } from "ol/colorlike";
@@ -12,11 +11,12 @@ import PObjektMitDokument from "./PObjektMitDateien";
 import { FeatureLike } from 'ol/Feature';
 import Abschnitt from '../Abschnitt';
 import Klartext from '../Klartext';
+import { VectorLayer } from '../../openLayers/Layer';
 
 /**
  * PunktObjekt
  * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
- * @version 2020.01.28
+ * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
 export default abstract class PunktObjekt extends PObjektMitDokument implements InfoToolEditable {
@@ -63,7 +63,7 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
         return this;
     }
 
-    protected static createLayer(map?: Map) {
+    protected static createLayer(map?: Map): VectorLayer {
         let layer = new VectorLayer({
             source: new VectorSource(),
             opacity: 0.7,

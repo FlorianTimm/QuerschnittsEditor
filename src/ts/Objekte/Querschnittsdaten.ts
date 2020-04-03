@@ -20,14 +20,12 @@ import { FeatureLike } from 'ol/Feature';
 /**
  * Querschnittsdaten
  * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
- * @version 2019.11.15
+ * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
 export default class Querschnitt extends PrimaerObjekt implements InfoToolEditable {
-    private _daten: Daten;
     private _aufbaudaten: { [schicht: number]: Aufbau } = null;
-
-    trenn: Feature;
+    public trenn: Feature<MultiLineString>;
 
     // SIB-Attribute
     private station: QuerStation = null;
@@ -51,13 +49,12 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
     constructor() {
         super();
-        this._daten = Daten.getInstanz();
         //console.log(daten);
 
         this.setGeometry(new Polygon([[[0, 0], [0, 0], [0, 0]]]));
         Querschnitt.getLayerFlaechen().getSource().addFeature(this)
 
-        this.trenn = new Feature({ geom: new MultiLineString([[[0, 0], [0, 0], [0, 0]]]), objekt: this });
+        this.trenn = new Feature<MultiLineString>({ geom: new MultiLineString([[[0, 0], [0, 0], [0, 0]]]), objekt: this });
         Querschnitt.getLayerTrenn().getSource().addFeature(this.trenn);
     }
 

@@ -10,11 +10,12 @@ import InfoTool from "../InfoTool";
 import { VectorLayer } from "../../openLayers/Layer";
 import Map from "../../openLayers/Map";
 import PublicWFS from "../../PublicWFS";
+import { Polygon, Geometry } from "ol/geom";
 
 /**
  * Funktion zum Löschen von Querschnitten
  * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
- * @version 2019.10.29
+ * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
 class QuerDelTool extends Tool {
@@ -114,7 +115,7 @@ class QuerDelTool extends Tool {
     private flaecheSelected() {
         this.selectLinien.getFeatures().clear();
         let auswahl = (this.selectFlaechen as SelectInteraction).getFeatures();
-        auswahl.forEach((feat: Feature) => {
+        auswahl.forEach((feat: Feature<Geometry>) => {
             this.selectLinien.getFeatures().push((feat as Querschnitt).trenn);
         })
         this.featureSelected()

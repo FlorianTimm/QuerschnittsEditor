@@ -4,34 +4,37 @@ import { Select as SelectInteraction } from 'ol/interaction';
 import Querschnitt from '../../Objekte/Querschnittsdaten';
 import QuerInfoTool from './QuerInfoTool';
 import Tool from '../prototypes/Tool';
-import { SelectEvent } from 'ol/interaction/Select';
 import InfoTool from '../InfoTool';
 import HTML from '../../HTML';
 import { VectorLayer } from '../../openLayers/Layer';
 import Map from "../../openLayers/Map";
-
 import "../../import_jquery.js";
 import 'jquery-ui-bundle';
 import 'jquery-ui-bundle/jquery-ui.css'
 import PublicWFS from '../../PublicWFS';
+import Abschnitt from '../../Objekte/Abschnitt';
+import VectorSource from 'ol/source/Vector';
+import { SelectEvent } from 'ol/interaction/Select';
 
 /**
  * Funktion zum Hinzufügen von Querschnittsflächen
  * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
- * @version 2019.10.29
+ * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
 class QuerAddTool extends Tool {
     private _info: QuerInfoTool;
     private _select: SelectInteraction;
     private form: HTMLFormElement = null;
-    button: HTMLInputElement;
+    private button: HTMLInputElement;
+    private fehlendeQuerschnitte: VectorLayer;
 
     constructor(map: Map, info: QuerInfoTool, layerTrennLinien: VectorLayer) {
         super(map);
         this._info = info;
+        this.fehlendeQuerschnitte = new VectorLayer({ source: new VectorSource() })
         this._select = new SelectInteraction({
-            layers: [layerTrennLinien],
+            layers: [layerTrennLinien, this.fehlendeQuerschnitte],
             style: InfoTool.selectStyle,
             hitTolerance: 10
         });
@@ -68,12 +71,15 @@ class QuerAddTool extends Tool {
         this.createForm();
         if (this.form != null) $(this.form).show("fast");
         this.map.addInteraction(this._select);
+        this.map.addLayer(this.fehlendeQuerschnitte);
+        this.fehlendeBestandsAchseErzeugen();
     }
 
     stop() {
         if (this.form != null) $(this.form).hide("fast");
         this.disableMenu()
         this.map.removeInteraction(this._select);
+        this.map.removeLayer(this.fehlendeQuerschnitte);
         this._info.hideInfoBox();
     }
 
@@ -117,6 +123,32 @@ class QuerAddTool extends Tool {
                 }
             }
         });
+    }
+
+    private fehlendeBestandsAchseErzeugen() {
+        this.fehlendeQuerschnitte.getSource().clear();
+        let abschnitte = Abschnitt.getAll();
+        for (let abschnittid in abschnitte) {
+            let abschnitt = abschnitte[abschnittid]
+            if (!abschnitt.isOKinER('Querschnitt')) continue;
+            let stationen = abschnitt.getAlleStationen();
+            let letzterBst = 0;
+            for (let vst in stationen) {
+                if ((Number(vst) - letzterBst) > 0) {
+                    console.log(letzterBst, stationen[vst].getVst())
+                    this.fehlendeBestandsachseGeom(abschnitt, letzterBst, stationen[vst].getVst());
+                }
+                letzterBst = stationen[vst].getBst();
+            }
+            if ((abschnitt.getLen() - letzterBst) > 0) {
+                console.log(letzterBst, abschnitt.getLen())
+            }
+        }
+    }
+
+    private fehlendeBestandsachseGeom(abschnitt: Abschnitt, vst: number, bst: number) {
+        let geom = abschnitt.getAbschnitt(vst, bst);
+
     }
 
     private async loadAufbaudaten(querschnitt: Querschnitt, seite: "R" | "L"): Promise<void> {

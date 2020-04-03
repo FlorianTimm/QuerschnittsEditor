@@ -9,7 +9,7 @@ import { SelectInteraction, ModifyInteraction } from '../../openLayers/Interacti
 import { ModifyEvent } from 'ol/interaction/Modify';
 import Querschnitt from '../../Objekte/Querschnittsdaten';
 import InfoTool from '../InfoTool';
-import { MultiLineString, Point, LineString } from 'ol/geom';
+import { MultiLineString, Point, LineString, Geometry } from 'ol/geom';
 import HTML from '../../HTML';
 import KlartextManager from '../../Objekte/Klartext';
 import Map from "../../openLayers/Map";
@@ -24,11 +24,12 @@ import { Circle, Style, Stroke, Fill } from 'ol/style';
 import { FeatureLike } from 'ol/Feature';
 import Vektor from '../../Vektor';
 import PublicWFS from '../../PublicWFS';
+import { Polygon } from 'ol/geom';
 
 /**
  * Funktion zum Verändern von Querschnittsflächen
  * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
- * @version 2019.10.29
+ * @version 200.04.03
  * @license GPL-3.0-or-later
 */
 export default class QuerModifyTool extends Tool {
@@ -262,7 +263,7 @@ export default class QuerModifyTool extends Tool {
     private flaecheSelected() {
         this.selectLinien.getFeatures().clear();
         let auswahl = this.selectFlaechen.getFeatures();
-        auswahl.forEach((feat: Feature) => {
+        auswahl.forEach((feat: Feature<Geometry>) => {
             this.selectLinien.getFeatures().push((feat as Querschnitt).trenn);
         })
 
@@ -275,7 +276,7 @@ export default class QuerModifyTool extends Tool {
         this.selectLinien.getFeatures().clear()
         this.modifyLayer.getSource().clear();
 
-        this.selectFlaechen.getFeatures().forEach((feature: Feature) => {
+        this.selectFlaechen.getFeatures().forEach((feature: Feature<Geometry>) => {
             this.selectLinien.getFeatures().push((feature as Querschnitt).trenn)
         });
 

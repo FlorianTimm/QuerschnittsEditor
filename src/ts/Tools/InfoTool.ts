@@ -2,7 +2,6 @@
 
 import { Select as SelectInteraction } from 'ol/interaction';
 import Map from '../openLayers/Map';
-import { Layer } from 'ol/layer';
 import Tool from './prototypes/Tool';
 import { SelectEvent } from 'ol/interaction/Select';
 import { Feature } from 'ol';
@@ -13,20 +12,22 @@ import GeometryType from 'ol/geom/GeometryType';
 import CircleStyle from 'ol/style/Circle';
 import { FeatureLike } from 'ol/Feature';
 import PublicWFS from '../PublicWFS';
+import { VectorLayer } from '../openLayers/Layer';
+import { Geometry } from 'ol/geom';
 
 /**
  * Funktion zum Anzeigen von Informationen zu Aufstellvorrichtungen und Schildern
  * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
- * @version 2019.10.29
+ * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
 export default class InfoTool extends Tool {
-    private layer: Layer;
+    private layer: VectorLayer;
     private infoField: HTMLFormElement;
     protected select: SelectInteraction;
     protected lastFeature: InfoToolOverlay;
 
-    constructor(map: Map, layer: Layer, sidebar: HTMLDivElement) {
+    constructor(map: Map, layer: VectorLayer, sidebar: HTMLDivElement) {
         super(map);
         this.layer = layer;
 
@@ -69,7 +70,7 @@ export default class InfoTool extends Tool {
 
     }
 
-    public getInfoFieldForFeature(feature: Feature, changeable: boolean = false) {
+    public getInfoFieldForFeature(feature: Feature<Geometry>, changeable: boolean = false) {
         this.infoField.innerHTML = "";
         let promise = (feature as InfoToolSelectable).getInfoForm(this.infoField, changeable);
         if (changeable) {
@@ -162,10 +163,10 @@ export default class InfoTool extends Tool {
     }
 }
 
-export interface InfoToolSelectable extends Feature {
+export interface InfoToolSelectable extends Feature<Geometry> {
     getInfoForm: (sidebar: HTMLElement, changeable?: boolean) => Promise<void>;
 }
-export interface InfoToolEditable extends Feature {
+export interface InfoToolEditable extends Feature<Geometry> {
     changeAttributes: (form: HTMLFormElement) => Promise<void>;
 }
 

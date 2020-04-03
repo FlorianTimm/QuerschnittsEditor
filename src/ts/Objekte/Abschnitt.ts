@@ -20,10 +20,10 @@ var CONFIG: { [index: string]: string } = require('../config.json');
 /**
  * Straßenabschnitt
  * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
- * @version 2019.10.29
+ * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
-export default class Abschnitt extends Feature {
+export default class Abschnitt extends Feature<LineString> {
     private static abschnitte: { [absid: number]: Abschnitt } = {}
     private static waitForAbschnitt: { [absid: number]: Promise<Abschnitt> } = {}
 
@@ -51,6 +51,10 @@ export default class Abschnitt extends Feature {
     private constructor() {
         super();
         Abschnitt.getLayer().getSource().addFeature(this);
+    }
+
+    public static getAll(): { [absid: number]: Abschnitt } {
+        return this.abschnitte;
     }
 
     public static getAbschnitt(absId: string): Promise<Abschnitt> {
@@ -248,6 +252,10 @@ export default class Abschnitt extends Feature {
         this._station[station.getVst()] = station;
     }
 
+    public getAlleStationen(): { [vst: number]: QuerStation } {
+        return this._station;
+    }
+
     public getStation(station: number): QuerStation {
         return this._station[station];
     }
@@ -389,6 +397,8 @@ export default class Abschnitt extends Feature {
     }
 
     public getAbschnitt(vst: number, bst: number) {
+        if (vst > bst || bst > this.getLen()) throw Error("VST größer BST oder BST größer als Abschnitt");
+
         let punkte = this.calcPunkte();
         let r: LinienPunkt[] = []
 
@@ -498,6 +508,10 @@ export default class Abschnitt extends Feature {
     }
     getFid() {
         return this.fid;
+    }
+
+    getLen(): number {
+        return this.len;
     }
 
     //Setter
