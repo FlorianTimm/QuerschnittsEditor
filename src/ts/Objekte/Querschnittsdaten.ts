@@ -12,7 +12,7 @@ import Klartext from './Klartext';
 import HTML from '../HTML';
 import { InfoToolEditable } from '../Tools/InfoTool';
 import PrimaerObjekt from './prototypes/PrimaerObjekt';
-import VectorLayer from 'ol/layer/Vector';
+import { VectorLayer } from '../openLayers/Layer';
 import VectorSource from 'ol/source/Vector';
 import { Style, Stroke, Text, Fill } from 'ol/style';
 import { FeatureLike } from 'ol/Feature';
@@ -20,14 +20,12 @@ import { FeatureLike } from 'ol/Feature';
 /**
  * Querschnittsdaten
  * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
- * @version 2019.11.15
+ * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
 export default class Querschnitt extends PrimaerObjekt implements InfoToolEditable {
-    private _daten: Daten;
     private _aufbaudaten: { [schicht: number]: Aufbau } = null;
-
-    trenn: Feature;
+    public trenn: Feature<MultiLineString>;
 
     // SIB-Attribute
     private station: QuerStation = null;
@@ -51,13 +49,12 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
     constructor() {
         super();
-        this._daten = Daten.getInstanz();
         //console.log(daten);
 
         this.setGeometry(new Polygon([[[0, 0], [0, 0], [0, 0]]]));
         Querschnitt.getLayerFlaechen().getSource().addFeature(this)
 
-        this.trenn = new Feature({ geom: new MultiLineString([[[0, 0], [0, 0], [0, 0]]]), objekt: this });
+        this.trenn = new Feature<MultiLineString>({ geom: new MultiLineString([[[0, 0], [0, 0], [0, 0]]]), objekt: this });
         Querschnitt.getLayerTrenn().getSource().addFeature(this.trenn);
     }
 
@@ -255,7 +252,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             let faktor = (pkt.vorherLaenge - erster.vorherLaenge) / (letzter.vorherLaenge - erster.vorherLaenge);
             if (pkt.vektorZumNaechsten)
                 pkt.seitenFaktor = 1. / Math.sin(Vektor.winkel(pkt.seitlicherVektorAmPunkt, pkt.vektorZumNaechsten))
-            let coord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff2 + abst2) * pkt.seitenFaktor));
+            let coord = Vektor.sum(pkt.getCoordinates(), Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff2 + abst2) * pkt.seitenFaktor));
             if (isNaN(coord[0]) || isNaN(coord[1])) {
                 console.log("Fehler: keine Koordinaten");
                 continue;
@@ -269,7 +266,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             let faktor = (pkt.vorherLaenge - erster.vorherLaenge) / (letzter.vorherLaenge - erster.vorherLaenge);
             if (pkt.vektorZumNaechsten)
                 pkt.seitenFaktor = 1. / Math.sin(Vektor.winkel(pkt.seitlicherVektorAmPunkt, pkt.vektorZumNaechsten))
-            let coord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff1 + abst1) * pkt.seitenFaktor));
+            let coord = Vektor.sum(pkt.getCoordinates(), Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff1 + abst1) * pkt.seitenFaktor));
             if (isNaN(coord[0]) || isNaN(coord[1])) {
                 console.log("Fehler: keine Koordinaten");
                 continue;
@@ -630,6 +627,8 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             }
 
             Querschnitt.layerQuer = new VectorLayer({
+                name: "Querschnitte (Bearbeitung)",
+                switchable: true,
                 source: new VectorSource(),
                 style: createStyle
             });

@@ -20,11 +20,11 @@ var CONFIG = require('../config.json');
 /**
  * Messfunktion
  * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
- * @version 2019.06.06
+ * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
 class Measure extends Tool {
-    private source: VectorSource;
+    private source: VectorSource<any>;
     private vector: VectorLayer;
     private draw: Draw;
     private measureTooltip: Overlay;
