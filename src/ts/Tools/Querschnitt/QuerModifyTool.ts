@@ -167,7 +167,7 @@ export default class QuerModifyTool extends Tool {
             let faktor = (pkt.vorherLaenge - erster.vorherLaenge) / (letzter.vorherLaenge - erster.vorherLaenge);
             if (pkt.vektorZumNaechsten)
                 pkt.seitenFaktor = 1. / Math.sin(Vektor.winkel(pkt.seitlicherVektorAmPunkt, pkt.vektorZumNaechsten))
-            let coord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff2 + abstVst) * pkt.seitenFaktor));
+            let coord = Vektor.sum(pkt.getCoordinates(), Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff2 + abstVst) * pkt.seitenFaktor));
             if (isNaN(coord[0]) || isNaN(coord[1])) {
                 console.log("Fehler: keine Koordinaten");
                 continue;
@@ -202,7 +202,7 @@ export default class QuerModifyTool extends Tool {
         let pkt = pkt_segment[(vstOrBst == 'Vst') ? 0 : (pkt_segment.length - 1)]
 
         // Abstand berechnen
-        let abstand = -Math.round((Vektor.skalar(Vektor.diff(point, pkt.pkt), pkt.seitlicherVektorAmPunkt)) / (Vektor.skalar(pkt.seitlicherVektorAmPunkt, pkt.seitlicherVektorAmPunkt)) * 100) / 100
+        let abstand = -Math.round((Vektor.skalar(Vektor.diff(point, pkt.getCoordinates()), pkt.seitlicherVektorAmPunkt)) / (Vektor.skalar(pkt.seitlicherVektorAmPunkt, pkt.seitlicherVektorAmPunkt)) * 100) / 100
         return { abstand: abstand, vstOrBst: vstOrBst, querschnitt: querschnitt }
     }
 

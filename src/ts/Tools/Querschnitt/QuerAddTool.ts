@@ -12,9 +12,15 @@ import "../../import_jquery.js";
 import 'jquery-ui-bundle';
 import 'jquery-ui-bundle/jquery-ui.css'
 import PublicWFS from '../../PublicWFS';
-import Abschnitt from '../../Objekte/Abschnitt';
+import Abschnitt, { StationObj } from '../../Objekte/Abschnitt';
 import VectorSource from 'ol/source/Vector';
 import { SelectEvent } from 'ol/interaction/Select';
+import { Feature } from 'ol';
+import { LineString } from 'ol/geom';
+import { Style, Stroke } from 'ol/style';
+import Daten from '../../Daten';
+import QuerStation from '../../Objekte/QuerStation';
+import Klartext from '../../Objekte/Klartext';
 
 /**
  * Funktion zum Hinzufügen von Querschnittsflächen
@@ -32,7 +38,16 @@ class QuerAddTool extends Tool {
     constructor(map: Map, info: QuerInfoTool, layerTrennLinien: VectorLayer) {
         super(map);
         this._info = info;
-        this.fehlendeQuerschnitte = new VectorLayer({ source: new VectorSource() })
+        this.fehlendeQuerschnitte = new VectorLayer({
+            source: new VectorSource(),
+            style: new Style({
+                stroke: new Stroke({
+                    lineDash: [2, 7],
+                    width: 5,
+                    color: 'rgb(255,255,0)'
+                })
+            })
+        })
         this._select = new SelectInteraction({
             layers: [layerTrennLinien, this.fehlendeQuerschnitte],
             style: InfoTool.selectStyle,
@@ -55,9 +70,15 @@ class QuerAddTool extends Tool {
             this.disableMenu();
             return
         }
+        if (e.selected[0].get('fehlend')) {
+            this.disableMenu();
+            let feat = e.selected[0];
+            this.generateBestandsachse(feat.get('abschnitt'), feat.get('vst'), feat.get('bst'))
+        } else {
+            (this._info as QuerInfoTool).getInfoFieldForFeature(e.selected[0].get("objekt"))
+            this.button.disabled = false;
+        }
 
-        (this._info as QuerInfoTool).getInfoFieldForFeature(e.selected[0].get("objekt"))
-        this.button.disabled = false;
     }
 
     private disableMenu() {
@@ -73,6 +94,7 @@ class QuerAddTool extends Tool {
         this.map.addInteraction(this._select);
         this.map.addLayer(this.fehlendeQuerschnitte);
         this.fehlendeBestandsAchseErzeugen();
+        console.log(this.fehlendeQuerschnitte.getSource().getFeatures())
     }
 
     stop() {
@@ -88,6 +110,7 @@ class QuerAddTool extends Tool {
         let selection = this._select.getFeatures();
         if (this._select.getFeatures().getLength() != 1) return;
         let querschnitt = <Querschnitt>selection.item(0).get('objekt');
+        console.log(querschnitt);
         let streifen = querschnitt.getStreifen();
         if (streifen == "M") {
             this.askWhichSide(querschnitt);
@@ -135,20 +158,66 @@ class QuerAddTool extends Tool {
             let letzterBst = 0;
             for (let vst in stationen) {
                 if ((Number(vst) - letzterBst) > 0) {
-                    console.log(letzterBst, stationen[vst].getVst())
                     this.fehlendeBestandsachseGeom(abschnitt, letzterBst, stationen[vst].getVst());
                 }
                 letzterBst = stationen[vst].getBst();
             }
             if ((abschnitt.getLen() - letzterBst) > 0) {
-                console.log(letzterBst, abschnitt.getLen())
+                this.fehlendeBestandsachseGeom(abschnitt, letzterBst, abschnitt.getLen());
             }
         }
     }
 
     private fehlendeBestandsachseGeom(abschnitt: Abschnitt, vst: number, bst: number) {
-        let geom = abschnitt.getAbschnitt(vst, bst);
+        let abs = abschnitt.getAbschnitt(vst, bst);
+        let geom = [];
+        for (let pkt of abs) {
+            geom.push(pkt.getCoordinates())
+        }
+        let feat = new Feature<LineString>(new LineString(geom))
+        feat.set('vst', vst);
+        feat.set('bst', bst);
+        feat.set('abschnitt', abschnitt);
+        feat.set('fehlend', true);
+        this.fehlendeQuerschnitte.getSource().addFeature(feat);
+    }
 
+    private generateBestandsachse(abschnitt: Abschnitt, vst: number, bst: number) {
+        let station = new QuerStation(abschnitt, vst, bst);
+
+        let querschnittNeu = new Querschnitt();
+        querschnittNeu.setBreite(0);
+        querschnittNeu.setBisBreite(0);
+        querschnittNeu.setStreifen('M')
+        querschnittNeu.setXBstR(0);
+        querschnittNeu.setXVstR(0);
+        querschnittNeu.setXBstL(querschnittNeu.getXBstR() - querschnittNeu.getBisBreite() / 100);
+        querschnittNeu.setXVstL(querschnittNeu.getXVstR() - querschnittNeu.getBreite() / 100);
+        querschnittNeu.setProjekt(Daten.getInstanz().ereignisraum);
+        querschnittNeu.setStreifennr(0);
+        let art = Klartext.getByKlartext('Itquerart', '999');
+        if (art) querschnittNeu.setArt(art);
+        let ober = Klartext.getByKlartext('Itquerober', '00')
+        if (ober) querschnittNeu.setArtober(ober);
+        querschnittNeu.setStation(station);
+        querschnittNeu.setVst(vst);
+        querschnittNeu.setBst(bst);
+        querschnittNeu.setAbschnittId(abschnitt.getAbschnittid());
+        let gesStreifen = station.getStreifen('M');
+        gesStreifen[querschnittNeu.getStreifennr()] = querschnittNeu;
+        //querschnittNeu.createGeom();
+        station.addQuerschnitt(querschnittNeu);
+
+        station.rewrite().then(() => {
+            PublicWFS.showMessage("Bestandsachse erzeugt")
+            this.fehlendeBestandsAchseErzeugen();
+            this._select.getFeatures().clear()
+            let neuerStreifen = station.getStreifen('M')[0];
+            console.log(neuerStreifen)
+            this._select.getFeatures().push(neuerStreifen.trenn);
+            this._info.getInfoFieldForFeature(neuerStreifen);
+            this.button.disabled = false;
+        })
     }
 
     private async loadAufbaudaten(querschnitt: Querschnitt, seite: "R" | "L"): Promise<void> {
