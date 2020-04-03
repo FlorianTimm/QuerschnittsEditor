@@ -188,7 +188,7 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         let station = HTML.createTextInput(form, "Station", "station", aufstell != undefined ? aufstell.vst.toString() : undefined);
         station.disabled = true;
 
-        // Abstand
+        // Abstand Rechts
         let abstTxt = "";
         if (aufstell != undefined) {
             if (aufstell.rabstbaVst >= 0.01) abstTxt = "R";
@@ -196,8 +196,19 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
             else abstTxt = "M";
             abstTxt += " " + Math.abs(aufstell.rabstbaVst);
         }
-        let abstand = HTML.createTextInput(form, "Abstand", "abstand", abstTxt);
+        let abstand = HTML.createTextInput(form, "rechter Abstand", "abstand", abstTxt);
         abstand.disabled = true;
+
+        // Abstand Links
+        let abstTxtL = "";
+        if (aufstell != undefined) {
+            if (aufstell.labstbaVst >= 0.01) abstTxtL = "R";
+            else if (aufstell.labstbaVst <= 0.01) abstTxtL = "L";
+            else abstTxtL = "M";
+            abstTxtL += " " + Math.abs(aufstell.labstbaVst);
+        }
+        let abstandL = HTML.createTextInput(form, "linker Abstand", "abstand", abstTxtL);
+        abstandL.disabled = true;
 
         if (aufstell != undefined) {
             let schilder = document.createElement("div");

@@ -6,12 +6,13 @@ import { Map } from 'ol';
 import { ColorLike } from "ol/colorlike";
 import PublicWFS from "../../PublicWFS";
 import { InfoToolEditable } from "../../Tools/InfoTool";
-import { Point } from "ol/geom";
+import { Point, LineString } from "ol/geom";
 import PObjektMitDokument from "./PObjektMitDateien";
 import { FeatureLike } from 'ol/Feature';
 import Abschnitt from '../Abschnitt';
 import Klartext from '../Klartext';
 import { VectorLayer } from '../../openLayers/Layer';
+import { isNumber } from 'util';
 
 /**
  * PunktObjekt
@@ -54,12 +55,21 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
     public async setDataFromXML(xml: Element): Promise<PunktObjekt> {
         super.setDataFromXML(xml);
         let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(',');
-        this.setGeometry(new Point([parseFloat(koords[0]), parseFloat(koords[1])]));
-
         const abschnitt = await Abschnitt.getAbschnitt(this.abschnittId);
         this.abschnitt = abschnitt;
         abschnitt.addOKinER(this.getObjektKlassenName());
         Abschnitt.getLayer().changed();
+
+        if (isNumber(this.labstbaVst)) {
+            this.setGeometry(
+                new LineString([
+                    abschnitt.stationierePunkt(this.vst, this.rabstbaVst),
+                    abschnitt.stationierePunkt(this.vst, this.labstbaVst)
+                ]));
+        } else {
+            this.setGeometry(new Point([parseFloat(koords[0]), parseFloat(koords[1])]));
+        }
+
         return this;
     }
 
@@ -100,6 +110,10 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
                             width: 3
                         })
                     }),
+                    stroke: new Stroke({
+                        color: color1,
+                        width: 3
+                    }),
                     text: text
                 });
             } else {
@@ -113,6 +127,10 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
                             color: color2,
                             width: 1
                         })
+                    }),
+                    stroke: new Stroke({
+                        color: color2,
+                        width: 3
                     }),
                     text: text
                 });
