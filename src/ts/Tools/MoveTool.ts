@@ -7,7 +7,7 @@ import { Vector as VectorLayer } from 'ol/layer';
 import { LineString, Point, Geometry } from 'ol/geom';
 import Feature from 'ol/Feature';
 import { never as neverCondition } from 'ol/events/condition';
-import { MapBrowserEvent } from 'ol';
+import { MapBrowserEvent, Collection, Observable } from 'ol';
 import InfoTool from './InfoTool';
 import Tool from './prototypes/Tool';
 import { ModifyInteraction } from '../openLayers/Interaction';
@@ -17,6 +17,9 @@ import { SelectEvent } from 'ol/interaction/Select';
 import { ModifyEvent } from 'ol/interaction/Modify';
 import Abschnitt, { StationObj } from '../Objekte/Abschnitt';
 import Map from "../openLayers/Map";
+import GeometryType from 'ol/geom/GeometryType';
+import { EventsKey } from 'ol/events';
+import { unByKey } from 'ol/Observable';
 
 /**
  * Funktion zum Verschieben von Punktobjekten
@@ -30,7 +33,12 @@ export default class MoveTool extends Tool {
     private v_overlay: VectorSource<Geometry>;
     private l_overlay: VectorLayer;
     private feat_station_line: Feature<LineString>;
-    private modify: ModifyInteraction;
+    private modifyPoint: ModifyInteraction;
+    private lineStart: Feature<Point>;
+    private lineEnd: Feature<Point>;
+    private modifyLine: ModifyInteraction;
+    private linePreview: Feature<LineString>;
+    private pointermove: EventsKey;
 
     constructor(map: Map, avInfoTool: InfoTool, selectLayer: VectorLayer) {
         super(map);
@@ -77,35 +85,150 @@ export default class MoveTool extends Tool {
     }
 
     private createModify() {
-        this.modify = new ModifyInteraction({
+        this.modifyPoint = new ModifyInteraction({
             deleteCondition: neverCondition,
             insertVertexCondition: neverCondition,
             features: this.select.getFeatures()
         });
-        this.modify.geo_vorher = null;
-        this.modify.modify = this;
+        this.modifyPoint.geo_vorher = null;
+        this.modifyPoint.modify = this;
 
-        this.modify.on('modifystart', this.modifyStart.bind(this));
-        this.modify.on('modifyend', this.modifyEnd.bind(this));
+        this.modifyPoint.on('modifystart', this.modifyStart.bind(this));
+        this.modifyPoint.on('modifyend', this.modifyEnd.bind(this));
+        this.modifyPoint.setActive(false)
+
+        // zweibeinig
+
+        this.lineStart = new Feature<Point>()
+        this.lineStart.setStyle(new Style({
+            image: new Circle({
+                radius: 4,
+                fill: new Fill({ color: 'rgba(0,255,0,0.6)' }),
+                stroke: new Stroke({
+                    color: 'rgba(0,255,0,0.9)',
+                    width: 2
+                })
+            })
+        }));
+        this.lineEnd = new Feature<Point>()
+        this.lineEnd.setStyle(new Style({
+            image: new Circle({
+                radius: 4,
+                fill: new Fill({ color: 'rgba(255,0,0,0.6)' }),
+                stroke: new Stroke({
+                    color: 'rgba(255,0,0,0.9)',
+                    width: 2
+                })
+            })
+        }));
+
+        this.linePreview = new Feature<LineString>()
+        this.linePreview.setStyle(new Style({
+            stroke: new Stroke({
+                color: 'rgba(100,100,100,0.9)',
+                width: 2
+            })
+        }));
+
+        this.v_overlay.addFeatures([this.lineEnd, this.lineStart, this.linePreview]);
+
+        this.modifyLine = new ModifyInteraction({
+            deleteCondition: neverCondition,
+            insertVertexCondition: neverCondition,
+            features: new Collection([this.lineEnd, this.lineStart])
+        });
+        this.modifyLine.on('modifystart', (e: ModifyEvent) => this.modifyLineStart(e));
+        this.modifyLine.on('modifyend', (e: ModifyEvent) => this.modifyLineEnd(e));
+        this.map.addInteraction(this.modifyLine);
+    }
+
+    modifyLineStart(__: ModifyEvent) {
+        this.pointermove = this.map.on("pointermove", this.moveLine.bind(this));
+    }
+
+    modifyLineEnd(__: ModifyEvent) {
+        unByKey(this.pointermove);
+        let dat = this.calcZweibeinig();
+        if (!dat) return;
+        dat.feature.setGeometry(dat.linestring);
+        dat.feature.updateStation(dat.vst, dat.rabstvst, dat.labstvst);
+        this.lineStart.setGeometry(null);
+        this.lineEnd.setGeometry(null);
+        this.linePreview.setGeometry(null);
+        this.select.getFeatures().clear();
     }
 
     private selected(__: SelectEvent) {
         if (this.select.getFeatures().getLength() > 0) {
-            this.map.on("pointermove", this.move.bind(this));
+            console.log(this.select.getFeatures().item(0))
+            if (this.select.getFeatures().item(0).getGeometry().getType() == GeometryType.LINE_STRING) {
+                this.modifyPoint.setActive(false);
+                this.changeLine(this.select.getFeatures().item(0) as Feature<LineString>);
+            } else {
+                this.modifyPoint.setActive(true);
+                this.modifyLine.setActive(false);
+            }
         } else {
             console.log("unselect")
-            this.map.un("pointermove", this.move.bind(this));
+            unByKey(this.pointermove);
+            this.modifyPoint.setActive(false);
+            this.modifyLine.setActive(false);
+            this.lineStart.setGeometry(null);
+            this.lineEnd.setGeometry(null);
             (this.feat_station_line.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
         }
         this.infoTool.featureSelect(this.select, true)
     }
 
+    private changeLine(feat: Feature<LineString>) {
+        this.lineStart.setGeometry(new Point(feat.getGeometry().getFirstCoordinate()));
+        this.lineEnd.setGeometry(new Point(feat.getGeometry().getLastCoordinate()));
+        this.lineStart.set('feature', feat);
+        this.lineEnd.set('feature', feat);
+        this.modifyLine.setActive(true);
+    }
+
+    private calcZweibeinig(): { feature: PunktObjekt, vst: number, rabstvst: number, labstvst: number, linestring: LineString } | null {
+        let feat = this.lineStart.get('feature') as PunktObjekt;
+        if (feat == null) return null;
+        let rabstvst = feat.getRAbstBaVst();
+        let labstvst = feat.getLAbstBaVst();
+        let startStation = feat.getAbschnitt().getStationierung(this.lineStart.getGeometry().getCoordinates())
+        let endStation = feat.getAbschnitt().getStationierung(this.lineEnd.getGeometry().getCoordinates())
+        let vst = feat.getVst()
+        let rabstvstNeu = ((startStation.seite == 'L') ? -1 : 1) * startStation.abstand;
+        let labstvstNeu = ((startStation.seite == 'L') ? -1 : 1) * endStation.abstand;
+
+
+        if (Math.abs(rabstvstNeu - feat.getRAbstBaVst()) > 0.01) {
+            // Rechts
+            console.log("rechts")
+            rabstvst = rabstvstNeu;
+            vst = startStation.station;
+        } else if (Math.abs(labstvstNeu - feat.getLAbstBaVst()) > 0.01) {
+            // Links
+            console.log("links")
+            labstvst = labstvstNeu;
+            vst = endStation.station;
+        }
+        let start = feat.getAbschnitt().stationierePunkt(vst, rabstvst)
+        let end = feat.getAbschnitt().stationierePunkt(vst, labstvst)
+        return { feature: feat, vst: vst, rabstvst: rabstvst, labstvst: labstvst, linestring: new LineString([start, end]) }
+    }
+
+    private moveLine() {
+        let dat = this.calcZweibeinig();
+        if (!dat) return;
+
+        this.linePreview.setGeometry(dat.linestring)
+    }
+
     private modifyStart(__: ModifyEvent) {
-        this.map.on("pointermove", this.move.bind(this));
+        this.pointermove = this.map.on("pointermove", this.move.bind(this));
     }
 
     private modifyEnd(__: ModifyEvent) {
-        this.map.un("pointermove", this.move.bind(this));
+        unByKey(this.pointermove);
         let feat = this.select.getFeatures().item(0);
         (this.feat_station_line.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
         let daten = this.getStation((feat.getGeometry() as Point).getCoordinates());
@@ -146,15 +269,16 @@ export default class MoveTool extends Tool {
 
     public start() {
         this.map.addInteraction(this.select);
-        this.map.addInteraction(this.modify);
+        this.map.addInteraction(this.modifyPoint);
         this.map.addLayer(this.l_overlay);
     }
 
     public stop() {
         this.map.removeInteraction(this.select);
-        this.map.removeInteraction(this.modify);
+        this.map.removeInteraction(this.modifyPoint);
         this.map.removeLayer(this.l_overlay);
-        this.map.un("pointermove", this.move.bind(this));
+        if (this.pointermove)
+            unByKey(this.pointermove);
         (this.feat_station_line.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
     }
 }

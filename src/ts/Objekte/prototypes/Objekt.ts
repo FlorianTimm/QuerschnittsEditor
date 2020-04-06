@@ -67,7 +67,7 @@ export default abstract class Objekt extends Feature<Polygon | Point | LineStrin
 
 			xml += '	<wfs:Property>\n' +
 				'		<wfs:Name>' + update + '</wfs:Name>\n' +
-				'		<wfs:Value>' + wert + '</wfs:Value>\n' +
+				'		<wfs:Value>' + (wert??'') + '</wfs:Value>\n' +
 				'	</wfs:Property>\n';
 		}
 		xml += '	<ogc:Filter>\n' +

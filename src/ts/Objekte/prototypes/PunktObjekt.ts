@@ -30,13 +30,18 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
     // Abstrakte Funktionen
     abstract colorFunktion1(): ColorLike;
     abstract colorFunktion2(): ColorLike;
-    abstract getInfoForm(sidebar: HTMLElement, changeable?: boolean): Promise<void|void[]>;
+    abstract getInfoForm(sidebar: HTMLElement, changeable?: boolean): Promise<void | void[]>;
     abstract changeAttributes(form: HTMLFormElement): Promise<Document>;
 
-    public updateStation(station: number, abstand: number) {
-        this.vabstVst = Math.round(abstand * 10) / 10;
+    public updateStation(station: number, rabstbavst: number, labstbavst?: number) {
+        this.rabstbaVst = Math.round(rabstbavst * 10) / 10;
+        if (labstbavst) {
+            this.labstbaVst = Math.round(labstbavst * 10) / 10
+            this.vabstVst = Math.round(rabstbavst + labstbavst * 5) / 10;
+        } else {
+            this.vabstVst = Math.round(rabstbavst * 10) / 10;
+        }
         this.vabstBst = this.vabstVst;
-        this.rabstbaVst = this.vabstVst;
         this.vst = Math.round(station);
         this.bst = this.vst;
 
@@ -44,6 +49,7 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
             'vabstVst': this.vabstVst,
             'vabstBst': this.vabstBst,
             'rabstbaVst': this.rabstbaVst,
+            'labstbaVst': this.labstbaVst,
             'vst': this.vst,
             'bst': this.bst
         });
@@ -144,5 +150,12 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
 
     public setRlageVst(rlagevst: Klartext | string) {
         this.rlageVst = Klartext.get("Itallglage", rlagevst);
+    }
+
+    public getRAbstBaVst(): number {
+        return this.rabstbaVst;
+    }
+    public getLAbstBaVst(): number {
+        return this.labstbaVst;
     }
 }

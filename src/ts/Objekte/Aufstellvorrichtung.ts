@@ -13,7 +13,7 @@ import HTML from "../HTML";
 import Dokument from "./Dokument";
 import { InfoToolOverlay } from "../Tools/InfoTool.js";
 import { Overlay, Map } from "ol";
-import { Point } from "ol/geom";
+import { Point, Geometry, LineString } from "ol/geom";
 import { ColorLike } from "ol/colorlike";
 import WaitBlocker from "../WaitBlocker";
 import { VectorLayer } from "../openLayers/Layer.js";
@@ -198,17 +198,17 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         }
         let abstand = HTML.createTextInput(form, "rechter Abstand", "abstand", abstTxt);
         abstand.disabled = true;
-
-        // Abstand Links
-        let abstTxtL = "";
-        if (aufstell != undefined) {
+        
+        if (aufstell != undefined && aufstell.labstbaVst != null && aufstell.rabstbaVst != aufstell.labstbaVst) {
+            // Abstand Links
+            let abstTxtL = "";
             if (aufstell.labstbaVst >= 0.01) abstTxtL = "R";
             else if (aufstell.labstbaVst <= 0.01) abstTxtL = "L";
             else abstTxtL = "M";
             abstTxtL += " " + Math.abs(aufstell.labstbaVst);
+            let abstandL = HTML.createTextInput(form, "linker Abstand", "abstandL", abstTxtL);
+            abstandL.disabled = true;
         }
-        let abstandL = HTML.createTextInput(form, "linker Abstand", "abstand", abstTxtL);
-        abstandL.disabled = true;
 
         if (aufstell != undefined) {
             let schilder = document.createElement("div");
@@ -355,55 +355,89 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         ctx.rotate(winkel)
 
         ctx.save();
-
-
         let faktoren = { '01': 0, '02': 2, '03': 1, '04': 3 };
         if (this.getVabstVst() < 0) faktoren = { '01': 0, '02': 2, '03': 3, '04': 1 }
+        let position: number[];
 
+        if (this.labstbaVst == null || this.rabstbaVst == this.labstbaVst) {
+            //einbeinig
+            position = (this.getGeometry() as Point).getCoordinates();
+            for (let r in zeichenL) {
+                ctx.restore();
+                ctx.save()
+                ctx.rotate(faktoren[r] * 0.5 * Math.PI)
 
-        for (let r in zeichenL) {
-            ctx.restore();
-            ctx.save()
-            ctx.rotate(faktoren[r] * 0.5 * Math.PI)
+                let liste = zeichenL[r];
+                ctx.beginPath()
+                ctx.strokeStyle = "#444444";
+                ctx.lineWidth = 4;
+                ctx.moveTo(0, 0)
+                ctx.lineTo(0, - 40 * liste.length)
+                ctx.stroke()
 
-            let liste = zeichenL[r];
-            ctx.beginPath()
-            ctx.strokeStyle = "#444444";
-            ctx.lineWidth = 4;
-            ctx.moveTo(0, 0)
-            ctx.lineTo(0, - 40 * liste.length)
-            ctx.stroke()
+                for (let j = 0; j < liste.length; j++) {
 
-            for (let j = 0; j < liste.length; j++) {
-
-                let zeichen = liste[j]
-                let img = new Image();
-                if (zeichen.getArt().getKt() == '02') {
-                    ctx.fillRect(-25, -20 - 40 * (liste.length - j), 50, 40);
-                }
-                img.src = '../schilder/' + zeichen.getStvoznr().getKt() + '.svg';
-                img.addEventListener("load", function () {
-                    ctx.restore();
-                    ctx.save()
-                    ctx.rotate(faktoren[r] * 0.5 * Math.PI)
-                    let hoehe = 40;
-                    let breite = 40 * img.width / img.height
-                    if (breite > 40) {
-                        breite = 40;
-                        hoehe = 40 * img.height / img.width
+                    let zeichen = liste[j]
+                    let img = new Image();
+                    if (zeichen.getArt().getKt() == '02') {
+                        ctx.fillRect(-25, -20 - 40 * (liste.length - j), 50, 40);
                     }
-                    ctx.drawImage(img, - breite / 2, (40 - hoehe) / 2 - 20 - 40 * (liste.length - j), breite, hoehe);
-                });
+                    img.src = '../schilder/' + zeichen.getStvoznr().getKt() + '.svg';
+                    img.addEventListener("load", function () {
+                        ctx.restore();
+                        ctx.save()
+                        ctx.rotate(faktoren[r] * 0.5 * Math.PI)
+                        let hoehe = 40;
+                        let breite = 40 * img.width / img.height
+                        if (breite > 40) {
+                            breite = 40;
+                            hoehe = 40 * img.height / img.width
+                        }
+                        ctx.drawImage(img, - breite / 2, (40 - hoehe) / 2 - 20 - 40 * (liste.length - j), breite, hoehe);
+                    });
+                }
+            }
+        } else {
+            //zweibeinig
+            position = (this.getGeometry() as LineString).getCoordinateAt(0.5);
+            for (let r in zeichenL) {
+                ctx.restore();
+                ctx.save()
+                ctx.rotate(faktoren[r] * 0.5 * Math.PI)
+
+                let liste = zeichenL[r];
+
+                for (let j = 0; j < liste.length; j++) {
+
+                    let zeichen = liste[j]
+                    let img = new Image();
+                    if (zeichen.getArt().getKt() == '02') {
+                        ctx.fillRect(- 20 * liste.length + 40 * j, -55, 40, 50);
+                    }
+                    img.src = '../schilder/' + zeichen.getStvoznr().getKt() + '.svg';
+                    img.addEventListener("load", function () {
+                        ctx.restore();
+                        ctx.save()
+                        ctx.rotate(faktoren[r] * 0.5 * Math.PI)
+                        let hoehe = 40;
+                        let breite = 40 * img.width / img.height
+                        if (breite > 40) {
+                            breite = 40;
+                            hoehe = 40 * img.height / img.width
+                        }
+                        ctx.drawImage(img, (40 - breite) / 2 - 20 * liste.length + 40 * j, - hoehe / 2 - 30, breite, hoehe);
+                    });
+                }
             }
         }
 
         document.getElementById("sidebar").appendChild(canvas);
 
         this.overlay = new Overlay({
-            position: (this.getGeometry() as Point).getCoordinates(),
+            position: position,
             element: canvas,
             offset: [-groesse, -groesse],
-            autoPan: true,
+            autoPan: false,
             stopEvent: false
         });
         map.addOverlay(this.overlay)
