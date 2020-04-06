@@ -153,13 +153,13 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         return this.zeichen;
     }
 
-    public static createForm(sidebar: HTMLDivElement, formId: string, aufstell?: Aufstellvorrichtung, changeable: boolean = false, showForm: boolean = true): { form: HTMLFormElement, promise: Promise<void> } {
+    public static createForm(sidebar: HTMLDivElement, formId: string, aufstell?: Aufstellvorrichtung, changeable: boolean = false, showForm: boolean = true): { form: HTMLFormElement, promise: Promise<void[]> } {
         let form = HTML.createToolForm(sidebar, showForm, formId);
         let promise = Aufstellvorrichtung.createFields(form, aufstell, changeable);
         return { form: form, promise: promise };
     }
 
-    private static createFields(form: HTMLFormElement, aufstell?: Aufstellvorrichtung, changeable: boolean = false): Promise<void> {
+    private static createFields(form: HTMLFormElement, aufstell?: Aufstellvorrichtung, changeable: boolean = false): Promise<void[]> {
         // Art
         let art = Klartext.createKlartextSelectForm("Itaufstvorart", form, "Art", "art", aufstell != undefined ? aufstell.art : undefined);
         $(art.select).prop('disabled', !changeable).trigger("chosen:updated");
@@ -220,9 +220,7 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
             aufstell.getZeichen(false).then((zeichen) => { return aufstell.vzAddHTML(zeichen, schilder) });
             aufstell.getDokumente(false).then((doks: Dokument[]) => { aufstell.dokuAdd(doks, form) });
         }
-        return Promise.all([art.promise, lage.promise, quelle.promise])
-            .then(() => { Promise.resolve() })
-            .catch(() => { Promise.reject() })
+        return Promise.all([art.promise, lage.promise, quelle.promise]);
     }
 
     private dokuAdd(doku: Dokument[], ziel: HTMLElement) {
@@ -266,11 +264,11 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
             });
     }
 
-    public getInfoForm(ziel: HTMLFormElement, changeable: boolean = false): Promise<void> {
+    public getInfoForm(ziel: HTMLFormElement, changeable: boolean = false): Promise<void[]> {
         return Aufstellvorrichtung.createFields(ziel, this, changeable);
     }
 
-    public changeAttributes(form: HTMLFormElement): Promise<void> {
+    public changeAttributes(form: HTMLFormElement): Promise<Document> {
         this.setArt($(form).find("#art").children("option:selected").val() as string);
         this.setRlageVst($(form).find("#lage").children("option:selected").val() as string);
         this.setQuelle($(form).find("#quelle").children("option:selected").val() as string);
@@ -282,9 +280,7 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
             'quelle/@xlink:href': this.getQuelle(),
             'objektnr': this.getObjektnr(),
         });
-        return PublicWFS.doTransaction(xml)
-            .then(() => { Promise.resolve() })
-            .catch(() => { Promise.reject() });
+        return PublicWFS.doTransaction(xml);
     }
 
     // Getter

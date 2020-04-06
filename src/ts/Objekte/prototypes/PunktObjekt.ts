@@ -30,8 +30,8 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
     // Abstrakte Funktionen
     abstract colorFunktion1(): ColorLike;
     abstract colorFunktion2(): ColorLike;
-    abstract getInfoForm(sidebar: HTMLElement, changeable?: boolean): Promise<void>;
-    abstract changeAttributes(form: HTMLFormElement): Promise<void>;
+    abstract getInfoForm(sidebar: HTMLElement, changeable?: boolean): Promise<void|void[]>;
+    abstract changeAttributes(form: HTMLFormElement): Promise<Document>;
 
     public updateStation(station: number, abstand: number) {
         this.vabstVst = Math.round(abstand * 10) / 10;

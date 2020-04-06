@@ -34,9 +34,9 @@ export default abstract class AddTool extends Tool {
     protected form: HTMLFormElement = null;
     protected sidebar: HTMLDivElement;
     private layerAchse: VectorLayer;
-    private promise: Promise<void>;
+    private promise: Promise<void[]>;
 
-    protected abstract createForm(): Promise<void>;
+    protected abstract createForm(): Promise<void[]>;
 
     constructor(map: Map, sidebar: HTMLDivElement, layerAchse: VectorLayer) {
         super(map);

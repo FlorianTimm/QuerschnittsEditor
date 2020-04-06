@@ -44,7 +44,7 @@ export default class StrassenAusPunkt extends PunktObjekt {
         return "Otstrauspkt";
     }
 
-    public static createForm(sidebar: HTMLDivElement, ausstattung?: StrassenAusPunkt, changeable: boolean = false, showForm: boolean = true): { form: HTMLFormElement, promise: Promise<void> } {
+    public static createForm(sidebar: HTMLDivElement, ausstattung?: StrassenAusPunkt, changeable: boolean = false, showForm: boolean = true): { form: HTMLFormElement, promise: Promise<void[]> } {
         let form = HTML.createToolForm(sidebar, showForm);
 
         // Art
@@ -53,7 +53,7 @@ export default class StrassenAusPunkt extends PunktObjekt {
         return { form: form, promise: promise }
     }
 
-    public getInfoForm(ziel: HTMLFormElement, changeable: boolean = false): Promise<void> {
+    public getInfoForm(ziel: HTMLFormElement, changeable: boolean = false): Promise<void[]> {
         return StrassenAusPunkt.createFields(ziel, this, changeable);
     }
 
@@ -92,7 +92,7 @@ export default class StrassenAusPunkt extends PunktObjekt {
         return r.setDataFromXML(xml) as Promise<StrassenAusPunkt>;
     }
 
-    protected static createFields(form: HTMLFormElement, ausstattung?: StrassenAusPunkt, changeable: boolean = false): Promise<void> {
+    protected static createFields(form: HTMLFormElement, ausstattung?: StrassenAusPunkt, changeable: boolean = false): Promise<void[]> {
         let art = KlartextManager.createKlartextSelectForm("Itstrauspktart", form, "Art", "art", ausstattung != undefined ? ausstattung.art : undefined);
         $(art.select).prop('disabled', !changeable).trigger("chosen:updated");
 
@@ -127,12 +127,10 @@ export default class StrassenAusPunkt extends PunktObjekt {
         let abstand = HTML.createTextInput(form, "Abstand", "abstand", abstTxt);
         abstand.disabled = true;
 
-        return Promise.all([art.promise, lage.promise, quelle.promise])
-            .then(() => { Promise.resolve() })
-            .catch(() => { Promise.reject() })
+        return Promise.all([art.promise, lage.promise, quelle.promise]);
     }
 
-    public async changeAttributes(form: HTMLFormElement): Promise<void> {
+    public async changeAttributes(form: HTMLFormElement): Promise<Document> {
         this.setArt($(form).find("#art").children("option:selected").val() as string);
         this.setRlageVst($(form).find("#lage").children("option:selected").val() as string);
         this.setQuelle($(form).find("#quelle").children("option:selected").val() as string);
@@ -144,9 +142,7 @@ export default class StrassenAusPunkt extends PunktObjekt {
             'quelle/@xlink:href': this.quelle,
             'objektnr': this.objektnr,
         });
-        return PublicWFS.doTransaction(xml)
-            .then(() => { Promise.resolve() })
-            .catch(() => { Promise.reject() });
+        return PublicWFS.doTransaction(xml);
     }
 
     // Setter
