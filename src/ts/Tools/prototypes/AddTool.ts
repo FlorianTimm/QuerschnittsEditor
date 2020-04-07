@@ -12,6 +12,8 @@ import Map from "../../openLayers/Map";
 import Abschnitt, { StationObj } from '../../Objekte/Abschnitt';
 import PublicWFS from '../../PublicWFS';
 import PunktObjekt from '../../Objekte/prototypes/PunktObjekt';
+import { unByKey } from 'ol/Observable';
+import { EventsKey } from 'ol/events';
 
 /**
  * Funktion zum Hinzufügen von Objekten
@@ -34,9 +36,11 @@ export default abstract class AddTool extends Tool {
     protected form: HTMLFormElement = null;
     protected sidebar: HTMLDivElement;
     private layerAchse: VectorLayer;
-    private promise: Promise<void>;
+    private promise: Promise<void[]>;
+    private singleclick: EventsKey;
+    private pointermove: EventsKey;
 
-    protected abstract createForm(): Promise<void>;
+    protected abstract createForm(): Promise<void[]>;
 
     constructor(map: Map, sidebar: HTMLDivElement, layerAchse: VectorLayer) {
         super(map);
@@ -197,16 +201,16 @@ export default abstract class AddTool extends Tool {
         if (this.form == null) this.promise = this.createForm();
         $(this.form).show("fast");
         this.map.addInteraction(this.select);
-        this.map.on("pointermove", this.part_move.bind(this));
-        this.map.on("singleclick", this.part_click.bind(this));
+        this.pointermove = this.map.on("pointermove", this.part_move.bind(this));
+        this.singleclick = this.map.on("singleclick", this.part_click.bind(this));
         this.map.addLayer(this.l_overlay);
     }
 
     stop() {
         $(this.form).hide("fast");
         this.map.removeInteraction(this.select);
-        this.map.un("pointermove", this.part_move);
-        this.map.un("singleclick", this.part_click);
+        unByKey(this.pointermove);
+        unByKey(this.singleclick);
         this.map.removeLayer(this.l_overlay);
     }
 }

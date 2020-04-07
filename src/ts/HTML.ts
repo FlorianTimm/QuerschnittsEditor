@@ -82,6 +82,10 @@ export default class HTML {
         return HTML.createInputField("text", form, beschriftung, id, inhalt);
     }
 
+    static createCheckboxTextInput(form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string) {
+        return HTML.createInputField("text", form, beschriftung, id, inhalt, true);
+    }
+
     static createNumberInput(form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string) {
         let input = HTML.createInputField("number", form, beschriftung, id, inhalt);
         return input;
@@ -118,18 +122,34 @@ export default class HTML {
         return aufstellField;
     }
 
-    private static createInputField(type: "number" | "text" | "button", form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string) {
+
+    private static createInputField(type: "number" | "text" | "button", form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt: string, checkbox: true): { checkbox: HTMLInputElement, input: HTMLInputElement }
+    private static createInputField(type: "number" | "text" | "button", form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string): HTMLInputElement
+    private static createInputField(type: "number" | "text" | "button", form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string, checkbox?: boolean): HTMLInputElement | { checkbox: HTMLInputElement, input: HTMLInputElement } {
         let formGroup = HTML.createFormGroup(form, 'group_' + id);
         let label = HTML.createLabel(beschriftung, id, formGroup, 'label_' + id);
         label.className = "label_" + type;
         HTML.createBreak(formGroup);
+
+        let check;
+        if (checkbox) {
+            check = HTML.createSimpleInput(form, "checkbox", id + '_checkbox', name + '_checkbox');
+            formGroup.appendChild(check);
+        }
+
         let input = document.createElement("input");
         input.id = id;
         input.type = type;
         formGroup.appendChild(input);
         if (inhalt != undefined)
             input.value = inhalt;
-        return input;
+
+        if (checkbox) {
+            input.style.width = "auto";
+            return { checkbox: check, input: input };
+        } else {
+            return input;
+        }
     }
 
     static createLabel(beschriftung: string, forId: string, form: HTMLFormElement | HTMLDivElement, id?: string) {

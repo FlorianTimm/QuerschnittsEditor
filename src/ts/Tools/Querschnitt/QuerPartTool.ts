@@ -14,6 +14,8 @@ import Map from "../../openLayers/Map";
 import Abschnitt, { StationObj } from '../../Objekte/Abschnitt';
 import HTML from '../../HTML';
 import PublicWFS from '../../PublicWFS';
+import { EventsKey } from 'ol/events';
+import { unByKey } from 'ol/Observable';
 
 /**
  * Funktion zum Teilen von Querschnittsflächen
@@ -37,6 +39,8 @@ class QuerPartTool extends Tool {
     private form_station: HTMLInputElement;
     private form_button: HTMLInputElement;
     private layerAchse: VectorLayer;
+    private singleclick: EventsKey;
+    private pointermove: EventsKey;
 
     constructor(map: Map, info: QuerInfoTool, sidebar: HTMLDivElement, layerAchse: VectorLayer) {
         super(map);
@@ -162,8 +166,8 @@ class QuerPartTool extends Tool {
         this.initialize()
         this.map.addInteraction(this.select);
         $(this.form).show("fast")
-        this.map.on("pointermove", this.move.bind(this));
-        this.map.on("singleclick", this.partClick.bind(this));
+        this.pointermove = this.map.on("pointermove", this.move.bind(this));
+        this.singleclick = this.map.on("singleclick", this.partClick.bind(this));
         this.map.addLayer(this.l_overlay);
         this.restartSelection()
     }
@@ -172,8 +176,8 @@ class QuerPartTool extends Tool {
         if (!this.init) return;
         $(this.form).hide("fast")
         this.map.removeInteraction(this.select);
-        this.map.un("pointermove", this.move);
-        this.map.un("singleclick", this.partClick);
+        unByKey(this.pointermove);
+        unByKey(this.singleclick);
         (this.feat_teilung.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
         this.info.hideInfoBox();
         this.map.removeLayer(this.l_overlay);
