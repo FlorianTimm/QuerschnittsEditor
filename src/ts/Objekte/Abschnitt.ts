@@ -333,7 +333,7 @@ export default class Abschnitt extends Feature<LineString> {
     }
 
     /**
-     * Berechnet eine Station
+     * Berechnet die Stationierung eines Punktes auf diesem Abschnitt
      */
     public getStationierung(point: number[], anzNachKomma: number = 1): StationObj {
         let posi: StationObj[] = [];
@@ -383,6 +383,27 @@ export default class Abschnitt extends Feature<LineString> {
             posi.push(obj)
         }
         return posi.sort(Abschnitt.sortStationierungen)[0]
+    }
+
+
+    /**
+ * Berechnet eine Station
+ */
+    public stationierePunkt(station: number, abstand: number): number[] {
+        let punkte = this.calcPunkte();
+        let r: LinienPunkt[] = []
+
+        station = station / this.getFaktor();
+
+        for (let i = 0; i < punkte.length; i++) {
+            let pkt = punkte[i]
+            if (pkt.vorherLaenge <= station && pkt.vorherLaenge + pkt.laengeZumNaechsten >= station) {
+                let fusspkt = Vektor.sum(pkt.getCoordinates(), Vektor.multi(pkt.vektorZumNaechsten, (station - pkt.vorherLaenge) / pkt.laengeZumNaechsten))
+                return Vektor.sum(fusspkt, Vektor.multi(Vektor.lot(pkt.vektorZumNaechsten), -abstand / pkt.laengeZumNaechsten))
+            }
+        }
+
+        return null;
     }
 
     getWinkel(station: number): number {

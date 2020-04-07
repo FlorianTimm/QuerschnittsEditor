@@ -25,6 +25,8 @@ import { FeatureLike } from 'ol/Feature';
 import Vektor from '../../Vektor';
 import PublicWFS from '../../PublicWFS';
 import { Polygon } from 'ol/geom';
+import { unByKey } from 'ol/Observable';
+import { EventsKey } from 'ol/events';
 
 /**
  * Funktion zum Verändern von Querschnittsflächen
@@ -47,6 +49,7 @@ export default class QuerModifyTool extends Tool {
     private modifyLayer: VectorLayer;
     private modifyOverlayLayer: VectorLayer;
     private sidebar: HTMLDivElement;
+    private pointermove: EventsKey;
 
     constructor(map: Map, info: QuerInfoTool, sidebar: HTMLDivElement, layerTrenn: VectorLayer, layerQuer: VectorLayer, layerStation: VectorLayer) {
         super(map);
@@ -133,7 +136,7 @@ export default class QuerModifyTool extends Tool {
 
     private modifyStart(_: ModifyEvent) {
         this.map.addInteraction(this.snapStation);
-        this.map.on("pointermove", this.mouseMove.bind(this))
+        this.pointermove = this.map.on("pointermove", this.mouseMove.bind(this))
         this.map.addLayer(this.modifyOverlayLayer)
     }
 
@@ -207,7 +210,7 @@ export default class QuerModifyTool extends Tool {
     }
 
     private modifyEnd(_: ModifyEvent) {
-        this.map.un("pointermove", this.mouseMove.bind(this));
+        unByKey(this.pointermove)
         this.map.removeLayer(this.modifyOverlayLayer)
 
         // Abstand berechnen

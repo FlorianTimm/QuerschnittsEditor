@@ -24,7 +24,7 @@ export default class AvAdd extends AddTool {
         return 'Otaufstvor';
     }
 
-    protected createForm(): Promise<void> {
+    protected createForm(): Promise<void[]> {
         let form = Aufstellvorrichtung.createForm(this.sidebar, 'avadd', undefined, true, false);
         this.form = form.form;
         let input = document.createElement("input");

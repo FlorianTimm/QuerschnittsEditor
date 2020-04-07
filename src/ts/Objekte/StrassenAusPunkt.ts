@@ -44,7 +44,7 @@ export default class StrassenAusPunkt extends PunktObjekt {
         return "Otstrauspkt";
     }
 
-    public static createForm(sidebar: HTMLDivElement, ausstattung?: StrassenAusPunkt, changeable: boolean = false, showForm: boolean = true): { form: HTMLFormElement, promise: Promise<void> } {
+    public static createForm(sidebar: HTMLDivElement, ausstattung?: StrassenAusPunkt, changeable: boolean = false, showForm: boolean = true): { form: HTMLFormElement, promise: Promise<void[]> } {
         let form = HTML.createToolForm(sidebar, showForm);
 
         // Art
@@ -53,7 +53,7 @@ export default class StrassenAusPunkt extends PunktObjekt {
         return { form: form, promise: promise }
     }
 
-    public getInfoForm(ziel: HTMLFormElement, changeable: boolean = false): Promise<void> {
+    public getInfoForm(ziel: HTMLFormElement, changeable: boolean = false): Promise<void[]> {
         return StrassenAusPunkt.createFields(ziel, this, changeable);
     }
 
@@ -92,7 +92,7 @@ export default class StrassenAusPunkt extends PunktObjekt {
         return r.setDataFromXML(xml) as Promise<StrassenAusPunkt>;
     }
 
-    protected static createFields(form: HTMLFormElement, ausstattung?: StrassenAusPunkt, changeable: boolean = false): Promise<void> {
+    protected static createFields(form: HTMLFormElement, ausstattung?: StrassenAusPunkt, changeable: boolean = false): Promise<void[]> {
         let art = KlartextManager.createKlartextSelectForm("Itstrauspktart", form, "Art", "art", ausstattung != undefined ? ausstattung.art : undefined);
         $(art.select).prop('disabled', !changeable).trigger("chosen:updated");
 
@@ -127,26 +127,58 @@ export default class StrassenAusPunkt extends PunktObjekt {
         let abstand = HTML.createTextInput(form, "Abstand", "abstand", abstTxt);
         abstand.disabled = true;
 
-        return Promise.all([art.promise, lage.promise, quelle.promise])
-            .then(() => { Promise.resolve() })
-            .catch(() => { Promise.reject() })
+        // Abstand Links
+        let abstTxtL = "";
+        let checked = false;
+        if (ausstattung != undefined && ausstattung.labstbaVst != null && ausstattung.rabstbaVst != ausstattung.labstbaVst) {
+            if (ausstattung.labstbaVst >= 0.01) abstTxtL = "R";
+            else if (ausstattung.labstbaVst <= 0.01) abstTxtL = "L";
+            else abstTxtL = "M";
+            abstTxtL += " " + Math.abs(ausstattung.labstbaVst);
+            checked = true;
+        }
+        let abstandL = HTML.createCheckboxTextInput(form, "linker Abstand", "abstandL", abstTxtL);
+        abstandL.input.disabled = true;
+        abstandL.checkbox.checked = checked;
+        abstandL.checkbox.disabled = !changeable;
+
+        return Promise.all([art.promise, lage.promise, quelle.promise]);
     }
 
-    public async changeAttributes(form: HTMLFormElement): Promise<void> {
+    public async changeAttributes(form: HTMLFormElement): Promise<Document> {
         this.setArt($(form).find("#art").children("option:selected").val() as string);
         this.setRlageVst($(form).find("#lage").children("option:selected").val() as string);
         this.setQuelle($(form).find("#quelle").children("option:selected").val() as string);
         this.objektnr = $(form).find("#extid").val() as string;
 
-        let xml = this.createUpdateXML({
+        let update = {
             'art/@xlink:href': this.art,
             'rlageVst/@xlink:href': this.rlageVst,
-            'quelle/@xlink:href': this.quelle,
-            'objektnr': this.objektnr,
-        });
-        return PublicWFS.doTransaction(xml)
-            .then(() => { Promise.resolve() })
-            .catch(() => { Promise.reject() });
+            'quelle/@xlink:href': this.getQuelle(),
+            'objektnr': this.getObjektnr(),
+        };
+
+        let vorher = this.labstbaVst != null && this.rabstbaVst != this.labstbaVst
+        if ($(form).find("#abstandL_checkbox").is(":checked") as boolean != vorher) {
+            if (vorher) {
+                // vorher zweibeinig, nun nicht mehr
+                this.labstbaVst = undefined;
+                this.vabstVst = this.rabstbaVst;
+            } else {
+                // vorher einbeinig nun nicht mehr
+                this.labstbaVst = this.rabstbaVst - 5;
+                this.vabstVst = this.rabstbaVst - 2.5;
+            }
+            this.vabstBst = this.vabstVst;
+            update['labstbaVst'] = this.labstbaVst;
+            update['vabstVst'] = this.vabstVst;
+            update['vabstBst'] = this.vabstBst;
+            $(form).find("#abstandL").val(this.labstbaVst ?? '')
+            this.calcGeometry();
+        }
+
+        let xml = this.createUpdateXML(update);
+        return PublicWFS.doTransaction(xml);
     }
 
     // Setter

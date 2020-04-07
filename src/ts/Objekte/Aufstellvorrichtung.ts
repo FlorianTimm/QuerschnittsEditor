@@ -13,7 +13,7 @@ import HTML from "../HTML";
 import Dokument from "./Dokument";
 import { InfoToolOverlay } from "../Tools/InfoTool.js";
 import { Overlay, Map } from "ol";
-import { Point } from "ol/geom";
+import { Point, Geometry, LineString } from "ol/geom";
 import { ColorLike } from "ol/colorlike";
 import WaitBlocker from "../WaitBlocker";
 import { VectorLayer } from "../openLayers/Layer.js";
@@ -153,13 +153,13 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         return this.zeichen;
     }
 
-    public static createForm(sidebar: HTMLDivElement, formId: string, aufstell?: Aufstellvorrichtung, changeable: boolean = false, showForm: boolean = true): { form: HTMLFormElement, promise: Promise<void> } {
+    public static createForm(sidebar: HTMLDivElement, formId: string, aufstell?: Aufstellvorrichtung, changeable: boolean = false, showForm: boolean = true): { form: HTMLFormElement, promise: Promise<void[]> } {
         let form = HTML.createToolForm(sidebar, showForm, formId);
         let promise = Aufstellvorrichtung.createFields(form, aufstell, changeable);
         return { form: form, promise: promise };
     }
 
-    private static createFields(form: HTMLFormElement, aufstell?: Aufstellvorrichtung, changeable: boolean = false): Promise<void> {
+    private static createFields(form: HTMLFormElement, aufstell?: Aufstellvorrichtung, changeable: boolean = false): Promise<void[]> {
         // Art
         let art = Klartext.createKlartextSelectForm("Itaufstvorart", form, "Art", "art", aufstell != undefined ? aufstell.art : undefined);
         $(art.select).prop('disabled', !changeable).trigger("chosen:updated");
@@ -188,7 +188,7 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         let station = HTML.createTextInput(form, "Station", "station", aufstell != undefined ? aufstell.vst.toString() : undefined);
         station.disabled = true;
 
-        // Abstand
+        // Abstand Rechts
         let abstTxt = "";
         if (aufstell != undefined) {
             if (aufstell.rabstbaVst >= 0.01) abstTxt = "R";
@@ -196,8 +196,23 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
             else abstTxt = "M";
             abstTxt += " " + Math.abs(aufstell.rabstbaVst);
         }
-        let abstand = HTML.createTextInput(form, "Abstand", "abstand", abstTxt);
+        let abstand = HTML.createTextInput(form, "rechter Abstand", "abstand", abstTxt);
         abstand.disabled = true;
+
+        // Abstand Links
+        let abstTxtL = "";
+        let checked = false;
+        if (aufstell != undefined && aufstell.labstbaVst != null && aufstell.rabstbaVst != aufstell.labstbaVst) {
+            if (aufstell.labstbaVst >= 0.01) abstTxtL = "R";
+            else if (aufstell.labstbaVst <= 0.01) abstTxtL = "L";
+            else abstTxtL = "M";
+            abstTxtL += " " + Math.abs(aufstell.labstbaVst);
+            checked = true;
+        }
+        let abstandL = HTML.createCheckboxTextInput(form, "linker Abstand", "abstandL", abstTxtL);
+        abstandL.input.disabled = true;
+        abstandL.checkbox.checked = checked;
+        abstandL.checkbox.disabled = !changeable;
 
         if (aufstell != undefined) {
             let schilder = document.createElement("div");
@@ -209,9 +224,7 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
             aufstell.getZeichen(false).then((zeichen) => { return aufstell.vzAddHTML(zeichen, schilder) });
             aufstell.getDokumente(false).then((doks: Dokument[]) => { aufstell.dokuAdd(doks, form) });
         }
-        return Promise.all([art.promise, lage.promise, quelle.promise])
-            .then(() => { Promise.resolve() })
-            .catch(() => { Promise.reject() })
+        return Promise.all([art.promise, lage.promise, quelle.promise]);
     }
 
     private dokuAdd(doku: Dokument[], ziel: HTMLElement) {
@@ -255,25 +268,44 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
             });
     }
 
-    public getInfoForm(ziel: HTMLFormElement, changeable: boolean = false): Promise<void> {
+    public getInfoForm(ziel: HTMLFormElement, changeable: boolean = false): Promise<void[]> {
         return Aufstellvorrichtung.createFields(ziel, this, changeable);
     }
 
-    public changeAttributes(form: HTMLFormElement): Promise<void> {
+    public changeAttributes(form: HTMLFormElement): Promise<Document> {
         this.setArt($(form).find("#art").children("option:selected").val() as string);
         this.setRlageVst($(form).find("#lage").children("option:selected").val() as string);
         this.setQuelle($(form).find("#quelle").children("option:selected").val() as string);
         this.setObjektnr($(form).find("#extid").val() as string);
 
-        let xml = this.createUpdateXML({
+        let update = {
             'art/@xlink:href': this.getArt(),
             'rlageVst/@xlink:href': this.getRlageVst(),
             'quelle/@xlink:href': this.getQuelle(),
             'objektnr': this.getObjektnr(),
-        });
-        return PublicWFS.doTransaction(xml)
-            .then(() => { Promise.resolve() })
-            .catch(() => { Promise.reject() });
+        };
+
+        let vorher = this.labstbaVst != null && this.rabstbaVst != this.labstbaVst
+        if ($(form).find("#abstandL_checkbox").is(":checked") as boolean != vorher) {
+            if (vorher) {
+                // vorher zweibeinig, nun nicht mehr
+                this.labstbaVst = undefined;
+                this.vabstVst = this.rabstbaVst;
+            } else {
+                // vorher einbeinig nun nicht mehr
+                this.labstbaVst = this.rabstbaVst - 5;
+                this.vabstVst = this.rabstbaVst - 2.5;
+            }
+            this.vabstBst = this.vabstVst;
+            update['labstbaVst'] = this.labstbaVst; 
+            update['vabstVst'] = this.vabstVst; 
+            update['vabstBst'] = this.vabstBst; 
+            $(form).find("#abstandL").val(this.labstbaVst ?? '')
+            this.calcGeometry();
+        }
+
+        let xml = this.createUpdateXML(update);
+        return PublicWFS.doTransaction(xml);
     }
 
     // Getter
@@ -348,55 +380,89 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         ctx.rotate(winkel)
 
         ctx.save();
-
-
         let faktoren = { '01': 0, '02': 2, '03': 1, '04': 3 };
         if (this.getVabstVst() < 0) faktoren = { '01': 0, '02': 2, '03': 3, '04': 1 }
+        let position: number[];
 
+        if (this.labstbaVst == null || this.rabstbaVst == this.labstbaVst) {
+            //einbeinig
+            position = (this.getGeometry() as Point).getCoordinates();
+            for (let r in zeichenL) {
+                ctx.restore();
+                ctx.save()
+                ctx.rotate(faktoren[r] * 0.5 * Math.PI)
 
-        for (let r in zeichenL) {
-            ctx.restore();
-            ctx.save()
-            ctx.rotate(faktoren[r] * 0.5 * Math.PI)
+                let liste = zeichenL[r];
+                ctx.beginPath()
+                ctx.strokeStyle = "#444444";
+                ctx.lineWidth = 4;
+                ctx.moveTo(0, 0)
+                ctx.lineTo(0, - 40 * liste.length)
+                ctx.stroke()
 
-            let liste = zeichenL[r];
-            ctx.beginPath()
-            ctx.strokeStyle = "#444444";
-            ctx.lineWidth = 4;
-            ctx.moveTo(0, 0)
-            ctx.lineTo(0, - 40 * liste.length)
-            ctx.stroke()
+                for (let j = 0; j < liste.length; j++) {
 
-            for (let j = 0; j < liste.length; j++) {
-
-                let zeichen = liste[j]
-                let img = new Image();
-                if (zeichen.getArt().getKt() == '02') {
-                    ctx.fillRect(-25, -20 - 40 * (liste.length - j), 50, 40);
-                }
-                img.src = '../schilder/' + zeichen.getStvoznr().getKt() + '.svg';
-                img.addEventListener("load", function () {
-                    ctx.restore();
-                    ctx.save()
-                    ctx.rotate(faktoren[r] * 0.5 * Math.PI)
-                    let hoehe = 40;
-                    let breite = 40 * img.width / img.height
-                    if (breite > 40) {
-                        breite = 40;
-                        hoehe = 40 * img.height / img.width
+                    let zeichen = liste[j]
+                    let img = new Image();
+                    if (zeichen.getArt().getKt() == '02') {
+                        ctx.fillRect(-25, -20 - 40 * (liste.length - j), 50, 40);
                     }
-                    ctx.drawImage(img, - breite / 2, (40 - hoehe) / 2 - 20 - 40 * (liste.length - j), breite, hoehe);
-                });
+                    img.src = '../schilder/' + zeichen.getStvoznr().getKt() + '.svg';
+                    img.addEventListener("load", function () {
+                        ctx.restore();
+                        ctx.save()
+                        ctx.rotate(faktoren[r] * 0.5 * Math.PI)
+                        let hoehe = 40;
+                        let breite = 40 * img.width / img.height
+                        if (breite > 40) {
+                            breite = 40;
+                            hoehe = 40 * img.height / img.width
+                        }
+                        ctx.drawImage(img, - breite / 2, (40 - hoehe) / 2 - 20 - 40 * (liste.length - j), breite, hoehe);
+                    });
+                }
+            }
+        } else {
+            //zweibeinig
+            position = (this.getGeometry() as LineString).getCoordinateAt(0.5);
+            for (let r in zeichenL) {
+                ctx.restore();
+                ctx.save()
+                ctx.rotate(faktoren[r] * 0.5 * Math.PI)
+
+                let liste = zeichenL[r];
+
+                for (let j = 0; j < liste.length; j++) {
+
+                    let zeichen = liste[j]
+                    let img = new Image();
+                    if (zeichen.getArt().getKt() == '02') {
+                        ctx.fillRect(- 20 * liste.length + 40 * j, -55, 40, 50);
+                    }
+                    img.src = '../schilder/' + zeichen.getStvoznr().getKt() + '.svg';
+                    img.addEventListener("load", function () {
+                        ctx.restore();
+                        ctx.save()
+                        ctx.rotate(faktoren[r] * 0.5 * Math.PI)
+                        let hoehe = 40;
+                        let breite = 40 * img.width / img.height
+                        if (breite > 40) {
+                            breite = 40;
+                            hoehe = 40 * img.height / img.width
+                        }
+                        ctx.drawImage(img, (40 - breite) / 2 - 20 * liste.length + 40 * j, - hoehe / 2 - 30, breite, hoehe);
+                    });
+                }
             }
         }
 
         document.getElementById("sidebar").appendChild(canvas);
 
         this.overlay = new Overlay({
-            position: (this.getGeometry() as Point).getCoordinates(),
+            position: position,
             element: canvas,
             offset: [-groesse, -groesse],
-            autoPan: true,
+            autoPan: false,
             stopEvent: false
         });
         map.addOverlay(this.overlay)

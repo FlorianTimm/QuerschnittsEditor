@@ -150,7 +150,7 @@ class AvVzAdd extends Tool {
 
     }
 
-    private _zeichenGeladen(zeichen: Zeichen[]): Promise<void> {
+    private _zeichenGeladen(zeichen: Zeichen[]): Promise<void[][]> {
         zeichen.sort(function (a: Zeichen, b: Zeichen) {
             if (a.getSort() == null && b.getSort() == null) return 0;
             if (a.getSort() == null) return -1;
@@ -161,15 +161,14 @@ class AvVzAdd extends Tool {
         for (let eintrag of zeichen) {
             tasks.push(this.createSchildForm(eintrag));
         }
-        return Promise.all(tasks)
-            .then(() => { Promise.resolve() });
+        return Promise.all(tasks);
     }
 
     /**
      * Erzeugt pro Schild ein Änderungsformular
      * @param {Zeichen} eintrag Schild, für welches das Formular erzeugt werden soll
      */
-    private async createSchildForm(eintrag: Zeichen): Promise<void> {
+    private async createSchildForm(eintrag: Zeichen): Promise<void[]> {
         let div = document.createElement("form");
         this.liste.appendChild(div);
         div.dataset.oid = eintrag.getObjektId();
@@ -274,9 +273,7 @@ class AvVzAdd extends Tool {
         $(buttonLoeschen).button();
         del_group.appendChild(buttonLoeschen);
         text.appendChild(del_group);
-        return Promise.all(tasks)
-            .then(() => { Promise.resolve() })
-            .catch(() => { Promise.reject() });
+        return Promise.all(tasks);
     }
 
     /**

@@ -164,10 +164,10 @@ export default class InfoTool extends Tool {
 }
 
 export interface InfoToolSelectable extends Feature<Geometry> {
-    getInfoForm: (sidebar: HTMLElement, changeable?: boolean) => Promise<void>;
+    getInfoForm: (sidebar: HTMLElement, changeable?: boolean) => Promise<any>;
 }
 export interface InfoToolEditable extends Feature<Geometry> {
-    changeAttributes: (form: HTMLFormElement) => Promise<void>;
+    changeAttributes: (form: HTMLFormElement) => Promise<any>;
 }
 
 export interface InfoToolOverlay {
