@@ -60,24 +60,31 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
 
     public async setDataFromXML(xml: Element): Promise<PunktObjekt> {
         super.setDataFromXML(xml);
-        let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(',');
         const abschnitt = await Abschnitt.getAbschnitt(this.abschnittId);
         this.abschnitt = abschnitt;
         abschnitt.addOKinER(this.getObjektKlassenName());
         Abschnitt.getLayer().changed();
 
-        if (isNumber(this.labstbaVst)) {
-            this.setGeometry(
-                new LineString([
-                    abschnitt.stationierePunkt(this.vst, this.rabstbaVst),
-                    abschnitt.stationierePunkt(this.vst, this.labstbaVst)
-                ]));
-        } else {
-            this.setGeometry(new Point([parseFloat(koords[0]), parseFloat(koords[1])]));
-        }
+        this.calcGeometry(xml)
 
         return this;
     }
+
+    protected calcGeometry(xml?: Element) {
+        if (isNumber(this.labstbaVst)) {
+            this.setGeometry(
+                new LineString([
+                    this.abschnitt.stationierePunkt(this.vst, this.rabstbaVst),
+                    this.abschnitt.stationierePunkt(this.vst, this.labstbaVst)
+                ]));
+        } else if (xml) {
+            let koords = xml.getElementsByTagName('gml:coordinates')[0].firstChild.textContent.split(',');
+            this.setGeometry(new Point([parseFloat(koords[0]), parseFloat(koords[1])]));
+        } else {
+            this.setGeometry(new Point(this.abschnitt.stationierePunkt(this.vst, this.rabstbaVst)));
+        }
+    }
+
 
     protected static createLayer(map?: Map): VectorLayer {
         let layer = new VectorLayer({

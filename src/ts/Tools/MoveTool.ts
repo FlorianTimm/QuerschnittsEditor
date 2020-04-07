@@ -34,8 +34,8 @@ export default class MoveTool extends Tool {
     private l_overlay: VectorLayer;
     private feat_station_line: Feature<LineString>;
     private modifyPoint: ModifyInteraction;
-    private lineStart: Feature<Point>;
-    private lineEnd: Feature<Point>;
+    private lineRechts: Feature<Point>;
+    private lineLinks: Feature<Point>;
     private modifyLine: ModifyInteraction;
     private linePreview: Feature<LineString>;
     private pointermove: EventsKey;
@@ -46,6 +46,7 @@ export default class MoveTool extends Tool {
 
         this.select = new SelectInteraction({
             layers: [selectLayer],
+            hitTolerance: 10
         });
 
         this.createLayer();
@@ -99,8 +100,8 @@ export default class MoveTool extends Tool {
 
         // zweibeinig
 
-        this.lineStart = new Feature<Point>()
-        this.lineStart.setStyle(new Style({
+        this.lineRechts = new Feature<Point>()
+        this.lineRechts.setStyle(new Style({
             image: new Circle({
                 radius: 4,
                 fill: new Fill({ color: 'rgba(0,255,0,0.6)' }),
@@ -110,8 +111,8 @@ export default class MoveTool extends Tool {
                 })
             })
         }));
-        this.lineEnd = new Feature<Point>()
-        this.lineEnd.setStyle(new Style({
+        this.lineLinks = new Feature<Point>()
+        this.lineLinks.setStyle(new Style({
             image: new Circle({
                 radius: 4,
                 fill: new Fill({ color: 'rgba(255,0,0,0.6)' }),
@@ -125,17 +126,17 @@ export default class MoveTool extends Tool {
         this.linePreview = new Feature<LineString>()
         this.linePreview.setStyle(new Style({
             stroke: new Stroke({
-                color: 'rgba(100,100,100,0.9)',
+                color: 'rgba(0, 0, 255, 0.5)',
                 width: 2
             })
         }));
 
-        this.v_overlay.addFeatures([this.lineEnd, this.lineStart, this.linePreview]);
+        this.v_overlay.addFeatures([this.lineLinks, this.lineRechts, this.linePreview]);
 
         this.modifyLine = new ModifyInteraction({
             deleteCondition: neverCondition,
             insertVertexCondition: neverCondition,
-            features: new Collection([this.lineEnd, this.lineStart])
+            features: new Collection([this.lineLinks, this.lineRechts])
         });
         this.modifyLine.on('modifystart', (e: ModifyEvent) => this.modifyLineStart(e));
         this.modifyLine.on('modifyend', (e: ModifyEvent) => this.modifyLineEnd(e));
@@ -152,8 +153,8 @@ export default class MoveTool extends Tool {
         if (!dat) return;
         dat.feature.setGeometry(dat.linestring);
         dat.feature.updateStation(dat.vst, dat.rabstvst, dat.labstvst);
-        this.lineStart.setGeometry(null);
-        this.lineEnd.setGeometry(null);
+        this.lineRechts.setGeometry(null);
+        this.lineLinks.setGeometry(null);
         this.linePreview.setGeometry(null);
         this.select.getFeatures().clear();
     }
@@ -173,47 +174,47 @@ export default class MoveTool extends Tool {
             unByKey(this.pointermove);
             this.modifyPoint.setActive(false);
             this.modifyLine.setActive(false);
-            this.lineStart.setGeometry(null);
-            this.lineEnd.setGeometry(null);
+            this.lineRechts.setGeometry(null);
+            this.lineLinks.setGeometry(null);
             (this.feat_station_line.getGeometry() as LineString).setCoordinates([[0, 0], [0, 0]]);
         }
         this.infoTool.featureSelect(this.select, true)
     }
 
     private changeLine(feat: Feature<LineString>) {
-        this.lineStart.setGeometry(new Point(feat.getGeometry().getFirstCoordinate()));
-        this.lineEnd.setGeometry(new Point(feat.getGeometry().getLastCoordinate()));
-        this.lineStart.set('feature', feat);
-        this.lineEnd.set('feature', feat);
+        this.lineRechts.setGeometry(new Point(feat.getGeometry().getFirstCoordinate()));
+        this.lineLinks.setGeometry(new Point(feat.getGeometry().getLastCoordinate()));
+        this.lineRechts.set('feature', feat);
+        this.lineLinks.set('feature', feat);
         this.modifyLine.setActive(true);
     }
 
     private calcZweibeinig(): { feature: PunktObjekt, vst: number, rabstvst: number, labstvst: number, linestring: LineString } | null {
-        let feat = this.lineStart.get('feature') as PunktObjekt;
+        let feat = this.lineRechts.get('feature') as PunktObjekt;
         if (feat == null) return null;
         let rabstvst = feat.getRAbstBaVst();
         let labstvst = feat.getLAbstBaVst();
-        let startStation = feat.getAbschnitt().getStationierung(this.lineStart.getGeometry().getCoordinates())
-        let endStation = feat.getAbschnitt().getStationierung(this.lineEnd.getGeometry().getCoordinates())
+        let rechtsStation = feat.getAbschnitt().getStationierung(this.lineRechts.getGeometry().getCoordinates())
+        let linksStation = feat.getAbschnitt().getStationierung(this.lineLinks.getGeometry().getCoordinates())
         let vst = feat.getVst()
-        let rabstvstNeu = ((startStation.seite == 'L') ? -1 : 1) * startStation.abstand;
-        let labstvstNeu = ((startStation.seite == 'L') ? -1 : 1) * endStation.abstand;
+        let rabstvstNeu = ((rechtsStation.seite == 'L') ? -1 : 1) * rechtsStation.abstand;
+        let labstvstNeu = ((linksStation.seite == 'L') ? -1 : 1) * linksStation.abstand;
 
 
-        if (Math.abs(rabstvstNeu - feat.getRAbstBaVst()) > 0.01) {
+        if (Math.abs(rabstvstNeu - feat.getRAbstBaVst()) > 0.05) {
             // Rechts
             console.log("rechts")
-            rabstvst = rabstvstNeu;
-            vst = startStation.station;
+            rabstvst = Math.round(rabstvstNeu * 10) / 10;
+            vst = rechtsStation.station;
         } else if (Math.abs(labstvstNeu - feat.getLAbstBaVst()) > 0.01) {
             // Links
             console.log("links")
-            labstvst = labstvstNeu;
-            vst = endStation.station;
+            labstvst = Math.round(labstvstNeu * 10) / 10;
+            vst = linksStation.station;
         }
-        let start = feat.getAbschnitt().stationierePunkt(vst, rabstvst)
-        let end = feat.getAbschnitt().stationierePunkt(vst, labstvst)
-        return { feature: feat, vst: vst, rabstvst: rabstvst, labstvst: labstvst, linestring: new LineString([start, end]) }
+        let rechts = feat.getAbschnitt().stationierePunkt(vst, rabstvst)
+        let links = feat.getAbschnitt().stationierePunkt(vst, labstvst)
+        return { feature: feat, vst: vst, rabstvst: rabstvst, labstvst: labstvst, linestring: new LineString([rechts, links]) }
     }
 
     private moveLine() {
