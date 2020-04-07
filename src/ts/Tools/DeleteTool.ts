@@ -4,29 +4,28 @@ import { Select as SelectInteraction } from 'ol/interaction';
 import Tool from './prototypes/Tool';
 import Map from "../openLayers/Map";
 import Daten from '../Daten';
-import { Layer } from 'ol/layer';
 import { SelectEvent } from 'ol/interaction/Select';
 import { InfoToolSelectable } from './InfoTool';
-import VectorSource from 'ol/source/Vector';
 import PublicWFS from '../PublicWFS';
 import PunktObjekt from '../Objekte/prototypes/PunktObjekt';
 import HTML from '../HTML';
+import VectorLayer from 'ol/layer/Vector';
 
 /**
  * Prototyp des Werkzeuges zum Löschen von Punktobjekten
  * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
- * @version 2019.10.29
+ * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
 export default class DeleteTool extends Tool {
-    protected layer: Layer;
+    protected layer: VectorLayer;
     protected sidebar: HTMLElement;
     protected delField: HTMLFormElement;
     protected infoField: HTMLDivElement;
     protected select: SelectInteraction;
     private objekt: string;
 
-    constructor(map: Map, layer: Layer, sidebar: HTMLDivElement, objekt: string) {
+    constructor(map: Map, layer: VectorLayer, sidebar: HTMLDivElement, objekt: string) {
         super(map);
         this.layer = layer;
         this.sidebar = sidebar;
@@ -39,7 +38,7 @@ export default class DeleteTool extends Tool {
         let button = document.createElement("button");
         button.addEventListener("click", (event: MouseEvent) => {
             event.preventDefault();
-            this._featureDelete()
+            this.featureDelete()
         })
         button.innerHTML = "L&ouml;schen";
         this.delField.appendChild(button);
@@ -48,10 +47,10 @@ export default class DeleteTool extends Tool {
             layers: [this.layer],
             hitTolerance: 10
         });
-        this.select.on('select', this._featureSelected.bind(this))
+        this.select.on('select', this.featureSelected.bind(this))
     }
 
-    _featureSelected(event: SelectEvent) {
+    protected featureSelected(event: SelectEvent) {
         if (event.selected.length == 0) {
             this.delField.style.display = "none";
             return;
@@ -59,11 +58,10 @@ export default class DeleteTool extends Tool {
         this.delField.style.display = "block";
         let auswahl = <InfoToolSelectable>event.selected[0];
 
-        this.delField;
         auswahl.getInfoForm(this.infoField);
     }
 
-    _featureDelete() {
+    protected featureDelete() {
         let feature = this.select.getFeatures().getArray()[0] as PunktObjekt;
         console.log(feature);
         let update = '<wfs:Delete typeName="' + this.objekt + '">\n' +
@@ -83,7 +81,7 @@ export default class DeleteTool extends Tool {
         PublicWFS.doTransaction(update)
             .then(() => {
                 let feature = this.select.getFeatures().getArray()[0];
-                (<VectorSource>this.layer.getSource()).removeFeature(feature);
+                this.layer.getSource().removeFeature(feature);
                 this.select.getFeatures().clear();
                 PublicWFS.showMessage("Objekt gelöscht!")
                 this.delField.style.display = "none";

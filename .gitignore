@@ -4,3 +4,13 @@ ts_out/
 dist/
 .nyc_output
 coverage
+docs/manual/*.toc
+docs/manual/*.aux
+docs/manual/*.bbl
+docs/manual/*.glg
+docs/manual/*.glo
+docs/manual/*.gls
+docs/manual/*.ist
+docs/manual/*.log
+docs/manual/*.out
+docs/manual/*.blg

@@ -14,14 +14,14 @@ import Dokument from "./Dokument";
 import { InfoToolOverlay } from "../Tools/InfoTool.js";
 import { Overlay, Map } from "ol";
 import { Point } from "ol/geom";
-import VectorLayer from "ol/layer/Vector";
 import { ColorLike } from "ol/colorlike";
 import WaitBlocker from "../WaitBlocker";
+import { VectorLayer } from "../openLayers/Layer.js";
 
 /**
  * Aufstellvorrichtung
  * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
- * @version 2019.10.29
+ * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
 export default class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay {

@@ -3,16 +3,17 @@
 import Abschnitt from "../Abschnitt";
 import { Feature } from "ol";
 import Klartext from "../Klartext";
+import { LineString, Polygon, Point } from "ol/geom";
 
 var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../../config_wfs.json');
 
 /**
  * Interface für SIB-Objekte
  * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
- * @version 2019.10.29
+ * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
-export default abstract class Objekt extends Feature {
+export default abstract class Objekt extends Feature<Polygon|Point> {
 	protected kherk: Klartext = null;
 	protected baujahrGew: string = null;
 	protected abnahmeGew: string = null;

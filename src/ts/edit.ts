@@ -3,7 +3,7 @@
 /**
  * Startscript edit.html
  * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
- * @version 2019-10-29
+ * @version 2020-04-03
  * @license GPL-3.0-or-later
  */
 
@@ -29,6 +29,8 @@ import AusstPktToolBox from './Klassen/AusstPktToolBox';
 import ToolBox from './Klassen/ToolBox';
 import Abschnitt from './Objekte/Abschnitt';
 import SonstigesToolBox from './Klassen/SonstigesToolBox';
+import BaseLayer from 'ol/layer/Base';
+import BaseEvent from 'ol/events/Event';
 
 var CONFIG: { [name: string]: string } = require('./config.json');
 
@@ -177,19 +179,20 @@ function checkHash(map: Map) {
     return foundHash;
 }
 
-function recreateHash(event: MapEvent) {
+function recreateHash(event: any) { //TODO: MapEvent
     //console.log(event)
-    if (event.target.firstHash) {
-        let view = event.target.getView();
+    let map = event.target as Map;
+    if (map.firstHash) {
+        let view = map.getView();
         let hash = "#zoom=" + view.getZoom();
         hash += "&x=" + Math.round(view.getCenter()[0]);
         hash += "&y=" + Math.round(view.getCenter()[1]);
 
         let visible: number[] = []
-        event.target.getLayers().forEach(
-            function (layer: Layer, id: number, __: Layer[]) {
+        map.getLayers().forEach(
+            function (layer: BaseLayer, id: number, __: BaseLayer[]) {
                 if (layer.get('switchable') == true) {
-                    if ((layer as Layer).getVisible()) {
+                    if ((layer as BaseLayer).getVisible()) {
                         visible.push(id);
                     }
                 }
@@ -227,7 +230,7 @@ function createMap() {
                 name: 'LGV DOP 2017',
                 visible: false,
                 switchable: true,
-                opacity: 0.7,
+                opacity: 1.0,
                 source: new TileWMS({
                     url: 'http://geodienste.hamburg.de/HH_WMS_DOP10',
                     params: {
@@ -251,7 +254,20 @@ function createMap() {
                     attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
                 })
             }),
-
+            new TileLayer({
+                name: 'LGV DOP 2019 belaubt',
+                visible: false,
+                switchable: true,
+                opacity: 1.0,
+                source: new TileWMS({
+                    url: 'https://geodienste.hamburg.de/HH_WMS_DOP_belaubt',
+                    params: {
+                        'LAYERS': '1',
+                        'FORMAT': 'image/png'
+                    },
+                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
+                })
+            }),
             new TileLayer({
                 name: 'CAD-Daten',
                 visible: false,
@@ -283,7 +299,7 @@ function createMap() {
             }),
 
             new TileLayer({
-                name: "Querschnitte gruppiert",
+                name: "Querschnitte (Dienst)",
                 visible: false,
                 switchable: true,
                 opacity: 0.6,

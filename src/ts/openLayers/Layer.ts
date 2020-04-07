@@ -75,6 +75,8 @@ export class ImageLayer extends Image {
  */
 export interface VectorOptions extends VectorOptionsOl {
     daten?: Daten;
+    name?: string;
+    switchable?: boolean;
 }
 
 /**
@@ -85,10 +87,16 @@ export interface VectorOptions extends VectorOptionsOl {
  */
 export class VectorLayer extends Vector {
     daten?: Daten;
+    name: string = "";
+    switchable: boolean = false;
 
     constructor(option: VectorOptions) {
         super(option);
         if (option.daten != undefined)
             this.daten = option.daten;
+        if (option.name != undefined)
+            this.name = option.name;
+        if (option.switchable != undefined)
+            this.switchable = option.switchable;
     }
 }

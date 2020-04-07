@@ -92,8 +92,8 @@ export default class QuerStation {
     public getQuerschnittByBstAbstand(XBstL: number, XBstR: number): Querschnitt {
         for (let streifen in this._querschnitte) {
             for (let querschnitt in this._querschnitte[streifen]) {
-                if (XBstL < 0 && this._querschnitte[streifen][querschnitt].getXBstL() == XBstL) return this._querschnitte[streifen][querschnitt];
-                if (XBstR > 0 && this._querschnitte[streifen][querschnitt].getXBstR() == XBstR) return this._querschnitte[streifen][querschnitt];
+                if (XBstL < 0 && Math.abs(this._querschnitte[streifen][querschnitt].getXBstL() - XBstL) < 0.02) return this._querschnitte[streifen][querschnitt];
+                if (XBstR > 0 && Math.abs(this._querschnitte[streifen][querschnitt].getXBstR() - XBstR) < 0.02) return this._querschnitte[streifen][querschnitt];
             }
         }
         return null;
@@ -102,8 +102,8 @@ export default class QuerStation {
     public getQuerschnittByVstAbstand(XVstL: number, XVstR: number): Querschnitt {
         for (let streifen in this._querschnitte) {
             for (let querschnitt in this._querschnitte[streifen]) {
-                if (XVstL < 0 && this._querschnitte[streifen][querschnitt].getXVstL() == XVstL) return this._querschnitte[streifen][querschnitt];
-                if (XVstR > 0 && this._querschnitte[streifen][querschnitt].getXVstR() == XVstR) return this._querschnitte[streifen][querschnitt];
+                if (XVstL < 0 && Math.abs(this._querschnitte[streifen][querschnitt].getXVstL() - XVstL) < 0.02) return this._querschnitte[streifen][querschnitt];
+                if (XVstR > 0 && Math.abs(this._querschnitte[streifen][querschnitt].getXVstR() - XVstR) < 0.02) return this._querschnitte[streifen][querschnitt];
             }
         }
         return null;
@@ -118,11 +118,11 @@ export default class QuerStation {
         let erster = this.linienPunkte[0]
         let letzter = this.linienPunkte[this.linienPunkte.length - 1];
         let statTrenn = [];
-        statTrenn.push([Vektor.sum(letzter.pkt, Vektor.multi(letzter.seitlicherVektorAmPunkt, 30)), Vektor.sum(letzter.pkt, Vektor.multi(letzter.seitlicherVektorAmPunkt, -30))]);
-        QuerStation.layerStation.getSource().addFeature(new Feature({ geom: new Point(letzter.pkt) }));
+        statTrenn.push([Vektor.sum(letzter.getCoordinates(), Vektor.multi(letzter.seitlicherVektorAmPunkt, 30)), Vektor.sum(letzter.getCoordinates(), Vektor.multi(letzter.seitlicherVektorAmPunkt, -30))]);
+        QuerStation.layerStation.getSource().addFeature(new Feature({ geom: new Point(letzter.getCoordinates()) }));
         if (this.vst == 0) {
-            statTrenn.push([Vektor.sum(erster.pkt, Vektor.multi(erster.seitlicherVektorAmPunkt, 30)), Vektor.sum(erster.pkt, Vektor.multi(erster.seitlicherVektorAmPunkt, -30))]);
-            QuerStation.layerStation.getSource().addFeature(new Feature({ geom: new Point(erster.pkt) }));
+            statTrenn.push([Vektor.sum(erster.getCoordinates(), Vektor.multi(erster.seitlicherVektorAmPunkt, 30)), Vektor.sum(erster.getCoordinates(), Vektor.multi(erster.seitlicherVektorAmPunkt, -30))]);
+            QuerStation.layerStation.getSource().addFeature(new Feature({ geom: new Point(erster.getCoordinates()) }));
         }
 
         if (this.linie) {

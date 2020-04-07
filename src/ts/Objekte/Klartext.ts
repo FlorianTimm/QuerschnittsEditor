@@ -147,6 +147,20 @@ export default class Klartext {
         return sortable;
     }
 
+
+    public static getByKlartext(objekt: string, kt: string): Klartext {
+        if (!(objekt in Klartext.liste)) {
+            Klartext.load(objekt);
+            return null;
+        }
+
+        for (let xlink in Klartext.liste[objekt]) {
+            if (Klartext.liste[objekt][xlink].getKt() == kt)
+                return Klartext.liste[objekt][xlink]
+        }
+        return null;
+    }
+
     // HTML-Form-Methods
     static createKlartextSelectForm(klartext: string, form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, value?: Klartext, platzhalter?: string): { select: HTMLSelectElement, promise: Promise<void> } {
         let field = HTML.createSelectForm(form, beschriftung, id, platzhalter);

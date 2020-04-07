@@ -9,7 +9,7 @@ import { SelectInteraction, ModifyInteraction } from '../../openLayers/Interacti
 import { ModifyEvent } from 'ol/interaction/Modify';
 import Querschnitt from '../../Objekte/Querschnittsdaten';
 import InfoTool from '../InfoTool';
-import { MultiLineString, Point, LineString } from 'ol/geom';
+import { MultiLineString, Point, LineString, Geometry } from 'ol/geom';
 import HTML from '../../HTML';
 import KlartextManager from '../../Objekte/Klartext';
 import Map from "../../openLayers/Map";
@@ -24,11 +24,12 @@ import { Circle, Style, Stroke, Fill } from 'ol/style';
 import { FeatureLike } from 'ol/Feature';
 import Vektor from '../../Vektor';
 import PublicWFS from '../../PublicWFS';
+import { Polygon } from 'ol/geom';
 
 /**
  * Funktion zum Verändern von Querschnittsflächen
  * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
- * @version 2019.10.29
+ * @version 200.04.03
  * @license GPL-3.0-or-later
 */
 export default class QuerModifyTool extends Tool {
@@ -142,10 +143,17 @@ export default class QuerModifyTool extends Tool {
         let abs = this.calcAbstand()
         if (abs == null) return
         let seite = abs.querschnitt.getStreifen();
-        if (seite == 'M') return;
+        if (seite == 'M') {
+            this.makeVorschauLinie(abs, 'R', Math.abs(abs.abstand));
+            this.makeVorschauLinie(abs, 'L', - Math.abs(abs.abstand))
+        } else {
+            this.makeVorschauLinie(abs, seite);
+        };
+    }
 
-        let abstVst = (abs.vstOrBst == 'Vst') ? abs.abstand : abs.querschnitt.getX('Vst', seite)
-        let abstBst = (abs.vstOrBst == 'Bst') ? abs.abstand : abs.querschnitt.getX('Bst', seite)
+    private makeVorschauLinie(abs: { abstand: number, vstOrBst: 'Vst' | 'Bst', querschnitt: Querschnitt }, seite: 'L' | 'R', abstand: number = abs.abstand) {
+        let abstVst = (abs.vstOrBst == 'Vst') ? abstand : abs.querschnitt.getX('Vst', seite)
+        let abstBst = (abs.vstOrBst == 'Bst') ? abstand : abs.querschnitt.getX('Bst', seite)
         let diff2 = abstBst - abstVst
 
         let punkte = abs.querschnitt.getStation().getPunkte();
@@ -157,7 +165,9 @@ export default class QuerModifyTool extends Tool {
         for (let i = 0; i < punkte.length; i++) {
             let pkt = punkte[i]
             let faktor = (pkt.vorherLaenge - erster.vorherLaenge) / (letzter.vorherLaenge - erster.vorherLaenge);
-            let coord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff2 + abstVst)));
+            if (pkt.vektorZumNaechsten)
+                pkt.seitenFaktor = 1. / Math.sin(Vektor.winkel(pkt.seitlicherVektorAmPunkt, pkt.vektorZumNaechsten))
+            let coord = Vektor.sum(pkt.getCoordinates(), Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff2 + abstVst) * pkt.seitenFaktor));
             if (isNaN(coord[0]) || isNaN(coord[1])) {
                 console.log("Fehler: keine Koordinaten");
                 continue;
@@ -167,7 +177,7 @@ export default class QuerModifyTool extends Tool {
         this.modifyOverlayLayer.getSource().addFeature(new Feature(new LineString(l)));
     }
 
-    calcAbstand() {
+    calcAbstand(): { abstand: number, vstOrBst: 'Vst' | 'Bst', querschnitt: Querschnitt } {
         let querschnitt = this.selectFlaechen.getFeatures().item(0) as Querschnitt;
         if (querschnitt == null) return null;
         let pkt_segment = querschnitt.getStation().getPunkte();
@@ -192,7 +202,7 @@ export default class QuerModifyTool extends Tool {
         let pkt = pkt_segment[(vstOrBst == 'Vst') ? 0 : (pkt_segment.length - 1)]
 
         // Abstand berechnen
-        let abstand = -Math.round((Vektor.skalar(Vektor.diff(point, pkt.pkt), pkt.seitlicherVektorAmPunkt)) / (Vektor.skalar(pkt.seitlicherVektorAmPunkt, pkt.seitlicherVektorAmPunkt)) * 100) / 100
+        let abstand = -Math.round((Vektor.skalar(Vektor.diff(point, pkt.getCoordinates()), pkt.seitlicherVektorAmPunkt)) / (Vektor.skalar(pkt.seitlicherVektorAmPunkt, pkt.seitlicherVektorAmPunkt)) * 100) / 100
         return { abstand: abstand, vstOrBst: vstOrBst, querschnitt: querschnitt }
     }
 
@@ -204,67 +214,32 @@ export default class QuerModifyTool extends Tool {
         let abs = this.calcAbstand()
         if (!abs) return;
 
-        // Mittelstreifen filtern
-        let seite = abs.querschnitt.getStreifen();
-        if (seite == 'M') {
-            PublicWFS.showMessage("Mittelstreifen können nicht bearbeitet werden")
-            return;
-        }
-
         // Differenz bestimmen
-        let diff = abs.abstand - abs.querschnitt.getX(abs.vstOrBst, seite)
-
-        // alte Daten speichern für Vergleich, wenn angrenzender Querschnitt mitbewegt werden soll
-        let alt_XBstR = abs.querschnitt.getXBstR();
-        let alt_XBstL = abs.querschnitt.getXBstL();
-        let alt_XVstR = abs.querschnitt.getXVstR();
-        let alt_XVstL = abs.querschnitt.getXVstL();
-
-        // Daten prüfen und bearbeiten 
-        diff = this._check_and_edit_querschnitt(abs.querschnitt, diff, abs.vstOrBst, (abs.vstOrBst == "Vst" ? "breite" : "bisBreite"));
-
-        if (document.forms.namedItem("modify").modify_glue.checked) {
-            // VST, BST suchen und ändern
-            if (abs.vstOrBst == "Vst") {
-                let station = abs.querschnitt.getStation().getAbschnitt().getStationByBST(abs.querschnitt.getVst());
-                if (station == null) return;
-                let querschnitt_nachbar = station.getQuerschnittByBstAbstand(alt_XVstL, alt_XVstR);
-                if (querschnitt_nachbar == null) return;
-                this._check_and_edit_querschnitt(querschnitt_nachbar, diff, 'Bst', 'bisBreite')
-            }
-            //BST, VST suchen und ändern
-            else {
-                let station = abs.querschnitt.getStation().getAbschnitt().getStationByVST(abs.querschnitt.getBst());
-                if (station == null) return;
-                let querschnitt_nachbar = station.getQuerschnittByVstAbstand(alt_XBstL, alt_XBstR);
-                if (querschnitt_nachbar == null) return;
-                this._check_and_edit_querschnitt(querschnitt_nachbar, diff, 'Vst', 'breite')
-            }
+        //let diff = abs.abstand - abs.querschnitt.getX(abs.vstOrBst, abs.abstand > 0 ? "R" : "L")
+        let neueBreite;
+        if (abs.querschnitt.getStreifen() == "M") {
+            neueBreite = 2 * Math.abs(abs.abstand);
+        } else if (abs.abstand >= 0) {
+            // neuer Punkt liegt rechts oder mittig
+            neueBreite = abs.abstand - abs.querschnitt.getX(abs.vstOrBst, "L")
+        } else {
+            // neuer Punkt liegt links
+            neueBreite = abs.querschnitt.getX(abs.vstOrBst, "R") - abs.abstand;
         }
+
+        // in cm umwandeln und runden
+        neueBreite = Math.round(neueBreite * 100);
+
+        // negative Breiten verhindern
+        if (neueBreite < 0) neueBreite = 0;
+
+        let vstBreite = (abs.vstOrBst == "Vst" ? neueBreite : abs.querschnitt.getBreite());
+        let bstBreite = (abs.vstOrBst == "Vst" ? abs.querschnitt.getBisBreite() : neueBreite);
+
+        abs.querschnitt.editBreite(vstBreite, bstBreite, document.forms.namedItem("modify").modify_fit.checked, document.forms.namedItem("modify").modify_glue.checked)
+
         this.featureSelected()
         this.map.removeInteraction(this.snapStation);
-    }
-
-    _check_and_edit_querschnitt(querschnitt: Querschnitt, diff: number, Vst_or_Bst: 'Vst' | 'Bst', breite_or_bisBreite: 'breite' | 'bisBreite') {
-        let streifen = querschnitt.getStreifen();
-        let nr = querschnitt.getStreifennr();
-
-        // Überschneidung mit nächsten 
-        let next_quer = querschnitt.getStation().getQuerschnitt(streifen, nr + 1)
-        if ((document.getElementById('modify_fit') as HTMLInputElement).checked && next_quer != undefined) {
-            let max_diff = next_quer[breite_or_bisBreite] / 100;
-            if (((streifen == 'L') ? (-diff) : (diff)) > max_diff) {
-                diff = ((streifen == 'L') ? (-max_diff) : (max_diff));
-            }
-        }
-        // negative Breiten verhindern
-        if (((streifen == 'L') ? (diff) : (-diff)) * 100 > querschnitt[breite_or_bisBreite]) {
-            diff = ((streifen == 'L') ? (querschnitt[breite_or_bisBreite]) : (-querschnitt[breite_or_bisBreite])) / 100;
-        }
-        querschnitt.setX(Vst_or_Bst, streifen as 'R' | 'L', querschnitt.getX(Vst_or_Bst, streifen as 'R' | 'L') + diff);
-        querschnitt[breite_or_bisBreite] = Math.round(100 * (querschnitt.getX(Vst_or_Bst, 'R') - querschnitt.getX(Vst_or_Bst, 'L')));
-        querschnitt.editBreiteOld(Vst_or_Bst, diff, (document.getElementById('modify_fit') as HTMLInputElement).checked);
-        return diff;
     }
 
     private createLinienSelect(layerTrenn: VectorLayer) {
@@ -288,7 +263,7 @@ export default class QuerModifyTool extends Tool {
     private flaecheSelected() {
         this.selectLinien.getFeatures().clear();
         let auswahl = this.selectFlaechen.getFeatures();
-        auswahl.forEach((feat: Feature) => {
+        auswahl.forEach((feat: Feature<Geometry>) => {
             this.selectLinien.getFeatures().push((feat as Querschnitt).trenn);
         })
 
@@ -301,7 +276,7 @@ export default class QuerModifyTool extends Tool {
         this.selectLinien.getFeatures().clear()
         this.modifyLayer.getSource().clear();
 
-        this.selectFlaechen.getFeatures().forEach((feature: Feature) => {
+        this.selectFlaechen.getFeatures().forEach((feature: Feature<Geometry>) => {
             this.selectLinien.getFeatures().push((feature as Querschnitt).trenn)
         });
 
@@ -320,6 +295,7 @@ export default class QuerModifyTool extends Tool {
     private singleSelect() {
         console.log("singleSelect")
         $(this.multiEditForm).hide("fast");
+        $(this.moveTypeForm).show("fast");
 
         this.setModifyActive(true);
         this.info.featureSelect(this.selectFlaechen, true);
@@ -351,9 +327,7 @@ export default class QuerModifyTool extends Tool {
 
         let art = selection[0].getArt() ? selection[0].getArt().getXlink() : null;
         let ober = selection[0].getArtober() ? selection[0].getArtober().getXlink() : null;
-        console.log(art)
         for (let querschnitt of selection) {
-            console.log(querschnitt.getArt());
             if (art != (querschnitt.getArt() ? querschnitt.getArt().getXlink() : null))
                 art = null;
             if (ober != (querschnitt.getArtober() ? querschnitt.getArtober().getXlink() : null))
@@ -451,7 +425,9 @@ export default class QuerModifyTool extends Tool {
         this.map.removeInteraction(this.modify);
         this.map.removeInteraction(this.snapTrenn);
         this.map.removeInteraction(this.snapStation);
-
+        this.modifyLayer.getSource().clear();
+        this.selectFlaechen.getFeatures().clear();
+        this.selectLinien.getFeatures().clear();
         $(this.multiEditForm).hide("hide");
     }
 }

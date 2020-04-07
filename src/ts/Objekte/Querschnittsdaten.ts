@@ -12,7 +12,7 @@ import Klartext from './Klartext';
 import HTML from '../HTML';
 import { InfoToolEditable } from '../Tools/InfoTool';
 import PrimaerObjekt from './prototypes/PrimaerObjekt';
-import VectorLayer from 'ol/layer/Vector';
+import { VectorLayer } from '../openLayers/Layer';
 import VectorSource from 'ol/source/Vector';
 import { Style, Stroke, Text, Fill } from 'ol/style';
 import { FeatureLike } from 'ol/Feature';
@@ -20,14 +20,12 @@ import { FeatureLike } from 'ol/Feature';
 /**
  * Querschnittsdaten
  * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
- * @version 2019.11.15
+ * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
 export default class Querschnitt extends PrimaerObjekt implements InfoToolEditable {
-    private _daten: Daten;
     private _aufbaudaten: { [schicht: number]: Aufbau } = null;
-
-    trenn: Feature;
+    public trenn: Feature<MultiLineString>;
 
     // SIB-Attribute
     private station: QuerStation = null;
@@ -51,13 +49,12 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
     constructor() {
         super();
-        this._daten = Daten.getInstanz();
         //console.log(daten);
 
         this.setGeometry(new Polygon([[[0, 0], [0, 0], [0, 0]]]));
         Querschnitt.getLayerFlaechen().getSource().addFeature(this)
 
-        this.trenn = new Feature({ geom: new MultiLineString([[[0, 0], [0, 0], [0, 0]]]), objekt: this });
+        this.trenn = new Feature<MultiLineString>({ geom: new MultiLineString([[[0, 0], [0, 0], [0, 0]]]), objekt: this });
         Querschnitt.getLayerTrenn().getSource().addFeature(this.trenn);
     }
 
@@ -82,7 +79,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         return Querschnitt._loadER_Callback(xml);
     }
 
-    static _loadER_Callback(xml: Document): Promise<Querschnitt[]> {
+    static async _loadER_Callback(xml: Document): Promise<Querschnitt[]> {
         let dotquer = xml.getElementsByTagName("Dotquer");
         let tasks: Promise<Querschnitt>[] = [];
         for (let i = 0; i < dotquer.length; i++) {
@@ -103,6 +100,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         let seite = this.station.getStreifen(this.streifen);
 
         if (this.streifen == "M") {
+            // Faktor 0.005 => cm -> m und Halbieren bei Mittelstreifen
             this.XVstL = 0.005 * this.breite;
             this.XVstR = 0.005 * this.breite;
             this.XBstL = 0.005 * this.bisBreite;
@@ -145,7 +143,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         $(art.select).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Lage
-        let lage = Klartext.createKlartextSelectForm("Itquerober", form, "Lage", "ober", querschnitt != undefined ? querschnitt.artober : undefined);
+        let lage = Klartext.createKlartextSelectForm("Itquerober", form, "Art der Oberfläche", "ober", querschnitt != undefined ? querschnitt.artober : undefined);
         $(lage.select).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Breite
@@ -233,6 +231,12 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         let l = [];
         let r = [];
 
+        if (this.XVstR == null) {
+            console.log("keine X-Abstände")
+            this.check();
+            console.log(this)
+        }
+
         let abst1 = this.XVstR
         let diff1 = this.XBstR - abst1
         let abst2 = this.XVstL
@@ -246,7 +250,9 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         for (let i = 0; i < punkte.length; i++) {
             let pkt = punkte[i]
             let faktor = (pkt.vorherLaenge - erster.vorherLaenge) / (letzter.vorherLaenge - erster.vorherLaenge);
-            let coord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff2 + abst2)));
+            if (pkt.vektorZumNaechsten)
+                pkt.seitenFaktor = 1. / Math.sin(Vektor.winkel(pkt.seitlicherVektorAmPunkt, pkt.vektorZumNaechsten))
+            let coord = Vektor.sum(pkt.getCoordinates(), Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff2 + abst2) * pkt.seitenFaktor));
             if (isNaN(coord[0]) || isNaN(coord[1])) {
                 console.log("Fehler: keine Koordinaten");
                 continue;
@@ -258,7 +264,9 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         for (let i = punkte.length - 1; i >= 0; i--) {
             let pkt = punkte[i]
             let faktor = (pkt.vorherLaenge - erster.vorherLaenge) / (letzter.vorherLaenge - erster.vorherLaenge);
-            let coord = Vektor.sum(pkt.pkt, Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff1 + abst1)));
+            if (pkt.vektorZumNaechsten)
+                pkt.seitenFaktor = 1. / Math.sin(Vektor.winkel(pkt.seitlicherVektorAmPunkt, pkt.vektorZumNaechsten))
+            let coord = Vektor.sum(pkt.getCoordinates(), Vektor.multi(pkt.seitlicherVektorAmPunkt, -(faktor * diff1 + abst1) * pkt.seitenFaktor));
             if (isNaN(coord[0]) || isNaN(coord[1])) {
                 console.log("Fehler: keine Koordinaten");
                 continue;
@@ -303,75 +311,146 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         }));
     }
 
-    public changeAttributes(form: HTMLFormElement): Promise<void> {
+    public async changeAttributes(form: HTMLFormElement): Promise<void> {
         let changes: { [attribut: string]: any } = {}
         let artXlink = $(form).children().children("#art").val() as string
-        if (artXlink != this.getArt().getXlink()) {
+        if (!this.getArt() || artXlink != this.getArt().getXlink()) {
             this.setArt(artXlink as string)
             changes["art"] = artXlink
         }
         let oberXlink = $(form).children().children("#ober").val() as string
-        if (oberXlink != this.getArtober().getXlink()) {
+        if (!this.getArtober() || oberXlink != this.getArtober().getXlink()) {
             this.setArtober(oberXlink as string)
             changes["artober"] = oberXlink;
         }
-
-        return Promise.all([
-            PublicWFS.doTransaction(this.createUpdateXML(changes)),
-            this.updateInfoBreite(form)
-        ]).then(() => { Promise.resolve() })
-            .catch(() => { Promise.reject() });;
+        try {
+            await Promise.all([
+                PublicWFS.doTransaction(this.createUpdateXML(changes)),
+                this.updateInfoBreite(form)
+            ]);
+            Promise.resolve();
+        }
+        catch (e) {
+            Promise.reject();
+        };
     };
 
     private updateInfoBreite(form: HTMLFormElement): Promise<any> {
         let breite_neu = Number($(form).find('#breite').val());
         let bisbreite_neu = Number($(form).find('#bisbreite').val());
         if (breite_neu != this.getBreite() || bisbreite_neu != this.getBisBreite()) {
-            return this.editBreite(breite_neu, bisbreite_neu, (document.getElementById('modify_fit') as HTMLInputElement).checked);
+            return this.editBreite(breite_neu, bisbreite_neu, (document.getElementById('modify_fit') as HTMLInputElement).checked, (document.getElementById('modify_glue') as HTMLInputElement).checked);
         }
         return Promise.resolve();
     }
 
-    private editBreite(breiteVst: number, breiteBst: number, folgenden_anpassen: boolean = false): Promise<void> {
-        let diffVst = 0
-        let diffBst = 0
+    public editBreite(breiteVst: number, breiteBst: number, folgende_anpassen: boolean = false, angrenzende_mitziehen: boolean = false): Promise<any> {
+        // alle Transaktionen durchführen
+        return PublicWFS.doTransaction(
+            this.checkAndEditBreitenEdit(breiteVst, breiteBst, folgende_anpassen, angrenzende_mitziehen)
+        );
+    }
+
+    private checkAndEditBreitenEdit(breiteVst: number, breiteBst: number, folgende_anpassen: boolean = false, angrenzende_mitziehen: boolean = false): string {
         if (breiteVst < 0) breiteVst = 0;
         if (breiteBst < 0) breiteBst = 0;
-        this.breite = breiteVst;
-        this.bisBreite = breiteBst;
+        this.breite = Math.round(breiteVst);
+        this.bisBreite = Math.round(breiteBst);
+        let update = "";
+
+        // Variablen mit bisherigen Werten initialisieren = ohne Änderung => alter Wert
+        let xvstr_neu = this.XVstR;
+        let xbstr_neu = this.XBstR;
+        let xvstl_neu = this.XVstL;
+        let xbstl_neu = this.XBstL;
 
         if (this.streifen == "L") {
-            let xvstl_neu = this.XVstR - this.breite / 100
-            let xbstl_neu = this.XBstR - this.bisBreite / 100;
-            diffVst = xvstl_neu - this.XVstL;
-            diffBst = xbstl_neu - this.XBstL;
-            this.XVstL = xvstl_neu
-            this.XBstL = xbstl_neu
+            xvstl_neu = this.XVstR - this.breite / 100
+            xbstl_neu = this.XBstR - this.bisBreite / 100;
         } else if (this.streifen == "R") {
-            let xvstr_neu = this.XVstL + this.breite / 100;
-            let xbstr_neu = this.XBstL + this.bisBreite / 100;
-            diffVst = xvstr_neu - this.XVstR;
-            diffBst = xbstr_neu - this.XBstR;
-            this.XVstR = xvstr_neu
-            this.XBstR = xbstr_neu
-        }
-
-        return this.editNext(folgenden_anpassen, diffVst, diffBst);
-    }
-
-    private editNext(folgenden_anpassen: boolean = false, diffVst: number = 0, diffBst: number = 0): Promise<any> {
-        if (folgenden_anpassen) {
-            return this.folgendeAnpassen()
+            xvstr_neu = this.XVstL + this.breite / 100;
+            xbstr_neu = this.XBstL + this.bisBreite / 100;
         } else {
-            return this.folgendeVerschieben(diffVst, diffBst)
+            // nur M0 möglich, daher halbe Breite = XVst bzw. XBst
+            xvstr_neu = Math.round(this.breite / 2) / 100;
+            xbstr_neu = Math.round(this.bisBreite / 2) / 100;
+            xvstl_neu = -Math.round(this.breite / 2) / 100;
+            xbstl_neu = -Math.round(this.bisBreite / 2) / 100;
+        }
+
+        // Differnz zum alten berechnen für Anpassung der folgenden Querschnitte
+        let diffVstR = xvstr_neu - this.XVstR;
+        let diffBstR = xbstr_neu - this.XBstR;
+        let diffVstL = xvstl_neu - this.XVstL;
+        let diffBstL = xbstl_neu - this.XBstL;
+
+        // neue Position setzen
+        this.XVstR = xvstr_neu
+        this.XBstR = xbstr_neu
+        this.XVstL = xvstl_neu
+        this.XBstL = xbstl_neu
+
+        console.log(this)
+
+        // nachfolgende Querschnitte bearbeiten
+        if (this.streifen == "L" || this.streifen == "M")
+            update += this.editNext("L", folgende_anpassen, diffVstL, diffBstL);
+        if (this.streifen == "R" || this.streifen == "M")
+            update += this.editNext("R", folgende_anpassen, diffVstR, diffBstR);
+
+        // Geometrie des Querschnittes neu zeichnen und Update-XML für this erzeugen
+        this.createGeom();
+        update += this.createUpdateBreiteXML();
+
+        // angrenzende Querschnitte bearbeiten
+        if (angrenzende_mitziehen)
+            update += this.angrenzendeMitziehen(folgende_anpassen, diffVstR, diffBstR, diffVstL, diffBstL);
+        return update;
+    }
+
+    private angrenzendeMitziehen(folgende_anpassen: boolean, diffVstR: number, diffBstR: number, diffVstL: number, diffBstL: number): string {
+        if (diffVstR == 0 && diffVstL == 0 && diffBstR == 0 && diffBstL == 0) return "";
+
+        let querschnitt_nachbar: Querschnitt;
+
+        if (diffVstR != 0 || diffVstL != 0) {
+            // VST editiert
+            let station = this.getStation().getAbschnitt().getStationByBST(this.getVst());
+            if (station == null) return "";
+            querschnitt_nachbar = station.getQuerschnittByBstAbstand(this.XVstL - diffVstL, this.XVstR - diffVstR);
+        } else if (diffBstR != 0 || diffBstL != 0) {
+            // BST editiert
+            let station = this.getStation().getAbschnitt().getStationByVST(this.getBst());
+            if (station == null) return "";
+            querschnitt_nachbar = station.getQuerschnittByVstAbstand(this.XBstL - diffBstL, this.XBstR - diffBstR);
+        }
+
+        if (!querschnitt_nachbar) return "";
+
+        let xvstl = querschnitt_nachbar.getXVstL() + diffBstL;
+        let xvstr = querschnitt_nachbar.getXVstR() + diffBstR;
+        let xbstl = querschnitt_nachbar.getXBstL() + diffVstL;
+        let xbstr = querschnitt_nachbar.getXBstR() + diffVstR;
+
+        let breiteVst = Math.round((xvstr - xvstl) * 100);
+        let breiteBst = Math.round((xbstr - xbstl) * 100);
+
+        return querschnitt_nachbar.checkAndEditBreitenEdit(breiteVst, breiteBst, folgende_anpassen, false)
+    }
+
+    private editNext(seite: "L" | "R", folgenden_anpassen: boolean = false, diffVst: number = 0, diffBst: number = 0): string {
+        if (folgenden_anpassen) {
+            //TODO: Es könnte passieren, dass eine Seite an die Grenze des nächsten kommt bei M-Streifen
+            return this.folgendeQuerschnitteAnpassen(seite)
+        } else {
+            return this.folgendeQuerschnitteVerschieben(seite, diffVst, diffBst)
         }
     }
 
-    private folgendeAnpassen(): Promise<any> {
-        let update = "";
-        let naechster = this.getStation().getQuerschnitt(this.streifen, this.streifennr + 1);
+    private folgendeQuerschnitteAnpassen(seite: "L" | "R"): string {
+        let naechster = this.getStation().getQuerschnitt(seite, this.streifennr + 1);
         if (naechster != null) {
-            if (this.streifen == "L") {
+            if (seite == "L") {
                 // negative Breite verhindern
                 if (this.XVstL < naechster.XVstL) this.XVstL = naechster.XVstL;
                 if (this.XBstL < naechster.XBstL) this.XBstL = naechster.XBstL;
@@ -379,7 +458,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
                 // Linke Begrenzung als rechte des nächsten übernehmen
                 naechster.XVstR = this.XVstL;
                 naechster.XBstR = this.XBstL;
-            } else if (this.streifen == "R") {
+            } else if (seite == "R") {
                 // negative Breite verhindern
                 if (this.XVstR > naechster.XVstR) this.XVstR = naechster.XVstR;
                 if (this.XBstR > naechster.XBstR) this.XBstR = naechster.XBstR;
@@ -393,31 +472,24 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             naechster.bisBreite = Math.abs(Math.round((naechster.XBstL - naechster.XBstR) * 100));
 
             naechster.createGeom();
-            update += naechster.createUpdateBreiteXML();
-
+            return naechster.createUpdateBreiteXML();
         }
-        update += this.createUpdateBreiteXML();
-        this.createGeom();
-        return PublicWFS.doTransaction(update);
+        return "";
     }
 
-    private folgendeVerschieben(diffVst: number, diffBst: number): Promise<any> {
-        let update = this.createUpdateBreiteXML();
-        this.createGeom();
+    private folgendeQuerschnitteVerschieben(seite: "L" | "R", diffVst: number, diffBst: number): string {
+        let update = "";
 
         let i = this.streifennr;
         let naechster = null;
-        while ((naechster = this.getStation().getQuerschnitt(this.streifen, ++i)) != null) {
-            console.log(naechster);
+        while ((naechster = this.getStation().getQuerschnitt(seite, ++i)) != null) {
             naechster.verschieben(diffVst, diffBst);
             naechster.createGeom();
             update += naechster.createUpdateBreiteXML();
         }
-        update += this.createUpdateBreiteXML();
-        this.createGeom();
 
-        this.getStation().getStreifen(this.streifen)
-        return PublicWFS.doTransaction(update);
+        this.getStation().getStreifen(seite)
+        return update;
     }
 
     private verschieben(diffVst: number, diffBst: number) {
@@ -425,42 +497,6 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         this.XVstR += diffVst;
         this.XBstR += diffBst;
         this.XBstL += diffBst;
-    }
-
-    public editBreiteOld(edit: 'Vst' | 'Bst', diff: number, fit: boolean): Promise<Document> {
-        let gesStreifen = this.station.getStreifen(this.streifen);
-        let nr = this.streifennr;
-
-        let soap = this.createUpdateBreiteXML();
-
-        if (fit) {
-            // Anpassen
-            if (this.streifen != 'M' && (this.streifennr + 1) in gesStreifen) {
-                if (this.streifen == 'L')
-                    gesStreifen[nr + 1].setX(edit, 'R', gesStreifen[nr + 1].getX(edit, 'R') + diff);
-                else if (this.streifen == 'R')
-                    gesStreifen[nr + 1].setX(edit, 'L', gesStreifen[nr + 1].getX(edit, 'L') + diff);
-                gesStreifen[nr + 1]['breite'] =
-                    Math.round(100 * (gesStreifen[nr + 1]['XVstR'] - gesStreifen[nr + 1]['XVstL']));
-                gesStreifen[nr + 1]['bisBreite'] =
-                    Math.round(100 * (gesStreifen[nr + 1]['XBstR'] - gesStreifen[nr + 1]['XBstL']));
-                gesStreifen[nr + 1].createGeom();
-                soap += gesStreifen[nr + 1].createUpdateBreiteXML();
-            }
-        } else {
-            // Verschieben
-            for (var nnr in gesStreifen) {
-                if (Number(nnr) <= nr)
-                    continue;
-                gesStreifen[nnr].setX(edit, 'L', gesStreifen[nnr].getX(edit, 'L') + diff);
-                gesStreifen[nnr].setX(edit, 'R', gesStreifen[nnr].getX(edit, 'R') + diff);
-                gesStreifen[nnr].createGeom();
-                soap += gesStreifen[nnr].createUpdateBreiteXML();
-            }
-        }
-        this.createGeom();
-
-        return PublicWFS.doTransaction(soap);
     }
 
     /**
@@ -591,6 +627,8 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             }
 
             Querschnitt.layerQuer = new VectorLayer({
+                name: "Querschnitte (Bearbeitung)",
+                switchable: true,
                 source: new VectorSource(),
                 style: createStyle
             });
