@@ -277,6 +277,7 @@ export default class MoveTool extends Tool {
     public stop() {
         this.map.removeInteraction(this.select);
         this.map.removeInteraction(this.modifyPoint);
+        this.select.getFeatures().clear();
         this.map.removeLayer(this.l_overlay);
         if (this.pointermove)
             unByKey(this.pointermove);

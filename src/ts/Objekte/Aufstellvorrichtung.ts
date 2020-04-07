@@ -369,9 +369,6 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         let groesse = max * 40 + 30
 
         let canvas = document.createElement("canvas")
-        canvas.addEventListener("click", () => {
-            this.hideOverlay(map)
-        });
         let ctx = canvas.getContext('2d')
         canvas.height = groesse * 2;
         canvas.width = groesse * 2;
@@ -465,6 +462,12 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
             autoPan: false,
             stopEvent: false
         });
+
+        this.overlay.on("click", () => {
+            this.hideOverlay(map);
+            return false;
+        });
+
         map.addOverlay(this.overlay)
     }
 
