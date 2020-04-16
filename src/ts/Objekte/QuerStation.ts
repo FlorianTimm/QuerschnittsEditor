@@ -213,7 +213,7 @@ export default class QuerStation {
     }
 
     public async rewrite(): Promise<Querschnitt[]> {
-        await this.abschnitt.getAufbauDaten();
+        await this.abschnitt.getAufbauDaten(true);
         let soap = '<wfs:Delete typeName="Dotquer">\n' +
             '<ogc:Filter>\n' +
             '  <ogc:And>\n' +
@@ -267,7 +267,6 @@ export default class QuerStation {
     }
 
     private async getInsertedQuerschnitte(xmlInsertResults: Document, station?: number): Promise<Querschnitt[]> {
-        console.log(xmlInsertResults);
         let filter = '<Filter>';
         let childs = xmlInsertResults.getElementsByTagName('InsertResult')[0].childNodes;
         for (let i = 0; i < childs.length; i++) {
@@ -285,7 +284,7 @@ export default class QuerStation {
             tasks.push(this.createAufbauAddXML(dotquer[i]));
         };
 
-        let insertXML = (await Promise.all(tasks)).join();
+        let insertXML = (await Promise.all(tasks)).join('');
 
         if (insertXML.length > 0) {
             PublicWFS.doTransaction("<wfs:Insert>\n" + insertXML + "</wfs:Insert>");
@@ -375,6 +374,13 @@ export default class QuerStation {
         Querschnitt.getLayerTrenn().getSource().removeFeature(this._querschnitte[streifen][nummer].trenn)
         Querschnitt.getLayerFlaechen().getSource().removeFeature(this._querschnitte[streifen][nummer])
         delete this._querschnitte[streifen][nummer];
+    }
+
+    public hasAufbau(): boolean {
+        for (let q of this.getAllQuerschnitte()) {
+            if (q.getHasSekObj() > 0) return true;
+        }
+        return false;
     }
 
     // Getter
