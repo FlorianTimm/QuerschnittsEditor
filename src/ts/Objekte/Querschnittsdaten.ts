@@ -43,6 +43,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     private XBstR: number = null;
     private streifen: 'M' | 'L' | 'R' = null;
     private streifennr: number = null;
+    private hasSekObj: number = null;
     static loadErControlCounter: number = 0;
     static layerTrenn: VectorLayer;
     static layerQuer: VectorLayer;
@@ -137,7 +138,18 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         return;
     }
 
-    private static createFields(form: HTMLFormElement, __: string, querschnitt?: Querschnitt, changeable: boolean = false): Promise<void> {
+    private static createFields(form: HTMLFormElement, __: string, querschnitt?: Querschnitt, changeable: boolean = false): Promise<any> {
+        let div = document.createElement("div");
+        if (querschnitt && querschnitt.getStation().hasAufbau()) {
+            div.innerHTML = "Aufbaudaten vorhanden";
+            div.style.color = "red";
+        } else if (querschnitt) {
+            div.innerHTML = "(Vllt.) keine Aufbaudaten";
+            div.style.color = "green";
+        }
+        form.appendChild(div)
+        form.appendChild(document.createElement("br"))
+
         // Art
         let art = Klartext.createKlartextSelectForm("Itquerart", form, "Art", "art", querschnitt != undefined ? querschnitt.art : undefined);
         $(art.select).prop('disabled', !changeable).trigger("chosen:updated");
@@ -177,8 +189,6 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         streifen.disabled = true;
 
         return Promise.all([art.promise, lage.promise])
-            .then(() => { Promise.resolve() })
-            .catch(() => { Promise.reject() })
     }
 
     public getInfoForm(ziel: HTMLFormElement, changeable: boolean = false): Promise<void> {
@@ -311,7 +321,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         }));
     }
 
-    public async changeAttributes(form: HTMLFormElement): Promise<void> {
+    public async changeAttributes(form: HTMLFormElement): Promise<any[]> {
         let changes: { [attribut: string]: any } = {}
         let artXlink = $(form).children().children("#art").val() as string
         if (!this.getArt() || artXlink != this.getArt().getXlink()) {
@@ -323,19 +333,13 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             this.setArtober(oberXlink as string)
             changes["artober"] = oberXlink;
         }
-        try {
-            await Promise.all([
-                PublicWFS.doTransaction(this.createUpdateXML(changes)),
-                this.updateInfoBreite(form)
-            ]);
-            Promise.resolve();
-        }
-        catch (e) {
-            Promise.reject();
-        };
+        return Promise.all([
+            PublicWFS.doTransaction(this.createUpdateXML(changes)),
+            this.updateInfoBreite(form)
+        ]);
     };
 
-    private updateInfoBreite(form: HTMLFormElement): Promise<any> {
+    private updateInfoBreite(form: HTMLFormElement): Promise<Document | void> {
         let breite_neu = Number($(form).find('#breite').val());
         let bisbreite_neu = Number($(form).find('#bisbreite').val());
         if (breite_neu != this.getBreite() || bisbreite_neu != this.getBisBreite()) {
@@ -344,7 +348,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         return Promise.resolve();
     }
 
-    public editBreite(breiteVst: number, breiteBst: number, folgende_anpassen: boolean = false, angrenzende_mitziehen: boolean = false): Promise<any> {
+    public editBreite(breiteVst: number, breiteBst: number, folgende_anpassen: boolean = false, angrenzende_mitziehen: boolean = false): Promise<Document> {
         // alle Transaktionen durchführen
         return PublicWFS.doTransaction(
             this.checkAndEditBreitenEdit(breiteVst, breiteBst, folgende_anpassen, angrenzende_mitziehen)
@@ -674,6 +678,10 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     }
     public getStreifen(): 'M' | 'L' | 'R' {
         return this.streifen;
+    }
+
+    public getHasSekObj(): number {
+        return this.hasSekObj;
     }
 
 

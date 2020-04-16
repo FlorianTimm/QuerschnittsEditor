@@ -21,7 +21,7 @@ export default class SAPAdd extends AddTool {
         super(map, sidebar, layerAchse);
     }
 
-    protected createForm():Promise<void>{
+    protected createForm():Promise<void[]>{
         let form = StrassenAusPunkt.createForm(this.sidebar, undefined, true, false);
         this.form = form.form;
         let input = document.createElement("input");
