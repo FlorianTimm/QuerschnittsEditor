@@ -7,7 +7,7 @@ import PublicWFS from '../PublicWFS';
 import Daten from '../Daten';
 import Abschnitt, { LinienPunkt } from './Abschnitt';
 import Querschnitt from './Querschnittsdaten';
-import Aufbau from './Aufbaudaten';
+import Aufbaudaten from './Aufbaudaten';
 import { Point } from 'ol/geom';
 import { VectorLayer } from '../openLayers/Layer';
 import VectorSource from 'ol/source/Vector';
@@ -29,6 +29,7 @@ export default class QuerStation {
     private linie: MultiLineString;
     private _querschnitte: { [streifen: string]: { [streifennr: number]: Querschnitt } } = {};
     private linienPunkte: LinienPunkt[];
+    public aufbaudatenLoaded: Promise<{ [fid: string]: { [schichtnr: number]: Aufbaudaten } }>;
     private static layerStation: VectorLayer;
 
     constructor(abschnitt: Abschnitt, vst: number, bst: number) {
@@ -140,7 +141,7 @@ export default class QuerStation {
 
     public async teilen(station: number): Promise<void> {
         if (this.vst < station && this.bst > station) {
-            return this.abschnitt.getAufbauDaten()
+            return this.getAufbauDaten()
                 .then(() => { this.teilen_callback_aufbaudaten(station) });
         } else {
             PublicWFS.showMessage("nicht möglich, da neue Station zu dicht an bestehenden", true);
@@ -213,7 +214,10 @@ export default class QuerStation {
     }
 
     public async rewrite(): Promise<Querschnitt[]> {
-        await this.abschnitt.getAufbauDaten(true);
+        if (!await this.getAufbauDaten()) {
+            PublicWFS.showMessage("Es konnten nicht alle Aufbaudaten den Querschnitten zugeordnet werden, Abbruch!", true);
+            return Promise.reject();
+        };
         let soap = '<wfs:Delete typeName="Dotquer">\n' +
             '<ogc:Filter>\n' +
             '  <ogc:And>\n' +
@@ -287,7 +291,7 @@ export default class QuerStation {
         let insertXML = (await Promise.all(tasks)).join('');
 
         if (insertXML.length > 0) {
-            PublicWFS.doTransaction("<wfs:Insert>\n" + insertXML + "</wfs:Insert>");
+            await PublicWFS.doTransaction("<wfs:Insert>\n" + insertXML + "</wfs:Insert>");
         }
 
         if (station != undefined) {
@@ -314,7 +318,7 @@ export default class QuerStation {
             insert += schicht.createXML({
                 vst: schicht.getVst() < neuQuer.getVst() ? neuQuer.getVst() : schicht.getVst(),
                 bst: schicht.getBst() > neuQuer.getBst() ? neuQuer.getBst() : schicht.getBst(),
-                parent: neuQuer.getFid()
+                parent: neuQuer.getFid().substr(-32)
             }, true);
         }
         return insert;
@@ -367,6 +371,8 @@ export default class QuerStation {
         for (let i = 0; i < liste.length; i++) {
             liste[i].check();
         }
+
+        this.aufbaudatenLoaded = undefined;
         return querschnitte;
     }
 
@@ -374,6 +380,64 @@ export default class QuerStation {
         Querschnitt.getLayerTrenn().getSource().removeFeature(this._querschnitte[streifen][nummer].trenn)
         Querschnitt.getLayerFlaechen().getSource().removeFeature(this._querschnitte[streifen][nummer])
         delete this._querschnitte[streifen][nummer];
+    }
+
+
+    // Aufbaudaten
+
+    public async getAufbauDaten(reload: boolean = false): Promise<{ [fid: string]: { [schichtnr: number]: Aufbaudaten } }> {
+        if (!this.aufbaudatenLoaded || reload) {
+            this.aufbaudatenLoaded = PublicWFS.doQuery('Otschicht', '<Filter><And>' +
+                '<PropertyIsEqualTo>' +
+                '<PropertyName>projekt/@xlink:href</PropertyName>' +
+                '<Literal>' + Daten.getInstanz().ereignisraum + '</Literal>' +
+                '</PropertyIsEqualTo>' +
+                '<PropertyIsEqualTo>' +
+                '<PropertyName>abschnittOderAst/@xlink:href</PropertyName>' +
+                '<Literal>S' + this.abschnitt.getAbschnittid() + '</Literal>' +
+                '</PropertyIsEqualTo>' +
+                '<PropertyIsGreaterThanOrEqualTo>' +
+                '<PropertyName>vst</PropertyName>' +
+                '<Literal>' + this.getVst() + '</Literal>' +
+                '</PropertyIsGreaterThanOrEqualTo>' +
+                '<PropertyIsLessThanOrEqualTo>' +
+                '<PropertyName>bst</PropertyName>' +
+                '<Literal>' + this.getBst() + '</Literal>' +
+                '</PropertyIsLessThanOrEqualTo>' +
+                '</And></Filter>')
+                .then((xml) => {
+                    let daten = this.parseAufbaudaten(xml);
+                    if (daten == null)
+                        return Promise.reject();
+                    return daten;
+                });
+        }
+        return this.aufbaudatenLoaded;
+    }
+
+    private parseAufbaudaten(xml: Document): { [fid: string]: { [schichtnr: number]: Aufbaudaten } } | null {
+        let aufbau = xml.getElementsByTagName('Otschicht');
+        let aufbaudaten: { [fid: string]: { [schichtnr: number]: Aufbaudaten } } = {};
+
+        for (let i = 0; i < aufbau.length; i++) {
+            let a = Aufbaudaten.fromXML(aufbau[i]);
+            if (a.getParent() == null) {
+                console.log("Es konnten nicht alle Aufbaudaten den Querschnitten zugeordnet werden, Abbruch!");
+                return null;
+            }
+            let fid = a.getParent().getXlink();
+            if (!(fid in aufbaudaten)) aufbaudaten[fid] = {};
+            aufbaudaten[fid][a.getSchichtnr()] = a;
+        }
+        console.log(aufbaudaten)
+        for (let streifen of this.getAllQuerschnitte()) {
+            if (streifen.getFid().substr(-32) in aufbaudaten) {
+                streifen.setAufbauGesamt(aufbaudaten[streifen.getFid().substr(-32)])
+            } else {
+                streifen.setAufbauGesamt({});
+            }
+        }
+        return aufbaudaten;
     }
 
     public hasAufbau(): boolean {

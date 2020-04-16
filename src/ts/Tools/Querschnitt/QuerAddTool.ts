@@ -221,7 +221,7 @@ class QuerAddTool extends Tool {
     }
 
     private async loadAufbaudaten(querschnitt: Querschnitt, seite: "R" | "L"): Promise<void> {
-        await querschnitt.getStation().getAbschnitt().getAufbauDaten();
+        await querschnitt.getStation().getAufbauDaten();
 
         let gesStreifen = querschnitt.getStation().getStreifen(seite);
         let querschnittNeu = new Querschnitt();
@@ -283,11 +283,11 @@ class QuerAddTool extends Tool {
         return querschnitt.getStation().rewrite()
             .then(() => {
                 PublicWFS.showMessage("Erfolgreich");
-                Promise.resolve();
+                return Promise.resolve();
             })
             .catch(() => {
                 PublicWFS.showMessage("Konnte den Streifen nicht hinzufügen", true);
-                Promise.reject();
+                return Promise.reject();
             })
     }
 

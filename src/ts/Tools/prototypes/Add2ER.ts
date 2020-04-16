@@ -6,7 +6,6 @@ import PublicWFS from '../../PublicWFS';
 import Tool from '../prototypes/Tool'
 import Daten from '../../Daten';
 import Map from "../../openLayers/Map";
-import { SelectEventType } from 'ol/interaction/Select';
 import Abschnitt from '../../Objekte/Abschnitt';
 import WaitBlocker from '../../WaitBlocker';
 
@@ -40,7 +39,7 @@ export default abstract class Add2ER extends Tool {
         });
         this.select.on('select', this.onSelect.bind(this))
     }
-    onSelect(__: SelectEventType) {
+    onSelect() {
         console.log("Auswahl");
         if (this.select.getFeatures().getArray().length == 0) return;
 

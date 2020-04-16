@@ -229,7 +229,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         if (!this._aufbaudaten) {
             console.log(this)
             if (!this.abschnitt) return {}
-            await this.abschnitt.getAufbauDaten();
+            await this.station.getAufbauDaten();
             return this._aufbaudaten;
         } else {
             return this._aufbaudaten;
