@@ -312,7 +312,10 @@ export default class Abschnitt extends Feature<LineString> {
 
         for (let i = 0; i < aufbau.length; i++) {
             let a = Aufbaudaten.fromXML(aufbau[i]);
-            if (a.getParent == null) continue;
+            if (a.getParent() == null) {
+                PublicWFS.showMessage("Es konnten nicht alle Aufbaudaten den Quershcnitten zugeordnet werden, Abbruch!");
+                break;
+            }
             let fid = a.getParent().getXlink();
             if (!(fid in aufbaudaten)) aufbaudaten[fid] = {};
             aufbaudaten[fid][a.getSchichtnr()] = a;
