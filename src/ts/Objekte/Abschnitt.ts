@@ -5,7 +5,6 @@ import LineString from 'ol/geom/LineString';
 import PublicWFS from '../PublicWFS';
 import AbschnittWFS from '../AbschnittWFS';
 import Vektor from '../Vektor';
-import Aufbaudaten from './Aufbaudaten';
 import Daten from '../Daten';
 import QuerStation from './QuerStation';
 import { VectorLayer } from '../openLayers/Layer';
@@ -44,7 +43,6 @@ export default class Abschnitt extends Feature<LineString> {
     private _station: { [vst: number]: QuerStation } = {};
 
     private _feature: any;
-    public aufbaudatenLoaded: Promise<{ [fid: string]: { [schichtnr: number]: Aufbaudaten } }>;
     private punkte: LinienPunkt[];
     static layer: VectorLayer;
 
@@ -287,52 +285,6 @@ export default class Abschnitt extends Feature<LineString> {
                 return this._station[a];
         }
         return null;
-    }
-
-    public async getAufbauDaten(reload: boolean = false): Promise<{ [fid: string]: { [schichtnr: number]: Aufbaudaten } }> {
-        if (!this.aufbaudatenLoaded || reload) {
-            this.aufbaudatenLoaded = PublicWFS.doQuery('Otschicht', '<Filter><And>' +
-                '<PropertyIsEqualTo>' +
-                '<PropertyName>projekt/@xlink:href</PropertyName>' +
-                '<Literal>' + Daten.getInstanz().ereignisraum + '</Literal>' +
-                '</PropertyIsEqualTo>' +
-                '<PropertyIsEqualTo>' +
-                '<PropertyName>abschnittOderAst/@xlink:href</PropertyName>' +
-                '<Literal>S' + this.abschnittid + '</Literal>' +
-                '</PropertyIsEqualTo>' +
-                '</And></Filter>')
-                .then((xml) => { return this.parseAufbaudaten(xml) });
-        }
-        return this.aufbaudatenLoaded;
-    }
-
-    private parseAufbaudaten(xml: Document): { [fid: string]: { [schichtnr: number]: Aufbaudaten } } {
-        let aufbau = xml.getElementsByTagName('Otschicht');
-        let aufbaudaten: { [fid: string]: { [schichtnr: number]: Aufbaudaten } } = {};
-
-        for (let i = 0; i < aufbau.length; i++) {
-            let a = Aufbaudaten.fromXML(aufbau[i]);
-            if (a.getParent() == null) {
-                PublicWFS.showMessage("Es konnten nicht alle Aufbaudaten den Quershcnitten zugeordnet werden, Abbruch!");
-                break;
-            }
-            let fid = a.getParent().getXlink();
-            if (!(fid in aufbaudaten)) aufbaudaten[fid] = {};
-            aufbaudaten[fid][a.getSchichtnr()] = a;
-        }
-
-        for (let stationNr in this._station) {
-            for (let __ in this._station[stationNr]) {
-                for (let streifen of this._station[stationNr].getAllQuerschnitte()) {
-                    if (streifen.getFid() in aufbaudaten) {
-                        streifen.setAufbauGesamt(aufbaudaten[streifen.getFid()])
-                    } else {
-                        streifen.setAufbauGesamt({});
-                    }
-                }
-            }
-        }
-        return aufbaudaten;
     }
 
     /**
