@@ -50,7 +50,7 @@ export default class AvAdd extends AddTool {
         }
     }
 
-    private wfsAddAufstell() {
+    private async wfsAddAufstell() {
         let soap = '<wfs:Insert>\n' +
             '<Otaufstvor>\n' +
             '<projekt xlink:href="#' + Daten.getInstanz().ereignisraum + '" typeName="Projekt" />\n' +
@@ -70,8 +70,11 @@ export default class AvAdd extends AddTool {
             '<quelle xlink:href="#S' + $(this.form).find("#quelle").val() + '" typeName="Itquelle" />\n' +
             '</Otaufstvor> </wfs:Insert>';
         //console.log(soap)
-        PublicWFS.doTransaction(soap)
-            .then((xml) => { this.getInsertResults(xml) });
+        let pkt = await PublicWFS.doTransaction(soap)
+            .then((xml) => { return this.getInsertResults(xml) });
+        Aufstellvorrichtung.getSelect().getFeatures().clear();
+        for (let p of pkt)
+            Aufstellvorrichtung.getSelect().getFeatures().push(p);
     }
 
     protected loadERCallback(xml: XMLDocument): Promise<PunktObjekt[]> {

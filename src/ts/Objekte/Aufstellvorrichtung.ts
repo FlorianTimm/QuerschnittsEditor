@@ -17,6 +17,7 @@ import { Point, Geometry, LineString } from "ol/geom";
 import { ColorLike } from "ol/colorlike";
 import WaitBlocker from "../WaitBlocker";
 import { VectorLayer } from "../openLayers/Layer.js";
+import { SelectInteraction } from "../openLayers/Interaction.js";
 
 /**
  * Aufstellvorrichtung
@@ -27,6 +28,7 @@ import { VectorLayer } from "../openLayers/Layer.js";
 export default class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay {
     static loadErControlCounter: number = 0;
     static layer: VectorLayer;
+    static select: SelectInteraction;
 
     private overlay: Overlay;
     private overlayShowing: boolean;
@@ -56,6 +58,16 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
             Aufstellvorrichtung.layer = Aufstellvorrichtung.createLayer(map);
         }
         return Aufstellvorrichtung.layer;
+    }
+
+    static getSelect(): SelectInteraction {
+        if (!Aufstellvorrichtung.select) {
+            Aufstellvorrichtung.select = new SelectInteraction({
+                layers: [Aufstellvorrichtung.getLayer()],
+                hitTolerance: 10
+            });
+        }
+        return Aufstellvorrichtung.select;
     }
 
     private async vzAddHTML(zeichen: Zeichen[], ziel: HTMLElement): Promise<void> {
@@ -297,9 +309,9 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
                 this.vabstVst = this.rabstbaVst - 2.5;
             }
             this.vabstBst = this.vabstVst;
-            update['labstbaVst'] = this.labstbaVst; 
-            update['vabstVst'] = this.vabstVst; 
-            update['vabstBst'] = this.vabstBst; 
+            update['labstbaVst'] = this.labstbaVst;
+            update['vabstVst'] = this.vabstVst;
+            update['vabstBst'] = this.vabstBst;
             $(form).find("#abstandL").val(this.labstbaVst ?? '')
             this.calcGeometry();
         }
