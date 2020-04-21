@@ -12,6 +12,7 @@ import HTML from '../HTML';
 import { VectorLayer } from '../openLayers/Layer';
 import { Map } from 'ol';
 import Klartext from './Klartext';
+import { SelectInteraction } from '../openLayers/Interaction';
 
 /**
  * Strassenausstrattung (punktuell)
@@ -24,6 +25,7 @@ export default class StrassenAusPunkt extends PunktObjekt {
     static layer: any;
     private hasSekObj: number = null;
     private art: Klartext = null;
+    private static select: SelectInteraction;
 
     colorFunktion1(): import("ol/colorlike").ColorLike {
         return 'rgba(0,120,0,0.8)'
@@ -38,6 +40,16 @@ export default class StrassenAusPunkt extends PunktObjekt {
             StrassenAusPunkt.layer = StrassenAusPunkt.createLayer(map);
         }
         return StrassenAusPunkt.layer;
+    }
+
+    static getSelect(): SelectInteraction {
+        if (!StrassenAusPunkt.select) {
+            StrassenAusPunkt.select = new SelectInteraction({
+                layers: [StrassenAusPunkt.getLayer()],
+                hitTolerance: 10
+            });
+        }
+        return StrassenAusPunkt.select;
     }
 
     getObjektKlassenName(): string {

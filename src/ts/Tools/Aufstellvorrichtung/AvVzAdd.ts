@@ -49,8 +49,6 @@ class AvVzAdd extends Tool {
 
         this.select = Aufstellvorrichtung.getSelect();
 
-        this.selectKey = this.select.on("select", this.featureSelected.bind(this));
-
         this.mouseOver = new SelectInteraction({
             layers: [Aufstellvorrichtung.getLayer()],
             toggleCondition: never,
@@ -521,6 +519,7 @@ class AvVzAdd extends Tool {
 
     start() {
         this.map.addInteraction(this.select);
+        this.selectKey = this.select.on("select", this.featureSelected.bind(this));
         this.map.addInteraction(this.mouseOver);
         if (this.select.getFeatures().getLength() > 0)
             this.featureSelected()

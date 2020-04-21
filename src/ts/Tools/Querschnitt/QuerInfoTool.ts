@@ -8,6 +8,7 @@ import Map from '../../openLayers/Map';
 import { Feature } from 'ol';
 import { Geometry } from 'ol/geom';
 import { VectorLayer } from '../../openLayers/Layer';
+import { unByKey } from 'ol/Observable';
 
 /**
  * Funktion zum Anzeigen von Informationen über Querschnitte
@@ -18,6 +19,7 @@ import { VectorLayer } from '../../openLayers/Layer';
 export default class QuerInfoTool extends InfoTool {
     /** Linienauswahl */
     private selectLinie: SelectInteraction;
+    selectEventsKey: any;
 
     /**
      * @param map Kartenobjekt
@@ -26,7 +28,7 @@ export default class QuerInfoTool extends InfoTool {
      * @param sidebar DIV-Bereich, in dem das Tool angezeigt wird
      */
     constructor(map: Map, layerLinie: VectorLayer, layerFlaechen: VectorLayer, sidebar: HTMLDivElement) {
-        super(map, layerFlaechen, sidebar);
+        super(map, layerFlaechen, sidebar, Querschnitt.getSelectFlaechen());
 
         // Linienauswahl, erfolgt nur indirekt durch Flächenauswahl
         this.selectLinie = new SelectInteraction({
@@ -35,8 +37,7 @@ export default class QuerInfoTool extends InfoTool {
             style: InfoTool.selectStyle
         });
 
-        // Flächenauswahl (zusätzlicher Listener zu dem vom InfoTool)
-        this.select.on("select", this.featureSelectedFlaeche.bind(this))
+        
     }
 
     /** wird vom Flächen-Select-Event ausgelöst */
@@ -51,12 +52,16 @@ export default class QuerInfoTool extends InfoTool {
     /** Startet das Werkzeug */
     public start() {
         super.start()
+        
+        // Flächenauswahl (zusätzlicher Listener zu dem vom InfoTool)
+        this.selectEventsKey = this.select.on("select", this.featureSelectedFlaeche.bind(this))
         this.map.addInteraction(this.selectLinie);
     }
 
     /** Stoppt das Werkzeug */
     public stop() {
         super.stop()
+        unByKey(this.selectEventsKey)
         this.map.removeInteraction(this.selectLinie);
         this.selectLinie.getFeatures().clear();
     }

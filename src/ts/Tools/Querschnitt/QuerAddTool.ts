@@ -94,7 +94,12 @@ class QuerAddTool extends Tool {
         this.map.addInteraction(this._select);
         this.map.addLayer(this.fehlendeQuerschnitte);
         this.fehlendeBestandsAchseErzeugen();
-        console.log(this.fehlendeQuerschnitte.getSource().getFeatures())
+        
+        if (Querschnitt.getSelectLinien().getFeatures().getLength() > 0) {
+            this._select.getFeatures().clear();
+            this._select.getFeatures().push(Querschnitt.getSelectLinien().getFeatures().item(0));
+        }
+            
     }
 
     stop() {
@@ -103,6 +108,13 @@ class QuerAddTool extends Tool {
         this.map.removeInteraction(this._select);
         this.map.removeLayer(this.fehlendeQuerschnitte);
         this._info.hideInfoBox();
+
+        if (this._select.getFeatures().getLength() > 0) {
+            Querschnitt.getSelectLinien().getFeatures().clear();
+            Querschnitt.getSelectLinien().getFeatures().push(this._select.getFeatures().item(0));
+            Querschnitt.getSelectFlaechen().getFeatures().clear();
+            Querschnitt.getSelectFlaechen().getFeatures().push(this._select.getFeatures().item(0).get('objekt'));
+        }
     }
 
 

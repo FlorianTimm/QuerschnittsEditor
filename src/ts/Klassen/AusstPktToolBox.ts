@@ -9,6 +9,7 @@ import SAPAdd2ER from "../Tools/StrassenAusPunkt/SAPAdd2ER";
 import SAPAdd from "../Tools/StrassenAusPunkt/SAPAdd";
 import Abschnitt from "../Objekte/Abschnitt";
 import StrassenAusPunkt from "../Objekte/StrassenAusPunkt";
+import Aufstellvorrichtung from "../Objekte/Aufstellvorrichtung";
 
 /**
  * Klasse zum Erzeugen eines Werkzeugkasten zur Bearbeitung von
@@ -35,11 +36,11 @@ export default class AusstPktToolBox extends ToolBox {
         let layerAchse = Abschnitt.getLayer();
         this.layer.push(layerStraus)
 
-        this.infoTool = new InfoTool(map, layerStraus, sidebar);
+        this.infoTool = new InfoTool(map, layerStraus, sidebar, StrassenAusPunkt.getSelect());
         this.addTool = new SAPAdd(map, sidebar, layerAchse);
-        this.moveTool = new MoveTool(map, this.infoTool, layerStraus);
+        this.moveTool = new MoveTool(map, this.infoTool, StrassenAusPunkt.getSelect());
         this.add2ErTool = new SAPAdd2ER(map);
-        this.delTool = new DeleteTool(map, layerStraus, sidebar, "Otstrauspkt");
+        this.delTool = new DeleteTool(map, layerStraus, sidebar, "Otstrauspkt", StrassenAusPunkt.getSelect());
         this.createToolBox();
     }
 

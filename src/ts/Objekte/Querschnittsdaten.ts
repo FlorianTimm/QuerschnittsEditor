@@ -16,6 +16,7 @@ import { VectorLayer } from '../openLayers/Layer';
 import VectorSource from 'ol/source/Vector';
 import { Style, Stroke, Text, Fill } from 'ol/style';
 import { FeatureLike } from 'ol/Feature';
+import { SelectInteraction } from '../openLayers/Interaction';
 
 /**
  * Querschnittsdaten
@@ -44,9 +45,11 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     private streifen: 'M' | 'L' | 'R' = null;
     private streifennr: number = null;
     private hasSekObj: number = null;
-    static loadErControlCounter: number = 0;
-    static layerTrenn: VectorLayer;
-    static layerQuer: VectorLayer;
+    private static loadErControlCounter: number = 0;
+    private static layerTrenn: VectorLayer;
+    private static layerQuer: VectorLayer;
+    private static selectFlaechen: SelectInteraction;
+    private static selectLinien: SelectInteraction;
 
     constructor() {
         super();
@@ -641,7 +644,31 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         return Querschnitt.layerQuer
     }
 
+    static getSelectFlaechen(): SelectInteraction {
+        if (!Querschnitt.selectFlaechen) {
+            Querschnitt.selectFlaechen = new SelectInteraction({
+                layers: [Querschnitt.getLayerFlaechen()],
+                hitTolerance: 10
+            });
+            Querschnitt.selectFlaechen.on("select", ()=>{
+                Querschnitt.getSelectLinien().getFeatures().clear();
+                for (Querschnitt.getSelectLinien().getFeatures()) {
+                    Querschnitt.getSelectLinien().getFeatures().push()
+                }
+            })
+        }
+        return Querschnitt.selectFlaechen;
+    }
 
+    static getSelectLinien(): SelectInteraction {
+        if (!Querschnitt.selectLinien) {
+            Querschnitt.selectLinien = new SelectInteraction({
+                layers: [Querschnitt.getLayerTrenn()],
+                hitTolerance: 10
+            });
+        }
+        return Querschnitt.selectLinien;
+    }
 
     // Getter
     public getStation(): QuerStation {

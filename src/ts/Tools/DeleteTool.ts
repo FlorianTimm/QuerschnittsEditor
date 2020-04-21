@@ -10,6 +10,7 @@ import PublicWFS from '../PublicWFS';
 import PunktObjekt from '../Objekte/prototypes/PunktObjekt';
 import HTML from '../HTML';
 import VectorLayer from 'ol/layer/Vector';
+import { unByKey } from 'ol/Observable';
 
 /**
  * Prototyp des Werkzeuges zum Löschen von Punktobjekten
@@ -24,8 +25,9 @@ export default class DeleteTool extends Tool {
     protected infoField: HTMLDivElement;
     protected select: SelectInteraction;
     private objekt: string;
+    private selectEventsKey: any;
 
-    constructor(map: Map, layer: VectorLayer, sidebar: HTMLDivElement, objekt: string) {
+    constructor(map: Map, layer: VectorLayer, sidebar: HTMLDivElement, objekt: string, selectInteraction: SelectInteraction) {
         super(map);
         this.layer = layer;
         this.sidebar = sidebar;
@@ -43,20 +45,16 @@ export default class DeleteTool extends Tool {
         button.innerHTML = "L&ouml;schen";
         this.delField.appendChild(button);
 
-        this.select = new SelectInteraction({
-            layers: [this.layer],
-            hitTolerance: 10
-        });
-        this.select.on('select', this.featureSelected.bind(this))
+        this.select = selectInteraction;
     }
 
-    protected featureSelected(event: SelectEvent) {
-        if (event.selected.length == 0) {
+    protected featureSelected() {
+        if (this.select.getFeatures().getLength() == 0) {
             this.delField.style.display = "none";
             return;
         }
         this.delField.style.display = "block";
-        let auswahl = <InfoToolSelectable>event.selected[0];
+        let auswahl = <InfoToolSelectable>this.select.getFeatures().item(0);
 
         auswahl.getInfoForm(this.infoField);
     }
@@ -91,10 +89,13 @@ export default class DeleteTool extends Tool {
     }
 
     start() {
+        this.selectEventsKey = this.select.on('select', this.featureSelected.bind(this))
         this.map.addInteraction(this.select);
+        this.featureSelected();
     }
 
     stop() {
+        unByKey(this.selectEventsKey);
         this.map.removeInteraction(this.select);
         this.delField.style.display = "none";
     }

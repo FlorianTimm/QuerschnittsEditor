@@ -16,8 +16,8 @@ import { Overlay, Map } from "ol";
 import { Point, Geometry, LineString } from "ol/geom";
 import { ColorLike } from "ol/colorlike";
 import WaitBlocker from "../WaitBlocker";
-import { VectorLayer } from "../openLayers/Layer.js";
-import { SelectInteraction } from "../openLayers/Interaction.js";
+import { VectorLayer } from "../openLayers/Layer";
+import { SelectInteraction } from "../openLayers/Interaction";
 
 /**
  * Aufstellvorrichtung

@@ -27,15 +27,11 @@ export default class InfoTool extends Tool {
     protected select: SelectInteraction;
     protected lastFeature: InfoToolOverlay;
 
-    constructor(map: Map, layer: VectorLayer, sidebar: HTMLDivElement) {
+    constructor(map: Map, layer: VectorLayer, sidebar: HTMLDivElement, selectInteraction: SelectInteraction) {
         super(map);
         this.layer = layer;
 
-        this.select = new SelectInteraction({
-            layers: [this.layer],
-            hitTolerance: 10,
-            style: InfoTool.selectStyle
-        });
+        this.select = selectInteraction;
         this.select.on('select', this.featureSelectedEvent.bind(this))
 
         this.infoField = HTML.createToolForm(sidebar, false)
@@ -153,12 +149,12 @@ export default class InfoTool extends Tool {
     }
 
     public start() {
+        this.featureSelect();
         this.map.addInteraction(this.select);
     }
 
     public stop() {
         this.map.removeInteraction(this.select);
-        this.select.getFeatures().clear();
         this.hideInfoBox();
     }
 }
