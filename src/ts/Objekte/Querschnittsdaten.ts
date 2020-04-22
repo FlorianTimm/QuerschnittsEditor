@@ -662,7 +662,6 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
                 }
             })
         }
-        console.log(Querschnitt.selectFlaechen.getFeatures().getArray())
         return Querschnitt.selectFlaechen;
     }
 
@@ -682,7 +681,6 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
                 }
             })
         }
-        console.log(Querschnitt.selectLinien.getFeatures().getArray())
         return Querschnitt.selectLinien;
     }
 

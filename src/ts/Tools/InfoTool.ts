@@ -44,7 +44,6 @@ export default class InfoTool extends Tool {
      */
     private featureSelectedEvent(__: SelectEvent, changeable: boolean = false) {
         this.featureSelect(this.select, changeable);
-        console.log("Select");
     }
 
     public featureSelect(select: SelectInteraction = this.select, changeable: boolean = false) {

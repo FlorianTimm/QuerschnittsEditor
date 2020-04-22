@@ -431,7 +431,7 @@ export default class QuerStation {
         }
         console.log(aufbaudaten)
         for (let streifen of this.getAllQuerschnitte()) {
-            if (streifen.getFid().substr(-32) in aufbaudaten) {
+            if (streifen.getFid() && streifen.getFid().substr(-32) in aufbaudaten) {
                 streifen.setAufbauGesamt(aufbaudaten[streifen.getFid().substr(-32)])
             } else {
                 streifen.setAufbauGesamt({});

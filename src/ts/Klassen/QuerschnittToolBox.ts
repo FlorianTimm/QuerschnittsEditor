@@ -11,7 +11,6 @@ import ToolBox from './ToolBox';
 import Querschnitt from '../Objekte/Querschnittsdaten';
 import Abschnitt from '../Objekte/Abschnitt';
 import QuerStation from '../Objekte/QuerStation';
-import { VectorLayer } from '../openLayers/Layer';
 
 /**
  * QuerschnittsToolBox
@@ -42,7 +41,7 @@ export default class QuerschnittToolBox extends ToolBox {
         let layerStation = QuerStation.getLayer(this.map);
         this.layer.push(layerTrenn, layerQuer, layerStation);
 
-        this.infoTool = new QuerInfoTool(this.map, layerTrenn, layerQuer, this.sidebar);
+        this.infoTool = new QuerInfoTool(this.map, layerQuer, this.sidebar);
         this.modifyTool = new QuerModifyTool(map, this.infoTool, this.sidebar, layerTrenn, layerStation);
         this.delTool = new QuerDelTool(map, this.infoTool);
         this.addTool = new QuerAddTool(map, this.infoTool);
