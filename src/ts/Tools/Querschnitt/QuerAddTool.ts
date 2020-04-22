@@ -270,8 +270,15 @@ class QuerAddTool extends Tool {
         querschnittNeu.setProjekt(querschnitt.getProjekt());
         querschnittNeu.setStreifen(seite);
         querschnittNeu.setStreifennr(querschnitt.getStreifennr() + 1);
-        querschnittNeu.setArt(querschnitt.getArt());
-        if (querschnitt.getArtober()) querschnittNeu.setArtober(querschnitt.getArtober());
+
+        let art = querschnitt.getArt();
+        if (!art) art = Klartext.getByKlartext('Itquerart', '999');
+        querschnittNeu.setArt(art);
+
+        let ober = querschnitt.getArtober()
+        if (!ober) ober = Klartext.getByKlartext('Itquerober', '00')
+        querschnittNeu.setArtober(ober);
+
         querschnittNeu.setStation(querschnitt.getStation());
         querschnittNeu.setVst(querschnitt.getVst());
         querschnittNeu.setBst(querschnitt.getBst());
