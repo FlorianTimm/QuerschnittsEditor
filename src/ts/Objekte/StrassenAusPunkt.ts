@@ -13,6 +13,7 @@ import { VectorLayer } from '../openLayers/Layer';
 import { Map } from 'ol';
 import Klartext from './Klartext';
 import { SelectInteraction } from '../openLayers/Interaction';
+import { never } from 'ol/events/condition';
 
 /**
  * Strassenausstrattung (punktuell)
@@ -46,7 +47,8 @@ export default class StrassenAusPunkt extends PunktObjekt {
         if (!StrassenAusPunkt.select) {
             StrassenAusPunkt.select = new SelectInteraction({
                 layers: [StrassenAusPunkt.getLayer()],
-                hitTolerance: 10
+                hitTolerance: 10,
+                toggleCondition: never
             });
         }
         return StrassenAusPunkt.select;

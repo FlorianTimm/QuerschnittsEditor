@@ -18,6 +18,7 @@ import { ColorLike } from "ol/colorlike";
 import WaitBlocker from "../WaitBlocker";
 import { VectorLayer } from "../openLayers/Layer";
 import { SelectInteraction } from "../openLayers/Interaction";
+import { never } from "ol/events/condition";
 
 /**
  * Aufstellvorrichtung
@@ -64,7 +65,8 @@ export default class Aufstellvorrichtung extends PunktObjekt implements InfoTool
         if (!Aufstellvorrichtung.select) {
             Aufstellvorrichtung.select = new SelectInteraction({
                 layers: [Aufstellvorrichtung.getLayer()],
-                hitTolerance: 10
+                hitTolerance: 10,
+                toggleCondition: never
             });
         }
         return Aufstellvorrichtung.select;

@@ -1,34 +1,35 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import { Feature, Collection } from "ol";
+import { Collection } from "ol";
 import QuerInfoTool from "./QuerInfoTool";
 import Tool from '../prototypes/Tool';
 import { never } from 'ol/events/condition';
 import { SelectInteraction } from '../../openLayers/Interaction'
 import Querschnitt from "../../Objekte/Querschnittsdaten";
 import InfoTool from "../InfoTool";
-import { VectorLayer } from "../../openLayers/Layer";
 import Map from "../../openLayers/Map";
 import PublicWFS from "../../PublicWFS";
-import { Polygon, Geometry } from "ol/geom";
+import { unByKey } from "ol/Observable";
+import { EventsKey } from "ol/events";
 
 /**
  * Funktion zum Löschen von Querschnitten
  * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
- * @version 2020.04.03
+ * @version 2020.04.22
  * @license GPL-3.0-or-later
 */
 class QuerDelTool extends Tool {
     private info: QuerInfoTool;
     private selectLinien: SelectInteraction;
     private selectFlaechen: SelectInteraction;
+    selectEventsKey: EventsKey;
 
-    constructor(map: Map, info: QuerInfoTool, layerTrenn: VectorLayer, layerQuer: VectorLayer) {
+    constructor(map: Map, info: QuerInfoTool) {
         super(map);
         this.info = info;
 
-        this.createLinienSelect(layerTrenn);
-        this.createFlaechenSelect(layerQuer);
+        this.selectLinien = Querschnitt.getSelectLinien();
+        this.selectFlaechen = Querschnitt.getSelectFlaechen();
 
         document.getElementById("delQuerschnittButton").addEventListener("click", this.querschnittLoeschenButton.bind(this))
     }
@@ -94,43 +95,14 @@ class QuerDelTool extends Tool {
             });
     }
 
-    private createLinienSelect(layerTrenn: VectorLayer) {
-        this.selectLinien = new SelectInteraction({
-            layers: [layerTrenn],
-            condition: never,
-            style: InfoTool.selectStyle
-        });
-    }
-
-    private createFlaechenSelect(layerQuer: VectorLayer) {
-        this.selectFlaechen = new SelectInteraction({
-            layers: [layerQuer],
-            toggleCondition: never,
-            style: InfoTool.selectStyle
-        });
-
-        this.selectFlaechen.on('select', this.flaecheSelected.bind(this));
-    }
-
-    private flaecheSelected() {
-        this.selectLinien.getFeatures().clear();
-        let auswahl = (this.selectFlaechen as SelectInteraction).getFeatures();
-        auswahl.forEach((feat: Feature<Geometry>) => {
-            this.selectLinien.getFeatures().push((feat as Querschnitt).trenn);
-        })
-        this.featureSelected()
-    }
-
     featureSelected() {
+        console.log("select")
         let selection = this.selectFlaechen.getFeatures().getArray();
         if (selection.length != 1) {
             this.disableMenu();
             return;
         }
         (<HTMLButtonElement>document.getElementById("delQuerschnittButton")).disabled = false;
-        let auswahl = selection[0];
-        let a = (auswahl as Querschnitt).trenn;
-        this.selectLinien.getFeatures().push(a);
 
         (this.info as InfoTool).featureSelect(this.selectFlaechen);
     }
@@ -141,17 +113,22 @@ class QuerDelTool extends Tool {
     }
 
     start() {
+        Querschnitt.setSelectLinienCondition(never);
         this.map.addInteraction(this.selectLinien);
         this.map.addInteraction(this.selectFlaechen);
         document.forms.namedItem("quer_del").style.display = 'block';
+        this.selectEventsKey = this.selectFlaechen.on('select', this.featureSelected.bind(this));
+        this.featureSelected();
     }
 
     stop() {
+        Querschnitt.setSelectLinienCondition();
         this.map.removeInteraction(this.selectLinien);
         this.map.removeInteraction(this.selectFlaechen);
         this.disableMenu()
         document.forms.namedItem("quer_del").style.display = 'none';
         this.info.hideInfoBox();
+        unByKey(this.selectEventsKey);
     }
 }
 
