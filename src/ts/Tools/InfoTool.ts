@@ -14,11 +14,12 @@ import { FeatureLike } from 'ol/Feature';
 import PublicWFS from '../PublicWFS';
 import { VectorLayer } from '../openLayers/Layer';
 import { Geometry } from 'ol/geom';
+import { unByKey } from 'ol/Observable';
 
 /**
  * Funktion zum Anzeigen von Informationen zu Aufstellvorrichtungen und Schildern
  * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
- * @version 2020.04.03
+ * @version 2020.04.22
  * @license GPL-3.0-or-later
 */
 export default class InfoTool extends Tool {
@@ -26,17 +27,13 @@ export default class InfoTool extends Tool {
     private infoField: HTMLFormElement;
     protected select: SelectInteraction;
     protected lastFeature: InfoToolOverlay;
+    selectEventKey: any;
 
-    constructor(map: Map, layer: VectorLayer, sidebar: HTMLDivElement) {
+    constructor(map: Map, layer: VectorLayer, sidebar: HTMLDivElement, selectInteraction: SelectInteraction) {
         super(map);
         this.layer = layer;
 
-        this.select = new SelectInteraction({
-            layers: [this.layer],
-            hitTolerance: 10,
-            style: InfoTool.selectStyle
-        });
-        this.select.on('select', this.featureSelectedEvent.bind(this))
+        this.select = selectInteraction;
 
         this.infoField = HTML.createToolForm(sidebar, false)
     }
@@ -153,12 +150,14 @@ export default class InfoTool extends Tool {
     }
 
     public start() {
+        this.selectEventKey = this.select.on('select', this.featureSelectedEvent.bind(this));
+        this.featureSelect();
         this.map.addInteraction(this.select);
     }
 
     public stop() {
+        unByKey(this.selectEventKey);
         this.map.removeInteraction(this.select);
-        this.select.getFeatures().clear();
         this.hideInfoBox();
     }
 }

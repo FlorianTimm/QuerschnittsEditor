@@ -18,6 +18,8 @@ import HTML from '../../HTML';
 import Aufstellvorrichtung from '../../Objekte/Aufstellvorrichtung';
 import Klartext from '../../Objekte/Klartext';
 import { pointerMove, never } from 'ol/events/condition';
+import { EventsKey } from 'ol/events';
+import { unByKey } from 'ol/Observable';
 var CONFIG = require('../../config.json');
 
 /**
@@ -34,7 +36,8 @@ class AvVzAdd extends Tool {
     private select: SelectInteraction;
     private mouseOver: SelectInteraction;
     private lastOverlay: Aufstellvorrichtung;
-    buttonSpeichern: HTMLButtonElement;
+    private buttonSpeichern: HTMLButtonElement;
+    private selectKey: EventsKey;
 
     /**
      * Erzeugt eine Instanz des Verkehrszeichen-Hinzufügen-Tools
@@ -44,12 +47,7 @@ class AvVzAdd extends Tool {
     constructor(map: Map) {
         super(map);
 
-        this.select = new SelectInteraction({
-            layers: [Aufstellvorrichtung.getLayer()],
-            hitTolerance: 10
-        });
-
-        this.select.on("select", this._selected.bind(this));
+        this.select = Aufstellvorrichtung.getSelect();
 
         this.mouseOver = new SelectInteraction({
             layers: [Aufstellvorrichtung.getLayer()],
@@ -63,12 +61,12 @@ class AvVzAdd extends Tool {
      * Listener für die Auswahl einer Aufstellvorrichtung
      * @param event Select-Event-Objekt
      */
-    private _selected(event: SelectEvent) {
+    private featureSelected() {
         // Filtern, wenn nichts ausgewählt wurde
-        if (event.selected.length == 0) {
+        if (this.select.getFeatures().getLength() == 0) {
             return;
         }
-        this.auswahl = event.selected[0] as Aufstellvorrichtung;
+        this.auswahl = this.select.getFeatures().item(0) as Aufstellvorrichtung;
 
         // Popup erzeugen
         this.ausblenden = document.createElement("div");
@@ -521,11 +519,15 @@ class AvVzAdd extends Tool {
 
     start() {
         this.map.addInteraction(this.select);
+        this.selectKey = this.select.on("select", this.featureSelected.bind(this));
         this.map.addInteraction(this.mouseOver);
+        if (this.select.getFeatures().getLength() > 0)
+            this.featureSelected()
     }
 
     stop() {
         this.map.removeInteraction(this.select);
+        unByKey(this.selectKey);
         this.map.removeInteraction(this.mouseOver);
         if (this.lastOverlay) this.lastOverlay.hideOverlay(this.map)
     }

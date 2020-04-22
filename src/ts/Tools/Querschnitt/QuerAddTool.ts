@@ -4,7 +4,6 @@ import { Select as SelectInteraction } from 'ol/interaction';
 import Querschnitt from '../../Objekte/Querschnittsdaten';
 import QuerInfoTool from './QuerInfoTool';
 import Tool from '../prototypes/Tool';
-import InfoTool from '../InfoTool';
 import HTML from '../../HTML';
 import { VectorLayer } from '../../openLayers/Layer';
 import Map from "../../openLayers/Map";
@@ -12,30 +11,33 @@ import "../../import_jquery.js";
 import 'jquery-ui-bundle';
 import 'jquery-ui-bundle/jquery-ui.css'
 import PublicWFS from '../../PublicWFS';
-import Abschnitt, { StationObj } from '../../Objekte/Abschnitt';
+import Abschnitt from '../../Objekte/Abschnitt';
 import VectorSource from 'ol/source/Vector';
-import { SelectEvent } from 'ol/interaction/Select';
 import { Feature } from 'ol';
 import { LineString } from 'ol/geom';
 import { Style, Stroke } from 'ol/style';
 import Daten from '../../Daten';
 import QuerStation from '../../Objekte/QuerStation';
 import Klartext from '../../Objekte/Klartext';
+import { unByKey } from 'ol/Observable';
+import { EventsKey } from 'ol/events';
 
 /**
  * Funktion zum Hinzufügen von Querschnittsflächen
  * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
- * @version 2020.04.03
+ * @version 2020.04.22
  * @license GPL-3.0-or-later
 */
 class QuerAddTool extends Tool {
     private _info: QuerInfoTool;
-    private _select: SelectInteraction;
+    private selectFehlende: SelectInteraction;
     private form: HTMLFormElement = null;
     private button: HTMLInputElement;
     private fehlendeQuerschnitte: VectorLayer;
+    private selectQuerschnitte: SelectInteraction;
+    private selectQuerschnitteEventsKey: EventsKey;
 
-    constructor(map: Map, info: QuerInfoTool, layerTrennLinien: VectorLayer) {
+    constructor(map: Map, info: QuerInfoTool) {
         super(map);
         this._info = info;
         this.fehlendeQuerschnitte = new VectorLayer({
@@ -48,13 +50,13 @@ class QuerAddTool extends Tool {
                 })
             })
         })
-        this._select = new SelectInteraction({
-            layers: [layerTrennLinien, this.fehlendeQuerschnitte],
-            style: InfoTool.selectStyle,
+        this.selectFehlende = new SelectInteraction({
+            layers: [this.fehlendeQuerschnitte],
             hitTolerance: 10
         });
+        this.selectQuerschnitte = Querschnitt.getSelectLinien();
 
-        this._select.on('select', this.selected.bind(this));
+        this.selectFehlende.on('select', this.fehlendSelected.bind(this));
     }
 
     private createForm() {
@@ -65,20 +67,19 @@ class QuerAddTool extends Tool {
         this.button.disabled = true;
     }
 
-    private selected(e: SelectEvent) {
-        if (e.selected.length != 1) {
+    private fehlendSelected() {
+        this.disableMenu();
+        let feat = this.selectFehlende.getFeatures().item(0);
+        this.generateBestandsachse(feat.get('abschnitt'), feat.get('vst'), feat.get('bst'))
+    }
+
+    private querschnittSelected() {
+        if (this.selectQuerschnitte.getFeatures().getLength() == 0) {
             this.disableMenu();
             return
         }
-        if (e.selected[0].get('fehlend')) {
-            this.disableMenu();
-            let feat = e.selected[0];
-            this.generateBestandsachse(feat.get('abschnitt'), feat.get('vst'), feat.get('bst'))
-        } else {
-            (this._info as QuerInfoTool).getInfoFieldForFeature(e.selected[0].get("objekt"))
-            this.button.disabled = false;
-        }
-
+        (this._info as QuerInfoTool).getInfoFieldForFeature(this.selectQuerschnitte.getFeatures().item(0).get("objekt"))
+        this.button.disabled = false;
     }
 
     private disableMenu() {
@@ -91,24 +92,28 @@ class QuerAddTool extends Tool {
     start() {
         this.createForm();
         if (this.form != null) $(this.form).show("fast");
-        this.map.addInteraction(this._select);
+        this.map.addInteraction(this.selectFehlende);
+        this.map.addInteraction(this.selectQuerschnitte);
         this.map.addLayer(this.fehlendeQuerschnitte);
         this.fehlendeBestandsAchseErzeugen();
-        console.log(this.fehlendeQuerschnitte.getSource().getFeatures())
+        this.selectQuerschnitteEventsKey = this.selectQuerschnitte.on('select', this.querschnittSelected.bind(this));
+        this.querschnittSelected();
     }
 
     stop() {
         if (this.form != null) $(this.form).hide("fast");
         this.disableMenu()
-        this.map.removeInteraction(this._select);
+        this.map.removeInteraction(this.selectFehlende);
+        this.map.removeInteraction(this.selectQuerschnitte);
         this.map.removeLayer(this.fehlendeQuerschnitte);
         this._info.hideInfoBox();
+        unByKey(this.selectQuerschnitteEventsKey);
     }
 
 
     private addQuerschnitt() {
-        let selection = this._select.getFeatures();
-        if (this._select.getFeatures().getLength() != 1) return;
+        let selection = this.selectQuerschnitte.getFeatures();
+        if (this.selectQuerschnitte.getFeatures().getLength() != 1) return;
         let querschnitt = <Querschnitt>selection.item(0).get('objekt');
         console.log(querschnitt);
         let streifen = querschnitt.getStreifen();
@@ -117,7 +122,7 @@ class QuerAddTool extends Tool {
         } else {
             this.loadAufbaudaten(querschnitt, streifen);
         }
-        this._select.getFeatures().clear();
+        this.selectQuerschnitte.getFeatures().clear();
         this._info.hideInfoBox();
         this.disableMenu();
     }
@@ -211,20 +216,17 @@ class QuerAddTool extends Tool {
         station.rewrite().then(() => {
             PublicWFS.showMessage("Bestandsachse erzeugt")
             this.fehlendeBestandsAchseErzeugen();
-            this._select.getFeatures().clear()
+            this.selectFehlende.getFeatures().clear()
             let neuerStreifen = station.getStreifen('M')[0];
-            console.log(neuerStreifen)
-            this._select.getFeatures().push(neuerStreifen.trenn);
-            this._info.getInfoFieldForFeature(neuerStreifen);
-            this.button.disabled = false;
+            this.selectNewStreifen(neuerStreifen);
         })
     }
 
     private async loadAufbaudaten(querschnitt: Querschnitt, seite: "R" | "L"): Promise<void> {
         await querschnitt.getStation().getAufbauDaten();
-
         let gesStreifen = querschnitt.getStation().getStreifen(seite);
         let querschnittNeu = new Querschnitt();
+        let querNeueNummer = querschnitt.getStreifennr() + 1;
         querschnittNeu.setBreite(275);
         querschnittNeu.setBisBreite(275);
         querschnittNeu.setStreifen(seite)
@@ -283,6 +285,8 @@ class QuerAddTool extends Tool {
         return querschnitt.getStation().rewrite()
             .then(() => {
                 PublicWFS.showMessage("Erfolgreich");
+                let neuerStreifen = querschnitt.getStation().getStreifen(seite)[querNeueNummer]
+                this.selectNewStreifen(neuerStreifen);
                 return Promise.resolve();
             })
             .catch(() => {
@@ -291,6 +295,14 @@ class QuerAddTool extends Tool {
             })
     }
 
+    private selectNewStreifen(neuerStreifen: Querschnitt) {
+        Querschnitt.getSelectFlaechen().getFeatures().clear();
+        Querschnitt.getSelectFlaechen().getFeatures().push(neuerStreifen);
+        this.selectQuerschnitte.getFeatures().clear();
+        this.selectQuerschnitte.getFeatures().push(neuerStreifen.trenn);
+        this._info.getInfoFieldForFeature(neuerStreifen);
+        this.button.disabled = false;
+    }
 }
 
 export default QuerAddTool;

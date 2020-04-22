@@ -16,7 +16,7 @@ import { VectorLayer } from '../openLayers/Layer';
 /**
  * QuerschnittsToolBox
  * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
- * @version 2019.11.20
+ * @version 2020.04.22
  * @license GPL-3.0-or-later
 */
 export default class QuerschnittToolBox extends ToolBox {
@@ -43,9 +43,9 @@ export default class QuerschnittToolBox extends ToolBox {
         this.layer.push(layerTrenn, layerQuer, layerStation);
 
         this.infoTool = new QuerInfoTool(this.map, layerTrenn, layerQuer, this.sidebar);
-        this.modifyTool = new QuerModifyTool(map, this.infoTool, this.sidebar, layerTrenn, layerQuer, layerStation);
-        this.delTool = new QuerDelTool(map, this.infoTool, layerTrenn, layerQuer);
-        this.addTool = new QuerAddTool(map, this.infoTool, layerTrenn);
+        this.modifyTool = new QuerModifyTool(map, this.infoTool, this.sidebar, layerTrenn, layerStation);
+        this.delTool = new QuerDelTool(map, this.infoTool);
+        this.addTool = new QuerAddTool(map, this.infoTool);
         this.partTool = new QuerPartTool(map, this.infoTool, this.sidebar, layerAchse);
         this.qsAdd2ER = new QuerAdd2ER(map);
         this.createToolBox();

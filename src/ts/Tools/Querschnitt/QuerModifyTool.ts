@@ -8,7 +8,6 @@ import Tool from '../prototypes/Tool';
 import { SelectInteraction, ModifyInteraction } from '../../openLayers/Interaction'
 import { ModifyEvent } from 'ol/interaction/Modify';
 import Querschnitt from '../../Objekte/Querschnittsdaten';
-import InfoTool from '../InfoTool';
 import { MultiLineString, Point, LineString, Geometry } from 'ol/geom';
 import HTML from '../../HTML';
 import KlartextManager from '../../Objekte/Klartext';
@@ -24,14 +23,13 @@ import { Circle, Style, Stroke, Fill } from 'ol/style';
 import { FeatureLike } from 'ol/Feature';
 import Vektor from '../../Vektor';
 import PublicWFS from '../../PublicWFS';
-import { Polygon } from 'ol/geom';
 import { unByKey } from 'ol/Observable';
 import { EventsKey } from 'ol/events';
 
 /**
  * Funktion zum Verändern von Querschnittsflächen
  * @author Florian Timm, Landesbetrieb Geoinformation und Vermessung, Hamburg
- * @version 200.04.03
+ * @version 2020.04.22
  * @license GPL-3.0-or-later
 */
 export default class QuerModifyTool extends Tool {
@@ -50,14 +48,15 @@ export default class QuerModifyTool extends Tool {
     private modifyOverlayLayer: VectorLayer;
     private sidebar: HTMLDivElement;
     private pointermove: EventsKey;
+    selectEventsKey: EventsKey;
 
-    constructor(map: Map, info: QuerInfoTool, sidebar: HTMLDivElement, layerTrenn: VectorLayer, layerQuer: VectorLayer, layerStation: VectorLayer) {
+    constructor(map: Map, info: QuerInfoTool, sidebar: HTMLDivElement, layerTrenn: VectorLayer, layerStation: VectorLayer) {
         super(map);
         this.info = info;
         this.sidebar = sidebar;
 
-        this.createLinienSelect(layerTrenn);
-        this.createFlaechenSelect(layerQuer);
+        this.selectLinien = Querschnitt.getSelectLinien();
+        this.selectFlaechen = Querschnitt.getSelectFlaechen();
         this.createModify();
         this.createSnap(layerTrenn, layerStation);
     };
@@ -245,43 +244,10 @@ export default class QuerModifyTool extends Tool {
         this.map.removeInteraction(this.snapStation);
     }
 
-    private createLinienSelect(layerTrenn: VectorLayer) {
-        this.selectLinien = new SelectInteraction({
-            layers: [layerTrenn],
-            condition: never,
-            style: InfoTool.selectStyle
-        });
-        //this.selectLinien.on('select', this.linieSelected.bind(this));
-    }
-
-    private createFlaechenSelect(layerQuer: VectorLayer) {
-        this.selectFlaechen = new SelectInteraction({
-            layers: [layerQuer],
-            toggleCondition: platformModifierKeyOnly,
-            style: InfoTool.selectStyle
-        });
-        this.selectFlaechen.on('select', this.flaecheSelected.bind(this));
-    }
-
-    private flaecheSelected() {
-        this.selectLinien.getFeatures().clear();
-        let auswahl = this.selectFlaechen.getFeatures();
-        auswahl.forEach((feat: Feature<Geometry>) => {
-            this.selectLinien.getFeatures().push((feat as Querschnitt).trenn);
-        })
-
-        this.featureSelected();
-    }
-
     private featureSelected() {
         let selection = this.selectFlaechen.getFeatures().getArray() as Querschnitt[];
 
-        this.selectLinien.getFeatures().clear()
         this.modifyLayer.getSource().clear();
-
-        this.selectFlaechen.getFeatures().forEach((feature: Feature<Geometry>) => {
-            this.selectLinien.getFeatures().push((feature as Querschnitt).trenn)
-        });
 
         if (selection.length == 1) {
             this.singleSelect();
@@ -410,6 +376,8 @@ export default class QuerModifyTool extends Tool {
     }
 
     public start() {
+        Querschnitt.setSelectLinienCondition(never);
+        Querschnitt.setSelectFlaechenToggleCondition(platformModifierKeyOnly);
         this.createMoveTypeForm();
         $(this.moveTypeForm).show("fast");
         this.map.addInteraction(this.selectLinien);
@@ -418,9 +386,21 @@ export default class QuerModifyTool extends Tool {
         this.map.addInteraction(this.snapTrenn);
 
         if (this.multiEditForm = null) this.createMultiModForm();
+
+        this.selectEventsKey = this.selectFlaechen.on('select', this.featureSelected.bind(this));
+        this.featureSelected()
     }
 
     stop() {
+        Querschnitt.setSelectLinienCondition();
+        Querschnitt.setSelectFlaechenToggleCondition();
+        unByKey(this.selectEventsKey)
+
+        if (this.selectFlaechen.getFeatures().getLength() > 1) {
+            this.selectFlaechen.getFeatures().clear();
+            this.selectLinien.getFeatures().clear();
+        }
+
         $(this.moveTypeForm).hide("fast");
         this.info.hideInfoBox();
         this.map.removeInteraction(this.selectLinien);
@@ -429,8 +409,6 @@ export default class QuerModifyTool extends Tool {
         this.map.removeInteraction(this.snapTrenn);
         this.map.removeInteraction(this.snapStation);
         this.modifyLayer.getSource().clear();
-        this.selectFlaechen.getFeatures().clear();
-        this.selectLinien.getFeatures().clear();
         $(this.multiEditForm).hide("hide");
     }
 }
