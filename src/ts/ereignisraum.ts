@@ -57,6 +57,8 @@ function readER(xml: Document, projektnr?: number) {
     let proj = xml.getElementsByTagName("Projekt")
     select.innerHTML = ""
 
+    er = [];
+
     for (var i = 0; i < proj.length; i++) {
         let projekt: {
             fid: string,
