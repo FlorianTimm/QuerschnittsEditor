@@ -26,7 +26,7 @@ import { never, Condition, singleClick } from 'ol/events/condition';
  * @license GPL-3.0-or-later
 */
 export default class Querschnitt extends PrimaerObjekt implements InfoToolEditable {
-    private _aufbaudaten: { [schicht: number]: Aufbau } = null;
+    private _aufbaudaten: Aufbau[] = null;
     public trenn: Feature<MultiLineString>;
 
     // SIB-Attribute
@@ -222,19 +222,22 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     }
 
     public addAufbau(schicht?: number, aufbau?: Aufbau) {
-        if (this._aufbaudaten == null) { this._aufbaudaten = {} };
+        if (this._aufbaudaten == null) { this._aufbaudaten = [] };
         if (schicht == undefined || aufbau == undefined) return;
         this._aufbaudaten[schicht] = aufbau;
     }
 
-    public setAufbauGesamt(aufbau: { [schicht: number]: Aufbau }) {
-        this._aufbaudaten = aufbau;
+    public setAufbauGesamt(aufbau?: Aufbau[]) {
+        if (aufbau)
+            this._aufbaudaten = aufbau;
+        else
+            this._aufbaudaten = [];
     }
 
-    public async getAufbau(): Promise<{ [schicht: number]: Aufbau }> {
+    public async getAufbau(): Promise<Aufbau[]> {
         if (!this._aufbaudaten) {
             console.log(this)
-            if (!this.abschnitt) return {}
+            if (!this.abschnitt) return []
             await this.station.getAufbauDaten();
             return this._aufbaudaten;
         } else {
