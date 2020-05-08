@@ -29,7 +29,7 @@ export default class QuerStation {
     private linie: MultiLineString;
     private _querschnitte: { [streifen: string]: { [streifennr: number]: Querschnitt } } = {};
     private linienPunkte: LinienPunkt[];
-    public aufbaudatenLoaded: Promise<{ [fid: string]: { [schichtnr: number]: Aufbaudaten } }>;
+    public aufbaudatenLoaded: Promise<{ [fid: string]: Aufbaudaten[] }>;
     private static layerStation: VectorLayer;
 
     constructor(abschnitt: Abschnitt, vst: number, bst: number) {
@@ -385,7 +385,7 @@ export default class QuerStation {
 
     // Aufbaudaten
 
-    public async getAufbauDaten(reload: boolean = false): Promise<{ [fid: string]: { [schichtnr: number]: Aufbaudaten } }> {
+    public async getAufbauDaten(reload: boolean = false): Promise<{ [fid: string]: Aufbaudaten[] }> {
         if (!this.aufbaudatenLoaded || reload) {
             this.aufbaudatenLoaded = PublicWFS.doQuery('Otschicht', '<Filter><And>' +
                 '<PropertyIsEqualTo>' +
@@ -415,9 +415,9 @@ export default class QuerStation {
         return this.aufbaudatenLoaded;
     }
 
-    private parseAufbaudaten(xml: Document): { [fid: string]: { [schichtnr: number]: Aufbaudaten } } | null {
+    private parseAufbaudaten(xml: Document): { [fid: string]: Aufbaudaten[] } | null {
         let aufbau = xml.getElementsByTagName('Otschicht');
-        let aufbaudaten: { [fid: string]: { [schichtnr: number]: Aufbaudaten } } = {};
+        let aufbaudaten: { [fid: string]: Aufbaudaten[] } = {};
 
         for (let i = 0; i < aufbau.length; i++) {
             let a = Aufbaudaten.fromXML(aufbau[i]);
@@ -426,15 +426,15 @@ export default class QuerStation {
                 return null;
             }
             let fid = a.getParent().getXlink();
-            if (!(fid in aufbaudaten)) aufbaudaten[fid] = {};
-            aufbaudaten[fid][a.getSchichtnr()] = a;
+            if (!(fid in aufbaudaten)) aufbaudaten[fid] = [];
+            aufbaudaten[fid].push(a);
         }
         console.log(aufbaudaten)
         for (let streifen of this.getAllQuerschnitte()) {
-            if (streifen.getFid().substr(-32) in aufbaudaten) {
+            if (streifen.getFid() && streifen.getFid().substr(-32) in aufbaudaten) {
                 streifen.setAufbauGesamt(aufbaudaten[streifen.getFid().substr(-32)])
             } else {
-                streifen.setAufbauGesamt({});
+                streifen.setAufbauGesamt();
             }
         }
         return aufbaudaten;

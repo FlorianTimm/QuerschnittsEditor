@@ -39,20 +39,15 @@ export default class MoveTool extends Tool {
     private modifyLine: ModifyInteraction;
     private linePreview: Feature<LineString>;
     private pointermove: EventsKey;
+    private selectEventKey: EventsKey;
 
-    constructor(map: Map, avInfoTool: InfoTool, selectLayer: VectorLayer) {
+    constructor(map: Map, avInfoTool: InfoTool, selectInteraction: SelectInteraction) {
         super(map);
         this.infoTool = avInfoTool;
 
-        this.select = new SelectInteraction({
-            layers: [selectLayer],
-            hitTolerance: 10
-        });
-
+        this.select = selectInteraction;
         this.createLayer();
         this.createModify();
-
-        this.select.on("select", this.selected.bind(this));
     }
 
     private createLayer() {
@@ -159,7 +154,7 @@ export default class MoveTool extends Tool {
         this.select.getFeatures().clear();
     }
 
-    private selected(__: SelectEvent) {
+    private featureSelected() {
         if (this.select.getFeatures().getLength() > 0) {
             console.log(this.select.getFeatures().item(0))
             if (this.select.getFeatures().item(0).getGeometry().getType() == GeometryType.LINE_STRING) {
@@ -270,14 +265,16 @@ export default class MoveTool extends Tool {
 
     public start() {
         this.map.addInteraction(this.select);
+        this.selectEventKey = this.select.on("select", this.featureSelected.bind(this));
         this.map.addInteraction(this.modifyPoint);
         this.map.addLayer(this.l_overlay);
+        this.featureSelected();
     }
 
     public stop() {
+        unByKey(this.selectEventKey)
         this.map.removeInteraction(this.select);
         this.map.removeInteraction(this.modifyPoint);
-        this.select.getFeatures().clear();
         this.map.removeLayer(this.l_overlay);
         if (this.pointermove)
             unByKey(this.pointermove);

@@ -37,12 +37,12 @@ export default class AufstellToolBox extends ToolBox {
         let layerAchse = Abschnitt.getLayer();
         this.layer.push(layerAufstell)
 
-        this.infoTool = new InfoTool(this.map, layerAufstell, this.sidebar);
+        this.infoTool = new InfoTool(this.map, layerAufstell, this.sidebar, Aufstellvorrichtung.getSelect());
         this.addTool = new AvAdd(this.map, sidebar, layerAchse);
         this.vzAddTool = new AvVzAdd(this.map);
-        this.moveTool = new MoveTool(this.map, this.infoTool, layerAufstell);
+        this.moveTool = new MoveTool(this.map, this.infoTool, Aufstellvorrichtung.getSelect());
         this.add2ErTool = new AvAdd2ER(this.map);
-        this.delTool = new DeleteTool(this.map, layerAufstell, this.sidebar, "Otaufstvor");
+        this.delTool = new DeleteTool(this.map, layerAufstell, this.sidebar, "Otaufstvor", Aufstellvorrichtung.getSelect());
         this.createToolBox();
     }
 
