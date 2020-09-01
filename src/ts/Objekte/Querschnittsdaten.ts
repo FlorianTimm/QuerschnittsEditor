@@ -425,21 +425,28 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         if (diffVstR == 0 && diffVstL == 0 && diffBstR == 0 && diffBstL == 0) return "";
 
         let querschnitt_nachbar: Querschnitt;
+        let rueckgabeXML = "";
 
         if (diffVstR != 0 || diffVstL != 0) {
             // VST editiert
             let station = this.getStation().getAbschnitt().getStationByBST(this.getVst());
             if (station == null) return "";
             querschnitt_nachbar = station.getQuerschnittByBstAbstand(this.XVstL - diffVstL, this.XVstR - diffVstR);
-        } else if (diffBstR != 0 || diffBstL != 0) {
+            rueckgabeXML += this.berechneNachbarQuerschnitt(querschnitt_nachbar, diffBstL, diffBstR, diffVstL, diffVstR, folgende_anpassen);
+        }
+        
+        if (diffBstR != 0 || diffBstL != 0) {
             // BST editiert
             let station = this.getStation().getAbschnitt().getStationByVST(this.getBst());
             if (station == null) return "";
             querschnitt_nachbar = station.getQuerschnittByVstAbstand(this.XBstL - diffBstL, this.XBstR - diffBstR);
+            rueckgabeXML += this.berechneNachbarQuerschnitt(querschnitt_nachbar, diffBstL, diffBstR, diffVstL, diffVstR, folgende_anpassen);
         }
 
-        if (!querschnitt_nachbar) return "";
+        return  rueckgabeXML;
+    }
 
+    private berechneNachbarQuerschnitt(querschnitt_nachbar: Querschnitt, diffBstL: number, diffBstR: number, diffVstL: number, diffVstR: number, folgende_anpassen: boolean) {
         let xvstl = querschnitt_nachbar.getXVstL() + diffBstL;
         let xvstr = querschnitt_nachbar.getXVstR() + diffBstR;
         let xbstl = querschnitt_nachbar.getXBstL() + diffVstL;
@@ -448,7 +455,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         let breiteVst = Math.round((xvstr - xvstl) * 100);
         let breiteBst = Math.round((xbstr - xbstl) * 100);
 
-        return querschnitt_nachbar.checkAndEditBreitenEdit(breiteVst, breiteBst, folgende_anpassen, false)
+        return querschnitt_nachbar.checkAndEditBreitenEdit(breiteVst, breiteBst, folgende_anpassen, false);
     }
 
     private editNext(seite: "L" | "R", folgenden_anpassen: boolean = false, diffVst: number = 0, diffBst: number = 0): string {

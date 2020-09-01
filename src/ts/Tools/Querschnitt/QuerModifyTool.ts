@@ -118,7 +118,7 @@ export default class QuerModifyTool extends Tool {
             source: new VectorSource(),
             style: new Style({
                 stroke: new Stroke({
-                    color: 'rgba(50,50,50,0.5)', width: 3
+                    color: 'rgba(255,255,0,0.7)', width: 3
                 })
             })
         });
