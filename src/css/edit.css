@@ -92,6 +92,10 @@ form#quer_del input[type="button"] {
     font-weight: 600;
 }
 
+form#quer_del input[type="button"]:disabled {
+    background-color: grey;
+}
+
 #tabs a.ui-tabs-anchor {
     padding: .5em 0.3em;
 }
