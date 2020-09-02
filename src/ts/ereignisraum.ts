@@ -7,6 +7,7 @@
  * @license GPL-3.0-or-later
 */
 
+import "./import_jquery.js";
 import 'chosen-js';
 import 'chosen-js/chosen.css';
 import 'jquery-ui';
@@ -15,7 +16,6 @@ import 'jquery-ui-bundle/jquery-ui.css';
 import '../css/html_forms.css';
 import '../css/index.css';
 import HTML from './HTML';
-import "./import_jquery.js";
 import PublicWFS from './PublicWFS';
 
 

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import "../../import_jquery.js";
 import 'chosen-js';
 import 'chosen-js/chosen.css';
 import 'jquery-ui-bundle';
@@ -12,7 +13,6 @@ import { unByKey } from 'ol/Observable';
 import '../../../css/vzadd.css';
 import Daten from '../../Daten';
 import HTML from '../../HTML';
-import "../../import_jquery.js";
 import Aufstellvorrichtung from '../../Objekte/Aufstellvorrichtung';
 import { default as Klartext, default as KlartextManager } from '../../Objekte/Klartext';
 import Zeichen from '../../Objekte/Zeichen';
