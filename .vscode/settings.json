@@ -5,10 +5,6 @@
     "mocha.requires": [
         "ts-node/register"
     ],
-    "editor.codeActionsOnSave": {
-        "source.fixAll": true,
-        "source.organizeImports": true,
-    },
     "editor.formatOnSave": true,
     "editor.formatOnType": true
 }

@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import "../import_jquery.js";
 import 'chosen-js';
 import 'chosen-js/chosen.css';
 import { Map } from 'ol';
 import { never } from 'ol/events/condition';
 import Daten from "../Daten";
 import HTML from '../HTML';
-import "../import_jquery.js";
 import { SelectInteraction } from '../openLayers/Interaction';
 import { VectorLayer } from '../openLayers/Layer';
 import PublicWFS from '../PublicWFS';

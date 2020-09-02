@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import "../../import_jquery.js";
 import 'jquery-ui-bundle';
 import 'jquery-ui-bundle/jquery-ui.css';
 import { Feature } from 'ol';
@@ -12,7 +13,6 @@ import VectorSource from 'ol/source/Vector';
 import { Stroke, Style } from 'ol/style';
 import Daten from '../../Daten';
 import HTML from '../../HTML';
-import "../../import_jquery.js";
 import Abschnitt from '../../Objekte/Abschnitt';
 import Klartext from '../../Objekte/Klartext';
 import Querschnitt from '../../Objekte/Querschnittsdaten';

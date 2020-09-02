@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import "../import_jquery.js";
 import { Feature } from 'ol';
 import { FeatureLike } from 'ol/Feature';
 import { Geometry } from 'ol/geom';
@@ -10,7 +11,6 @@ import { unByKey } from 'ol/Observable';
 import { Fill, Stroke, Style } from 'ol/style';
 import CircleStyle from 'ol/style/Circle';
 import HTML from '../HTML';
-import "../import_jquery.js";
 import Map from '../openLayers/Map';
 import PublicWFS from '../PublicWFS';
 import Tool from './prototypes/Tool';
