@@ -1,18 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import VectorSource from 'ol/source/Vector';
-import { Style, Stroke, Fill, Circle, Text, RegularShape } from 'ol/style';
 import { Map } from 'ol';
 import { ColorLike } from "ol/colorlike";
+import { FeatureLike } from 'ol/Feature';
+import { LineString, Point } from "ol/geom";
+import VectorSource from 'ol/source/Vector';
+import { Circle, Fill, RegularShape, Stroke, Style, Text } from 'ol/style';
+import { VectorLayer } from '../../openLayers/Layer';
 import PublicWFS from "../../PublicWFS";
 import { InfoToolEditable } from "../../Tools/InfoTool";
-import { Point, LineString } from "ol/geom";
-import PObjektMitDokument from "./PObjektMitDateien";
-import { FeatureLike } from 'ol/Feature';
 import Abschnitt from '../Abschnitt';
 import Klartext from '../Klartext';
-import { VectorLayer } from '../../openLayers/Layer';
-import { isNumber } from 'util';
+import PObjektMitDokument from "./PObjektMitDateien";
 
 /**
  * PunktObjekt
@@ -71,7 +70,7 @@ export default abstract class PunktObjekt extends PObjektMitDokument implements 
     }
 
     protected calcGeometry(xml?: Element) {
-        if (isNumber(this.labstbaVst)) {
+        if (typeof this.labstbaVst === "number") {
             this.setGeometry(
                 new LineString([
                     this.abschnitt.stationierePunkt(this.vst, this.rabstbaVst),

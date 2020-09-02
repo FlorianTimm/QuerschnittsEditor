@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import Feature, { FeatureLike } from 'ol/Feature';
-import LineString from 'ol/geom/LineString';
-import PublicWFS from '../PublicWFS';
-import AbschnittWFS from '../AbschnittWFS';
-import Vektor from '../Vektor';
-import Daten from '../Daten';
-import QuerStation from './QuerStation';
-import { VectorLayer } from '../openLayers/Layer';
-import VectorSource from 'ol/source/Vector';
-import { Style, Stroke, Fill, Icon, Text } from 'ol/style';
-import { Point } from 'ol/geom';
-import CircleStyle from 'ol/style/Circle';
 import { Map } from 'ol';
+import Feature, { FeatureLike } from 'ol/Feature';
+import { Point } from 'ol/geom';
+import LineString from 'ol/geom/LineString';
+import VectorSource from 'ol/source/Vector';
+import { Fill, Icon, Stroke, Style, Text } from 'ol/style';
+import CircleStyle from 'ol/style/Circle';
+import AbschnittWFS from '../AbschnittWFS';
+import Daten from '../Daten';
+import { VectorLayer } from '../openLayers/Layer';
+import PublicWFS from '../PublicWFS';
+import Vektor from '../Vektor';
+import QuerStation from './QuerStation';
 
 var CONFIG: { [index: string]: string } = require('../config.json');
 

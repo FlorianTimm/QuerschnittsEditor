@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 var CONFIG = require('./config.json');
-import PublicWFS from './PublicWFS';
 import { Extent } from 'ol/extent';
 
 /**

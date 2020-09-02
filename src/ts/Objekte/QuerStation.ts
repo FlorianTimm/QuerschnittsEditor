@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import Vektor from '../Vektor';
-import Feature from 'ol/Feature';
-import MultiLineString from 'ol/geom/MultiLineString';
-import PublicWFS from '../PublicWFS';
-import Daten from '../Daten';
-import Abschnitt, { LinienPunkt } from './Abschnitt';
-import Querschnitt from './Querschnittsdaten';
-import Aufbaudaten from './Aufbaudaten';
-import { Point } from 'ol/geom';
-import { VectorLayer } from '../openLayers/Layer';
-import VectorSource from 'ol/source/Vector';
 import { Map } from 'ol';
+import Feature from 'ol/Feature';
+import { Point } from 'ol/geom';
+import MultiLineString from 'ol/geom/MultiLineString';
+import VectorSource from 'ol/source/Vector';
 import { Stroke, Style } from 'ol/style';
+import Daten from '../Daten';
+import { VectorLayer } from '../openLayers/Layer';
+import PublicWFS from '../PublicWFS';
+import Vektor from '../Vektor';
+import Abschnitt, { LinienPunkt } from './Abschnitt';
+import Aufbaudaten from './Aufbaudaten';
+import Querschnitt from './Querschnittsdaten';
 
 /**
  * Querschnitts-Station

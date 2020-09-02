@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import PublicWFS from '../../PublicWFS';
+import Abschnitt from '../../Objekte/Abschnitt';
 import Querschnittsdaten from '../../Objekte/Querschnittsdaten';
 import Map from "../../openLayers/Map";
-import Abschnitt from '../../Objekte/Abschnitt';
+import PublicWFS from '../../PublicWFS';
 import Add2ER from '../prototypes/Add2ER';
 
 /**

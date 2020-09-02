@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import { Modify, Select } from 'ol/interaction';
 import Geometry from 'ol/geom/Geometry';
-import QuerModifyTool from '../Tools/Querschnitt/QuerModifyTool';
-import QuerInfoTool from '../Tools/Querschnitt/QuerInfoTool';
+import { Modify, Select } from 'ol/interaction';
 import MoveTool from '../Tools/MoveTool';
+import QuerInfoTool from '../Tools/Querschnitt/QuerInfoTool';
+import QuerModifyTool from '../Tools/Querschnitt/QuerModifyTool';
 
 /**
  * OpenLayers-ModifyInteraktion

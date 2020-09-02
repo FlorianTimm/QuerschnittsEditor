@@ -1,25 +1,24 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import { Circle, Style, Stroke, Fill } from 'ol/style';
-import { Select as SelectInteraction } from 'ol/interaction';
-import { Vector as VectorSource } from 'ol/source';
-import { Vector as VectorLayer } from 'ol/layer';
-import { LineString, Point, Geometry } from 'ol/geom';
-import Feature from 'ol/Feature';
+import { Collection, MapBrowserEvent } from 'ol';
+import { Coordinate } from 'ol/coordinate';
+import { EventsKey } from 'ol/events';
 import { never as neverCondition } from 'ol/events/condition';
-import { MapBrowserEvent, Collection, Observable } from 'ol';
+import Feature from 'ol/Feature';
+import { Geometry, LineString, Point } from 'ol/geom';
+import GeometryType from 'ol/geom/GeometryType';
+import { Select as SelectInteraction } from 'ol/interaction';
+import { ModifyEvent } from 'ol/interaction/Modify';
+import { Vector as VectorLayer } from 'ol/layer';
+import { unByKey } from 'ol/Observable';
+import { Vector as VectorSource } from 'ol/source';
+import { Circle, Fill, Stroke, Style } from 'ol/style';
+import Abschnitt, { StationObj } from '../Objekte/Abschnitt';
+import PunktObjekt from '../Objekte/prototypes/PunktObjekt';
+import { ModifyInteraction } from '../openLayers/Interaction';
+import Map from "../openLayers/Map";
 import InfoTool from './InfoTool';
 import Tool from './prototypes/Tool';
-import { ModifyInteraction } from '../openLayers/Interaction';
-import { Coordinate } from 'ol/coordinate';
-import PunktObjekt from '../Objekte/prototypes/PunktObjekt';
-import { SelectEvent } from 'ol/interaction/Select';
-import { ModifyEvent } from 'ol/interaction/Modify';
-import Abschnitt, { StationObj } from '../Objekte/Abschnitt';
-import Map from "../openLayers/Map";
-import GeometryType from 'ol/geom/GeometryType';
-import { EventsKey } from 'ol/events';
-import { unByKey } from 'ol/Observable';
 
 /**
  * Funktion zum Verschieben von Punktobjekten

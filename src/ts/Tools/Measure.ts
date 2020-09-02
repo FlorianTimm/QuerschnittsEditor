@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import { Vector as VectorSource } from 'ol/source';
-import Draw, { DrawEvent } from 'ol/interaction/Draw';
-import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
-import { Vector as VectorLayer } from 'ol/layer';
-import Overlay from 'ol/Overlay';
-import { getLength } from 'ol/sphere';
-import { unByKey } from 'ol/Observable';
-import Map from "../openLayers/Map";
-import GeometryType from 'ol/geom/GeometryType';
-import OverlayPositioning from 'ol/OverlayPositioning';
-import Tool from './prototypes/Tool';
 import { EventsKey } from 'ol/events';
-import Geometry from 'ol/geom/Geometry';
-import { LineString } from 'ol/geom';
 import Event from 'ol/events/Event';
+import { LineString } from 'ol/geom';
+import Geometry from 'ol/geom/Geometry';
+import GeometryType from 'ol/geom/GeometryType';
+import Draw, { DrawEvent } from 'ol/interaction/Draw';
+import { Vector as VectorLayer } from 'ol/layer';
+import { unByKey } from 'ol/Observable';
+import Overlay from 'ol/Overlay';
+import OverlayPositioning from 'ol/OverlayPositioning';
+import { Vector as VectorSource } from 'ol/source';
+import { getLength } from 'ol/sphere';
+import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
+import Map from "../openLayers/Map";
+import Tool from './prototypes/Tool';
 var CONFIG = require('../config.json');
 
 /**

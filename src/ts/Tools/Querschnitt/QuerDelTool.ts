@@ -1,18 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import { Collection } from "ol";
-import QuerInfoTool from "./QuerInfoTool";
-import Tool from '../prototypes/Tool';
+import { EventsKey } from "ol/events";
 import { never, platformModifierKeyOnly } from 'ol/events/condition';
-import { SelectInteraction } from '../../openLayers/Interaction'
+import { unByKey } from "ol/Observable";
 import Querschnitt from "../../Objekte/Querschnittsdaten";
-import InfoTool from "../InfoTool";
+import QuerStation from "../../Objekte/QuerStation";
+import { SelectInteraction } from '../../openLayers/Interaction';
 import Map from "../../openLayers/Map";
 import PublicWFS from "../../PublicWFS";
-import { unByKey } from "ol/Observable";
-import { EventsKey } from "ol/events";
-import QuerStation from "../../Objekte/QuerStation";
-import { stat } from "fs";
+import InfoTool from "../InfoTool";
+import Tool from '../prototypes/Tool';
+import QuerInfoTool from "./QuerInfoTool";
 
 /**
  * Funktion zum Löschen von Querschnitten

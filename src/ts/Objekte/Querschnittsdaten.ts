@@ -1,23 +1,23 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import { Feature, Map } from 'ol';
+import { Condition, never, singleClick } from 'ol/events/condition';
+import { FeatureLike } from 'ol/Feature';
 import { MultiLineString, Polygon } from 'ol/geom';
+import VectorSource from 'ol/source/Vector';
+import { Fill, Stroke, Style, Text } from 'ol/style';
 import Daten from '../Daten';
+import HTML from '../HTML';
 import Abschnitt from '../Objekte/Abschnitt';
 import Aufbau from '../Objekte/Aufbaudaten';
-import PublicWFS from '../PublicWFS';
-import Vektor from '../Vektor';
-import QuerStation from './QuerStation';
-import Klartext from './Klartext';
-import HTML from '../HTML';
-import InfoTool, { InfoToolEditable } from '../Tools/InfoTool';
-import PrimaerObjekt from './prototypes/PrimaerObjekt';
-import { VectorLayer } from '../openLayers/Layer';
-import VectorSource from 'ol/source/Vector';
-import { Style, Stroke, Text, Fill } from 'ol/style';
-import { FeatureLike } from 'ol/Feature';
 import { SelectInteraction } from '../openLayers/Interaction';
-import { never, Condition, singleClick } from 'ol/events/condition';
+import { VectorLayer } from '../openLayers/Layer';
+import PublicWFS from '../PublicWFS';
+import InfoTool, { InfoToolEditable } from '../Tools/InfoTool';
+import Vektor from '../Vektor';
+import Klartext from './Klartext';
+import PrimaerObjekt from './prototypes/PrimaerObjekt';
+import QuerStation from './QuerStation';
 
 /**
  * Querschnittsdaten
@@ -435,7 +435,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             querschnitt_nachbar = station.getQuerschnittByBstAbstand(this.XVstL - diffVstL, this.XVstR - diffVstR);
             rueckgabeXML += this.berechneNachbarQuerschnitt(querschnitt_nachbar, diffBstL, diffBstR, diffVstL, diffVstR, folgende_anpassen);
         }
-        
+
         if (diffBstR != 0 || diffBstL != 0) {
             // BST editiert
             let station = this.getStation().getAbschnitt().getStationByVST(this.getBst());
@@ -444,7 +444,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             rueckgabeXML += this.berechneNachbarQuerschnitt(querschnitt_nachbar, diffBstL, diffBstR, diffVstL, diffVstR, folgende_anpassen);
         }
 
-        return  rueckgabeXML;
+        return rueckgabeXML;
     }
 
     private berechneNachbarQuerschnitt(querschnitt_nachbar: Querschnitt, diffBstL: number, diffBstR: number, diffVstL: number, diffVstR: number, folgende_anpassen: boolean) {

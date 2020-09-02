@@ -1,30 +1,30 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import { Snap } from 'ol/interaction';
-import { platformModifierKeyOnly, never } from 'ol/events/condition';
-import QuerInfoTool from './QuerInfoTool';
-import { Feature, MapBrowserEvent } from 'ol';
-import Tool from '../prototypes/Tool';
-import { SelectInteraction, ModifyInteraction } from '../../openLayers/Interaction'
-import { ModifyEvent } from 'ol/interaction/Modify';
-import Querschnitt from '../../Objekte/Querschnittsdaten';
-import { MultiLineString, Point, LineString, Geometry } from 'ol/geom';
-import HTML from '../../HTML';
-import KlartextManager from '../../Objekte/Klartext';
-import Map from "../../openLayers/Map";
-import "../../import_jquery.js";
 import 'chosen-js';
 import 'chosen-js/chosen.css';
 import 'jquery-ui-bundle';
-import 'jquery-ui-bundle/jquery-ui.css'
-import VectorLayer from 'ol/layer/Vector';
-import VectorSource from 'ol/source/Vector';
-import { Circle, Style, Stroke, Fill } from 'ol/style';
-import { FeatureLike } from 'ol/Feature';
-import Vektor from '../../Vektor';
-import PublicWFS from '../../PublicWFS';
-import { unByKey } from 'ol/Observable';
+import 'jquery-ui-bundle/jquery-ui.css';
+import { Feature, MapBrowserEvent } from 'ol';
 import { EventsKey } from 'ol/events';
+import { never, platformModifierKeyOnly } from 'ol/events/condition';
+import { FeatureLike } from 'ol/Feature';
+import { LineString, MultiLineString, Point } from 'ol/geom';
+import { Snap } from 'ol/interaction';
+import { ModifyEvent } from 'ol/interaction/Modify';
+import VectorLayer from 'ol/layer/Vector';
+import { unByKey } from 'ol/Observable';
+import VectorSource from 'ol/source/Vector';
+import { Circle, Fill, Stroke, Style } from 'ol/style';
+import HTML from '../../HTML';
+import "../../import_jquery.js";
+import KlartextManager from '../../Objekte/Klartext';
+import Querschnitt from '../../Objekte/Querschnittsdaten';
+import { ModifyInteraction, SelectInteraction } from '../../openLayers/Interaction';
+import Map from "../../openLayers/Map";
+import PublicWFS from '../../PublicWFS';
+import Vektor from '../../Vektor';
+import Tool from '../prototypes/Tool';
+import QuerInfoTool from './QuerInfoTool';
 
 /**
  * Funktion zum Verändern von Querschnittsflächen
@@ -332,7 +332,7 @@ export default class QuerModifyTool extends Tool {
         });
     }
 
-    private updateMultiArt(): Promise<void> {
+    private async updateMultiArt(): Promise<void> {
         let querschnitte = this.selectFlaechen.getFeatures().getArray() as Querschnitt[];
         let art = this.multiArtSelect.value;
 
@@ -342,19 +342,18 @@ export default class QuerModifyTool extends Tool {
                 querschnitt.updateArtEinzeln(art)
             );
         }
-        return Promise.all(tasks)
-            .then(() => {
-                PublicWFS.showMessage("Erfolgreich")
-                Promise.resolve()
-            })
-            .catch(() => {
-                PublicWFS.showMessage("Fehler", true)
-                Promise.reject()
-            });
+        try {
+            await Promise.all(tasks);
+            PublicWFS.showMessage("Erfolgreich");
+            Promise.resolve();
+        } catch (e) {
+            PublicWFS.showMessage("Fehler", true);
+            Promise.reject();
+        }
     }
 
 
-    private updateMultiOber(): Promise<void> {
+    private async updateMultiOber(): Promise<void> {
         let querschnitte = this.selectFlaechen.getFeatures().getArray() as Querschnitt[];
         let artober = this.multiOberSelect.value;
 
@@ -364,15 +363,14 @@ export default class QuerModifyTool extends Tool {
                 querschnitt.updateOberEinzeln(artober)
             );
         }
-        return Promise.all(tasks)
-            .then(() => {
-                PublicWFS.showMessage("Erfolgreich")
-                Promise.resolve()
-            })
-            .catch(() => {
-                PublicWFS.showMessage("Fehler", true)
-                Promise.reject()
-            });
+        try {
+            await Promise.all(tasks);
+            PublicWFS.showMessage("Erfolgreich");
+            Promise.resolve();
+        } catch (e) {
+            PublicWFS.showMessage("Fehler", true);
+            Promise.reject();
+        }
     }
 
     public start() {

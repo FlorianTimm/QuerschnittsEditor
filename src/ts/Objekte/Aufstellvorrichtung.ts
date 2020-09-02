@@ -1,24 +1,24 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import "../import_jquery.js";
 import 'chosen-js';
 import 'chosen-js/chosen.css';
+import { Map, Overlay } from "ol";
+import { ColorLike } from "ol/colorlike";
+import { never } from "ol/events/condition";
+import { LineString, Point } from "ol/geom";
 import Daten from "../Daten";
+import HTML from "../HTML";
+import "../import_jquery.js";
+import { SelectInteraction } from "../openLayers/Interaction";
+import { VectorLayer } from "../openLayers/Layer";
 import PublicWFS from '../PublicWFS';
+import { InfoToolOverlay } from "../Tools/InfoTool.js";
+import WaitBlocker from "../WaitBlocker";
 import Abschnitt from './Abschnitt';
+import Dokument from "./Dokument";
 import Klartext from './Klartext';
 import PunktObjekt from './prototypes/PunktObjekt';
 import Zeichen from './Zeichen';
-import HTML from "../HTML";
-import Dokument from "./Dokument";
-import { InfoToolOverlay } from "../Tools/InfoTool.js";
-import { Overlay, Map } from "ol";
-import { Point, Geometry, LineString } from "ol/geom";
-import { ColorLike } from "ol/colorlike";
-import WaitBlocker from "../WaitBlocker";
-import { VectorLayer } from "../openLayers/Layer";
-import { SelectInteraction } from "../openLayers/Interaction";
-import { never } from "ol/events/condition";
 
 /**
  * Aufstellvorrichtung

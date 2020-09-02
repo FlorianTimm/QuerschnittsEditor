@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import { Circle, Style, Stroke, Fill } from 'ol/style';
-import { Select as SelectInteraction } from 'ol/interaction';
-import VectorSource from 'ol/source/Vector';
-import { Vector as VectorLayer } from 'ol/layer';
-import { Point, LineString, Geometry } from 'ol/geom';
-import Feature from 'ol/Feature';
-import Tool from '../prototypes/Tool';
 import { MapBrowserEvent } from 'ol';
-import Map from "../../openLayers/Map";
-import Abschnitt, { StationObj } from '../../Objekte/Abschnitt';
-import PublicWFS from '../../PublicWFS';
-import PunktObjekt from '../../Objekte/prototypes/PunktObjekt';
-import { unByKey } from 'ol/Observable';
 import { EventsKey } from 'ol/events';
+import Feature from 'ol/Feature';
+import { Geometry, LineString, Point } from 'ol/geom';
+import { Select as SelectInteraction } from 'ol/interaction';
+import { Vector as VectorLayer } from 'ol/layer';
+import { unByKey } from 'ol/Observable';
+import VectorSource from 'ol/source/Vector';
+import { Circle, Fill, Stroke, Style } from 'ol/style';
+import Abschnitt, { StationObj } from '../../Objekte/Abschnitt';
+import PunktObjekt from '../../Objekte/prototypes/PunktObjekt';
+import Map from "../../openLayers/Map";
+import PublicWFS from '../../PublicWFS';
+import Tool from '../prototypes/Tool';
 
 /**
  * Funktion zum Hinzufügen von Objekten

@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import ToolBox from "./ToolBox";
-import Map from "../openLayers/Map";
-import InfoTool from "../Tools/InfoTool";
-import MoveTool from "../Tools/MoveTool";
-import DeleteTool from "../Tools/DeleteTool";
-import SAPAdd2ER from "../Tools/StrassenAusPunkt/SAPAdd2ER";
-import SAPAdd from "../Tools/StrassenAusPunkt/SAPAdd";
 import Abschnitt from "../Objekte/Abschnitt";
 import StrassenAusPunkt from "../Objekte/StrassenAusPunkt";
-import Aufstellvorrichtung from "../Objekte/Aufstellvorrichtung";
+import Map from "../openLayers/Map";
+import DeleteTool from "../Tools/DeleteTool";
+import InfoTool from "../Tools/InfoTool";
+import MoveTool from "../Tools/MoveTool";
+import SAPAdd from "../Tools/StrassenAusPunkt/SAPAdd";
+import SAPAdd2ER from "../Tools/StrassenAusPunkt/SAPAdd2ER";
+import ToolBox from "./ToolBox";
 
 /**
  * Klasse zum Erzeugen eines Werkzeugkasten zur Bearbeitung von
@@ -36,7 +35,7 @@ export default class AusstPktToolBox extends ToolBox {
         let layerAchse = Abschnitt.getLayer();
         this.layer.push(layerStraus)
 
-        this.infoTool = new InfoTool(map, layerStraus, sidebar, StrassenAusPunkt.getSelect());
+        this.infoTool = new InfoTool(map, sidebar, StrassenAusPunkt.getSelect());
         this.addTool = new SAPAdd(map, sidebar, layerAchse);
         this.moveTool = new MoveTool(map, this.infoTool, StrassenAusPunkt.getSelect());
         this.add2ErTool = new SAPAdd2ER(map);

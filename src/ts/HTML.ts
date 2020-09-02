@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import "./import_jquery.js";
 import "../css/html_forms.css";
+import "./import_jquery.js";
 
 /**
  * HTML-Elemente

@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import Abschnitt from './Objekte/Abschnitt';
-import PublicWFS from './PublicWFS';
-import AbschnittWFS from './AbschnittWFS';
-import Querschnitt from './Objekte/Querschnittsdaten';
-import Aufstellvorrichtung from './Objekte/Aufstellvorrichtung';
 import { Map } from 'ol';
 import Event from 'ol/events/Event';
-import StrassenAusPunkt from './Objekte/StrassenAusPunkt';
-import WaitBlocker from './WaitBlocker';
 import { Extent } from 'ol/extent';
+import AbschnittWFS from './AbschnittWFS';
+import Abschnitt from './Objekte/Abschnitt';
+import Aufstellvorrichtung from './Objekte/Aufstellvorrichtung';
+import Querschnitt from './Objekte/Querschnittsdaten';
+import StrassenAusPunkt from './Objekte/StrassenAusPunkt';
+import PublicWFS from './PublicWFS';
+import WaitBlocker from './WaitBlocker';
 
 var CONFIG: { [name: string]: string } = require('./config.json');
 
