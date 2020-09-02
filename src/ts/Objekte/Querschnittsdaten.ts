@@ -53,6 +53,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     private static selectLinien: SelectInteraction;
     private static selectLinienCondition: Condition = singleClick;
     private static selectFlaechenToggleCondition: Condition = never;
+    private static selectLinienToggleCondition: Condition = never;
 
     constructor() {
         super();
@@ -680,7 +681,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             Querschnitt.selectLinien = new SelectInteraction({
                 layers: [Querschnitt.getLayerTrenn()],
                 hitTolerance: 10,
-                toggleCondition: never,
+                toggleCondition: (e) => Querschnitt.selectLinienToggleCondition(e),
                 condition: (e) => Querschnitt.selectLinienCondition(e),
                 style: InfoTool.selectStyle
             });
@@ -696,6 +697,10 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
     static setSelectLinienCondition(condition: Condition = singleClick) {
         Querschnitt.selectLinienCondition = condition;
+    }
+
+    static setSelectLinienToggleCondition(condition: Condition = never) {
+        Querschnitt.selectLinienToggleCondition = condition;
     }
 
     static setSelectFlaechenToggleCondition(condition: Condition = never) {

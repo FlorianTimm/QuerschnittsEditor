@@ -11,7 +11,7 @@ import "../../import_jquery.js";
 import 'jquery-ui-bundle';
 import 'jquery-ui-bundle/jquery-ui.css'
 import PublicWFS from '../../PublicWFS';
-import Abschnitt from '../../Objekte/Abschnitt';
+import Abschnitt, { StationObj } from '../../Objekte/Abschnitt';
 import VectorSource from 'ol/source/Vector';
 import { Feature } from 'ol';
 import { LineString } from 'ol/geom';
@@ -21,6 +21,7 @@ import QuerStation from '../../Objekte/QuerStation';
 import Klartext from '../../Objekte/Klartext';
 import { unByKey } from 'ol/Observable';
 import { EventsKey } from 'ol/events';
+import { platformModifierKeyOnly } from 'ol/events/condition';
 
 /**
  * Funktion zum Hinzufügen von Querschnittsflächen
@@ -62,7 +63,7 @@ class QuerAddTool extends Tool {
     private createForm() {
         if (this.form != null) return;
         this.form = HTML.createToolForm(document.getElementById('sidebar'), false, 'hinzu');
-        this.button = HTML.createButton(this.form, "Querschnitt hinzufügen", "addQuerschnittButton");
+        this.button = HTML.createButton(this.form, "Querschnittsfläche hinzu.", "addQuerschnittButton");
         this.button.addEventListener('click', this.addQuerschnitt.bind(this));
         this.button.disabled = true;
     }
@@ -74,18 +75,26 @@ class QuerAddTool extends Tool {
     }
 
     private querschnittSelected() {
-        if (this.selectQuerschnitte.getFeatures().getLength() == 0) {
+        let anz = this.selectQuerschnitte.getFeatures().getLength();
+        if (anz == 0) {
             this.disableMenu();
             return
+        } else if (anz == 1) {
+            (this._info as QuerInfoTool).getInfoFieldForFeature(this.selectQuerschnitte.getFeatures().item(0).get("objekt"))
+            this.button.value = "Querschnittsfläche hinzu.";
+        } else {
+            (this._info as QuerInfoTool).hideInfoBox();
+            this.button.value = anz + " Querschnittsflächen hinzu.";
         }
-        (this._info as QuerInfoTool).getInfoFieldForFeature(this.selectQuerschnitte.getFeatures().item(0).get("objekt"))
         this.button.disabled = false;
     }
 
     private disableMenu() {
         if (this.form != null) {
             this.button.disabled = true;
+            this.button.value = "Querschnittsfläche hinzu.";
         }
+
         (this._info as QuerInfoTool).hideInfoBox();
     }
 
@@ -94,6 +103,7 @@ class QuerAddTool extends Tool {
         if (this.form != null) $(this.form).show("fast");
         this.map.addInteraction(this.selectFehlende);
         this.map.addInteraction(this.selectQuerschnitte);
+        Querschnitt.setSelectLinienToggleCondition(platformModifierKeyOnly);
         this.map.addLayer(this.fehlendeQuerschnitte);
         this.fehlendeBestandsAchseErzeugen();
         this.selectQuerschnitteEventsKey = this.selectQuerschnitte.on('select', this.querschnittSelected.bind(this));
@@ -105,6 +115,13 @@ class QuerAddTool extends Tool {
         this.disableMenu()
         this.map.removeInteraction(this.selectFehlende);
         this.map.removeInteraction(this.selectQuerschnitte);
+        Querschnitt.setSelectLinienToggleCondition();
+
+
+        if (this.selectQuerschnitte.getFeatures().getLength() > 1) {
+            this.selectQuerschnitte.getFeatures().clear();
+        }
+
         this.map.removeLayer(this.fehlendeQuerschnitte);
         this._info.hideInfoBox();
         unByKey(this.selectQuerschnitteEventsKey);
@@ -113,24 +130,32 @@ class QuerAddTool extends Tool {
 
     private addQuerschnitt() {
         let selection = this.selectQuerschnitte.getFeatures();
-        if (this.selectQuerschnitte.getFeatures().getLength() != 1) return;
-        let querschnitt = <Querschnitt>selection.item(0).get('objekt');
+        if (this.selectQuerschnitte.getFeatures().getLength() < 1) return;
+        let querschnitt: Querschnitt[] = [];
+
+        let mStreifenVorhanden: boolean = false;
+        selection.forEach((feature) => {
+            let q = <Querschnitt>feature.get('objekt');
+            querschnitt.push(q);
+            if (q.getStreifen() == 'M') mStreifenVorhanden = true;
+        })
         console.log(querschnitt);
-        let streifen = querschnitt.getStreifen();
-        if (streifen == "M") {
+
+        if (mStreifenVorhanden) {
             this.askWhichSide(querschnitt);
         } else {
-            this.loadAufbaudaten(querschnitt, streifen);
+            this.querschnittErzeugen(querschnitt);
         }
+
         this.selectQuerschnitte.getFeatures().clear();
         this._info.hideInfoBox();
         this.disableMenu();
     }
 
-    private askWhichSide(querschnitt: Querschnitt) {
+    private askWhichSide(querschnittListe: Querschnitt[]) {
         let dialog = document.createElement("div");
         document.body.appendChild(dialog);
-        dialog.innerHTML = "Auf welcher Seite soll der Querschnitt hinzugefügt werden?"
+        dialog.innerHTML = "Auf welcher Seite sollen die Querschnittsflächen hinzugefügt werden? (sofern ein M-Streifen gewählt)"
         let jqueryDialog = $(dialog).dialog({
             resizable: false,
             height: "auto",
@@ -139,11 +164,11 @@ class QuerAddTool extends Tool {
             modal: true,
             buttons: {
                 "Links": () => {
-                    this.loadAufbaudaten(querschnitt, "L");
+                    this.querschnittErzeugen(querschnittListe, "L");
                     jqueryDialog.dialog("close");
                 },
                 "Rechts": () => {
-                    this.loadAufbaudaten(querschnitt, "R");
+                    this.querschnittErzeugen(querschnittListe, "R");
                     jqueryDialog.dialog("close");
                 },
                 "Abbrechen": function () {
@@ -217,83 +242,100 @@ class QuerAddTool extends Tool {
             PublicWFS.showMessage("Bestandsachse erzeugt")
             this.fehlendeBestandsAchseErzeugen();
             this.selectFehlende.getFeatures().clear()
-            let neuerStreifen = station.getStreifen('M')[0];
-            this.selectNewStreifen(neuerStreifen);
+            this.selectNewStreifen([{station: station, streifen: 'M', nr: 0}]);
         })
     }
 
-    private async loadAufbaudaten(querschnitt: Querschnitt, seite: "R" | "L"): Promise<void> {
-        await querschnitt.getStation().getAufbauDaten();
-        let gesStreifen = querschnitt.getStation().getStreifen(seite);
-        let querschnittNeu = new Querschnitt();
-        let querNeueNummer = querschnitt.getStreifennr() + 1;
-        querschnittNeu.setBreite(275);
-        querschnittNeu.setBisBreite(275);
-        querschnittNeu.setStreifen(seite)
+    private async querschnittErzeugen(querschnittListe: Querschnitt[], seiteWennM?: "R" | "L"): Promise<void> {
 
-        let strArray = []
-        for (let nnr in gesStreifen) {
-            if (Number(nnr) <= querschnitt.getStreifennr()) continue;
-            strArray.push(gesStreifen[nnr]);
-        }
+        let stationen: { [id: string]: QuerStation } = {};
+        let neueQuerschnitte: { station: QuerStation, streifen: 'L' | 'R', nr: number }[] = [];
 
-        for (let quer of strArray) {
-            gesStreifen[quer.getStreifennr() + 1] = quer;
-            quer.setStreifennr(quer.getStreifennr() + 1);
-            if (quer.getStreifen() == 'L') {
-                quer.setXBstR(quer.getXBstR() - querschnittNeu.getBisBreite() / 100);
-                quer.setXVstR(quer.getXVstR() - querschnittNeu.getBreite() / 100);
-                quer.setXBstL(quer.getXBstL() - querschnittNeu.getBisBreite() / 100);
-                quer.setXVstL(quer.getXVstL() - querschnittNeu.getBreite() / 100);
-            } else if (quer.getStreifen() == 'R') {
-                quer.setXBstL(quer.getXBstL() + querschnittNeu.getBisBreite() / 100);
-                quer.setXVstL(quer.getXVstL() + querschnittNeu.getBreite() / 100);
-                quer.setXBstR(quer.getXBstR() + querschnittNeu.getBisBreite() / 100);
-                quer.setXVstR(quer.getXVstR() + querschnittNeu.getBreite() / 100);
+        for (let querschnitt of querschnittListe) {
+            let seite = querschnitt.getStreifen();
+            if (seite == "M") seite = seiteWennM;
+
+            let station = querschnitt.getStation();
+            stationen[station.getAbschnitt().getAbschnittid() + "" + station.getVst()] = station;
+
+            await station.getAufbauDaten();
+            let gesStreifen = station.getStreifen(seite);
+            let querschnittNeu = new Querschnitt();
+
+            neueQuerschnitte.push({ station: station, streifen: seite, nr: querschnitt.getStreifennr() + 1 })
+            querschnittNeu.setBreite(275);
+            querschnittNeu.setBisBreite(275);
+            querschnittNeu.setStreifen(seite)
+
+            let strArray = []
+            for (let nnr in gesStreifen) {
+                if (Number(nnr) <= querschnitt.getStreifennr()) continue;
+                strArray.push(gesStreifen[nnr]);
             }
-            //quer.createGeom();
-            querschnitt.getStation().addQuerschnitt(quer);
+
+            for (let quer of strArray) {
+                gesStreifen[quer.getStreifennr() + 1] = quer;
+                quer.setStreifennr(quer.getStreifennr() + 1);
+                if (quer.getStreifen() == 'L') {
+                    quer.setXBstR(quer.getXBstR() - querschnittNeu.getBisBreite() / 100);
+                    quer.setXVstR(quer.getXVstR() - querschnittNeu.getBreite() / 100);
+                    quer.setXBstL(quer.getXBstL() - querschnittNeu.getBisBreite() / 100);
+                    quer.setXVstL(quer.getXVstL() - querschnittNeu.getBreite() / 100);
+                } else if (quer.getStreifen() == 'R') {
+                    quer.setXBstL(quer.getXBstL() + querschnittNeu.getBisBreite() / 100);
+                    quer.setXVstL(quer.getXVstL() + querschnittNeu.getBreite() / 100);
+                    quer.setXBstR(quer.getXBstR() + querschnittNeu.getBisBreite() / 100);
+                    quer.setXVstR(quer.getXVstR() + querschnittNeu.getBreite() / 100);
+                }
+                //quer.createGeom();
+                station.addQuerschnitt(quer);
+            }
+
+            if (seite == 'L') {
+                querschnittNeu.setXBstR(querschnitt.getXBstL());
+                querschnittNeu.setXVstR(querschnitt.getXVstL());
+                querschnittNeu.setXBstL(querschnittNeu.getXBstR() - querschnittNeu.getBisBreite() / 100);
+                querschnittNeu.setXVstL(querschnittNeu.getXVstR() - querschnittNeu.getBreite() / 100);
+            } else if (seite == 'R') {
+                querschnittNeu.setXBstL(querschnitt.getXBstR());
+                querschnittNeu.setXVstL(querschnitt.getXVstR());
+                querschnittNeu.setXBstR(querschnittNeu.getXBstL() + querschnittNeu.getBisBreite() / 100);
+                querschnittNeu.setXVstR(querschnittNeu.getXVstL() + querschnittNeu.getBreite() / 100);
+            }
+
+            querschnittNeu.setProjekt(querschnitt.getProjekt());
+            querschnittNeu.setStreifen(seite);
+            querschnittNeu.setStreifennr(querschnitt.getStreifennr() + 1);
+
+            let art = querschnitt.getArt();
+            if (!art) art = Klartext.getByKlartext('Itquerart', '999');
+            querschnittNeu.setArt(art);
+
+            let ober = querschnitt.getArtober()
+            if (!ober) ober = Klartext.getByKlartext('Itquerober', '00')
+            querschnittNeu.setArtober(ober);
+
+            querschnittNeu.setStation(querschnitt.getStation());
+            querschnittNeu.setVst(querschnitt.getVst());
+            querschnittNeu.setBst(querschnitt.getBst());
+            querschnittNeu.setAbschnittId(querschnitt.getAbschnittId());
+            console.log(gesStreifen)
+            gesStreifen[querschnittNeu.getStreifennr()] = querschnittNeu;
+            console.log(gesStreifen)
+            //querschnittNeu.createGeom();
+            station.addQuerschnitt(querschnittNeu);
         }
 
-        if (seite == 'L') {
-            querschnittNeu.setXBstR(querschnitt.getXBstL());
-            querschnittNeu.setXVstR(querschnitt.getXVstL());
-            querschnittNeu.setXBstL(querschnittNeu.getXBstR() - querschnittNeu.getBisBreite() / 100);
-            querschnittNeu.setXVstL(querschnittNeu.getXVstR() - querschnittNeu.getBreite() / 100);
-        } else if (seite == 'R') {
-            querschnittNeu.setXBstL(querschnitt.getXBstR());
-            querschnittNeu.setXVstL(querschnitt.getXVstR());
-            querschnittNeu.setXBstR(querschnittNeu.getXBstL() + querschnittNeu.getBisBreite() / 100);
-            querschnittNeu.setXVstR(querschnittNeu.getXVstL() + querschnittNeu.getBreite() / 100);
+        let stationRewriter: Promise<Querschnitt[]>[] = [];
+        for (let stationId in stationen) {
+            let station = stationen[stationId];
+            stationRewriter.push(station.rewrite())
         }
 
-        querschnittNeu.setProjekt(querschnitt.getProjekt());
-        querschnittNeu.setStreifen(seite);
-        querschnittNeu.setStreifennr(querschnitt.getStreifennr() + 1);
-
-        let art = querschnitt.getArt();
-        if (!art) art = Klartext.getByKlartext('Itquerart', '999');
-        querschnittNeu.setArt(art);
-
-        let ober = querschnitt.getArtober()
-        if (!ober) ober = Klartext.getByKlartext('Itquerober', '00')
-        querschnittNeu.setArtober(ober);
-
-        querschnittNeu.setStation(querschnitt.getStation());
-        querschnittNeu.setVst(querschnitt.getVst());
-        querschnittNeu.setBst(querschnitt.getBst());
-        querschnittNeu.setAbschnittId(querschnitt.getAbschnittId());
-        console.log(gesStreifen)
-        gesStreifen[querschnittNeu.getStreifennr()] = querschnittNeu;
-        console.log(gesStreifen)
-        //querschnittNeu.createGeom();
-        querschnitt.getStation().addQuerschnitt(querschnittNeu);
-
-        return querschnitt.getStation().rewrite()
+        return Promise.all(stationRewriter)
             .then(() => {
                 PublicWFS.showMessage("Erfolgreich");
-                let neuerStreifen = querschnitt.getStation().getStreifen(seite)[querNeueNummer]
-                this.selectNewStreifen(neuerStreifen);
+                this.selectNewStreifen(neueQuerschnitte);
                 return Promise.resolve();
             })
             .catch(() => {
@@ -302,13 +344,16 @@ class QuerAddTool extends Tool {
             })
     }
 
-    private selectNewStreifen(neuerStreifen: Querschnitt) {
+    private selectNewStreifen(neueStreifen: { station: QuerStation, streifen: 'M'| 'L' | 'R', nr: number }[]) {
         Querschnitt.getSelectFlaechen().getFeatures().clear();
-        Querschnitt.getSelectFlaechen().getFeatures().push(neuerStreifen);
         this.selectQuerschnitte.getFeatures().clear();
-        this.selectQuerschnitte.getFeatures().push(neuerStreifen.trenn);
-        this._info.getInfoFieldForFeature(neuerStreifen);
-        this.button.disabled = false;
+        for (let streifen of neueStreifen) {
+            let neuerStreifen = streifen.station.getStreifen(streifen.streifen)[streifen.nr]
+            Querschnitt.getSelectFlaechen().getFeatures().push(neuerStreifen);
+            this.selectQuerschnitte.getFeatures().push(neuerStreifen.trenn);
+        }
+
+        this.querschnittSelected()
     }
 }
 
