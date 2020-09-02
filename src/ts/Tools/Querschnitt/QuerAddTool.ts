@@ -1,27 +1,27 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import { Select as SelectInteraction } from 'ol/interaction';
-import Querschnitt from '../../Objekte/Querschnittsdaten';
-import QuerInfoTool from './QuerInfoTool';
-import Tool from '../prototypes/Tool';
-import HTML from '../../HTML';
-import { VectorLayer } from '../../openLayers/Layer';
-import Map from "../../openLayers/Map";
-import "../../import_jquery.js";
 import 'jquery-ui-bundle';
-import 'jquery-ui-bundle/jquery-ui.css'
-import PublicWFS from '../../PublicWFS';
-import Abschnitt, { StationObj } from '../../Objekte/Abschnitt';
-import VectorSource from 'ol/source/Vector';
+import 'jquery-ui-bundle/jquery-ui.css';
 import { Feature } from 'ol';
-import { LineString } from 'ol/geom';
-import { Style, Stroke } from 'ol/style';
-import Daten from '../../Daten';
-import QuerStation from '../../Objekte/QuerStation';
-import Klartext from '../../Objekte/Klartext';
-import { unByKey } from 'ol/Observable';
 import { EventsKey } from 'ol/events';
 import { platformModifierKeyOnly } from 'ol/events/condition';
+import { LineString } from 'ol/geom';
+import { Select as SelectInteraction } from 'ol/interaction';
+import { unByKey } from 'ol/Observable';
+import VectorSource from 'ol/source/Vector';
+import { Stroke, Style } from 'ol/style';
+import Daten from '../../Daten';
+import HTML from '../../HTML';
+import "../../import_jquery.js";
+import Abschnitt from '../../Objekte/Abschnitt';
+import Klartext from '../../Objekte/Klartext';
+import Querschnitt from '../../Objekte/Querschnittsdaten';
+import QuerStation from '../../Objekte/QuerStation';
+import { VectorLayer } from '../../openLayers/Layer';
+import Map from "../../openLayers/Map";
+import PublicWFS from '../../PublicWFS';
+import Tool from '../prototypes/Tool';
+import QuerInfoTool from './QuerInfoTool';
 
 /**
  * Funktion zum Hinzufügen von Querschnittsflächen
@@ -242,7 +242,7 @@ class QuerAddTool extends Tool {
             PublicWFS.showMessage("Bestandsachse erzeugt")
             this.fehlendeBestandsAchseErzeugen();
             this.selectFehlende.getFeatures().clear()
-            this.selectNewStreifen([{station: station, streifen: 'M', nr: 0}]);
+            this.selectNewStreifen([{ station: station, streifen: 'M', nr: 0 }]);
         })
     }
 
@@ -344,7 +344,7 @@ class QuerAddTool extends Tool {
             })
     }
 
-    private selectNewStreifen(neueStreifen: { station: QuerStation, streifen: 'M'| 'L' | 'R', nr: number }[]) {
+    private selectNewStreifen(neueStreifen: { station: QuerStation, streifen: 'M' | 'L' | 'R', nr: number }[]) {
         Querschnitt.getSelectFlaechen().getFeatures().clear();
         this.selectQuerschnitte.getFeatures().clear();
         for (let streifen of neueStreifen) {

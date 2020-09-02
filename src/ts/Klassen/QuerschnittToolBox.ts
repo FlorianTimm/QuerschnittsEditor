@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import Abschnitt from '../Objekte/Abschnitt';
+import Querschnitt from '../Objekte/Querschnittsdaten';
+import QuerStation from '../Objekte/QuerStation';
+import Map from '../openLayers/Map';
 import QuerAdd2ER from '../Tools/Querschnitt/QuerAdd2ER';
 import QuerAddTool from '../Tools/Querschnitt/QuerAddTool';
 import QuerDelTool from '../Tools/Querschnitt/QuerDelTool';
 import QuerInfoTool from '../Tools/Querschnitt/QuerInfoTool';
 import QuerModifyTool from '../Tools/Querschnitt/QuerModifyTool';
 import QuerPartTool from '../Tools/Querschnitt/QuerPartTool';
-import Map from '../openLayers/Map';
 import ToolBox from './ToolBox';
-import Querschnitt from '../Objekte/Querschnittsdaten';
-import Abschnitt from '../Objekte/Abschnitt';
-import QuerStation from '../Objekte/QuerStation';
 
 /**
  * QuerschnittsToolBox
@@ -41,7 +41,7 @@ export default class QuerschnittToolBox extends ToolBox {
         let layerStation = QuerStation.getLayer(this.map);
         this.layer.push(layerTrenn, layerQuer, layerStation);
 
-        this.infoTool = new QuerInfoTool(this.map, layerQuer, this.sidebar);
+        this.infoTool = new QuerInfoTool(this.map, this.sidebar);
         this.modifyTool = new QuerModifyTool(map, this.infoTool, this.sidebar, layerTrenn, layerStation);
         this.delTool = new QuerDelTool(map, this.infoTool);
         this.addTool = new QuerAddTool(map, this.infoTool);

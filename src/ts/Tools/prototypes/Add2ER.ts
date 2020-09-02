@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import { Style, Stroke } from 'ol/style';
 import { Select as SelectInteraction } from 'ol/interaction';
-import PublicWFS from '../../PublicWFS';
-import Tool from '../prototypes/Tool'
+import { Stroke, Style } from 'ol/style';
 import Daten from '../../Daten';
-import Map from "../../openLayers/Map";
 import Abschnitt from '../../Objekte/Abschnitt';
+import Map from "../../openLayers/Map";
+import PublicWFS from '../../PublicWFS';
 import WaitBlocker from '../../WaitBlocker';
+import Tool from '../prototypes/Tool';
 
 /**
  *

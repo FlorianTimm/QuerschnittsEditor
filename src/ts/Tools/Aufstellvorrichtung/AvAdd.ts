@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import PublicWFS from '../../PublicWFS';
-import Aufstellvorrichtung from '../../Objekte/Aufstellvorrichtung';
-import AddTool from '../prototypes/AddTool';
-import Map from "../../openLayers/Map";
-import Daten from '../../Daten';
 import VectorLayer from 'ol/layer/Vector';
+import Daten from '../../Daten';
+import Aufstellvorrichtung from '../../Objekte/Aufstellvorrichtung';
 import PunktObjekt from '../../Objekte/prototypes/PunktObjekt';
+import Map from "../../openLayers/Map";
+import PublicWFS from '../../PublicWFS';
+import AddTool from '../prototypes/AddTool';
 var CONFIG = require('../../config.json');
 
 /**

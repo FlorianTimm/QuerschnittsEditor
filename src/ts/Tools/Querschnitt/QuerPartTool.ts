@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import { Style, Stroke } from 'ol/style';
-import { Select as SelectInteraction } from 'ol/interaction';
-import Vektor from '../../Vektor';
-import VectorSource from 'ol/source/Vector';
-import { Vector as VectorLayer } from 'ol/layer';
-import { LineString } from 'ol/geom';
+import { MapBrowserPointerEvent } from 'ol';
+import { EventsKey } from 'ol/events';
 import Feature, { FeatureLike } from 'ol/Feature';
+import { LineString } from 'ol/geom';
+import { Select as SelectInteraction } from 'ol/interaction';
+import { Vector as VectorLayer } from 'ol/layer';
+import { unByKey } from 'ol/Observable';
+import VectorSource from 'ol/source/Vector';
+import { Stroke, Style } from 'ol/style';
+import HTML from '../../HTML';
+import Abschnitt, { StationObj } from '../../Objekte/Abschnitt';
+import Map from "../../openLayers/Map";
+import PublicWFS from '../../PublicWFS';
+import Vektor from '../../Vektor';
 import Tool from '../prototypes/Tool';
 import QuerInfoTool from './QuerInfoTool';
-import { MapBrowserPointerEvent, MapBrowserEvent } from 'ol';
-import Map from "../../openLayers/Map";
-import Abschnitt, { StationObj } from '../../Objekte/Abschnitt';
-import HTML from '../../HTML';
-import PublicWFS from '../../PublicWFS';
-import { EventsKey } from 'ol/events';
-import { unByKey } from 'ol/Observable';
 
 /**
  * Funktion zum Teilen von Querschnittsflächen

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import PublicWFS from '../../PublicWFS';
-import Map from "../../openLayers/Map";
 import Abschnitt from '../../Objekte/Abschnitt';
-import Add2ER from '../prototypes/Add2ER';
 import StrassenAusPunkt from '../../Objekte/StrassenAusPunkt';
+import Map from "../../openLayers/Map";
+import PublicWFS from '../../PublicWFS';
+import Add2ER from '../prototypes/Add2ER';
 
 /**
  * Querschnittsflächen zu Ereignisraum hinzufügen

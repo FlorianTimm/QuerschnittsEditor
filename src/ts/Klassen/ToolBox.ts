@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import { VectorLayer } from "../openLayers/Layer";
 import Map from "../openLayers/Map";
 import Tool from "../Tools/prototypes/Tool";
-import { VectorLayer } from "../openLayers/Layer";
 
 /**
  * Klasse zum Erzeugen von Werkzeugkästen zur Auswahl des Bearbeitungswerkzeuges

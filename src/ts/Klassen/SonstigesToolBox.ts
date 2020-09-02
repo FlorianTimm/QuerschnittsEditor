@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import ToolBox from "./ToolBox";
 import Map from "../openLayers/Map";
 import Measure from "../Tools/Measure";
+import ToolBox from "./ToolBox";
 
 /**
  * Klasse zum Erzeugen eines Werkzeugkasten

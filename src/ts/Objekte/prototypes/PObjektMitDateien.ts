@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import PrimaerObjekt from './PrimaerObjekt';
-import Dokument from '../Dokument';
 import PublicWFS from '../../PublicWFS';
+import Dokument from '../Dokument';
+import PrimaerObjekt from './PrimaerObjekt';
 
 /**
  *
@@ -18,7 +18,7 @@ export default abstract class PObjektMitDokument extends PrimaerObjekt {
 
         if (!this.dateienLoaded)
             this.reloadDokumente(blocking);
-        
+
         return this.dateienLoaded;
     }
 

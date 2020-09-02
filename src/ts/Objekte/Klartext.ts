@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import PublicWFS from '../PublicWFS';
 import HTML from '../HTML';
+import PublicWFS from '../PublicWFS';
 import WaitBlocker from '../WaitBlocker';
 
 export interface KlartextMap { [oid: string]: Klartext };

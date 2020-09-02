@@ -7,18 +7,17 @@
  * @license GPL-3.0-or-later
 */
 
-import PublicWFS from './PublicWFS';
-import "./import_jquery.js";
 import 'chosen-js';
 import 'chosen-js/chosen.css';
-import 'jquery-ui'
+import 'jquery-ui';
 import 'jquery-ui-bundle';
-import 'jquery-ui-bundle/jquery-ui.css'
+import 'jquery-ui-bundle/jquery-ui.css';
 import '../css/html_forms.css';
 import '../css/index.css';
-
 import HTML from './HTML';
-import { Collection } from 'ol';
+import "./import_jquery.js";
+import PublicWFS from './PublicWFS';
+
 
 window.addEventListener('load', function () { loadER() });
 

@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import ToolBox from "./ToolBox";
-import Map from "../openLayers/Map";
-import InfoTool from "../Tools/InfoTool";
-import AvAdd from "../Tools/Aufstellvorrichtung/AvAdd";
-import AvVzAdd from "../Tools/Aufstellvorrichtung/AvVzAdd";
-import MoveTool from "../Tools/MoveTool";
-import AvAdd2ER from "../Tools/Aufstellvorrichtung/AvAdd2ER";
-import DeleteTool from "../Tools/DeleteTool";
-import Aufstellvorrichtung from "../Objekte/Aufstellvorrichtung";
 import Abschnitt from "../Objekte/Abschnitt";
+import Aufstellvorrichtung from "../Objekte/Aufstellvorrichtung";
+import Map from "../openLayers/Map";
+import AvAdd from "../Tools/Aufstellvorrichtung/AvAdd";
+import AvAdd2ER from "../Tools/Aufstellvorrichtung/AvAdd2ER";
+import AvVzAdd from "../Tools/Aufstellvorrichtung/AvVzAdd";
+import DeleteTool from "../Tools/DeleteTool";
+import InfoTool from "../Tools/InfoTool";
+import MoveTool from "../Tools/MoveTool";
+import ToolBox from "./ToolBox";
 
 /**
  * Klasse zum Erzeugen eines Werkzeugkasten zur Bearbeitung von
@@ -37,7 +37,7 @@ export default class AufstellToolBox extends ToolBox {
         let layerAchse = Abschnitt.getLayer();
         this.layer.push(layerAufstell)
 
-        this.infoTool = new InfoTool(this.map, layerAufstell, this.sidebar, Aufstellvorrichtung.getSelect());
+        this.infoTool = new InfoTool(this.map, this.sidebar, Aufstellvorrichtung.getSelect());
         this.addTool = new AvAdd(this.map, sidebar, layerAchse);
         this.vzAddTool = new AvVzAdd(this.map);
         this.moveTool = new MoveTool(this.map, this.infoTool, Aufstellvorrichtung.getSelect());
