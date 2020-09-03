@@ -158,11 +158,6 @@ class QuerDelTool extends Tool {
         Querschnitt.setSelectFlaechenToggleCondition();
         unByKey(this.selectEventsKey)
 
-        if (this.selectFlaechen.getFeatures().getLength() > 1) {
-            this.selectFlaechen.getFeatures().clear();
-            this.selectLinien.getFeatures().clear();
-        }
-
         this.map.removeInteraction(this.selectLinien);
         this.map.removeInteraction(this.selectFlaechen);
         this.disableMenu()

@@ -32,6 +32,11 @@ export default class QuerInfoTool extends InfoTool {
 
     /** Startet das Werkzeug */
     public start() {
+
+        if (this.select.getFeatures().getLength() > 1) {
+            this.selectLinie.getFeatures().clear();
+            this.selectLinie.getFeatures().push((<Querschnitt>this.select.getFeatures().item(0)).trenn)
+        }
         super.start()
         // Flächenauswahl (zusätzlicher Listener zu dem vom InfoTool)
         this.map.addInteraction(this.selectLinie);

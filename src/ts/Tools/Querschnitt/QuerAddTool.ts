@@ -117,11 +117,6 @@ class QuerAddTool extends Tool {
         this.map.removeInteraction(this.selectQuerschnitte);
         Querschnitt.setSelectLinienToggleCondition();
 
-
-        if (this.selectQuerschnitte.getFeatures().getLength() > 1) {
-            this.selectQuerschnitte.getFeatures().clear();
-        }
-
         this.map.removeLayer(this.fehlendeQuerschnitte);
         this._info.hideInfoBox();
         unByKey(this.selectQuerschnitteEventsKey);

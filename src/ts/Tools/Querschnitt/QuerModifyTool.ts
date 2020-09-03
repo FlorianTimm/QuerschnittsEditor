@@ -436,11 +436,6 @@ export default class QuerModifyTool extends Tool {
         Querschnitt.setSelectFlaechenToggleCondition();
         unByKey(this.selectEventsKey)
 
-        if (this.selectFlaechen.getFeatures().getLength() > 1) {
-            this.selectFlaechen.getFeatures().clear();
-            this.selectLinien.getFeatures().clear();
-        }
-
         $(this.moveTypeForm).hide("fast");
         this.info.hideInfoBox();
         this.map.removeInteraction(this.selectLinien);

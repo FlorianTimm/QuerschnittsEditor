@@ -147,6 +147,13 @@ export default class InfoTool extends Tool {
 
     public start() {
         this.selectEventKey = this.select.on('select', this.featureSelectedEvent.bind(this));
+
+        if (this.select.getFeatures().getLength() > 1) {
+            let f = this.select.getFeatures().item(0);
+            this.select.getFeatures().clear()
+            this.select.getFeatures().push(f);
+        }
+
         this.featureSelect();
         this.map.addInteraction(this.select);
     }
