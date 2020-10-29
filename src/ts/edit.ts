@@ -252,15 +252,30 @@ function createMap() {
                     attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
                 })
             }),
+
+            new TileLayer({
+                name: 'LGV TrueDOP 2018',
+                visible: false,
+                switchable: true,
+                opacity: 1.0,
+                source: new TileWMS({
+                    url: 'https://geodienste.hamburg.de/HH_WMS_TrueDOP',
+                    params: {
+                        'LAYERS': 'tdop_hochaufloesend_89,tdop_hochaufloesend_downscale',
+                        'FORMAT': 'image/png'
+                    },
+                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
+                })
+            }),
             new TileLayer({
                 name: 'LGV DOP 2019 belaubt',
                 visible: false,
                 switchable: true,
                 opacity: 1.0,
                 source: new TileWMS({
-                    url: 'https://geodienste.hamburg.de/HH_WMS_DOP_belaubt',
+                    url: 'https://geodienste.hamburg.de/HH_WMS_DOP_hochaufloesend_belaubt',
                     params: {
-                        'LAYERS': '1',
+                        'LAYERS': 'DOP_hochaufloesend_belaubt_highres,DOP_hochaufloesend_belaubt_downscale',
                         'FORMAT': 'image/png'
                     },
                     attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
