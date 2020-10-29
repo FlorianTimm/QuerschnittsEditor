@@ -1,25 +1,24 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import { Select as SelectInteraction } from 'ol/interaction';
-import '../../../css/vzadd.css';
 import "../../import_jquery.js";
 import 'chosen-js';
 import 'chosen-js/chosen.css';
 import 'jquery-ui-bundle';
-import 'jquery-ui-bundle/jquery-ui.css'
-import PublicWFS from '../../PublicWFS';
-import Tool from '../prototypes/Tool';
-import Daten from '../../Daten';
-import Map from "../../openLayers/Map";
-import Zeichen from '../../Objekte/Zeichen';
+import 'jquery-ui-bundle/jquery-ui.css';
+import { EventsKey } from 'ol/events';
+import { never, pointerMove } from 'ol/events/condition';
+import { Select as SelectInteraction } from 'ol/interaction';
 import { SelectEvent } from 'ol/interaction/Select';
-import KlartextManager, { KlartextMap } from '../../Objekte/Klartext';
+import { unByKey } from 'ol/Observable';
+import '../../../css/vzadd.css';
+import Daten from '../../Daten';
 import HTML from '../../HTML';
 import Aufstellvorrichtung from '../../Objekte/Aufstellvorrichtung';
-import Klartext from '../../Objekte/Klartext';
-import { pointerMove, never } from 'ol/events/condition';
-import { EventsKey } from 'ol/events';
-import { unByKey } from 'ol/Observable';
+import { default as Klartext, default as KlartextManager } from '../../Objekte/Klartext';
+import Zeichen from '../../Objekte/Zeichen';
+import Map from "../../openLayers/Map";
+import PublicWFS from '../../PublicWFS';
+import Tool from '../prototypes/Tool';
 var CONFIG = require('../../config.json');
 
 /**
@@ -318,7 +317,7 @@ class AvVzAdd extends Tool {
 
         let update = ""
         let anzDelete = 0, anzUpdate = 0;
-        let zeichen = this.auswahl.getZeichen()
+        this.auswahl.getZeichen()
             .then((zeichen) => {
                 for (let oldZeichen_i in zeichen as Zeichen[]) {
                     let oldZeichen = zeichen[oldZeichen_i] as Zeichen;

@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import PublicWFS from '../../PublicWFS';
-import StrassenAusPunkt from '../../Objekte/StrassenAusPunkt';
-import AddTool from '../prototypes/AddTool';
-import Map from "../../openLayers/Map";
-import Daten from '../../Daten';
 import VectorLayer from 'ol/layer/Vector';
+import Daten from '../../Daten';
 import PunktObjekt from '../../Objekte/prototypes/PunktObjekt';
+import StrassenAusPunkt from '../../Objekte/StrassenAusPunkt';
+import Map from "../../openLayers/Map";
+import PublicWFS from '../../PublicWFS';
+import AddTool from '../prototypes/AddTool';
 
 var CONFIG = require('../../config.json');
 
@@ -21,7 +21,7 @@ export default class SAPAdd extends AddTool {
         super(map, sidebar, layerAchse);
     }
 
-    protected createForm():Promise<void[]>{
+    protected createForm(): Promise<void[]> {
         let form = StrassenAusPunkt.createForm(this.sidebar, undefined, true, false);
         this.form = form.form;
         let input = document.createElement("input");
@@ -36,7 +36,6 @@ export default class SAPAdd extends AddTool {
     private async addSAPButton(event: Event) {
         event.preventDefault();
         // im ER?
-        let load: Promise<StrassenAusPunkt>;
         if (!(this.abschnitt.isOKinER("Otstrauspkt"))) {
             await PublicWFS.addInER(this.abschnitt, "Otstrauspkt", Daten.getInstanz().ereignisraum_nr)
                 .then(() => { return StrassenAusPunkt.loadAbschnittER(this.abschnitt) })

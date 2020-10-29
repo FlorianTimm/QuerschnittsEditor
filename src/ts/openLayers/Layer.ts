@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import { Tile, Image, Vector } from "ol/layer";
-import { Options as TileOptionsOl } from "ol/layer/BaseTile";
+import { Image, Tile, Vector } from "ol/layer";
 import { Options as ImageOptionsOl } from "ol/layer/BaseImage";
+import { Options as TileOptionsOl } from "ol/layer/BaseTile";
 import { Options as VectorOptionsOl } from "ol/layer/BaseVector";
 import Daten from "../Daten";
 

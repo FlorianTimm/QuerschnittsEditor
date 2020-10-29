@@ -4,5 +4,7 @@
     "mocha.nycPath": "C:\\Program Files\\nodejs\\node_modules\\nyc",
     "mocha.requires": [
         "ts-node/register"
-    ]
+    ],
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true
 }

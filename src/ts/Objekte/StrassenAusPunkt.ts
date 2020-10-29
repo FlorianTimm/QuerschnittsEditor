@@ -1,19 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import PublicWFS from '../PublicWFS';
 import "../import_jquery.js";
 import 'chosen-js';
 import 'chosen-js/chosen.css';
-import Daten from "../Daten";
-import KlartextManager from './Klartext';
-import Abschnitt from './Abschnitt';
-import PunktObjekt from './prototypes/PunktObjekt';
-import HTML from '../HTML';
-import { VectorLayer } from '../openLayers/Layer';
 import { Map } from 'ol';
-import Klartext from './Klartext';
-import { SelectInteraction } from '../openLayers/Interaction';
 import { never } from 'ol/events/condition';
+import Daten from "../Daten";
+import HTML from '../HTML';
+import { SelectInteraction } from '../openLayers/Interaction';
+import { VectorLayer } from '../openLayers/Layer';
+import PublicWFS from '../PublicWFS';
+import Abschnitt from './Abschnitt';
+import { default as Klartext, default as KlartextManager } from './Klartext';
+import PunktObjekt from './prototypes/PunktObjekt';
 
 /**
  * Strassenausstrattung (punktuell)

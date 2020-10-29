@@ -1,13 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import Abschnitt from './Objekte/Abschnitt'
+import Abschnitt from './Objekte/Abschnitt';
 import PrimaerObjekt from './Objekte/prototypes/PrimaerObjekt';
 import WaitBlocker from './WaitBlocker';
-import Objekt from './Objekte/prototypes/Objekt';
-import SekundaerObjekt from './Objekte/prototypes/SekundaerObjekt';
 var CONFIG = require('./config.json');
-
-type xmlCallback = (xml: Document, ...args: any[]) => void
 
 /**
  * Schnittstelle zum PublicWFS

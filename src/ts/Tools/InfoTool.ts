@@ -1,20 +1,19 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import { Select as SelectInteraction } from 'ol/interaction';
-import Map from '../openLayers/Map';
-import Tool from './prototypes/Tool';
-import { SelectEvent } from 'ol/interaction/Select';
-import { Feature } from 'ol';
 import "../import_jquery.js";
-import HTML from '../HTML';
-import { Style, Stroke, Fill } from 'ol/style';
-import GeometryType from 'ol/geom/GeometryType';
-import CircleStyle from 'ol/style/Circle';
+import { Feature } from 'ol';
 import { FeatureLike } from 'ol/Feature';
-import PublicWFS from '../PublicWFS';
-import { VectorLayer } from '../openLayers/Layer';
 import { Geometry } from 'ol/geom';
+import GeometryType from 'ol/geom/GeometryType';
+import { Select as SelectInteraction } from 'ol/interaction';
+import { SelectEvent } from 'ol/interaction/Select';
 import { unByKey } from 'ol/Observable';
+import { Fill, Stroke, Style } from 'ol/style';
+import CircleStyle from 'ol/style/Circle';
+import HTML from '../HTML';
+import Map from '../openLayers/Map';
+import PublicWFS from '../PublicWFS';
+import Tool from './prototypes/Tool';
 
 /**
  * Funktion zum Anzeigen von Informationen zu Aufstellvorrichtungen und Schildern
@@ -23,15 +22,13 @@ import { unByKey } from 'ol/Observable';
  * @license GPL-3.0-or-later
 */
 export default class InfoTool extends Tool {
-    private layer: VectorLayer;
     private infoField: HTMLFormElement;
     protected select: SelectInteraction;
     protected lastFeature: InfoToolOverlay;
     selectEventKey: any;
 
-    constructor(map: Map, layer: VectorLayer, sidebar: HTMLDivElement, selectInteraction: SelectInteraction) {
+    constructor(map: Map, sidebar: HTMLDivElement, selectInteraction: SelectInteraction) {
         super(map);
-        this.layer = layer;
 
         this.select = selectInteraction;
 
@@ -150,6 +147,13 @@ export default class InfoTool extends Tool {
 
     public start() {
         this.selectEventKey = this.select.on('select', this.featureSelectedEvent.bind(this));
+
+        if (this.select.getFeatures().getLength() > 1) {
+            let f = this.select.getFeatures().item(0);
+            this.select.getFeatures().clear()
+            this.select.getFeatures().push(f);
+        }
+
         this.featureSelect();
         this.map.addInteraction(this.select);
     }

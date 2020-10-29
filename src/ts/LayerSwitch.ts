@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import Control from 'ol/control/Control.js';
-import { Options as ControlOptions } from 'ol/control/Control.js';
-import '../css/layerswitch.css';
+import Control, { Options as ControlOptions } from 'ol/control/Control.js';
 import BaseLayer from 'ol/layer/Base';
+import '../css/layerswitch.css';
 
 /**
  * OpenLayers-Control zum Wechseln des Layers

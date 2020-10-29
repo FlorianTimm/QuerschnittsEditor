@@ -8,29 +8,27 @@
  */
 
 import 'babel-polyfill';
-import { MapEvent, View } from 'ol';
+import { View } from 'ol';
 import { defaults as defaultControls, ScaleLine, ZoomSlider } from 'ol/control';
 import { defaults as defaultInteractions } from 'ol/interaction';
-import { Layer } from 'ol/layer';
+import BaseLayer from 'ol/layer/Base';
 import { fromLonLat, toLonLat, transform } from 'ol/proj';
 import { register } from 'ol/proj/proj4';
 import { TileWMS as TileWMS } from 'ol/source';
 import OSM from 'ol/source/OSM';
 import proj4 from 'proj4';
 import Daten from './Daten';
+import AufstellToolBox from './Klassen/AufstellToolBox';
+import AusstPktToolBox from './Klassen/AusstPktToolBox';
+import QuerschnittToolBox from './Klassen/QuerschnittToolBox';
+import SonstigesToolBox from './Klassen/SonstigesToolBox';
+import ToolBox from './Klassen/ToolBox';
 import LayerSwitch from './LayerSwitch';
-import Measure from './Tools/Measure';
+import Abschnitt from './Objekte/Abschnitt';
 import { TileLayer } from './openLayers/Layer';
 import Map from './openLayers/Map';
 import PublicWFS from './PublicWFS';
-import QuerschnittToolBox from './Klassen/QuerschnittToolBox';
-import AufstellToolBox from './Klassen/AufstellToolBox';
-import AusstPktToolBox from './Klassen/AusstPktToolBox';
-import ToolBox from './Klassen/ToolBox';
-import Abschnitt from './Objekte/Abschnitt';
-import SonstigesToolBox from './Klassen/SonstigesToolBox';
-import BaseLayer from 'ol/layer/Base';
-import BaseEvent from 'ol/events/Event';
+import Measure from './Tools/Measure';
 
 var CONFIG: { [name: string]: string } = require('./config.json');
 
@@ -254,15 +252,30 @@ function createMap() {
                     attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
                 })
             }),
+
+            new TileLayer({
+                name: 'LGV TrueDOP 2018',
+                visible: false,
+                switchable: true,
+                opacity: 1.0,
+                source: new TileWMS({
+                    url: 'https://geodienste.hamburg.de/HH_WMS_TrueDOP',
+                    params: {
+                        'LAYERS': 'tdop_hochaufloesend_89,tdop_hochaufloesend_downscale',
+                        'FORMAT': 'image/png'
+                    },
+                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
+                })
+            }),
             new TileLayer({
                 name: 'LGV DOP 2019 belaubt',
                 visible: false,
                 switchable: true,
                 opacity: 1.0,
                 source: new TileWMS({
-                    url: 'https://geodienste.hamburg.de/HH_WMS_DOP_belaubt',
+                    url: 'https://geodienste.hamburg.de/HH_WMS_DOP_hochaufloesend_belaubt',
                     params: {
-                        'LAYERS': '1',
+                        'LAYERS': 'DOP_hochaufloesend_belaubt_highres,DOP_hochaufloesend_belaubt_downscale',
                         'FORMAT': 'image/png'
                     },
                     attributions: ['Freie und Hansestadt Hamburg, LGV 2019']

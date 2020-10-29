@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import { Select as SelectInteraction } from 'ol/interaction';
 import { never } from 'ol/events/condition';
+import { Select as SelectInteraction } from 'ol/interaction';
 import Querschnitt from '../../Objekte/Querschnittsdaten';
-import InfoTool from '../InfoTool';
 import Map from '../../openLayers/Map';
-import { VectorLayer } from '../../openLayers/Layer';
+import InfoTool from '../InfoTool';
 
 /**
  * Funktion zum Anzeigen von Informationen über Querschnitte
@@ -24,8 +23,8 @@ export default class QuerInfoTool extends InfoTool {
      * @param layerFlaechen Layer mit den Querschnittsflächen
      * @param sidebar DIV-Bereich, in dem das Tool angezeigt wird
      */
-    constructor(map: Map, layerFlaechen: VectorLayer, sidebar: HTMLDivElement) {
-        super(map, layerFlaechen, sidebar, Querschnitt.getSelectFlaechen());
+    constructor(map: Map, sidebar: HTMLDivElement) {
+        super(map, sidebar, Querschnitt.getSelectFlaechen());
 
         // Linienauswahl, erfolgt nur indirekt durch Flächenauswahl
         this.selectLinie = Querschnitt.getSelectLinien();
@@ -33,6 +32,11 @@ export default class QuerInfoTool extends InfoTool {
 
     /** Startet das Werkzeug */
     public start() {
+
+        if (this.select.getFeatures().getLength() > 1) {
+            this.selectLinie.getFeatures().clear();
+            this.selectLinie.getFeatures().push((<Querschnitt>this.select.getFeatures().item(0)).trenn)
+        }
         super.start()
         // Flächenauswahl (zusätzlicher Listener zu dem vom InfoTool)
         this.map.addInteraction(this.selectLinie);

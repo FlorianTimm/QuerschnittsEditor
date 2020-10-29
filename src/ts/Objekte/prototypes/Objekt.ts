@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import Abschnitt from "../Abschnitt";
 import { Feature } from "ol";
+import { LineString, Point, Polygon } from "ol/geom";
+import Abschnitt from "../Abschnitt";
 import Klartext from "../Klartext";
-import { LineString, Polygon, Point } from "ol/geom";
 
 var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../../config_wfs.json');
 
@@ -67,7 +67,7 @@ export default abstract class Objekt extends Feature<Polygon | Point | LineStrin
 
 			xml += '	<wfs:Property>\n' +
 				'		<wfs:Name>' + update + '</wfs:Name>\n' +
-				'		<wfs:Value>' + (wert??'') + '</wfs:Value>\n' +
+				'		<wfs:Value>' + (wert ?? '') + '</wfs:Value>\n' +
 				'	</wfs:Property>\n';
 		}
 		xml += '	<ogc:Filter>\n' +

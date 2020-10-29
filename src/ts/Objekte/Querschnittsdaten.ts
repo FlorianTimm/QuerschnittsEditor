@@ -1,23 +1,23 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import { Feature, Map } from 'ol';
+import { Condition, never, singleClick } from 'ol/events/condition';
+import { FeatureLike } from 'ol/Feature';
 import { MultiLineString, Polygon } from 'ol/geom';
+import VectorSource from 'ol/source/Vector';
+import { Fill, Stroke, Style, Text } from 'ol/style';
 import Daten from '../Daten';
+import HTML from '../HTML';
 import Abschnitt from '../Objekte/Abschnitt';
 import Aufbau from '../Objekte/Aufbaudaten';
-import PublicWFS from '../PublicWFS';
-import Vektor from '../Vektor';
-import QuerStation from './QuerStation';
-import Klartext from './Klartext';
-import HTML from '../HTML';
-import InfoTool, { InfoToolEditable } from '../Tools/InfoTool';
-import PrimaerObjekt from './prototypes/PrimaerObjekt';
-import { VectorLayer } from '../openLayers/Layer';
-import VectorSource from 'ol/source/Vector';
-import { Style, Stroke, Text, Fill } from 'ol/style';
-import { FeatureLike } from 'ol/Feature';
 import { SelectInteraction } from '../openLayers/Interaction';
-import { never, Condition, singleClick } from 'ol/events/condition';
+import { VectorLayer } from '../openLayers/Layer';
+import PublicWFS from '../PublicWFS';
+import InfoTool, { InfoToolEditable } from '../Tools/InfoTool';
+import Vektor from '../Vektor';
+import Klartext from './Klartext';
+import PrimaerObjekt from './prototypes/PrimaerObjekt';
+import QuerStation from './QuerStation';
 
 /**
  * Querschnittsdaten
@@ -53,6 +53,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     private static selectLinien: SelectInteraction;
     private static selectLinienCondition: Condition = singleClick;
     private static selectFlaechenToggleCondition: Condition = never;
+    private static selectLinienToggleCondition: Condition = never;
 
     constructor() {
         super();
@@ -313,6 +314,16 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         });
     }
 
+    private static createUpdateBreiteXML(querschnitte: Querschnitt[]) {
+        let updates = "";
+        console.log(querschnitte)
+        for (let querschnitt of querschnitte) {
+            updates += querschnitt.createUpdateBreiteXML();
+        }
+        console.log(updates)
+        return updates;
+    }
+
     public updateArtEinzeln(art: string): Promise<Document> {
         this.setArt(art);
         Querschnitt.getLayerFlaechen().getSource().changed();
@@ -360,16 +371,18 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
     public editBreite(breiteVst: number, breiteBst: number, folgende_anpassen: boolean = false, angrenzende_mitziehen: boolean = false): Promise<Document> {
         // alle Transaktionen durchführen
         return PublicWFS.doTransaction(
-            this.checkAndEditBreitenEdit(breiteVst, breiteBst, folgende_anpassen, angrenzende_mitziehen)
+            Querschnitt.createUpdateBreiteXML(
+                this.checkAndEditBreitenEdit(breiteVst, breiteBst, folgende_anpassen, angrenzende_mitziehen)
+            )
         );
     }
 
-    private checkAndEditBreitenEdit(breiteVst: number, breiteBst: number, folgende_anpassen: boolean = false, angrenzende_mitziehen: boolean = false): string {
+    private checkAndEditBreitenEdit(breiteVst: number, breiteBst: number, folgende_anpassen: boolean = false, angrenzende_mitziehen: boolean = false): Querschnitt[] {
         if (breiteVst < 0) breiteVst = 0;
         if (breiteBst < 0) breiteBst = 0;
         this.breite = Math.round(breiteVst);
         this.bisBreite = Math.round(breiteBst);
-        let update = "";
+        let update: Querschnitt[] = [];
 
         // Variablen mit bisherigen Werten initialisieren = ohne Änderung => alter Wert
         let xvstr_neu = this.XVstR;
@@ -407,39 +420,69 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
         // nachfolgende Querschnitte bearbeiten
         if (this.streifen == "L" || this.streifen == "M")
-            update += this.editNext("L", folgende_anpassen, diffVstL, diffBstL);
+            update.push(...this.editNext("L", folgende_anpassen, diffVstL, diffBstL));
         if (this.streifen == "R" || this.streifen == "M")
-            update += this.editNext("R", folgende_anpassen, diffVstR, diffBstR);
+            update.push(...this.editNext("R", folgende_anpassen, diffVstR, diffBstR));
 
         // Geometrie des Querschnittes neu zeichnen und Update-XML für this erzeugen
         this.createGeom();
-        update += this.createUpdateBreiteXML();
+        update.push(this);
 
         // angrenzende Querschnitte bearbeiten
         if (angrenzende_mitziehen)
-            update += this.angrenzendeMitziehen(folgende_anpassen, diffVstR, diffBstR, diffVstL, diffBstL);
+            update.push(...this.angrenzendeMitziehen(folgende_anpassen, diffVstR, diffBstR, diffVstL, diffBstL));
+        console.log(update)
         return update;
     }
 
-    private angrenzendeMitziehen(folgende_anpassen: boolean, diffVstR: number, diffBstR: number, diffVstL: number, diffBstL: number): string {
-        if (diffVstR == 0 && diffVstL == 0 && diffBstR == 0 && diffBstL == 0) return "";
+    public static updateMultiBreite(querschnitte: Querschnitt[], breite?: number, bisBreite?: number): Promise<Document> {
+        if (breite && breite < 0) breite = 0;
+        if (bisBreite && bisBreite < 0) bisBreite = 0;
+
+        let querschnitteNeu: Querschnitt[] = [];
+
+        for (let querschnitt of querschnitte) {
+            querschnitteNeu.push(...querschnitt.checkAndEditBreitenEdit(breite ?? querschnitt.getBreite(), bisBreite ?? querschnitt.getBisBreite()));
+        }
+        console.log(querschnitteNeu)
+        let dupRem = {}
+        let querNeuUnique = []
+        for (let querschnitt of querschnitteNeu) {
+            if (!(querschnitt.getObjektId() in dupRem)) {
+                querNeuUnique.push(querschnitt);
+                dupRem[querschnitt.getObjektId()] = true;
+            }
+        }
+
+        return PublicWFS.doTransaction(Querschnitt.createUpdateBreiteXML(querNeuUnique))
+    }
+
+    private angrenzendeMitziehen(folgende_anpassen: boolean, diffVstR: number, diffBstR: number, diffVstL: number, diffBstL: number): Querschnitt[] {
+        if (diffVstR == 0 && diffVstL == 0 && diffBstR == 0 && diffBstL == 0) return [];
 
         let querschnitt_nachbar: Querschnitt;
+        let querschnitte: Querschnitt[] = [];
 
         if (diffVstR != 0 || diffVstL != 0) {
             // VST editiert
             let station = this.getStation().getAbschnitt().getStationByBST(this.getVst());
-            if (station == null) return "";
+            if (station == null) return [];
             querschnitt_nachbar = station.getQuerschnittByBstAbstand(this.XVstL - diffVstL, this.XVstR - diffVstR);
-        } else if (diffBstR != 0 || diffBstL != 0) {
-            // BST editiert
-            let station = this.getStation().getAbschnitt().getStationByVST(this.getBst());
-            if (station == null) return "";
-            querschnitt_nachbar = station.getQuerschnittByVstAbstand(this.XBstL - diffBstL, this.XBstR - diffBstR);
+            querschnitte.push(...this.berechneNachbarQuerschnitt(querschnitt_nachbar, diffBstL, diffBstR, diffVstL, diffVstR, folgende_anpassen));
         }
 
-        if (!querschnitt_nachbar) return "";
+        if (diffBstR != 0 || diffBstL != 0) {
+            // BST editiert
+            let station = this.getStation().getAbschnitt().getStationByVST(this.getBst());
+            if (station == null) return [];
+            querschnitt_nachbar = station.getQuerschnittByVstAbstand(this.XBstL - diffBstL, this.XBstR - diffBstR);
+            querschnitte.push(...this.berechneNachbarQuerschnitt(querschnitt_nachbar, diffBstL, diffBstR, diffVstL, diffVstR, folgende_anpassen));
+        }
 
+        return querschnitte;
+    }
+
+    private berechneNachbarQuerschnitt(querschnitt_nachbar: Querschnitt, diffBstL: number, diffBstR: number, diffVstL: number, diffVstR: number, folgende_anpassen: boolean) {
         let xvstl = querschnitt_nachbar.getXVstL() + diffBstL;
         let xvstr = querschnitt_nachbar.getXVstR() + diffBstR;
         let xbstl = querschnitt_nachbar.getXBstL() + diffVstL;
@@ -448,19 +491,22 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
         let breiteVst = Math.round((xvstr - xvstl) * 100);
         let breiteBst = Math.round((xbstr - xbstl) * 100);
 
-        return querschnitt_nachbar.checkAndEditBreitenEdit(breiteVst, breiteBst, folgende_anpassen, false)
+        return querschnitt_nachbar.checkAndEditBreitenEdit(breiteVst, breiteBst, folgende_anpassen, false);
     }
 
-    private editNext(seite: "L" | "R", folgenden_anpassen: boolean = false, diffVst: number = 0, diffBst: number = 0): string {
+    private editNext(seite: "L" | "R", folgenden_anpassen: boolean = false, diffVst: number = 0, diffBst: number = 0): Querschnitt[] {
+        let updates = []
         if (folgenden_anpassen) {
             //TODO: Es könnte passieren, dass eine Seite an die Grenze des nächsten kommt bei M-Streifen
-            return this.folgendeQuerschnitteAnpassen(seite)
+            updates = this.folgendeQuerschnitteAnpassen(seite)
         } else {
-            return this.folgendeQuerschnitteVerschieben(seite, diffVst, diffBst)
+            updates = this.folgendeQuerschnitteVerschieben(seite, diffVst, diffBst)
         }
+        console.log(updates)
+        return updates;
     }
 
-    private folgendeQuerschnitteAnpassen(seite: "L" | "R"): string {
+    private folgendeQuerschnitteAnpassen(seite: "L" | "R"): Querschnitt[] {
         let naechster = this.getStation().getQuerschnitt(seite, this.streifennr + 1);
         if (naechster != null) {
             if (seite == "L") {
@@ -485,20 +531,20 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             naechster.bisBreite = Math.abs(Math.round((naechster.XBstL - naechster.XBstR) * 100));
 
             naechster.createGeom();
-            return naechster.createUpdateBreiteXML();
+            return [naechster];
         }
-        return "";
+        return [];
     }
 
-    private folgendeQuerschnitteVerschieben(seite: "L" | "R", diffVst: number, diffBst: number): string {
-        let update = "";
+    private folgendeQuerschnitteVerschieben(seite: "L" | "R", diffVst: number, diffBst: number): Querschnitt[] {
+        let update: Querschnitt[] = [];
 
         let i = this.streifennr;
         let naechster = null;
         while ((naechster = this.getStation().getQuerschnitt(seite, ++i)) != null) {
             naechster.verschieben(diffVst, diffBst);
             naechster.createGeom();
-            update += naechster.createUpdateBreiteXML();
+            update.push(naechster)
         }
 
         this.getStation().getStreifen(seite)
@@ -673,7 +719,7 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
             Querschnitt.selectLinien = new SelectInteraction({
                 layers: [Querschnitt.getLayerTrenn()],
                 hitTolerance: 10,
-                toggleCondition: never,
+                toggleCondition: (e) => Querschnitt.selectLinienToggleCondition(e),
                 condition: (e) => Querschnitt.selectLinienCondition(e),
                 style: InfoTool.selectStyle
             });
@@ -689,6 +735,10 @@ export default class Querschnitt extends PrimaerObjekt implements InfoToolEditab
 
     static setSelectLinienCondition(condition: Condition = singleClick) {
         Querschnitt.selectLinienCondition = condition;
+    }
+
+    static setSelectLinienToggleCondition(condition: Condition = never) {
+        Querschnitt.selectLinienToggleCondition = condition;
     }
 
     static setSelectFlaechenToggleCondition(condition: Condition = never) {

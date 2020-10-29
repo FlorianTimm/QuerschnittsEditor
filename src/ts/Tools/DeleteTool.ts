@@ -1,16 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import { Select as SelectInteraction } from 'ol/interaction';
-import Tool from './prototypes/Tool';
-import Map from "../openLayers/Map";
-import Daten from '../Daten';
-import { SelectEvent } from 'ol/interaction/Select';
-import { InfoToolSelectable } from './InfoTool';
-import PublicWFS from '../PublicWFS';
-import PunktObjekt from '../Objekte/prototypes/PunktObjekt';
-import HTML from '../HTML';
 import VectorLayer from 'ol/layer/Vector';
 import { unByKey } from 'ol/Observable';
+import Daten from '../Daten';
+import HTML from '../HTML';
+import PunktObjekt from '../Objekte/prototypes/PunktObjekt';
+import Map from "../openLayers/Map";
+import PublicWFS from '../PublicWFS';
+import { InfoToolSelectable } from './InfoTool';
+import Tool from './prototypes/Tool';
 
 /**
  * Prototyp des Werkzeuges zum Löschen von Punktobjekten

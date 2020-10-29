@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import Objekt from "./Objekt";
 import Klartext from "../Klartext";
+import Objekt from "./Objekt";
 
 /**
  *

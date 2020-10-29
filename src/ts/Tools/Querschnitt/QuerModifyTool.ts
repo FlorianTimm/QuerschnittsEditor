@@ -1,30 +1,30 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import { Snap } from 'ol/interaction';
-import { platformModifierKeyOnly, never } from 'ol/events/condition';
-import QuerInfoTool from './QuerInfoTool';
-import { Feature, MapBrowserEvent } from 'ol';
-import Tool from '../prototypes/Tool';
-import { SelectInteraction, ModifyInteraction } from '../../openLayers/Interaction'
-import { ModifyEvent } from 'ol/interaction/Modify';
-import Querschnitt from '../../Objekte/Querschnittsdaten';
-import { MultiLineString, Point, LineString, Geometry } from 'ol/geom';
-import HTML from '../../HTML';
-import KlartextManager from '../../Objekte/Klartext';
-import Map from "../../openLayers/Map";
 import "../../import_jquery.js";
 import 'chosen-js';
 import 'chosen-js/chosen.css';
 import 'jquery-ui-bundle';
-import 'jquery-ui-bundle/jquery-ui.css'
-import VectorLayer from 'ol/layer/Vector';
-import VectorSource from 'ol/source/Vector';
-import { Circle, Style, Stroke, Fill } from 'ol/style';
-import { FeatureLike } from 'ol/Feature';
-import Vektor from '../../Vektor';
-import PublicWFS from '../../PublicWFS';
-import { unByKey } from 'ol/Observable';
+import 'jquery-ui-bundle/jquery-ui.css';
+import { Feature, MapBrowserEvent } from 'ol';
 import { EventsKey } from 'ol/events';
+import { click, never, platformModifierKeyOnly } from 'ol/events/condition';
+import { FeatureLike } from 'ol/Feature';
+import { LineString, MultiLineString, Point } from 'ol/geom';
+import { Snap } from 'ol/interaction';
+import { ModifyEvent } from 'ol/interaction/Modify';
+import VectorLayer from 'ol/layer/Vector';
+import { unByKey } from 'ol/Observable';
+import VectorSource from 'ol/source/Vector';
+import { Circle, Fill, Stroke, Style } from 'ol/style';
+import HTML from '../../HTML';
+import KlartextManager from '../../Objekte/Klartext';
+import Querschnitt from '../../Objekte/Querschnittsdaten';
+import { ModifyInteraction, SelectInteraction } from '../../openLayers/Interaction';
+import Map from "../../openLayers/Map";
+import PublicWFS from '../../PublicWFS';
+import Vektor from '../../Vektor';
+import Tool from '../prototypes/Tool';
+import QuerInfoTool from './QuerInfoTool';
 
 /**
  * Funktion zum Verändern von Querschnittsflächen
@@ -41,6 +41,9 @@ export default class QuerModifyTool extends Tool {
     private snapStation: Snap;
     private multiEditForm: HTMLFormElement;
     private multiCountInput: HTMLInputElement;
+    private multiBreite: HTMLInputElement;
+    private multiBisBreite: HTMLInputElement;
+    private multiBreiteButton: HTMLInputElement;
     private multiArtSelect: HTMLSelectElement;
     private multiOberSelect: HTMLSelectElement;
     private moveTypeForm: HTMLFormElement;
@@ -48,7 +51,7 @@ export default class QuerModifyTool extends Tool {
     private modifyOverlayLayer: VectorLayer;
     private sidebar: HTMLDivElement;
     private pointermove: EventsKey;
-    selectEventsKey: EventsKey;
+    private selectEventsKey: EventsKey;
 
     constructor(map: Map, info: QuerInfoTool, sidebar: HTMLDivElement, layerTrenn: VectorLayer, layerStation: VectorLayer) {
         super(map);
@@ -79,6 +82,12 @@ export default class QuerModifyTool extends Tool {
         if (this.multiEditForm) return;
         this.multiEditForm = HTML.createToolForm(this.sidebar, false, "qsMultiMod");
 
+        this.multiBreite = HTML.createNumberInput(this.multiEditForm, "Breite", "qsmm_breite");
+        this.multiBisBreite = HTML.createNumberInput(this.multiEditForm, "Bis Breite", "qsmm_bisBreite");
+
+        $(this.multiBreite).on("change", this.updateMultiBreite.bind(this))
+        $(this.multiBisBreite).on("change", this.updateMultiBisBreite.bind(this))
+
         let art = KlartextManager.createKlartextSelectForm("Itquerart", this.multiEditForm, "Art", 'qsmm_art', undefined, "- verschiedene -")
         this.multiArtSelect = art.select;
 
@@ -93,6 +102,9 @@ export default class QuerModifyTool extends Tool {
             $(this.multiOberSelect).on("change", this.updateMultiOber.bind(this));
         });
     }
+
+
+
 
     private createModify() {
         this.modifyLayer = new VectorLayer({
@@ -118,7 +130,7 @@ export default class QuerModifyTool extends Tool {
             source: new VectorSource(),
             style: new Style({
                 stroke: new Stroke({
-                    color: 'rgba(50,50,50,0.5)', width: 3
+                    color: 'rgba(255,255,0,0.7)', width: 3
                 })
             })
         });
@@ -296,17 +308,26 @@ export default class QuerModifyTool extends Tool {
 
         let art = selection[0].getArt() ? selection[0].getArt().getXlink() : null;
         let ober = selection[0].getArtober() ? selection[0].getArtober().getXlink() : null;
+        let breite = selection[0].getBreite();
+        let bisBreite = selection[0].getBisBreite();
         for (let querschnitt of selection) {
             if (art != (querschnitt.getArt() ? querschnitt.getArt().getXlink() : null))
                 art = null;
             if (ober != (querschnitt.getArtober() ? querschnitt.getArtober().getXlink() : null))
                 ober = null;
-            if (art == null && ober == null)
+            if (breite != querschnitt.getBreite())
+                breite = null;
+            if (bisBreite != querschnitt.getBisBreite())
+                bisBreite = null;
+            if (art == null && ober == null && breite == null && bisBreite == null)
                 break;
         }
+
         this.multiCountInput.value = selection.length.toString();
         $(this.multiArtSelect).val(art);
         $(this.multiOberSelect).val(ober);
+        $(this.multiBreite).val(breite);
+        $(this.multiBisBreite).val(bisBreite);
 
         $(this.multiArtSelect).trigger("chosen:updated");
         $(this.multiOberSelect).trigger("chosen:updated");
@@ -332,7 +353,28 @@ export default class QuerModifyTool extends Tool {
         });
     }
 
-    private updateMultiArt(): Promise<void> {
+    private async updateMultiBreite() {
+        let breite = parseInt(this.multiBreite.value);
+        this.updateMultiVonUndBisBreite(breite, undefined)
+    }
+
+    private async updateMultiBisBreite() {
+        let bisbreite = parseInt(this.multiBisBreite.value);
+        this.updateMultiVonUndBisBreite(undefined, bisbreite)
+    }
+
+    private async updateMultiVonUndBisBreite(breite?: number, bisbreite?: number) {
+        try {
+            await Querschnitt.updateMultiBreite(this.selectFlaechen.getFeatures().getArray() as Querschnitt[], breite, bisbreite);
+            PublicWFS.showMessage("Erfolgreich");
+            Promise.resolve();
+        } catch (e) {
+            PublicWFS.showMessage("Fehler", true);
+            Promise.reject();
+        }
+    }
+
+    private async updateMultiArt(): Promise<void> {
         let querschnitte = this.selectFlaechen.getFeatures().getArray() as Querschnitt[];
         let art = this.multiArtSelect.value;
 
@@ -342,19 +384,18 @@ export default class QuerModifyTool extends Tool {
                 querschnitt.updateArtEinzeln(art)
             );
         }
-        return Promise.all(tasks)
-            .then(() => {
-                PublicWFS.showMessage("Erfolgreich")
-                Promise.resolve()
-            })
-            .catch(() => {
-                PublicWFS.showMessage("Fehler", true)
-                Promise.reject()
-            });
+        try {
+            await Promise.all(tasks);
+            PublicWFS.showMessage("Erfolgreich");
+            Promise.resolve();
+        } catch (e) {
+            PublicWFS.showMessage("Fehler", true);
+            Promise.reject();
+        }
     }
 
 
-    private updateMultiOber(): Promise<void> {
+    private async updateMultiOber(): Promise<void> {
         let querschnitte = this.selectFlaechen.getFeatures().getArray() as Querschnitt[];
         let artober = this.multiOberSelect.value;
 
@@ -364,15 +405,14 @@ export default class QuerModifyTool extends Tool {
                 querschnitt.updateOberEinzeln(artober)
             );
         }
-        return Promise.all(tasks)
-            .then(() => {
-                PublicWFS.showMessage("Erfolgreich")
-                Promise.resolve()
-            })
-            .catch(() => {
-                PublicWFS.showMessage("Fehler", true)
-                Promise.reject()
-            });
+        try {
+            await Promise.all(tasks);
+            PublicWFS.showMessage("Erfolgreich");
+            Promise.resolve();
+        } catch (e) {
+            PublicWFS.showMessage("Fehler", true);
+            Promise.reject();
+        }
     }
 
     public start() {
@@ -395,11 +435,6 @@ export default class QuerModifyTool extends Tool {
         Querschnitt.setSelectLinienCondition();
         Querschnitt.setSelectFlaechenToggleCondition();
         unByKey(this.selectEventsKey)
-
-        if (this.selectFlaechen.getFeatures().getLength() > 1) {
-            this.selectFlaechen.getFeatures().clear();
-            this.selectLinien.getFeatures().clear();
-        }
 
         $(this.moveTypeForm).hide("fast");
         this.info.hideInfoBox();
