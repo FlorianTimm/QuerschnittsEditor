@@ -132,6 +132,10 @@ form#quer_del input[type="button"]:disabled {
     background-color: rgba(212, 255, 214, 0.8);
 }
 
+#tab_Linien.ui-widget-content {
+    background-color: rgba(234, 202, 255, 0.8);
+}
+
 #steuerung_sonstige {
     background-color: rgba(212, 212, 212, 0.8);
     padding: 6px 12px;

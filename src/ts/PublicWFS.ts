@@ -12,6 +12,8 @@ var CONFIG = require('./config.json');
  * @license GPL-3.0-or-later
 */
 export default class PublicWFS {
+    static capabilities: null | Promise<Document> = null;
+    static describeFeature: {};
     private static doSoapRequestWFS(xml: string): Promise<Document> {
         return PublicWFS.doSoapRequest(CONFIG.PUBLIC_WFS_URL, xml);
     }
@@ -250,5 +252,18 @@ export default class PublicWFS {
             window.setTimeout(ausblenden, 5000);
         }
         m.style.display = 'block';
+    }
+
+    public static async getCapabilities(): Promise<Document> {
+        if (this.capabilities == null)
+            this.capabilities = PublicWFS.doGetRequest("SERVICE=WFS&REQUEST=GetCapabilities");
+        return this.capabilities;
+    }
+
+    public static async describeFeatureType(featureType: string): Promise<Document> {
+        if (!this.describeFeature) this.describeFeature = {};
+        if (!(featureType in this.describeFeature))
+            this.describeFeature[featureType] = PublicWFS.doGetRequest("SERVICE=WFS&REQUEST=DescribeFeatureType&TYPENAME=" + featureType);
+        return this.describeFeature[featureType];
     }
 }

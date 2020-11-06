@@ -20,6 +20,7 @@ import proj4 from 'proj4';
 import Daten from './Daten';
 import AufstellToolBox from './Klassen/AufstellToolBox';
 import AusstPktToolBox from './Klassen/AusstPktToolBox';
+import LinienToolBox from './Klassen/LinienToolBox';
 import QuerschnittToolBox from './Klassen/QuerschnittToolBox';
 import SonstigesToolBox from './Klassen/SonstigesToolBox';
 import ToolBox from './Klassen/ToolBox';
@@ -61,7 +62,8 @@ window.addEventListener('load', function () {
     new QuerschnittToolBox(map, sidebar);
     let atb = new AufstellToolBox(map, sidebar);
     new AusstPktToolBox(map, sidebar);
-    new SonstigesToolBox(map, sidebar)
+    new LinienToolBox(map, sidebar);
+    new SonstigesToolBox(map, sidebar);
     atb.start()
     Abschnitt.getLayer(map);
 
