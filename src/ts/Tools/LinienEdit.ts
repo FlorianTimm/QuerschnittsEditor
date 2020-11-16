@@ -1,3 +1,4 @@
+import { read } from "fs";
 import { platformModifierKeyOnly } from "ol/events/condition";
 import { Style, Stroke } from "ol/style";
 import HTML from "../HTML";
@@ -14,6 +15,7 @@ export default class LinienEditor extends Tool {
     private sidebar: HTMLDivElement;
     selectBox: HTMLFormElement;
     objektKlasseSelect: HTMLSelectElement;
+    chosen: JQuery<HTMLElement>;
 
     constructor(map: Map, sidebar: HTMLDivElement) {
         super(map)
@@ -55,7 +57,7 @@ export default class LinienEditor extends Tool {
     private async createObjektKlassenSelect() {
         this.selectBox = HTML.createToolForm(this.sidebar);
         this.objektKlasseSelect = HTML.createSelectForm(this.selectBox, "Objektklasse", "select_objektklasse");
-        let chosen = $(this.objektKlasseSelect).chosen({ width: "99%", search_contains: true, no_results_text: "Keine Übereinstimmung gefunden für ", placeholder_text_single: "Lädt..." });
+        this.chosen = $(this.objektKlasseSelect).chosen({ width: "99%", search_contains: true, no_results_text: "Keine Übereinstimmung gefunden für ", placeholder_text_single: "Lädt..." });
         let capabilities = await PublicWFS.getCapabilities();
         let objektklassen = capabilities.getElementsByTagName("FeatureType")
 
@@ -67,21 +69,169 @@ export default class LinienEditor extends Tool {
             let name = "";
             if (objektklasse.getElementsByTagName("Name").length > 0)
                 name = objektklasse.getElementsByTagName("Name").item(0).textContent
+
+            if (name != "Otstrausstr" &&
+                name != "Otbahnigkeit" &&
+                name != "Otwassereinlstr" &&
+                name != "Otlaermschutz" &&
+                name != "Otpolzrev" &&
+                name != "Otraschutz" &&
+                name != "Othindernis" &&
+                name != "Otunterhalt" &&
+                name != "Otparkstand" &&
+                name != "Otschutzein" &&
+                name != "Otschutzpl" &&
+                name != "Otbflaechen" &&
+                name != "Otstadium" &&
+                name != "Otgestattung" &&
+                name != "Otrechtlausbau" &&
+                name != "Otstrecke" &&
+                name != "Otgeschwind" &&
+                name != "Otfussrueck" &&
+                name != "Otfktast" &&
+                name != "Otvfreigabe" &&
+                name != "Otbauwerke" &&
+                name != "Otstrausser" &&
+                name != "Otamt" &&
+                name != "Otfahrstr" &&
+                name != "Otueberlag" &&
+                name != "Otwegeart" &&
+                name != "Otbaulast" &&
+                name != "Otwidmung" &&
+                name != "Otbusstreifen" &&
+                name != "Otnetzabsart" &&
+                name != "Otbegleitgr" &&
+                name != "Otkreisverkehr" &&
+                name != "Otbauklasse" &&
+                name != "Otzone" &&
+                name != "Otschutzwand" &&
+                name != "Otabsebene" &&
+                name != "Otvstaerke" &&
+                name != "Otbusbucht" &&
+                name != "Otleitung" &&
+                name != "Otumstufung" &&
+                name != "Otrastanlage" &&
+                name != "Otjoker" &&
+                name != "Otteilnetz" &&
+                name != "Otmassnahmen" &&
+                name != "Otschumwelt" &&
+                name != "Otuebernahme")
+                continue
+
             let titel = "";
             if (objektklasse.getElementsByTagName("Title").length > 0)
                 titel = objektklasse.getElementsByTagName("Title").item(0).textContent
             HTML.createSelectNode(this.objektKlasseSelect, titel, name);
         }
         this.objektKlasseSelect.value = null;
-        chosen.chosen('destroy');
-        chosen.chosen({ width: "99%", search_contains: true, no_results_text: "Keine Übereinstimmung gefunden für ", placeholder_text_single: "Auswahl..." });
+        this.chosen.chosen('destroy');
+        this.chosen.chosen({ width: "99%", search_contains: true, no_results_text: "Keine Übereinstimmung gefunden für ", placeholder_text_single: "Auswahl..." });
 
-        chosen.on("change", this.okSelected.bind(this))
+        this.chosen.on("change", this.okSelected.bind(this))
     }
 
-    private okSelected(e: Event) {
-        PublicWFS.describeFeatureType(this.objektKlasseSelect.value)
-        this.objektKlasseSelect.value = null;
+    private async okSelected(e: Event) {
+        let desc = await PublicWFS.describeFeatureType(this.objektKlasseSelect.value)
+        let liste = desc.getElementsByTagNameNS("http://www.w3.org/2001/XMLSchema", "element")
+        let popup = document.createElement("div");
 
+        let form = HTML.createFormGroup(popup)
+
+
+        for (let index = 0; index < liste.length; index++) {
+            let element = liste.item(index);
+            let name = element.getAttribute("name")
+
+            // Nicht notwendig, meist wegen Vorgabewerten
+            if (name == "" ||
+                name == "projekt" ||
+                name == "vtkNummer" ||
+                name == "vnkLfd" ||
+                name == "vzusatz" ||
+                name == "ntkNummer" ||
+                name == "nnkLfd" ||
+                name == "nzusatz" ||
+                name == "gisreferenz" ||
+                name == "abschnittId" ||
+                name == "objektId" ||
+                name == "vst" ||
+                name == "bst")
+                continue
+
+            // bei manchen sinnvoll
+            if (name == "rabstbaVst" ||
+                name == "rlageVst" ||
+                name == "labstbaVst" ||
+                name == "llageVst" ||
+                name == "rabstbaBst" ||
+                name == "rlageBst" ||
+                name == "labstbaBst" ||
+                name == "llageBst")
+                continue
+            if (name == "baujahrGew" ||
+                name == "abnahmeGew" ||
+                name == "dauerGew" ||
+                name == "ablaufGew")
+                continue
+
+            let title = element.getElementsByTagNameNS("http://xml.novasib.de", "title")
+            let readOnly = element.getElementsByTagNameNS("http://xml.novasib.de", "readOnly")
+            let typeName = element.getElementsByTagNameNS("http://xml.novasib.de", "typeName")
+            let virtual = element.getElementsByTagNameNS("http://xml.novasib.de", "virtual")
+
+            if (readOnly.length > 0 ||
+                title.length == 0 ||
+                virtual.length > 0)
+                continue
+
+            let pflichtAttr = element.getElementsByTagNameNS("http://xml.novasib.de", "pflicht")
+            let datentyp = desc.getElementsByTagNameNS("http://www.w3.org/2001/XMLSchema", "restriction")
+            let laenge = desc.getElementsByTagNameNS("http://www.w3.org/2001/XMLSchema", "maxLength")
+
+
+
+
+            let pflicht = false;
+            if (pflichtAttr.length > 0) pflicht = true;
+
+
+            let input = null;
+            if (typeName.length > 0) {
+                if (typeName.item(0).innerHTML == "Projekt") continue
+                input = Klartext.createKlartextSelectForm(typeName.item(0).innerHTML, form, title.item(0).innerHTML, name, undefined, (pflicht ? undefined : 'Auswahl...'))
+                continue
+            }
+
+            if (datentyp.length > 0) {
+                switch (datentyp.item(0).getAttribute("type")) {
+                    case "xsd:date":
+                        input = HTML.createDateInput(form, title.item(0).innerHTML, element.getAttribute("name"))
+                        break
+                    case "xsd:integer":
+                        input = HTML.createTextInput(form, title.item(0).innerHTML, element.getAttribute("name"))
+                        input.setAttribute("type", "number")
+                        input.setAttribute("step", "1");
+                        break
+                    case "xsd:float":
+                        input = HTML.createTextInput(form, title.item(0).innerHTML, element.getAttribute("name"))
+                        input.setAttribute("type", "number")
+                        input.setAttribute("step", "0.01")
+                        break
+                    case "xsd:string":
+                        input = HTML.createTextInput(form, title.item(0).innerHTML, element.getAttribute("name"))
+                        if (laenge.length > 0) input.setAttribute("length", laenge.item(0).getAttribute("value"))
+                        break
+                }
+            }
+
+            //required = pflicht
+
+
+        }
+
+        $(form).dialog();
+
+        this.objektKlasseSelect.value = null;
+        this.chosen.trigger("chosen:updated");
     }
 }
