@@ -139,6 +139,7 @@ export default class LinienEditor extends Tool {
         let form = document.createElement("form");
         popup.appendChild(form)
 
+        let inputs: { [index: string]: HTMLInputElement | HTMLSelectElement } = {};
 
         for (let index = 0; index < liste.length; index++) {
             let element = liste.item(index);
@@ -146,6 +147,7 @@ export default class LinienEditor extends Tool {
 
             // Nicht notwendig, meist wegen Vorgabewerten
             if (name == "" ||
+                name == "enr" ||
                 name == "projekt" ||
                 name == "vtkNummer" ||
                 name == "vnkLfd" ||
@@ -187,8 +189,8 @@ export default class LinienEditor extends Tool {
                 continue
 
             let pflichtAttr = element.getElementsByTagNameNS("http://xml.novasib.de", "pflicht")
-            let datentyp = desc.getElementsByTagNameNS("http://www.w3.org/2001/XMLSchema", "restriction")
-            let laenge = desc.getElementsByTagNameNS("http://www.w3.org/2001/XMLSchema", "maxLength")
+            let datentyp = element.getElementsByTagNameNS("http://www.w3.org/2001/XMLSchema", "restriction")
+            let laenge = element.getElementsByTagNameNS("http://www.w3.org/2001/XMLSchema", "maxLength")
 
 
 
@@ -197,46 +199,63 @@ export default class LinienEditor extends Tool {
             if (pflichtAttr.length > 0) pflicht = true;
 
 
-            let input = null;
+            inputs[name] = null;
             if (typeName.length > 0) {
                 if (typeName.item(0).innerHTML == "Projekt") continue
-                input = Klartext.createKlartextSelectForm(typeName.item(0).innerHTML, form, title.item(0).innerHTML, name, undefined, (pflicht ? undefined : 'Auswahl...'))
+                //console.log(name)
+                inputs[name] = Klartext.createKlartextSelectForm(typeName.item(0).innerHTML, form, title.item(0).innerHTML, name, undefined, (pflicht ? undefined : 'Auswahl...')).select
                 continue
             }
 
             if (datentyp.length > 0) {
-                switch (datentyp.item(0).getAttribute("type")) {
+                //console.log(datentyp.item(0).getAttribute("base"))
+                switch (datentyp.item(0).getAttribute("base")) {
                     case "xsd:date":
-                        input = HTML.createDateInput(form, title.item(0).innerHTML, element.getAttribute("name"))
+                        inputs[name] = HTML.createDateInput(form, title.item(0).innerHTML, element.getAttribute("name"))
                         break
                     case "xsd:integer":
-                        input = HTML.createTextInput(form, title.item(0).innerHTML, element.getAttribute("name"))
-                        input.setAttribute("type", "number")
-                        input.setAttribute("step", "1");
+                        inputs[name] = HTML.createTextInput(form, title.item(0).innerHTML, element.getAttribute("name"))
+                        inputs[name].setAttribute("type", "number")
+                        inputs[name].setAttribute("step", "1");
                         break
                     case "xsd:float":
-                        input = HTML.createTextInput(form, title.item(0).innerHTML, element.getAttribute("name"))
-                        input.setAttribute("type", "number")
-                        input.setAttribute("step", "0.01")
+                        inputs[name] = HTML.createTextInput(form, title.item(0).innerHTML, element.getAttribute("name"))
+                        inputs[name].setAttribute("type", "number")
+                        inputs[name].setAttribute("step", "0.01")
                         break
                     case "xsd:string":
-                        input = HTML.createTextInput(form, title.item(0).innerHTML, element.getAttribute("name"))
-                        if (laenge.length > 0) input.setAttribute("length", laenge.item(0).getAttribute("value"))
+                        inputs[name] = HTML.createTextInput(form, title.item(0).innerHTML, element.getAttribute("name"))
+                        if (laenge.length > 0) inputs[name].setAttribute("length", laenge.item(0).getAttribute("value"))
                         break
                 }
             }
 
-            if (input && pflicht) input.setAttribute("required", "required")
+            if (inputs[name] && pflicht) inputs[name].setAttribute("required", "required")
 
 
         }
+        let checkbox = HTML.createFormGroup(form)
+        inputs['vorher_loeschen'] = HTML.createCheckbox(checkbox, "Bisherige Einträge löschen", "loeschen", "Bisherige Einträge löschen")
+        let submit = HTML.createButton(form, "Hinzufügen", "hinzu");
+        submit.style.clear = 'both';
 
-        HTML.createCheckbox(form, "Bisherige Einträge löschen", "loeschen", "Bisherige Einträge löschen")
-        HTML.createButton(form, "Hinzufügen", "hinzu")
 
-        $(popup).dialog();
+
+        $(popup).dialog({
+            width: 700
+        });
+
+        submit.addEventListener('click', () => {
+            this.absenden(this.objektKlasseSelect.value, inputs);
+            $(popup).dialog('close');
+        })
 
         this.objektKlasseSelect.value = null;
         this.chosen.trigger("chosen:updated");
+    }
+
+    private absenden(objKlasse: string, inputs: { [index: string]: HTMLInputElement | HTMLSelectElement }) {
+        console.log(objKlasse, inputs);
+        PublicWFS
     }
 }
