@@ -1,4 +1,3 @@
-import { read } from "fs";
 import { platformModifierKeyOnly } from "ol/events/condition";
 import { Style, Stroke } from "ol/style";
 import HTML from "../HTML";
@@ -8,6 +7,7 @@ import { SelectInteraction } from "../openLayers/Interaction";
 import Map from "../openLayers/Map";
 import PublicWFS from "../PublicWFS";
 import Tool from "./prototypes/Tool";
+import "../../css/linienEdit.css"
 
 
 export default class LinienEditor extends Tool {
@@ -134,8 +134,10 @@ export default class LinienEditor extends Tool {
         let desc = await PublicWFS.describeFeatureType(this.objektKlasseSelect.value)
         let liste = desc.getElementsByTagNameNS("http://www.w3.org/2001/XMLSchema", "element")
         let popup = document.createElement("div");
+        popup.id = "linienEdit"
 
-        let form = HTML.createFormGroup(popup)
+        let form = document.createElement("form");
+        popup.appendChild(form)
 
 
         for (let index = 0; index < liste.length; index++) {
@@ -224,12 +226,15 @@ export default class LinienEditor extends Tool {
                 }
             }
 
-            //required = pflicht
+            if (input && pflicht) input.setAttribute("required", "required")
 
 
         }
 
-        $(form).dialog();
+        HTML.createCheckbox(form, "Bisherige Einträge löschen", "loeschen", "Bisherige Einträge löschen")
+        HTML.createButton(form, "Hinzufügen", "hinzu")
+
+        $(popup).dialog();
 
         this.objektKlasseSelect.value = null;
         this.chosen.trigger("chosen:updated");
