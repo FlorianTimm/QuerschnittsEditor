@@ -8,6 +8,7 @@ import Map from "../openLayers/Map";
 import PublicWFS from "../PublicWFS";
 import Tool from "./prototypes/Tool";
 import "../../css/linienEdit.css"
+import Daten from "../Daten";
 
 
 export default class LinienEditor extends Tool {
@@ -130,8 +131,9 @@ export default class LinienEditor extends Tool {
         this.chosen.on("change", this.okSelected.bind(this))
     }
 
-    private async okSelected(e: Event) {
-        let desc = await PublicWFS.describeFeatureType(this.objektKlasseSelect.value)
+    private async okSelected() {
+        let objKlasse = this.objektKlasseSelect.value;
+        let desc = await PublicWFS.describeFeatureType(objKlasse)
         let liste = desc.getElementsByTagNameNS("http://www.w3.org/2001/XMLSchema", "element")
         let popup = document.createElement("div");
         popup.id = "linienEdit"
@@ -139,7 +141,9 @@ export default class LinienEditor extends Tool {
         let form = document.createElement("form");
         popup.appendChild(form)
 
-        let inputs: { [index: string]: HTMLInputElement | HTMLSelectElement } = {};
+        let inputFields: { [index: string]: HTMLInputElement | HTMLSelectElement } = {};
+        let fieldType: { [index: string]: 'Klartext' | 'integer' | 'date' | 'string' | 'float' } = {}
+        let klartextType: { [index: string]: string } = {};
 
         for (let index = 0; index < liste.length; index++) {
             let element = liste.item(index);
@@ -199,11 +203,11 @@ export default class LinienEditor extends Tool {
             if (pflichtAttr.length > 0) pflicht = true;
 
 
-            inputs[name] = null;
+            inputFields[name] = null;
             if (typeName.length > 0) {
-                if (typeName.item(0).innerHTML == "Projekt") continue
-                //console.log(name)
-                inputs[name] = Klartext.createKlartextSelectForm(typeName.item(0).innerHTML, form, title.item(0).innerHTML, name, undefined, (pflicht ? undefined : 'Auswahl...')).select
+                inputFields[name] = Klartext.createKlartextSelectForm(typeName.item(0).innerHTML, form, title.item(0).innerHTML, name, undefined, (pflicht ? undefined : 'Auswahl...')).select
+                fieldType[name] = 'Klartext';
+                klartextType[name] = typeName.item(0).innerHTML;
                 continue
             }
 
@@ -211,51 +215,108 @@ export default class LinienEditor extends Tool {
                 //console.log(datentyp.item(0).getAttribute("base"))
                 switch (datentyp.item(0).getAttribute("base")) {
                     case "xsd:date":
-                        inputs[name] = HTML.createDateInput(form, title.item(0).innerHTML, element.getAttribute("name"))
+                        inputFields[name] = HTML.createDateInput(form, title.item(0).innerHTML, element.getAttribute("name"))
+                        fieldType[name] = 'date';
                         break
                     case "xsd:integer":
-                        inputs[name] = HTML.createTextInput(form, title.item(0).innerHTML, element.getAttribute("name"))
-                        inputs[name].setAttribute("type", "number")
-                        inputs[name].setAttribute("step", "1");
+                        inputFields[name] = HTML.createTextInput(form, title.item(0).innerHTML, element.getAttribute("name"))
+                        inputFields[name].setAttribute("type", "number")
+                        inputFields[name].setAttribute("step", "1");
+                        fieldType[name] = 'integer';
                         break
                     case "xsd:float":
-                        inputs[name] = HTML.createTextInput(form, title.item(0).innerHTML, element.getAttribute("name"))
-                        inputs[name].setAttribute("type", "number")
-                        inputs[name].setAttribute("step", "0.01")
+                        inputFields[name] = HTML.createTextInput(form, title.item(0).innerHTML, element.getAttribute("name"))
+                        inputFields[name].setAttribute("type", "number")
+                        inputFields[name].setAttribute("step", "0.01")
+                        fieldType[name] = 'float';
                         break
                     case "xsd:string":
-                        inputs[name] = HTML.createTextInput(form, title.item(0).innerHTML, element.getAttribute("name"))
-                        if (laenge.length > 0) inputs[name].setAttribute("length", laenge.item(0).getAttribute("value"))
+                        inputFields[name] = HTML.createTextInput(form, title.item(0).innerHTML, element.getAttribute("name"))
+                        if (laenge.length > 0) inputFields[name].setAttribute("length", laenge.item(0).getAttribute("value"))
+                        fieldType[name] = 'string';
                         break
                 }
             }
 
-            if (inputs[name] && pflicht) inputs[name].setAttribute("required", "required")
+            if (inputFields[name] && pflicht) inputFields[name].setAttribute("required", "required")
 
 
         }
         let checkbox = HTML.createFormGroup(form)
-        inputs['vorher_loeschen'] = HTML.createCheckbox(checkbox, "Bisherige Einträge löschen", "loeschen", "Bisherige Einträge löschen")
-        let submit = HTML.createButton(form, "Hinzufügen", "hinzu");
-        submit.style.clear = 'both';
-
+        inputFields['vorher_loeschen'] = HTML.createCheckbox(checkbox, "Bisherige Einträge löschen", "loeschen", "Bisherige Einträge löschen")
 
 
         $(popup).dialog({
-            width: 700
+            width: 700,
+            modal: true,
+            buttons: {
+                'bisherige Einträge': () => {
+                    this.bisherigeEintraege(objKlasse)
+                },
+                'Speichern': () => {
+                    this.absenden(objKlasse, inputFields, fieldType, klartextType);
+                    $(popup).dialog('close');
+                }
+            }
         });
-
-        submit.addEventListener('click', () => {
-            this.absenden(this.objektKlasseSelect.value, inputs);
-            $(popup).dialog('close');
-        })
 
         this.objektKlasseSelect.value = null;
         this.chosen.trigger("chosen:updated");
     }
 
-    private absenden(objKlasse: string, inputs: { [index: string]: HTMLInputElement | HTMLSelectElement }) {
-        console.log(objKlasse, inputs);
-        PublicWFS
+    private absenden(objKlasse: string,
+        inputFields: { [index: string]: HTMLInputElement | HTMLSelectElement },
+        fieldType: { [index: string]: 'Klartext' | 'integer' | 'date' | 'string' | 'float' },
+        klartextType: { [index: string]: string }) {
+        console.log(objKlasse, inputFields);
+
+        let xml = '<wfs:Insert>\n';
+        let promise: Promise<any>[] = [];
+        this.select.getFeatures().forEach((feature) => {
+            xml += '<' + objKlasse + '>';
+            let abschnitt = <Abschnitt>feature;
+            xml += this.xmlCreate('projekt', 'Klartext', Daten.getInstanz().ereignisraum, 'Projekt');
+            xml += this.xmlCreate('abschnittId', 'string', abschnitt.getAbschnittid());
+            xml += this.xmlCreate('vst', 'integer', 0);
+            xml += this.xmlCreate('bst', 'integer', abschnitt.getLen());
+
+            for (let attribut in inputFields) {
+                if (attribut == 'vorher_loeschen' || !inputFields[attribut].value) continue;
+                xml += this.xmlCreate(attribut, fieldType[attribut], inputFields[attribut].value, klartextType[attribut]);
+            }
+            xml += '</' + objKlasse + '>';
+            promise.push(PublicWFS.addInER(abschnitt, objKlasse, Daten.getInstanz().ereignisraum_nr));
+        });
+        xml += '</wfs:Insert>\n';
+        console.log(xml);
+        Promise.all(promise).then(() => { return PublicWFS.doTransaction(xml) }).then(() => PublicWFS.showMessage('erfolgreich'));
+    }
+
+    private xmlCreate(attribut: string, fieldType: 'Klartext' | 'integer' | 'date' | 'string' | 'float', wert: any, klartextType?: string): string {
+        if (fieldType != 'Klartext') {
+            // Kein Klartext
+            return '<' + attribut + '>' + wert + '</' + attribut + '>\n';
+        } else {
+            // Klartext
+            return '<' + attribut + ' xlink:href="' + wert + '" typeName="' + klartextType + '" />\n';
+        }
+    }
+
+
+    private bisherigeEintraege(objKlasse: string) {
+        let promise: Promise<any>[] = [];
+        let filter = '<Filter><And>'
+            + '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
+            '<Literal>' + Daten.getInstanz().ereignisraum + '</Literal></PropertyIsEqualTo><Or>';
+        this.select.getFeatures().forEach((feature) => {
+            filter += '<PropertyIsEqualTo><PropertyName>abschnittId</PropertyName>' +
+                '<Literal>' + (<Abschnitt>feature).getAbschnittid() + '</Literal></PropertyIsEqualTo>'
+            promise.push(PublicWFS.addInER(<Abschnitt>feature, objKlasse, Daten.getInstanz().ereignisraum_nr));
+        });
+        filter += '</Or></And></Filter>'
+        Promise.all(promise).then(() => {
+            return PublicWFS.doQuery(objKlasse, filter);
+        })
+
     }
 }

@@ -124,7 +124,7 @@ export default class Klartext {
 
     public static getAllSorted(klartext: string): Klartext[] {
         let sortable = Klartext.getAll(klartext)
-        if (sortable == null) return null;
+        if (sortable == null) return [];
         //console.log(klartext)
         sortable.sort(function (a: Klartext, b: Klartext) {
             if (!a.getKt()) return -1;
