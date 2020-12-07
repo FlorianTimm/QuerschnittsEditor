@@ -9,6 +9,7 @@ import PublicWFS from "../PublicWFS";
 import Tool from "./prototypes/Tool";
 import "../../css/linienEdit.css"
 import Daten from "../Daten";
+import { EINTR } from "constants";
 
 
 export default class LinienEditor extends Tool {
@@ -17,6 +18,35 @@ export default class LinienEditor extends Tool {
     selectBox: HTMLFormElement;
     objektKlasseSelect: HTMLSelectElement;
     chosen: JQuery<HTMLElement>;
+
+    private ueberspringen = ['enr',
+        'projekt',
+        'vtkNummer',
+        'vnkLfd',
+        'vzusatz',
+        'ntkNummer',
+        'nnkLfd',
+        'nzusatz',
+        'gisreferenz',
+        'abschnittId',
+        'objektId',
+        'vst',
+        'bst',
+        'rabstbaVst',
+        'rlageVst',
+        'labstbaVst',
+        'llageVst',
+        'rabstbaBst',
+        'rlageBst',
+        'labstbaBst',
+        'llageBst',
+        'baujahrGew',
+        'abnahmeGew',
+        'dauerGew',
+        'ablaufGew',
+        'geometry',
+        'hasSekObj']
+
 
     constructor(map: Map, sidebar: HTMLDivElement) {
         super(map)
@@ -149,38 +179,7 @@ export default class LinienEditor extends Tool {
             let element = liste.item(index);
             let name = element.getAttribute("name")
 
-            // Nicht notwendig, meist wegen Vorgabewerten
-            if (name == "" ||
-                name == "enr" ||
-                name == "projekt" ||
-                name == "vtkNummer" ||
-                name == "vnkLfd" ||
-                name == "vzusatz" ||
-                name == "ntkNummer" ||
-                name == "nnkLfd" ||
-                name == "nzusatz" ||
-                name == "gisreferenz" ||
-                name == "abschnittId" ||
-                name == "objektId" ||
-                name == "vst" ||
-                name == "bst")
-                continue
-
-            // bei manchen sinnvoll
-            if (name == "rabstbaVst" ||
-                name == "rlageVst" ||
-                name == "labstbaVst" ||
-                name == "llageVst" ||
-                name == "rabstbaBst" ||
-                name == "rlageBst" ||
-                name == "labstbaBst" ||
-                name == "llageBst")
-                continue
-            if (name == "baujahrGew" ||
-                name == "abnahmeGew" ||
-                name == "dauerGew" ||
-                name == "ablaufGew")
-                continue
+            if (this.ueberspringen.indexOf(name) >= 0) continue;
 
             let title = element.getElementsByTagNameNS("http://xml.novasib.de", "title")
             let readOnly = element.getElementsByTagNameNS("http://xml.novasib.de", "readOnly")
@@ -316,6 +315,58 @@ export default class LinienEditor extends Tool {
         filter += '</Or></And></Filter>'
         Promise.all(promise).then(() => {
             return PublicWFS.doQuery(objKlasse, filter);
+        }).then((doc: Document) => {
+            let objekte = doc.getElementsByTagName('Objekt')
+            let daten: { [tag: string]: HTMLTableCellElement }[] = [];
+            let spalten: string[] = [];
+            let table = document.createElement("table")
+            for (let i = 0; i < objekte.length; i++) {
+                let eintrag: { [tag: string]: HTMLTableCellElement } = {};
+
+                if (objekte.item(i).children.length < 1) continue
+                let zeile = objekte.item(i).children.item(0).children;
+                console.log(zeile)
+                let last = null;
+                for (let j = 0; j < zeile.length; j++) {
+                    let tag = zeile.item(j).tagName;
+
+                    if (this.ueberspringen.indexOf(tag) > 0) continue;
+
+                    if (spalten.indexOf(tag) < 0) {
+                        let index = spalten.indexOf(last);
+                        spalten.splice(index + 1, 0, tag);
+                    }
+
+                    eintrag[tag] = document.createElement('td')
+
+                    if (zeile.item(j).hasAttribute("luk")) {
+                        eintrag[tag].innerHTML = zeile.item(j).getAttribute('luk')
+                    } else {
+                        eintrag[tag].innerHTML = zeile.item(j).innerHTML
+                    }
+                    last = tag;
+                }
+                daten.push(eintrag)
+            }
+            let tr = document.createElement("tr")
+            for (let i = 0; i < spalten.length; i++) {
+                let th = document.createElement("th");
+                th.innerHTML = spalten[i];
+                tr.appendChild(th)
+            }
+            table.appendChild(tr);
+            for (let i = 0; i < daten.length; i++) {
+                let tr = document.createElement("tr")
+                for (let j = 0; j < spalten.length; j++) {
+                    if (spalten[j] in daten[i]) {
+                        tr.appendChild(daten[i][spalten[j]]);
+                    }
+                }
+                table.appendChild(tr);
+            }
+            let div = document.createElement("div");
+            div.appendChild(table);
+            $(div).dialog();
         })
 
     }
