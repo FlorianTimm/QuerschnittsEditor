@@ -366,7 +366,10 @@ export default class LinienEditor extends Tool {
             }
             let div = document.createElement("div");
             div.appendChild(table);
-            $(div).dialog();
+            $(div).dialog({
+                width: 900,
+                modal: true
+            });
         })
 
     }
