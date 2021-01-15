@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import Klartext from "./Klartext";
-import SekundaerObjekt from "./prototypes/SekundaerObjekt";
+import { Klartext } from "./Klartext";
+import { SekundaerObjekt } from "./prototypes/SekundaerObjekt";
 
 /**
  * Zeichen
@@ -9,7 +9,7 @@ import SekundaerObjekt from "./prototypes/SekundaerObjekt";
  * @version 2019.10.29
  * @license GPL-3.0-or-later
 */
-class Zeichen extends SekundaerObjekt {
+export class Zeichen extends SekundaerObjekt {
     private hasSekObj: string = null;
     private stvoznr: Klartext = null;
     private sort: number = null;
@@ -128,5 +128,3 @@ class Zeichen extends SekundaerObjekt {
         this.art = Klartext.get("Itvzart", art);
     }
 }
-
-export default Zeichen;

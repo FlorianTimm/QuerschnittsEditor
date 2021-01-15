@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import { MapBrowserPointerEvent } from 'ol';
 import { EventsKey } from 'ol/events';
 import Feature, { FeatureLike } from 'ol/Feature';
 import { LineString } from 'ol/geom';
@@ -9,13 +8,14 @@ import { Vector as VectorLayer } from 'ol/layer';
 import { unByKey } from 'ol/Observable';
 import VectorSource from 'ol/source/Vector';
 import { Stroke, Style } from 'ol/style';
-import HTML from '../../HTML';
-import Abschnitt, { StationObj } from '../../Objekte/Abschnitt';
-import Map from "../../openLayers/Map";
-import PublicWFS from '../../PublicWFS';
-import Vektor from '../../Vektor';
-import Tool from '../prototypes/Tool';
-import QuerInfoTool from './QuerInfoTool';
+import { HTML } from '../../HTML';
+import { Abschnitt, StationObj } from '../../Objekte/Abschnitt';
+import { Map } from "../../openLayers/Map";
+import { PublicWFS } from '../../PublicWFS';
+import { Vektor } from '../../Vektor';
+import { Tool } from '../prototypes/Tool';
+import { QuerInfoTool } from './QuerInfoTool';
+import MapBrowserEvent from 'ol/MapBrowserEvent';
 
 /**
  * Funktion zum Teilen von Querschnittsflächen
@@ -23,7 +23,7 @@ import QuerInfoTool from './QuerInfoTool';
  * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
-class QuerPartTool extends Tool {
+export class QuerPartTool extends Tool {
     private info: QuerInfoTool;
     private select: SelectInteraction;
     private l_overlay: VectorLayer;
@@ -99,7 +99,7 @@ class QuerPartTool extends Tool {
         v_overlay.addFeature(this.feat_station_line);
     }
 
-    private getStation(event: MapBrowserPointerEvent): { achse: Abschnitt, pos: StationObj } {
+    private getStation(event: MapBrowserEvent<UIEvent>): { achse: Abschnitt, pos: StationObj } {
         let achse: Abschnitt;
         if (this.select.getFeatures().getArray().length == 1) {
             achse = this.select.getFeatures().item(0) as Abschnitt;
@@ -114,7 +114,7 @@ class QuerPartTool extends Tool {
         return { achse: achse, pos: achse.getStationierung(event.coordinate, 2) };
     }
 
-    private partClick(event: MapBrowserPointerEvent) {
+    private partClick(event: MapBrowserEvent<UIEvent>) {
         this.feat_teilung.set('isset', true);
         let daten = this.getStation(event);
         if (daten['pos'] == null) return;
@@ -140,7 +140,7 @@ class QuerPartTool extends Tool {
         this.form_button.disabled = true;
     }
 
-    private move(event: MapBrowserPointerEvent) {
+    private move(event: MapBrowserEvent<UIEvent>) {
         let daten = this.getStation(event);
         let vektor = Vektor.multi(Vektor.einheit(Vektor.diff(daten['pos'].neuerPkt, daten['pos'].fusspkt)), daten.pos.abstand > 50 ? daten.pos.abstand : 50);
         let coord = [Vektor.diff(daten['pos'].fusspkt, vektor), Vektor.sum(daten['pos'].fusspkt, vektor)];
@@ -183,5 +183,3 @@ class QuerPartTool extends Tool {
         this.map.removeLayer(this.l_overlay);
     }
 }
-
-export default QuerPartTool;

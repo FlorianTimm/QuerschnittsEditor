@@ -1,3 +1,3 @@
 import jquery from "jquery";
 
-export default (window.$ = window.jQuery = jquery);
+export (window.$ = window.jQuery = jquery);

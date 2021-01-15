@@ -3,13 +3,13 @@
 import { Map } from 'ol';
 import Event from 'ol/events/Event';
 import { Extent } from 'ol/extent';
-import AbschnittWFS from './AbschnittWFS';
-import Abschnitt from './Objekte/Abschnitt';
-import Aufstellvorrichtung from './Objekte/Aufstellvorrichtung';
-import Querschnitt from './Objekte/Querschnittsdaten';
-import StrassenAusPunkt from './Objekte/StrassenAusPunkt';
-import PublicWFS from './PublicWFS';
-import WaitBlocker from './WaitBlocker';
+import { AbschnittWFS } from './AbschnittWFS';
+import { Abschnitt } from './Objekte/Abschnitt';
+import { Aufstellvorrichtung } from './Objekte/Aufstellvorrichtung';
+import { Querschnitt } from './Objekte/Querschnittsdaten';
+import { StrassenAusPunkt } from './Objekte/StrassenAusPunkt';
+import { PublicWFS } from './PublicWFS';
+import { WaitBlocker } from './WaitBlocker';
 
 var CONFIG: { [name: string]: string } = require('./config.json');
 
@@ -19,7 +19,7 @@ var CONFIG: { [name: string]: string } = require('./config.json');
  * @version 2019-10-29
  * @license GPL-3.0-or-later
  */
-export default class Daten {
+export class Daten {
     private static daten: Daten = null;
 
     public modus: string = "Otaufstvor"

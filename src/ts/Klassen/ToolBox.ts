@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import { VectorLayer } from "../openLayers/Layer";
-import Map from "../openLayers/Map";
-import Tool from "../Tools/prototypes/Tool";
+import { Map } from "../openLayers/Map";
+import { Tool } from "../Tools/prototypes/Tool";
 
 /**
  * Klasse zum Erzeugen von Werkzeugkästen zur Auswahl des Bearbeitungswerkzeuges
@@ -10,7 +10,7 @@ import Tool from "../Tools/prototypes/Tool";
  * @version 2019.11.20
  * @license GPL-3.0-or-later
 */
-export default abstract class ToolBox {
+export abstract class ToolBox {
 
     /** Kartenobjekt */
     protected map: Map;

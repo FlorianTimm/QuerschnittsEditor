@@ -13,8 +13,8 @@ import OverlayPositioning from 'ol/OverlayPositioning';
 import { Vector as VectorSource } from 'ol/source';
 import { getLength } from 'ol/sphere';
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
-import Map from "../openLayers/Map";
-import Tool from './prototypes/Tool';
+import { Map } from "../openLayers/Map";
+import { Tool } from './prototypes/Tool';
 var CONFIG = require('../config.json');
 
 /**
@@ -23,7 +23,7 @@ var CONFIG = require('../config.json');
  * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
-class Measure extends Tool {
+export class Measure extends Tool {
     private source: VectorSource<any>;
     private vector: VectorLayer;
     private draw: Draw;
@@ -126,5 +126,3 @@ class Measure extends Tool {
         this.map.removeOverlay(this.measureTooltip);
     }
 }
-
-export default Measure;

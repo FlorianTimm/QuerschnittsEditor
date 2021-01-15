@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import PublicWFS from '../../PublicWFS';
-import Dokument from '../Dokument';
-import PrimaerObjekt from './PrimaerObjekt';
+import { PublicWFS } from '../../PublicWFS';
+import { Dokument } from '../Dokument';
+import { PrimaerObjekt } from './PrimaerObjekt';
 
 /**
  *
@@ -10,7 +10,7 @@ import PrimaerObjekt from './PrimaerObjekt';
  * @version 2020.01.28
  * @license GPL-3.0-or-later
 */
-export default abstract class PObjektMitDokument extends PrimaerObjekt {
+export abstract class PObjektMitDokument extends PrimaerObjekt {
     protected dateien: Dokument[] = [];
     protected dateienLoaded: Promise<Dokument[]>;
 

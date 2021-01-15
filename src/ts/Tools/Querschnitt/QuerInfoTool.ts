@@ -2,9 +2,9 @@
 
 import { never } from 'ol/events/condition';
 import { Select as SelectInteraction } from 'ol/interaction';
-import Querschnitt from '../../Objekte/Querschnittsdaten';
-import Map from '../../openLayers/Map';
-import InfoTool from '../InfoTool';
+import { Querschnitt } from '../../Objekte/Querschnittsdaten';
+import { Map } from '../../openLayers/Map';
+import { InfoTool } from '../InfoTool';
 
 /**
  * Funktion zum Anzeigen von Informationen über Querschnitte
@@ -12,7 +12,7 @@ import InfoTool from '../InfoTool';
  * @version 2020.04.22
  * @license GPL-3.0-or-later
 */
-export default class QuerInfoTool extends InfoTool {
+export class QuerInfoTool extends InfoTool {
     /** Linienauswahl */
     private selectLinie: SelectInteraction;
     selectEventsKey: any;

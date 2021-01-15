@@ -10,7 +10,7 @@ import '../css/layerswitch.css';
  * @version 2019.06.06
  * @license GPL-3.0-or-later
 */
-class LayerSwitch extends Control {
+export class LayerSwitch extends Control {
 	constructor(opt_options?: ControlOptions) {
 		var options = opt_options || {};
 		var element = document.createElement('div');
@@ -80,5 +80,3 @@ class LayerSwitch extends Control {
 		}, false);
 	}
 }
-
-export default LayerSwitch;

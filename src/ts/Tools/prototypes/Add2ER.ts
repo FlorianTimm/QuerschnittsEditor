@@ -2,12 +2,12 @@
 
 import { Select as SelectInteraction } from 'ol/interaction';
 import { Stroke, Style } from 'ol/style';
-import Daten from '../../Daten';
-import Abschnitt from '../../Objekte/Abschnitt';
-import Map from "../../openLayers/Map";
-import PublicWFS from '../../PublicWFS';
-import WaitBlocker from '../../WaitBlocker';
-import Tool from '../prototypes/Tool';
+import { Daten } from '../../Daten';
+import { Abschnitt } from '../../Objekte/Abschnitt';
+import { Map } from "../../openLayers/Map";
+import { PublicWFS } from '../../PublicWFS';
+import { WaitBlocker } from '../../WaitBlocker';
+import { Tool } from '../prototypes/Tool';
 
 /**
  *
@@ -15,7 +15,7 @@ import Tool from '../prototypes/Tool';
  * @version 2020.01.28
  * @license GPL-3.0-or-later
 */
-export default abstract class Add2ER extends Tool {
+export abstract class Add2ER extends Tool {
     private daten: Daten;
     private select: SelectInteraction;
     private objektklasse: string;

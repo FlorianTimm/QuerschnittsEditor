@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import Abschnitt from './Objekte/Abschnitt';
-import PrimaerObjekt from './Objekte/prototypes/PrimaerObjekt';
-import WaitBlocker from './WaitBlocker';
+import { Abschnitt } from './Objekte/Abschnitt';
+import { PrimaerObjekt } from './Objekte/prototypes/PrimaerObjekt';
+import { WaitBlocker } from './WaitBlocker';
 var CONFIG = require('./config.json');
 
 /**
@@ -11,7 +11,7 @@ var CONFIG = require('./config.json');
  * @version 2019.10.29
  * @license GPL-3.0-or-later
 */
-export default class PublicWFS {
+export class PublicWFS {
     private static doSoapRequestWFS(xml: string): Promise<Document> {
         return PublicWFS.doSoapRequest(CONFIG.PUBLIC_WFS_URL, xml);
     }

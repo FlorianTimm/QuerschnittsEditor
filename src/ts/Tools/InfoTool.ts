@@ -10,10 +10,10 @@ import { SelectEvent } from 'ol/interaction/Select';
 import { unByKey } from 'ol/Observable';
 import { Fill, Stroke, Style } from 'ol/style';
 import CircleStyle from 'ol/style/Circle';
-import HTML from '../HTML';
-import Map from '../openLayers/Map';
-import PublicWFS from '../PublicWFS';
-import Tool from './prototypes/Tool';
+import { HTML } from '../HTML';
+import { Map } from '../openLayers/Map';
+import { PublicWFS } from '../PublicWFS';
+import { Tool } from './prototypes/Tool';
 
 /**
  * Funktion zum Anzeigen von Informationen zu Aufstellvorrichtungen und Schildern
@@ -21,7 +21,7 @@ import Tool from './prototypes/Tool';
  * @version 2020.04.22
  * @license GPL-3.0-or-later
 */
-export default class InfoTool extends Tool {
+export class InfoTool extends Tool {
     private infoField: HTMLFormElement;
     protected select: SelectInteraction;
     protected lastFeature: InfoToolOverlay;

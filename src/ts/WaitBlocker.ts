@@ -7,7 +7,7 @@
  * @license GPL-3.0-or-later
 */
 
-export default class WaitBlocker {
+export class WaitBlocker {
     private static counter: number = 0;
     private static blocker: HTMLElement;
 

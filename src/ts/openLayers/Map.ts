@@ -8,6 +8,6 @@ import { Map as olMap } from "ol";
  * @version 2019-06-05
  * @license GPL-3.0-or-later
 */
-export default class Map extends olMap {
+export class Map extends olMap {
     firstHash: boolean;
 }
