@@ -20,6 +20,7 @@ export default class AufstellToolBox extends ToolBox {
     constructor(map: Map, sidebar: HTMLDivElement) {
         super(map, sidebar, "steuerung_sonstige")
         this.measureTool = new Measure(map);
+        this.form.style.height = "auto";
         this.createToolBox();
     }
 

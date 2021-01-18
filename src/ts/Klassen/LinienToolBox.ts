@@ -9,7 +9,7 @@ export default class LinienToolBox extends ToolBox {
 
 
     constructor(map: Map, sidebar: HTMLDivElement) {
-        super(map, sidebar, "tab_Linien")
+        super(map, sidebar, "Linien", "Linien", "rgba(234, 202, 255, 0.8)")
 
         let layerAchse = Abschnitt.getLayer();
 

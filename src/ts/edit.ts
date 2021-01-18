@@ -361,12 +361,4 @@ function createMap() {
     });
 }
 
-$("div#tabs").tabs({
-    activate: function (event, ui) {
-        Daten.getInstanz().modus = (event.currentTarget as HTMLElement).dataset.ok;
-        Abschnitt.getLayer().changed();
-        ToolBox.getByFormId(ui.oldPanel.prop("id")).stop();
-        ToolBox.getByFormId(ui.newPanel.prop("id")).start();
-    },
-    active: 1
-})
+

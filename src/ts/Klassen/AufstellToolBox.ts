@@ -31,7 +31,7 @@ export default class AufstellToolBox extends ToolBox {
     * @param sidebar DIV-Element, in den die Tools geladen werden sollen
     */
     constructor(map: Map, sidebar: HTMLDivElement) {
-        super(map, sidebar, "tab_Otaufstvor")
+        super(map, sidebar, "Otaufstvor", "Aufstellvorrichtung", 'rgba(250, 182, 182, 0.8)')
 
         let layerAufstell = Aufstellvorrichtung.getLayer(this.map)
         let layerAchse = Abschnitt.getLayer();

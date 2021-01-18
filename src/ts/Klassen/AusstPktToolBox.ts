@@ -29,7 +29,7 @@ export default class AusstPktToolBox extends ToolBox {
     * @param sidebar DIV-Element, in den die Tools geladen werden sollen
     */
     constructor(map: Map, sidebar: HTMLDivElement) {
-        super(map, sidebar, "tab_Otstrauspkt")
+        super(map, sidebar, "Otstrauspkt", "Straßenausstattung", "rgba(212, 255, 214, 0.8)")
 
         let layerStraus = StrassenAusPunkt.getLayer(this.map)
         let layerAchse = Abschnitt.getLayer();
