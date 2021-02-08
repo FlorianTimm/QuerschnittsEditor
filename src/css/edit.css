@@ -282,3 +282,13 @@ div#othermaps button:last-child {
 .ol-scale-line {
     left: 17em;
 }
+
+.table_collapse {
+    border-collapse: collapse;
+}
+
+.table_collapse td,
+.table_collapse th {
+    margin: 0;
+    padding: 3px;
+}

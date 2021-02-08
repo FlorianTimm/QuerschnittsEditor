@@ -9,8 +9,6 @@ import PublicWFS from "../PublicWFS";
 import Tool from "./prototypes/Tool";
 import "../../css/linienEdit.css"
 import Daten from "../Daten";
-import { EINTR } from "constants";
-
 
 export default class LinienEditor extends Tool {
     private select: SelectInteraction;
@@ -70,15 +68,19 @@ export default class LinienEditor extends Tool {
 
     private onSelect() {
         console.log("Auswahl");
-        if (this.select.getFeatures().getArray().length == 0) return;
-
-        let abschnitt = this.select.getFeatures().getArray()[0] as Abschnitt;
+        if (this.select.getFeatures().getArray().length == 0) {
+            this.chosen.attr('disabled', 'true').trigger("chosen:updated");
+        } else {
+            this.chosen.attr('disabled', null).trigger("chosen:updated");
+            //this.select.getFeatures().getArray()[0] as Abschnitt;
+        }
     }
 
     start(): void {
         if (!this.selectBox) this.createObjektKlassenSelect();
 
         this.map.addInteraction(this.select);
+        this.onSelect();
     }
     stop(): void {
         if (!this.selectBox) $(this.selectBox).hide();
@@ -159,6 +161,7 @@ export default class LinienEditor extends Tool {
         this.chosen.chosen({ width: "99%", search_contains: true, no_results_text: "Keine Übereinstimmung gefunden für ", placeholder_text_single: "Auswahl..." });
 
         this.chosen.on("change", this.okSelected.bind(this))
+        this.onSelect();
     }
 
     private async okSelected() {
@@ -174,29 +177,25 @@ export default class LinienEditor extends Tool {
         let inputFields: { [index: string]: HTMLInputElement | HTMLSelectElement } = {};
         let fieldType: { [index: string]: 'Klartext' | 'integer' | 'date' | 'string' | 'float' } = {}
         let klartextType: { [index: string]: string } = {};
+        let fieldName: { [name: string]: string } = {};
 
         for (let index = 0; index < liste.length; index++) {
             let element = liste.item(index);
             let name = element.getAttribute("name")
-
-            if (this.ueberspringen.indexOf(name) >= 0) continue;
-
             let title = element.getElementsByTagNameNS("http://xml.novasib.de", "title")
             let readOnly = element.getElementsByTagNameNS("http://xml.novasib.de", "readOnly")
             let typeName = element.getElementsByTagNameNS("http://xml.novasib.de", "typeName")
             let virtual = element.getElementsByTagNameNS("http://xml.novasib.de", "virtual")
 
-            if (readOnly.length > 0 ||
-                title.length == 0 ||
-                virtual.length > 0)
-                continue
+            if (title.length == 0) continue
+            fieldName[name] = title.item(0).innerHTML;
+
+            if (readOnly.length > 0 || virtual.length > 0 ||
+                this.ueberspringen.indexOf(name) >= 0) continue;
 
             let pflichtAttr = element.getElementsByTagNameNS("http://xml.novasib.de", "pflicht")
             let datentyp = element.getElementsByTagNameNS("http://www.w3.org/2001/XMLSchema", "restriction")
             let laenge = element.getElementsByTagNameNS("http://www.w3.org/2001/XMLSchema", "maxLength")
-
-
-
 
             let pflicht = false;
             if (pflichtAttr.length > 0) pflicht = true;
@@ -236,21 +235,17 @@ export default class LinienEditor extends Tool {
                         break
                 }
             }
-
             if (inputFields[name] && pflicht) inputFields[name].setAttribute("required", "required")
-
-
         }
         let checkbox = HTML.createFormGroup(form)
         inputFields['vorher_loeschen'] = HTML.createCheckbox(checkbox, "Bisherige Einträge löschen", "loeschen", "Bisherige Einträge löschen")
-
 
         $(popup).dialog({
             width: 700,
             modal: true,
             buttons: {
                 'bisherige Einträge': () => {
-                    this.bisherigeEintraege(objKlasse)
+                    this.bisherigeEintraege(objKlasse, fieldName)
                 },
                 'Speichern': () => {
                     this.absenden(objKlasse, inputFields, fieldType, klartextType);
@@ -269,10 +264,12 @@ export default class LinienEditor extends Tool {
         klartextType: { [index: string]: string }) {
         console.log(objKlasse, inputFields);
 
-        let xml = '<wfs:Insert>\n';
+        let vl = <HTMLInputElement>inputFields['vorher_loeschen'];
+
         let promise: Promise<any>[] = [];
+
         this.select.getFeatures().forEach((feature) => {
-            xml += '<' + objKlasse + '>';
+            let xml = '<wfs:Insert>\n<' + objKlasse + '>';
             let abschnitt = <Abschnitt>feature;
             xml += this.xmlCreate('projekt', 'Klartext', Daten.getInstanz().ereignisraum, 'Projekt');
             xml += this.xmlCreate('abschnittId', 'string', abschnitt.getAbschnittid());
@@ -283,12 +280,25 @@ export default class LinienEditor extends Tool {
                 if (attribut == 'vorher_loeschen' || !inputFields[attribut].value) continue;
                 xml += this.xmlCreate(attribut, fieldType[attribut], inputFields[attribut].value, klartextType[attribut]);
             }
-            xml += '</' + objKlasse + '>';
-            promise.push(PublicWFS.addInER(abschnitt, objKlasse, Daten.getInstanz().ereignisraum_nr));
+            xml += '</' + objKlasse + '></wfs:Insert>\n';
+            promise.push(
+                PublicWFS.addInER(abschnitt, objKlasse, Daten.getInstanz().ereignisraum_nr)
+                    .then(() => {
+                        if (vl.checked) {
+                            // vorher loeschen
+                            let xmlDel = '<wfs:Delete typeName="' + objKlasse + '"><ogc:Filter><ogc:And><ogc:PropertyIsEqualTo><ogc:PropertyName>abschnittId</ogc:PropertyName><ogc:Literal>';
+                            xmlDel += abschnitt.getAbschnittid();
+                            xmlDel += '</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsEqualTo><ogc:PropertyName>projekt/@xlink:href</ogc:PropertyName><ogc:Literal>';
+                            xmlDel += Daten.getInstanz().ereignisraum;
+                            xmlDel += '</ogc:Literal></ogc:PropertyIsEqualTo></ogc:And></ogc:Filter></wfs:Delete>';
+                            return PublicWFS.doTransaction(xmlDel).then(() => { return Promise.resolve() });
+                        } else {
+                            return Promise.resolve();
+                        }
+                    })
+                    .then(() => PublicWFS.doTransaction(xml)));
         });
-        xml += '</wfs:Insert>\n';
-        console.log(xml);
-        Promise.all(promise).then(() => { return PublicWFS.doTransaction(xml) }).then(() => PublicWFS.showMessage('erfolgreich'));
+        Promise.all(promise).then(() => PublicWFS.showMessage('erfolgreich'));
     }
 
     private xmlCreate(attribut: string, fieldType: 'Klartext' | 'integer' | 'date' | 'string' | 'float', wert: any, klartextType?: string): string {
@@ -301,8 +311,12 @@ export default class LinienEditor extends Tool {
         }
     }
 
-
-    private bisherigeEintraege(objKlasse: string) {
+    /**
+     * Zeigt alle Einträge auf den ausgewählten Abschnitten an
+     * @param objKlasse Objektklasse als WFS-Bezeichnung
+     * @param fieldName Beschriftung der Felder aus DescribeFeatureType
+     */
+    private bisherigeEintraege(objKlasse: string, fieldName: { [name: string]: string }) {
         let promise: Promise<any>[] = [];
         let filter = '<Filter><And>'
             + '<PropertyIsEqualTo><PropertyName>projekt/@xlink:href</PropertyName>' +
@@ -317,60 +331,94 @@ export default class LinienEditor extends Tool {
             return PublicWFS.doQuery(objKlasse, filter);
         }).then((doc: Document) => {
             let objekte = doc.getElementsByTagName('Objekt')
-            let daten: { [tag: string]: HTMLTableCellElement }[] = [];
-            let spalten: string[] = [];
-            let table = document.createElement("table")
+            let daten: { [tag: string]: string }[] = [];
+            let spalten: string[] = ['VNK', 'NNK'];
+            let table = document.createElement("table");
+            table.className = "table_collapse";
+
+            // Daten durchlaufen
             for (let i = 0; i < objekte.length; i++) {
-                let eintrag: { [tag: string]: HTMLTableCellElement } = {};
+                let eintrag: { [tag: string]: string } = {};
 
                 if (objekte.item(i).children.length < 1) continue
                 let zeile = objekte.item(i).children.item(0).children;
-                console.log(zeile)
+                //console.log(zeile)
                 let last = null;
+                eintrag['VNK'] = "";
+                eintrag['NNK'] = "";
+                last = 'NNK';
                 for (let j = 0; j < zeile.length; j++) {
                     let tag = zeile.item(j).tagName;
 
-                    if (this.ueberspringen.indexOf(tag) > 0) continue;
+                    if (['vtkNummer', 'vnkLfd', 'vzusatz', 'ntkNummer', 'nnkLfd', 'nzusatz'].indexOf(tag) >= 0) {
+                        let wert = zeile.item(j).innerHTML;
+                        if (tag.slice(-3) == 'Lfd')
+                            wert = ("00000" + wert).slice(-5);
+                        if (tag.substr(0, 1) == "v")
+                            eintrag['VNK'] += wert;
+                        else
+                            eintrag['NNK'] += wert;
+                        continue;
+                    }
 
+                    // Attribute weglassen
+                    if ((this.ueberspringen.indexOf(tag) > 0 && tag != "vnk" && tag != "bst" && tag != "vst" && tag != "bst") || tag == 'abschnittOderAst') continue;
+
+                    // Verwendete Attribute in richtiger Reihenfolge
                     if (spalten.indexOf(tag) < 0) {
                         let index = spalten.indexOf(last);
                         spalten.splice(index + 1, 0, tag);
                     }
 
-                    eintrag[tag] = document.createElement('td')
+                    // Tabellenfeld
+                    eintrag[tag] = null;
 
                     if (zeile.item(j).hasAttribute("luk")) {
-                        eintrag[tag].innerHTML = zeile.item(j).getAttribute('luk')
+                        eintrag[tag] = zeile.item(j).getAttribute('luk')
                     } else {
-                        eintrag[tag].innerHTML = zeile.item(j).innerHTML
+                        eintrag[tag] = zeile.item(j).innerHTML
                     }
+
                     last = tag;
                 }
                 daten.push(eintrag)
             }
+
+            // Tabellen-Header
             let tr = document.createElement("tr")
             for (let i = 0; i < spalten.length; i++) {
                 let th = document.createElement("th");
-                th.innerHTML = spalten[i];
+                if (spalten[i] in fieldName) {
+                    th.innerHTML = fieldName[spalten[i]];
+                } else {
+                    th.innerHTML = spalten[i];
+                }
                 tr.appendChild(th)
             }
+
+            // Tabellen-Inhalt
             table.appendChild(tr);
             for (let i = 0; i < daten.length; i++) {
                 let tr = document.createElement("tr")
                 for (let j = 0; j < spalten.length; j++) {
                     if (spalten[j] in daten[i]) {
-                        tr.appendChild(daten[i][spalten[j]]);
+                        let td = document.createElement("td");
+                        td.innerHTML = daten[i][spalten[j]];
+                        tr.appendChild(td);
+                    } else {
+                        // leere Zelle falls keine Daten
+                        tr.appendChild(document.createElement('td'))
                     }
                 }
                 table.appendChild(tr);
             }
             let div = document.createElement("div");
+            div.style.overflow = 'auto';
             div.appendChild(table);
             $(div).dialog({
                 width: 900,
                 modal: true
             });
         })
-
     }
 }
