@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import Abschnitt from "../Objekte/Abschnitt";
-import Aufstellvorrichtung from "../Objekte/Aufstellvorrichtung";
-import Map from "../openLayers/Map";
-import AvAdd from "../Tools/Aufstellvorrichtung/AvAdd";
-import AvAdd2ER from "../Tools/Aufstellvorrichtung/AvAdd2ER";
-import AvVzAdd from "../Tools/Aufstellvorrichtung/AvVzAdd";
-import DeleteTool from "../Tools/DeleteTool";
-import InfoTool from "../Tools/InfoTool";
-import MoveTool from "../Tools/MoveTool";
-import ToolBox from "./ToolBox";
+import { Abschnitt } from "../Objekte/Abschnitt";
+import { Aufstellvorrichtung } from "../Objekte/Aufstellvorrichtung";
+import { Map } from "../openLayers/Map";
+import { AvAdd } from "../Tools/Aufstellvorrichtung/AvAdd";
+import { AvAdd2ER } from "../Tools/Aufstellvorrichtung/AvAdd2ER";
+import { AvVzAdd } from "../Tools/Aufstellvorrichtung/AvVzAdd";
+import { DeleteTool } from "../Tools/DeleteTool";
+import { InfoTool } from "../Tools/InfoTool";
+import { MoveTool } from "../Tools/MoveTool";
+import { ToolBox } from "./ToolBox";
 
 /**
  * Klasse zum Erzeugen eines Werkzeugkasten zur Bearbeitung von
@@ -18,7 +18,7 @@ import ToolBox from "./ToolBox";
  * @version 2019.11.20
  * @license GPL-3.0-or-later
 */
-export default class AufstellToolBox extends ToolBox {
+export class AufstellToolBox extends ToolBox {
     private infoTool: InfoTool;
     private addTool: AvAdd;
     private vzAddTool: AvVzAdd;

@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import VectorLayer from 'ol/layer/Vector';
-import Daten from '../../Daten';
-import PunktObjekt from '../../Objekte/prototypes/PunktObjekt';
-import StrassenAusPunkt from '../../Objekte/StrassenAusPunkt';
-import Map from "../../openLayers/Map";
-import PublicWFS from '../../PublicWFS';
-import AddTool from '../prototypes/AddTool';
+import { Daten } from '../../Daten';
+import { PunktObjekt } from '../../Objekte/prototypes/PunktObjekt';
+import { StrassenAusPunkt } from '../../Objekte/StrassenAusPunkt';
+import { Map } from "../../openLayers/Map";
+import { PublicWFS } from '../../PublicWFS';
+import { AddTool } from '../prototypes/AddTool';
 
 var CONFIG = require('../../config.json');
 
@@ -16,7 +16,7 @@ var CONFIG = require('../../config.json');
  * @version 2019.10.29
  * @license GPL-3.0-or-later
 */
-export default class SAPAdd extends AddTool {
+export class SAPAdd extends AddTool {
     constructor(map: Map, sidebar: HTMLDivElement, layerAchse: VectorLayer) {
         super(map, sidebar, layerAchse);
     }

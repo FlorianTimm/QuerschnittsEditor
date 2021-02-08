@@ -7,18 +7,18 @@ import { Map, Overlay } from "ol";
 import { ColorLike } from "ol/colorlike";
 import { never } from "ol/events/condition";
 import { LineString, Point } from "ol/geom";
-import Daten from "../Daten";
-import HTML from "../HTML";
+import { Daten } from "../Daten";
+import { HTML } from "../HTML";
 import { SelectInteraction } from "../openLayers/Interaction";
 import { VectorLayer } from "../openLayers/Layer";
-import PublicWFS from '../PublicWFS';
+import { PublicWFS } from '../PublicWFS';
 import { InfoToolOverlay } from "../Tools/InfoTool.js";
-import WaitBlocker from "../WaitBlocker";
-import Abschnitt from './Abschnitt';
-import Dokument from "./Dokument";
-import Klartext from './Klartext';
-import PunktObjekt from './prototypes/PunktObjekt';
-import Zeichen from './Zeichen';
+import { WaitBlocker } from "../WaitBlocker";
+import { Abschnitt } from './Abschnitt';
+import { Dokument } from "./Dokument";
+import { Klartext } from './Klartext';
+import { PunktObjekt } from './prototypes/PunktObjekt';
+import { Zeichen } from './Zeichen';
 
 /**
  * Aufstellvorrichtung
@@ -26,7 +26,7 @@ import Zeichen from './Zeichen';
  * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
-export default class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay {
+export class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay {
     static loadErControlCounter: number = 0;
     static layer: VectorLayer;
     static select: SelectInteraction;

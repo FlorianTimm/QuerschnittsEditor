@@ -13,12 +13,12 @@ import { Vector as VectorLayer } from 'ol/layer';
 import { unByKey } from 'ol/Observable';
 import { Vector as VectorSource } from 'ol/source';
 import { Circle, Fill, Stroke, Style } from 'ol/style';
-import Abschnitt, { StationObj } from '../Objekte/Abschnitt';
-import PunktObjekt from '../Objekte/prototypes/PunktObjekt';
+import { Abschnitt, StationObj } from '../Objekte/Abschnitt';
+import { PunktObjekt } from '../Objekte/prototypes/PunktObjekt';
 import { ModifyInteraction } from '../openLayers/Interaction';
-import Map from "../openLayers/Map";
-import InfoTool from './InfoTool';
-import Tool from './prototypes/Tool';
+import { Map } from "../openLayers/Map";
+import { InfoTool } from './InfoTool';
+import { Tool } from './prototypes/Tool';
 
 /**
  * Funktion zum Verschieben von Punktobjekten
@@ -26,7 +26,7 @@ import Tool from './prototypes/Tool';
  * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
-export default class MoveTool extends Tool {
+export class MoveTool extends Tool {
     private infoTool: InfoTool;
     private select: SelectInteraction;
     private v_overlay: VectorSource<Geometry>;

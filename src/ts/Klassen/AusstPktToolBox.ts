@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import Abschnitt from "../Objekte/Abschnitt";
-import StrassenAusPunkt from "../Objekte/StrassenAusPunkt";
-import Map from "../openLayers/Map";
-import DeleteTool from "../Tools/DeleteTool";
-import InfoTool from "../Tools/InfoTool";
-import MoveTool from "../Tools/MoveTool";
-import SAPAdd from "../Tools/StrassenAusPunkt/SAPAdd";
-import SAPAdd2ER from "../Tools/StrassenAusPunkt/SAPAdd2ER";
-import ToolBox from "./ToolBox";
+import { Abschnitt } from "../Objekte/Abschnitt";
+import { StrassenAusPunkt } from "../Objekte/StrassenAusPunkt";
+import { Map } from "../openLayers/Map";
+import { DeleteTool } from "../Tools/DeleteTool";
+import { InfoTool } from "../Tools/InfoTool";
+import { MoveTool } from "../Tools/MoveTool";
+import { SAPAdd } from "../Tools/StrassenAusPunkt/SAPAdd";
+import { SAPAdd2ER } from "../Tools/StrassenAusPunkt/SAPAdd2ER";
+import { ToolBox } from "./ToolBox";
 
 /**
  * Klasse zum Erzeugen eines Werkzeugkasten zur Bearbeitung von
@@ -17,7 +17,7 @@ import ToolBox from "./ToolBox";
  * @version 2019.11.20
  * @license GPL-3.0-or-later
 */
-export default class AusstPktToolBox extends ToolBox {
+export class AusstPktToolBox extends ToolBox {
     private infoTool: InfoTool;
     private addTool: SAPAdd;
     private moveTool: MoveTool;

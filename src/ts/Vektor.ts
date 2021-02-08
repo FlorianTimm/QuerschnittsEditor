@@ -7,7 +7,7 @@
  * @license GPL-3.0-or-later
 */
 
-export default class Vektor {
+export class Vektor {
     static add3(v: number[]) {
         let neu = [];
         for (let i of v)

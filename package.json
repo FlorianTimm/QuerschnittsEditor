@@ -11,7 +11,8 @@
     "buildBeta": "parcel build --out-dir \"//gv-srv-w00118/GlassFish Docroot/querBeta\" --public-url . src/*.html",
     "start": "parcel src/*.html",
     "build": "parcel build --public-url . src/*.html",
-    "validate-typescript": "tsc --noEmit"
+    "validate-typescript": "tsc --noEmit",
+    "buildDoc": "npx typedoc"
   },
   "repository": {
     "type": "git",

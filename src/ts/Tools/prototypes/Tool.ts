@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import Map from "../../openLayers/Map";
+import { Map } from "../../openLayers/Map";
 
 /**
  * Interface für alle Bearbeitungs-Tools
@@ -8,7 +8,7 @@ import Map from "../../openLayers/Map";
  * @version 2019.06.05
  * @license GPL-3.0-or-later
 */
-export default abstract class Tool {
+export abstract class Tool {
     protected map: Map;
 
     constructor(map: Map) {

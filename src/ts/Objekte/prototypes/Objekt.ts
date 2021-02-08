@@ -2,8 +2,8 @@
 
 import { Feature } from "ol";
 import { LineString, Point, Polygon } from "ol/geom";
-import Abschnitt from "../Abschnitt";
-import Klartext from "../Klartext";
+import { Abschnitt } from "../Abschnitt";
+import { Klartext } from "../Klartext";
 
 var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../../config_wfs.json');
 
@@ -13,7 +13,7 @@ var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number
  * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
-export default abstract class Objekt extends Feature<Polygon | Point | LineString> {
+export abstract class Objekt extends Feature<Polygon | Point | LineString> {
 	protected kherk: Klartext = null;
 	protected baujahrGew: string = null;
 	protected abnahmeGew: string = null;

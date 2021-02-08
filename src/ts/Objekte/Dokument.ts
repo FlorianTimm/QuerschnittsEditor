@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import Klartext from "./Klartext";
-import SekundaerObjekt from "./prototypes/SekundaerObjekt";
+import { Klartext } from "./Klartext";
+import { SekundaerObjekt } from "./prototypes/SekundaerObjekt";
 
 /**
  *
@@ -9,7 +9,7 @@ import SekundaerObjekt from "./prototypes/SekundaerObjekt";
  * @version 2020.01.28
  * @license GPL-3.0-or-later
 */
-export default class Dokument extends SekundaerObjekt {
+export class Dokument extends SekundaerObjekt {
     protected art: Klartext
     protected beschreib: string
     protected standort: string
