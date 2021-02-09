@@ -208,7 +208,7 @@ function createMap() {
         layers: [
             new TileLayer({
                 name: 'OpenStreetMap',
-                visible: false,
+                visible: true,
                 switchable: true,
                 source: new OSM()
             }),
