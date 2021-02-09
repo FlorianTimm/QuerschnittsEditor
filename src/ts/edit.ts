@@ -218,129 +218,11 @@ function createMap() {
                 switchable: true,
                 opacity: 1,
                 source: new TileWMS({
-                    url: 'http://geodienste.hamburg.de/HH_WMS_ALKIS_Basiskarte',
+                    url: 'https://www.geoproxy.geoportal-th.de/geoproxy/services/UEK?',
                     params: {
-                        'LAYERS': '0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,23,24,26,27,28,29,30,32,33,34,35,36,37',
+                        'LAYERS': 'th_dtk',
                         'FORMAT': 'image/png'
                     },
-                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
-                })
-            }),
-            new TileLayer({
-                name: 'LGV DOP 2017',
-                visible: false,
-                switchable: true,
-                opacity: 1.0,
-                source: new TileWMS({
-                    url: 'http://geodienste.hamburg.de/HH_WMS_DOP10',
-                    params: {
-                        'LAYERS': '1',
-                        'FORMAT': 'image/png'
-                    },
-                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
-                })
-            }),
-            new TileLayer({
-                name: 'LGV DOP 2018',
-                visible: true,
-                switchable: true,
-                opacity: 1.00,
-                source: new TileWMS({
-                    url: 'https://geodienste.hamburg.de/HH_WMS_DOP_hochaufloesend',
-                    params: {
-                        'LAYERS': 'dop_hochaufloesend_highres,dop_hochaufloesend_downscale',
-                        'FORMAT': 'image/png'
-                    },
-                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
-                })
-            }),
-
-            new TileLayer({
-                name: 'LGV TrueDOP 2018',
-                visible: false,
-                switchable: true,
-                opacity: 1.0,
-                source: new TileWMS({
-                    url: 'https://geodienste.hamburg.de/HH_WMS_TrueDOP',
-                    params: {
-                        'LAYERS': 'tdop_hochaufloesend_89,tdop_hochaufloesend_downscale',
-                        'FORMAT': 'image/png'
-                    },
-                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
-                })
-            }),
-            new TileLayer({
-                name: 'LGV DOP 2019 belaubt',
-                visible: false,
-                switchable: true,
-                opacity: 1.0,
-                source: new TileWMS({
-                    url: 'https://geodienste.hamburg.de/HH_WMS_DOP_hochaufloesend_belaubt',
-                    params: {
-                        'LAYERS': 'DOP_hochaufloesend_belaubt_highres,DOP_hochaufloesend_belaubt_downscale',
-                        'FORMAT': 'image/png'
-                    },
-                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
-                })
-            }),
-            new TileLayer({
-                name: 'CAD-Daten',
-                visible: false,
-                switchable: true,
-                opacity: 0.85,
-                source: new TileWMS({
-                    url: 'http://gv-srv-w00118:20031/deegree/services/wms',
-                    params: {
-                        'LAYERS': 'wburg',
-                        'FORMAT': 'image/png'
-                    },
-                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
-                })
-            }),
-
-            new TileLayer({
-                name: 'Kreuzungsskizzen',
-                visible: false,
-                switchable: true,
-                opacity: 0.85,
-                source: new TileWMS({
-                    url: 'https://geodienste.hamburg.de/HH_WMS_Kreuzungsskizzen',
-                    params: {
-                        'LAYERS': 'poldata_text,poldata_lines,poldata_poly',
-                        'FORMAT': 'image/png'
-                    },
-                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
-                })
-            }),
-
-            new TileLayer({
-                name: "Querschnitte (Dienst)",
-                visible: false,
-                switchable: true,
-                opacity: 0.6,
-                source: new TileWMS({
-                    url: 'http://gv-srv-w00118:20031/deegree/services/wms?',
-                    params: {
-                        'LAYERS': 'querschnitte',
-                        'STYLE': 'querschnitte_gruppiert',
-                        'FORMAT': 'image/png'
-                    },
-                    serverType: ('geoserver'),
-                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
-                })
-            }),
-            new TileLayer({
-                name: "Bezirks-Feinkartierung",
-                visible: false,
-                switchable: true,
-                opacity: 0.8,
-                source: new TileWMS({
-                    url: 'https://geodienste.hamburg.de/HH_WMS_Feinkartierung_Strasse?',
-                    params: {
-                        'LAYERS': 'b_altona_mr_feinkartierung_flaechen,b_harburg_mr_feinkartierung_flaechen,b_mitte_mr_feinkartierung_flaechen,b_eims_mr_feinkartierung_flaechen,b_wands_mr_feinkartierung_flaechen',
-                        'FORMAT': 'image/png'
-                    },
-                    serverType: ('geoserver'),
                     attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
                 })
             })
@@ -352,8 +234,8 @@ function createMap() {
         controls: defaultControls().extend([new LayerSwitch(), new ScaleLine(), new ZoomSlider()]),
         view: new View({
             projection: CONFIG["EPSG_CODE"],
-            center: fromLonLat([10.0045, 53.4975], CONFIG["EPSG_CODE"]),
-            zoom: 17,
+            center: fromLonLat([11.03, 50.979], CONFIG["EPSG_CODE"]),
+            zoom: 14,
             minZoom: 11,
             maxZoom: 24,
             //extent: transform([548000, 5916500, 588500, 5955000], 'EPSG:25832', CONFIG.EPSG_CODE),
