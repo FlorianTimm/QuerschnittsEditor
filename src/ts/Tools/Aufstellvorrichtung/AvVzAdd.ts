@@ -11,14 +11,14 @@ import { Select as SelectInteraction } from 'ol/interaction';
 import { SelectEvent } from 'ol/interaction/Select';
 import { unByKey } from 'ol/Observable';
 import '../../../css/vzadd.css';
-import Daten from '../../Daten';
-import HTML from '../../HTML';
-import Aufstellvorrichtung from '../../Objekte/Aufstellvorrichtung';
-import { default as Klartext, default as KlartextManager } from '../../Objekte/Klartext';
-import Zeichen from '../../Objekte/Zeichen';
-import Map from "../../openLayers/Map";
-import PublicWFS from '../../PublicWFS';
-import Tool from '../prototypes/Tool';
+import { Daten } from '../../Daten';
+import { HTML } from '../../HTML';
+import { Aufstellvorrichtung } from '../../Objekte/Aufstellvorrichtung';
+import { Klartext } from '../../Objekte/Klartext';
+import { Zeichen } from '../../Objekte/Zeichen';
+import { Map } from "../../openLayers/Map";
+import { PublicWFS } from '../../PublicWFS';
+import { Tool } from '../prototypes/Tool';
 var CONFIG = require('../../config.json');
 
 /**
@@ -27,7 +27,7 @@ var CONFIG = require('../../config.json');
  * @version 2019.10.29
  * @license GPL-3.0-or-later
 */
-class AvVzAdd extends Tool {
+export class AvVzAdd extends Tool {
     private ausblenden: any = null;
     private liste: any = null;
     private auswahl: Aufstellvorrichtung = null;
@@ -85,7 +85,7 @@ class AvVzAdd extends Tool {
         this.popup.appendChild(this.liste);
 
 
-        let stvoZNrNeu = KlartextManager.createKlartextSelectForm('Itvzstvoznr', this.popup, 'Verkehrszeichen', 'stvoznr_neu', undefined, "Neues Schild hinzufügen...")
+        let stvoZNrNeu = Klartext.createKlartextSelectForm('Itvzstvoznr', this.popup, 'Verkehrszeichen', 'stvoznr_neu', undefined, "Neues Schild hinzufügen...")
 
         $(stvoZNrNeu.select).on("change", this.newSchild.bind(this));
 
@@ -178,7 +178,7 @@ class AvVzAdd extends Tool {
         img.style.height = "50px";
         Klartext.load("Itvzstvoznr")
             .then(() => {
-                img.src = "http://gv-srv-w00118:8080/schilder/" + eintrag.getStvoznr().getKt() + ".svg";
+                img.src = CONFIG['SCHILDERPFAD'] + eintrag.getStvoznr().getKt() + ".svg";
                 img.title = eintrag.getStvoznr().getBeschreib() + (eintrag.getVztext() != null) ? ("\n" + eintrag.getVztext()) : ('');
             });
         div.appendChild(img);
@@ -194,7 +194,7 @@ class AvVzAdd extends Tool {
         tasks.push(stvoznr.promise)
         $(stvoznr.select).on("change", function () {
             let schild = Klartext.get("Itvzstvoznr", stvoznr.select.value)
-            img.src = "http://gv-srv-w00118:8080/schilder/" + schild.getKt() + ".svg";
+            img.src = CONFIG['SCHILDERPFAD'] + schild.getKt() + ".svg";
             img.title = schild['beschreib'];
         });
 
@@ -203,27 +203,27 @@ class AvVzAdd extends Tool {
 
         // Lage FB
         if (eintrag.getLageFb() == undefined) eintrag.setLageFb(CONFIG.LAGEFB);
-        tasks.push(KlartextManager.createKlartextSelectForm('Itvzlagefb', text, 'Lage', 'lageFb', eintrag.getLageFb()).promise)
+        tasks.push(Klartext.createKlartextSelectForm('Itvzlagefb', text, 'Lage', 'lageFb', eintrag.getLageFb()).promise)
 
         // Lesbarkeit
         if (eintrag.getLesbarkeit() == undefined) eintrag.setLesbarkeit(CONFIG.LESBARKEIT);
-        tasks.push(KlartextManager.createKlartextSelectForm('Itvzlesbarkeit', text, 'Lesbarkeit', 'lesbarkeit', eintrag.getLesbarkeit()).promise)
+        tasks.push(Klartext.createKlartextSelectForm('Itvzlesbarkeit', text, 'Lesbarkeit', 'lesbarkeit', eintrag.getLesbarkeit()).promise)
 
         // Beleuchtet
         if (eintrag.getBeleucht() == undefined) eintrag.setBeleucht(CONFIG.BELEUCHTET);
-        tasks.push(KlartextManager.createKlartextSelectForm('Itvzbeleucht', text, 'Beleuchtung', 'beleucht', eintrag.getBeleucht()).promise)
+        tasks.push(Klartext.createKlartextSelectForm('Itvzbeleucht', text, 'Beleuchtung', 'beleucht', eintrag.getBeleucht()).promise)
 
         //Einzelschild
         if (eintrag.getArt() == undefined) eintrag.setArt(CONFIG.EINZELSCHILD);
-        tasks.push(KlartextManager.createKlartextSelectForm('Itvzart', text, 'Art', 'art', eintrag.getArt()).promise)
+        tasks.push(Klartext.createKlartextSelectForm('Itvzart', text, 'Art', 'art', eintrag.getArt()).promise)
 
         // Größe des Schilder
         if (eintrag.getGroesse() == undefined) eintrag.setGroesse(CONFIG.GROESSE);
-        tasks.push(KlartextManager.createKlartextSelectForm('Itvzgroesse', text, 'Größe', 'groesse', eintrag.getGroesse()).promise)
+        tasks.push(Klartext.createKlartextSelectForm('Itvzgroesse', text, 'Größe', 'groesse', eintrag.getGroesse()).promise)
 
         // Straßenbezug
         if (eintrag.getStrbezug() == undefined) eintrag.setStrbezug(CONFIG.STRASSENBEZUG);
-        tasks.push(KlartextManager.createKlartextSelectForm('Itbesstrbezug', text, 'Straßenbezug', 'strbezug', eintrag.getStrbezug()).promise)
+        tasks.push(Klartext.createKlartextSelectForm('Itbesstrbezug', text, 'Straßenbezug', 'strbezug', eintrag.getStrbezug()).promise)
 
         // Aufstelldatum
         let aufstdat = HTML.createDateInput(text, "Aufstelldatum", "aufstelldat" + Math.round(Math.random() * 2000), ((eintrag.getAufstelldat() != null) ? (eintrag.getAufstelldat()) : ('')));
@@ -234,11 +234,11 @@ class AvVzAdd extends Tool {
 
         // Erfassungsart
         if (eintrag.getErfart() == undefined) eintrag.setErfart(CONFIG.ERFASSUNG);
-        tasks.push(KlartextManager.createKlartextSelectForm('Iterfart', text, 'Erfassung', 'erfart', eintrag.getErfart()).promise)
+        tasks.push(Klartext.createKlartextSelectForm('Iterfart', text, 'Erfassung', 'erfart', eintrag.getErfart()).promise)
 
         // Quelle
         if (eintrag.getQuelle() == undefined) eintrag.setQuelle(CONFIG.QUELLE);
-        tasks.push(KlartextManager.createKlartextSelectForm('Itquelle', text, 'Quelle', 'quelle', eintrag.getQuelle()).promise)
+        tasks.push(Klartext.createKlartextSelectForm('Itquelle', text, 'Quelle', 'quelle', eintrag.getQuelle()).promise)
 
         // Löschen
         let del_group = document.createElement("div");
@@ -531,5 +531,3 @@ class AvVzAdd extends Tool {
         if (this.lastOverlay) this.lastOverlay.hideOverlay(this.map)
     }
 }
-
-export default AvVzAdd;

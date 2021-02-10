@@ -2,9 +2,9 @@
 
 import Geometry from 'ol/geom/Geometry';
 import { Modify, Select } from 'ol/interaction';
-import MoveTool from '../Tools/MoveTool';
-import QuerInfoTool from '../Tools/Querschnitt/QuerInfoTool';
-import QuerModifyTool from '../Tools/Querschnitt/QuerModifyTool';
+import { MoveTool } from '../Tools/MoveTool';
+import { QuerInfoTool } from '../Tools/Querschnitt/QuerInfoTool';
+import { QuerModifyTool } from '../Tools/Querschnitt/QuerModifyTool';
 
 /**
  * OpenLayers-ModifyInteraktion

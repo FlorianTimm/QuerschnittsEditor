@@ -9,7 +9,7 @@ import "../css/html_forms.css";
  * @version 2020.01.28
  * @license GPL-3.0-or-later
 */
-export default class HTML {
+export class HTML {
 
 
     static createFormGroup(form: HTMLFormElement | HTMLDivElement, id?: string): HTMLDivElement {

@@ -92,5 +92,9 @@
     "forceConsistentCasingInFileNames": true,
     /* Disallow inconsistently-cased references to the same file. */
     "suppressImplicitAnyIndexErrors": true
+  },
+  "typedocOptions": {
+    "entryPoints": ["src/ts/"],
+    "out": "docs"
   }
 }

@@ -6,13 +6,13 @@ import { Point } from 'ol/geom';
 import MultiLineString from 'ol/geom/MultiLineString';
 import VectorSource from 'ol/source/Vector';
 import { Stroke, Style } from 'ol/style';
-import Daten from '../Daten';
+import { Daten } from '../Daten';
 import { VectorLayer } from '../openLayers/Layer';
-import PublicWFS from '../PublicWFS';
-import Vektor from '../Vektor';
-import Abschnitt, { LinienPunkt } from './Abschnitt';
-import Aufbaudaten from './Aufbaudaten';
-import Querschnitt from './Querschnittsdaten';
+import { PublicWFS } from '../PublicWFS';
+import { Vektor } from '../Vektor';
+import { Abschnitt, LinienPunkt } from './Abschnitt';
+import { Aufbau } from './Aufbaudaten';
+import { Querschnitt } from './Querschnittsdaten';
 
 /**
  * Querschnitts-Station
@@ -20,7 +20,7 @@ import Querschnitt from './Querschnittsdaten';
  * @version 2019.10.29
  * @license GPL-3.0-or-later
 */
-export default class QuerStation {
+export class QuerStation {
 
     private daten: Daten;
     private abschnitt: Abschnitt;
@@ -29,7 +29,7 @@ export default class QuerStation {
     private linie: MultiLineString;
     private _querschnitte: { [streifen: string]: { [streifennr: number]: Querschnitt } } = {};
     private linienPunkte: LinienPunkt[];
-    public aufbaudatenLoaded: Promise<{ [fid: string]: Aufbaudaten[] }>;
+    public aufbaudatenLoaded: Promise<{ [fid: string]: Aufbau[] }>;
     private static layerStation: VectorLayer;
 
     constructor(abschnitt: Abschnitt, vst: number, bst: number) {
@@ -385,7 +385,7 @@ export default class QuerStation {
 
     // Aufbaudaten
 
-    public async getAufbauDaten(reload: boolean = false): Promise<{ [fid: string]: Aufbaudaten[] }> {
+    public async getAufbauDaten(reload: boolean = false): Promise<{ [fid: string]: Aufbau[] }> {
         if (!this.aufbaudatenLoaded || reload) {
             this.aufbaudatenLoaded = PublicWFS.doQuery('Otschicht', '<Filter><And>' +
                 '<PropertyIsEqualTo>' +
@@ -415,12 +415,12 @@ export default class QuerStation {
         return this.aufbaudatenLoaded;
     }
 
-    private parseAufbaudaten(xml: Document): { [fid: string]: Aufbaudaten[] } | null {
+    private parseAufbaudaten(xml: Document): { [fid: string]: Aufbau[] } | null {
         let aufbau = xml.getElementsByTagName('Otschicht');
-        let aufbaudaten: { [fid: string]: Aufbaudaten[] } = {};
+        let aufbaudaten: { [fid: string]: Aufbau[] } = {};
 
         for (let i = 0; i < aufbau.length; i++) {
-            let a = Aufbaudaten.fromXML(aufbau[i]);
+            let a = Aufbau.fromXML(aufbau[i]);
             if (a.getParent() == null) {
                 console.log("Es konnten nicht alle Aufbaudaten den Querschnitten zugeordnet werden, Abbruch!");
                 return null;

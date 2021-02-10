@@ -6,7 +6,7 @@
  * @license GPL-3.0-or-later
 */
 
-import Vektor from "../src/ts/Vektor";
+import { Vektor } from "../src/ts/Vektor";
 import { expect, assert } from 'chai';
 
 describe('Vektor', function () {

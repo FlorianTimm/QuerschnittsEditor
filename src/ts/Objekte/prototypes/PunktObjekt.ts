@@ -7,11 +7,11 @@ import { LineString, Point } from "ol/geom";
 import VectorSource from 'ol/source/Vector';
 import { Circle, Fill, RegularShape, Stroke, Style, Text } from 'ol/style';
 import { VectorLayer } from '../../openLayers/Layer';
-import PublicWFS from "../../PublicWFS";
+import { PublicWFS } from "../../PublicWFS";
 import { InfoToolEditable } from "../../Tools/InfoTool";
-import Abschnitt from '../Abschnitt';
-import Klartext from '../Klartext';
-import PObjektMitDokument from "./PObjektMitDateien";
+import { Abschnitt } from '../Abschnitt';
+import { Klartext } from '../Klartext';
+import { PObjektMitDokument } from "./PObjektMitDateien";
 
 /**
  * PunktObjekt
@@ -19,7 +19,7 @@ import PObjektMitDokument from "./PObjektMitDateien";
  * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
-export default abstract class PunktObjekt extends PObjektMitDokument implements InfoToolEditable {
+export abstract class PunktObjekt extends PObjektMitDokument implements InfoToolEditable {
     protected vabstVst: number;
     protected vabstBst: number;
     protected rlageVst: Klartext;

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import Klartext from "../Klartext";
-import Objekt from "./Objekt";
+import { Klartext } from "../Klartext";
+import { Objekt } from "./Objekt";
 
 /**
  *
@@ -9,7 +9,7 @@ import Objekt from "./Objekt";
  * @version 2020.01.28
  * @license GPL-3.0-or-later
 */
-export default abstract class SekundaerObjekt extends Objekt {
+export abstract class SekundaerObjekt extends Objekt {
 	protected parent: Klartext = null;
 
 	getParent(): Klartext {

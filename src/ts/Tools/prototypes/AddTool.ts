@@ -9,11 +9,11 @@ import { Vector as VectorLayer } from 'ol/layer';
 import { unByKey } from 'ol/Observable';
 import VectorSource from 'ol/source/Vector';
 import { Circle, Fill, Stroke, Style } from 'ol/style';
-import Abschnitt, { StationObj } from '../../Objekte/Abschnitt';
-import PunktObjekt from '../../Objekte/prototypes/PunktObjekt';
-import Map from "../../openLayers/Map";
-import PublicWFS from '../../PublicWFS';
-import Tool from '../prototypes/Tool';
+import { Abschnitt, StationObj } from '../../Objekte/Abschnitt';
+import { PunktObjekt } from '../../Objekte/prototypes/PunktObjekt';
+import { Map } from "../../openLayers/Map";
+import { PublicWFS } from '../../PublicWFS';
+import { Tool } from '../prototypes/Tool';
 
 /**
  * Funktion zum Hinzufügen von Objekten
@@ -21,7 +21,7 @@ import Tool from '../prototypes/Tool';
  * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
-export default abstract class AddTool extends Tool {
+export abstract class AddTool extends Tool {
     protected map: Map;
     protected abschnitt: Abschnitt = null;
     protected station: number = null;

@@ -16,15 +16,15 @@ import VectorLayer from 'ol/layer/Vector';
 import { unByKey } from 'ol/Observable';
 import VectorSource from 'ol/source/Vector';
 import { Circle, Fill, Stroke, Style } from 'ol/style';
-import HTML from '../../HTML';
-import KlartextManager from '../../Objekte/Klartext';
-import Querschnitt from '../../Objekte/Querschnittsdaten';
+import { HTML } from '../../HTML';
+import { Klartext } from '../../Objekte/Klartext';
+import { Querschnitt } from '../../Objekte/Querschnittsdaten';
 import { ModifyInteraction, SelectInteraction } from '../../openLayers/Interaction';
-import Map from "../../openLayers/Map";
-import PublicWFS from '../../PublicWFS';
-import Vektor from '../../Vektor';
-import Tool from '../prototypes/Tool';
-import QuerInfoTool from './QuerInfoTool';
+import { Map } from "../../openLayers/Map";
+import { PublicWFS } from '../../PublicWFS';
+import { Vektor } from '../../Vektor';
+import { Tool } from '../prototypes/Tool';
+import { QuerInfoTool } from './QuerInfoTool';
 
 /**
  * Funktion zum Verändern von Querschnittsflächen
@@ -32,7 +32,7 @@ import QuerInfoTool from './QuerInfoTool';
  * @version 2020.04.22
  * @license GPL-3.0-or-later
 */
-export default class QuerModifyTool extends Tool {
+export class QuerModifyTool extends Tool {
     private info: QuerInfoTool;
     private modify: ModifyInteraction;
     private selectLinien: SelectInteraction;
@@ -88,10 +88,10 @@ export default class QuerModifyTool extends Tool {
         $(this.multiBreite).on("change", this.updateMultiBreite.bind(this))
         $(this.multiBisBreite).on("change", this.updateMultiBisBreite.bind(this))
 
-        let art = KlartextManager.createKlartextSelectForm("Itquerart", this.multiEditForm, "Art", 'qsmm_art', undefined, "- verschiedene -")
+        let art = Klartext.createKlartextSelectForm("Itquerart", this.multiEditForm, "Art", 'qsmm_art', undefined, "- verschiedene -")
         this.multiArtSelect = art.select;
 
-        let ober = KlartextManager.createKlartextSelectForm("Itquerober", this.multiEditForm, "Art der Oberfläche", 'qsmm_ober', undefined, "- verschiedene -")
+        let ober = Klartext.createKlartextSelectForm("Itquerober", this.multiEditForm, "Art der Oberfläche", 'qsmm_ober', undefined, "- verschiedene -")
         this.multiOberSelect = ober.select;
 
         this.multiCountInput = HTML.createNumberInput(this.multiEditForm, "Anzahl", "qsmm_anzahl");

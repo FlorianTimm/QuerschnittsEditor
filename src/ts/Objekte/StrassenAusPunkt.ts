@@ -5,14 +5,14 @@ import 'chosen-js';
 import 'chosen-js/chosen.css';
 import { Map } from 'ol';
 import { never } from 'ol/events/condition';
-import Daten from "../Daten";
-import HTML from '../HTML';
+import { Daten } from "../Daten";
+import { HTML } from '../HTML';
 import { SelectInteraction } from '../openLayers/Interaction';
 import { VectorLayer } from '../openLayers/Layer';
-import PublicWFS from '../PublicWFS';
-import Abschnitt from './Abschnitt';
-import { default as Klartext, default as KlartextManager } from './Klartext';
-import PunktObjekt from './prototypes/PunktObjekt';
+import { PublicWFS } from '../PublicWFS';
+import { Abschnitt } from './Abschnitt';
+import { Klartext } from './Klartext';
+import { PunktObjekt } from './prototypes/PunktObjekt';
 
 /**
  * Strassenausstrattung (punktuell)
@@ -20,7 +20,7 @@ import PunktObjekt from './prototypes/PunktObjekt';
  * @version 2019.10.29
  * @license GPL-3.0-or-later
 */
-export default class StrassenAusPunkt extends PunktObjekt {
+export class StrassenAusPunkt extends PunktObjekt {
     static loadErControlCounter: number = 0;
     static layer: any;
     private hasSekObj: number = null;
@@ -106,15 +106,15 @@ export default class StrassenAusPunkt extends PunktObjekt {
     }
 
     protected static createFields(form: HTMLFormElement, ausstattung?: StrassenAusPunkt, changeable: boolean = false): Promise<void[]> {
-        let art = KlartextManager.createKlartextSelectForm("Itstrauspktart", form, "Art", "art", ausstattung != undefined ? ausstattung.art : undefined);
+        let art = Klartext.createKlartextSelectForm("Itstrauspktart", form, "Art", "art", ausstattung != undefined ? ausstattung.art : undefined);
         $(art.select).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Lage
-        let lage = KlartextManager.createKlartextSelectForm("Itallglage", form, "Lage", "lage", ausstattung != undefined ? ausstattung.rlageVst : undefined);
+        let lage = Klartext.createKlartextSelectForm("Itallglage", form, "Lage", "lage", ausstattung != undefined ? ausstattung.rlageVst : undefined);
         $(lage.select).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Quelle
-        let quelle = KlartextManager.createKlartextSelectForm("Itquelle", form, "Quelle", "quelle", ausstattung != undefined ? ausstattung.quelle : undefined);
+        let quelle = Klartext.createKlartextSelectForm("Itquelle", form, "Quelle", "quelle", ausstattung != undefined ? ausstattung.quelle : undefined);
         $(quelle.select).prop('disabled', !changeable).trigger("chosen:updated");
 
         // VNK

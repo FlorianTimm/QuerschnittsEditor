@@ -15,8 +15,8 @@ import 'jquery-ui-bundle';
 import 'jquery-ui-bundle/jquery-ui.css';
 import '../css/html_forms.css';
 import '../css/index.css';
-import HTML from './HTML';
-import PublicWFS from './PublicWFS';
+import { HTML } from './HTML';
+import { PublicWFS } from './PublicWFS';
 
 
 window.addEventListener('load', function () { loadER() });
