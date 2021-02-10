@@ -212,7 +212,21 @@ function createMap() {
                 source: new OSM()
             }),
             new TileLayer({
-                name: 'ALKIS',
+                name: 'DOP',
+                visible: false,
+                switchable: true,
+                opacity: 1,
+                source: new TileWMS({
+                    url: 'https://www.geoproxy.geoportal-th.de/geoproxy/services/DOP?',
+                    params: {
+                        'LAYERS': 'th_dop',
+                        'FORMAT': 'image/png'
+                    },
+                    attributions: ['Freie und Hansestadt Hamburg, LGV 2019']
+                })
+            }),
+            new TileLayer({
+                name: 'TK',
                 visible: false,
                 switchable: true,
                 opacity: 1,
