@@ -17,6 +17,11 @@ Danach muss in die `jsp/login.jsp`, `jsp/proxy.jsp` und `jsp/proxy_er.jsp` der P
 publicWFS und zum publicWFS EBFF angegeben werden. Dieses Skript 
 fungiert als Proxy für den WFS. Außerdem müssen in der `jsp/abschnittWFS.jsp` Zugangsdaten für einen lesenden Zugriff auf die TTSIB eingerichtet werden.
 
+Alternativ kann der fertig konfigurierte `dist`-Ordner auch als war-Datei gespeichert werden, die dann im Glassfish-Admin hochgeladen oder im TomCat webapp-Verzeichnis abgelegt werden kann. Hierzu wird das Progamm jar aus einer Java-Installation benötigt:
+```
+cd .\dist
+jar.exe -cvf ..\querschnitt.war *
+```
+
 ## Nutzung 
-Ereignisräume müssen bisher über TTSIB/INFOSYS angelegt werden und die zu 
-bearbeitenden Querschnitte hierüber in den Ereignisraum geladen werden. Nutzer des Programmes benötigen einen Zugang zum PublicWFS.
+Eine ausführliche Anleitung für Nutzer findet sich unter [./etc/manual/QuerschnittsEditor.pdf](./etc/manual/QuerschnittsEditor.pdf).
