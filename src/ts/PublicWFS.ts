@@ -157,8 +157,11 @@ export class PublicWFS {
             })
     }
 
-    public static doQuery(klasse: string, filter: string, blocking: boolean = true): Promise<Document> {
+    public static doQuery(klasse: string, filter: string, blocking: boolean = true, maxCount?: number): Promise<Document> {
         let url_param = "Request=GetFeature&TYPENAME=" + klasse + "&MPP=0&filter=" + encodeURIComponent(filter);
+        if (maxCount) {
+            url_param += '&MAXFEATURES=' + maxCount;
+        }
         return PublicWFS.doGetRequest(url_param, blocking);
     }
 

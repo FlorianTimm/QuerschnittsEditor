@@ -19,6 +19,7 @@ import { Dokument } from "./Dokument";
 import { Klartext } from './Klartext';
 import { PunktObjekt } from './prototypes/PunktObjekt';
 import { Zeichen } from './Zeichen';
+var CONFIG = require('../config.json');
 
 /**
  * Aufstellvorrichtung
@@ -80,7 +81,7 @@ export class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay 
         for (let eintrag of zeichen) {
             let img = document.createElement("img");
             img.style.height = "30px";
-            img.src = "http://gv-srv-w00118:8080/schilder/" + eintrag.getStvoznr().getKt() + ".svg";
+            img.src = CONFIG['SCHILDERPFAD'] + eintrag.getStvoznr().getKt() + ".svg";
             img.title = eintrag.getStvoznr().getBeschreib() + (eintrag.getVztext() ?? '');
             div.appendChild(img);
         }
