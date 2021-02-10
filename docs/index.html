@@ -78,11 +78,14 @@
 					Danach muss in die <code>jsp/login.jsp</code>, <code>jsp/proxy.jsp</code> und <code>jsp/proxy_er.jsp</code> der Pfad zum
 					publicWFS und zum publicWFS EBFF angegeben werden. Dieses Skript
 				fungiert als Proxy für den WFS. Außerdem müssen in der <code>jsp/abschnittWFS.jsp</code> Zugangsdaten für einen lesenden Zugriff auf die TTSIB eingerichtet werden.</p>
+				<p>Alternativ kann der fertig konfigurierte <code>dist</code>-Ordner auch als war-Datei gespeichert werden, die dann im Glassfish-Admin hochgeladen oder im TomCat webapp-Verzeichnis abgelegt werden kann. Hierzu wird das Progamm jar aus einer Java-Installation benötigt:</p>
+				<pre><code><span style="color: #001080">cd</span><span style="color: #000000"> .\</span><span style="color: #001080">dist</span>
+<span style="color: #001080">jar</span><span style="color: #000000">.</span><span style="color: #001080">exe</span><span style="color: #000000"> -</span><span style="color: #001080">cvf</span><span style="color: #000000"> ..\</span><span style="color: #001080">querschnitt</span><span style="color: #000000">.</span><span style="color: #001080">war</span><span style="color: #000000"> *</span>
+</code></pre>
 				<a href="#nutzung" id="nutzung" style="color: inherit; text-decoration: none;">
 					<h2>Nutzung</h2>
 				</a>
-				<p>Ereignisräume müssen bisher über TTSIB/INFOSYS angelegt werden und die zu
-				bearbeitenden Querschnitte hierüber in den Ereignisraum geladen werden. Nutzer des Programmes benötigen einen Zugang zum PublicWFS.</p>
+				<p>Eine ausführliche Anleitung für Nutzer findet sich unter <a href="./etc/manual/QuerschnittsEditor.pdf">./etc/manual/QuerschnittsEditor.pdf</a>.</p>
 			</div>
 		</div>
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
