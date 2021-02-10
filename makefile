@@ -1,4 +1,4 @@
-dist/index.html: src/* docs/manual/QuerschnittsEditor.pdf dist/jsp/proxy.jsp dist/jsp/proxy_er.jsp dist/jsp/login.jsp dist/jsp/abschnittWFS.jsp dist/img/ajax-loader.gif dist/img/arrow.png dist/img/arrow_klein.png
+dist/index.html: src/* etc/manual/QuerschnittsEditor.pdf dist/jsp/proxy.jsp dist/jsp/proxy_er.jsp dist/jsp/login.jsp dist/jsp/abschnittWFS.jsp dist/img/ajax-loader.gif dist/img/arrow.png dist/img/arrow_klein.png
 	npm run build
 
 clean:
@@ -7,12 +7,12 @@ clean:
 	mkdir -p dist/jsp
 	mkdir -p dist/img
 
-docs/manual/QuerschnittsEditor.pdf: docs/manual/QuerschnittsEditor.tex
-	cd docs/manual && pdflatex QuerschnittsEditor
-	#cd docs/manual && bibtex QuerschnittsEditor
-	cd docs/manual && makeglossaries QuerschnittsEditor
-	cd docs/manual && pdflatex QuerschnittsEditor
-	cd docs/manual && pdflatex QuerschnittsEditor
+etc/manual/QuerschnittsEditor.pdf: etc/manual/QuerschnittsEditor.tex
+	cd etc/manual && pdflatex QuerschnittsEditor
+	#cd etc/manual && bibtex QuerschnittsEditor
+	cd etc/manual && makeglossaries QuerschnittsEditor
+	cd etc/manual && pdflatex QuerschnittsEditor
+	cd etc/manual && pdflatex QuerschnittsEditor
 
 dist/jsp/proxy.jsp: src/jsp/proxy.jsp
 	mkdir -p dist/jsp
