@@ -4,14 +4,14 @@ import { Collection } from "ol";
 import { EventsKey } from "ol/events";
 import { never, platformModifierKeyOnly } from 'ol/events/condition';
 import { unByKey } from "ol/Observable";
-import Querschnitt from "../../Objekte/Querschnittsdaten";
-import QuerStation from "../../Objekte/QuerStation";
+import { Querschnitt } from "../../Objekte/Querschnittsdaten";
+import { QuerStation } from "../../Objekte/QuerStation";
 import { SelectInteraction } from '../../openLayers/Interaction';
-import Map from "../../openLayers/Map";
-import PublicWFS from "../../PublicWFS";
-import InfoTool from "../InfoTool";
-import Tool from '../prototypes/Tool';
-import QuerInfoTool from "./QuerInfoTool";
+import { Map } from "../../openLayers/Map";
+import { PublicWFS } from "../../PublicWFS";
+import { InfoTool } from "../InfoTool";
+import { Tool } from '../prototypes/Tool';
+import { QuerInfoTool } from "./QuerInfoTool";
 
 /**
  * Funktion zum Löschen von Querschnitten
@@ -19,7 +19,7 @@ import QuerInfoTool from "./QuerInfoTool";
  * @version 2020.04.22
  * @license GPL-3.0-or-later
 */
-class QuerDelTool extends Tool {
+export class QuerDelTool extends Tool {
     private info: QuerInfoTool;
     private selectLinien: SelectInteraction;
     private selectFlaechen: SelectInteraction;
@@ -166,5 +166,3 @@ class QuerDelTool extends Tool {
         unByKey(this.selectEventsKey);
     }
 }
-
-export default QuerDelTool;

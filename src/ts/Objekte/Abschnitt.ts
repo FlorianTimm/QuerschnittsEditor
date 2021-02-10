@@ -7,12 +7,12 @@ import LineString from 'ol/geom/LineString';
 import VectorSource from 'ol/source/Vector';
 import { Fill, Icon, Stroke, Style, Text } from 'ol/style';
 import CircleStyle from 'ol/style/Circle';
-import AbschnittWFS from '../AbschnittWFS';
-import Daten from '../Daten';
+import { AbschnittWFS } from '../AbschnittWFS';
+import { Daten } from '../Daten';
 import { VectorLayer } from '../openLayers/Layer';
-import PublicWFS from '../PublicWFS';
-import Vektor from '../Vektor';
-import QuerStation from './QuerStation';
+import { PublicWFS } from '../PublicWFS';
+import { Vektor } from '../Vektor';
+import { QuerStation } from './QuerStation';
 
 var CONFIG: { [index: string]: string } = require('../config.json');
 
@@ -22,7 +22,7 @@ var CONFIG: { [index: string]: string } = require('../config.json');
  * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
-export default class Abschnitt extends Feature<LineString> {
+export class Abschnitt extends Feature<LineString> {
     private static abschnitte: { [absid: number]: Abschnitt } = {}
     private static waitForAbschnitt: { [absid: number]: Promise<Abschnitt> } = {}
 

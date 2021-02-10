@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import VectorLayer from 'ol/layer/Vector';
-import Daten from '../../Daten';
-import Aufstellvorrichtung from '../../Objekte/Aufstellvorrichtung';
-import PunktObjekt from '../../Objekte/prototypes/PunktObjekt';
-import Map from "../../openLayers/Map";
-import PublicWFS from '../../PublicWFS';
-import AddTool from '../prototypes/AddTool';
+import { Daten } from '../../Daten';
+import { Aufstellvorrichtung } from '../../Objekte/Aufstellvorrichtung';
+import { PunktObjekt } from '../../Objekte/prototypes/PunktObjekt';
+import { Map } from "../../openLayers/Map";
+import { PublicWFS } from '../../PublicWFS';
+import { AddTool } from '../prototypes/AddTool';
 var CONFIG = require('../../config.json');
 
 /**
@@ -15,7 +15,7 @@ var CONFIG = require('../../config.json');
  * @version 2019.10.29
  * @license GPL-3.0-or-later
 */
-export default class AvAdd extends AddTool {
+export class AvAdd extends AddTool {
     constructor(map: Map, sidebar: HTMLDivElement, layerAchse: VectorLayer) {
         super(map, sidebar, layerAchse);
     }

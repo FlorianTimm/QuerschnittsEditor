@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import Map from "../openLayers/Map";
-import Measure from "../Tools/Measure";
-import ToolBox from "./ToolBox";
+import { Map } from "../openLayers/Map";
+import { Measure } from "../Tools/Measure";
+import { ToolBox } from "./ToolBox";
 
 /**
  * Klasse zum Erzeugen eines Werkzeugkasten
@@ -10,7 +10,7 @@ import ToolBox from "./ToolBox";
  * @version 2019.11.20
  * @license GPL-3.0-or-later
 */
-export default class AufstellToolBox extends ToolBox {
+export class SonstigesToolBox extends ToolBox {
     private measureTool: Measure;
 
     /**

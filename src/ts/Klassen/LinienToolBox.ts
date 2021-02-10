@@ -1,9 +1,9 @@
-import ToolBox from "./ToolBox";
-import Map from "../openLayers/Map";
-import Abschnitt from "../Objekte/Abschnitt";
-import LinienEditor from "../Tools/LinienEdit";
+import { ToolBox } from "./ToolBox";
+import { Map } from "../openLayers/Map";
+import { Abschnitt } from "../Objekte/Abschnitt";
+import { LinienEditor } from "../Tools/LinienEdit";
 
-export default class LinienToolBox extends ToolBox {
+export class LinienToolBox extends ToolBox {
     linienEditor: LinienEditor;
 
 

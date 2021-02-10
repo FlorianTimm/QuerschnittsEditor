@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import { InfoToolSelectable } from "../../Tools/InfoTool";
-import Objekt from "./Objekt";
+import { Objekt } from "./Objekt";
 
 /**
  *
@@ -9,7 +9,7 @@ import Objekt from "./Objekt";
  * @version 2020.01.28
  * @license GPL-3.0-or-later
 */
-export default abstract class PrimaerObjekt extends Objekt implements InfoToolSelectable {
+export abstract class PrimaerObjekt extends Objekt implements InfoToolSelectable {
 	protected abschnittOderAst: string = null;
 	protected vst: number = null;
 	protected bst: number = null;

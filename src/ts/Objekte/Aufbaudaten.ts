@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import Klartext from "./Klartext";
-import SekundaerObjekt from "./prototypes/SekundaerObjekt";
+import { Klartext } from "./Klartext";
+import { SekundaerObjekt } from "./prototypes/SekundaerObjekt";
 
 /**
  * Aufbaudaten
@@ -9,7 +9,7 @@ import SekundaerObjekt from "./prototypes/SekundaerObjekt";
  * @version 2019.10.29
  * @license GPL-3.0-or-later
 */
-export default class Aufbau extends SekundaerObjekt {
+export class Aufbau extends SekundaerObjekt {
 	public getObjektKlassenName(): string {
 		return "Otschicht";
 	}

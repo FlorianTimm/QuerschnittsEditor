@@ -4,7 +4,7 @@ import { Image, Tile, Vector } from "ol/layer";
 import { Options as ImageOptionsOl } from "ol/layer/BaseImage";
 import { Options as TileOptionsOl } from "ol/layer/BaseTile";
 import { Options as VectorOptionsOl } from "ol/layer/BaseVector";
-import Daten from "../Daten";
+import { Daten } from "../Daten";
 
 /**
  * OpenLayers: Interface TileOptions

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import Abschnitt from '../../Objekte/Abschnitt';
-import Aufstellvorrichtung from '../../Objekte/Aufstellvorrichtung';
-import Map from "../../openLayers/Map";
-import PublicWFS from '../../PublicWFS';
-import Add2ER from '../prototypes/Add2ER';
+import { Abschnitt } from '../../Objekte/Abschnitt';
+import { Aufstellvorrichtung } from '../../Objekte/Aufstellvorrichtung';
+import { Map } from "../../openLayers/Map";
+import { PublicWFS } from '../../PublicWFS';
+import { Add2ER } from '../prototypes/Add2ER';
 
 /**
  * Funktion zum Hinzufügen von Aufstellvorrichtungen zum Ereignisraum
@@ -12,7 +12,7 @@ import Add2ER from '../prototypes/Add2ER';
  * @version 2019.10.29
  * @license GPL-3.0-or-later
 */
-export default class AvAdd2ER extends Add2ER {
+export class AvAdd2ER extends Add2ER {
     constructor(map: Map) {
         super(map, "Otaufstvor");
     }

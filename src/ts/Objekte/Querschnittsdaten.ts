@@ -6,18 +6,18 @@ import { FeatureLike } from 'ol/Feature';
 import { MultiLineString, Polygon } from 'ol/geom';
 import VectorSource from 'ol/source/Vector';
 import { Fill, Stroke, Style, Text } from 'ol/style';
-import Daten from '../Daten';
-import HTML from '../HTML';
-import Abschnitt from '../Objekte/Abschnitt';
-import Aufbau from '../Objekte/Aufbaudaten';
+import { Daten } from '../Daten';
+import { HTML } from '../HTML';
+import { Abschnitt } from '../Objekte/Abschnitt';
+import { Aufbau } from '../Objekte/Aufbaudaten';
 import { SelectInteraction } from '../openLayers/Interaction';
 import { VectorLayer } from '../openLayers/Layer';
-import PublicWFS from '../PublicWFS';
-import InfoTool, { InfoToolEditable } from '../Tools/InfoTool';
-import Vektor from '../Vektor';
-import Klartext from './Klartext';
-import PrimaerObjekt from './prototypes/PrimaerObjekt';
-import QuerStation from './QuerStation';
+import { PublicWFS } from '../PublicWFS';
+import { InfoTool, InfoToolEditable } from '../Tools/InfoTool';
+import { Vektor } from '../Vektor';
+import { Klartext } from './Klartext';
+import { PrimaerObjekt } from './prototypes/PrimaerObjekt';
+import { QuerStation } from './QuerStation';
 
 /**
  * Querschnittsdaten
@@ -25,7 +25,7 @@ import QuerStation from './QuerStation';
  * @version 2020.04.22
  * @license GPL-3.0-or-later
 */
-export default class Querschnitt extends PrimaerObjekt implements InfoToolEditable {
+export class Querschnitt extends PrimaerObjekt implements InfoToolEditable {
     private _aufbaudaten: Aufbau[] = null;
     public trenn: Feature<MultiLineString>;
 

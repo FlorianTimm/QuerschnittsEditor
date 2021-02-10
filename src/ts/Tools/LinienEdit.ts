@@ -1,16 +1,16 @@
 import { platformModifierKeyOnly } from "ol/events/condition";
 import { Style, Stroke } from "ol/style";
-import HTML from "../HTML";
-import Abschnitt from "../Objekte/Abschnitt";
-import Klartext from "../Objekte/Klartext";
+import { HTML } from "../HTML";
+import { Abschnitt } from "../Objekte/Abschnitt";
+import { Klartext } from "../Objekte/Klartext";
 import { SelectInteraction } from "../openLayers/Interaction";
-import Map from "../openLayers/Map";
-import PublicWFS from "../PublicWFS";
-import Tool from "./prototypes/Tool";
+import { Map } from "../openLayers/Map";
+import { PublicWFS } from "../PublicWFS";
+import { Tool } from "./prototypes/Tool";
 import "../../css/linienEdit.css"
-import Daten from "../Daten";
+import { Daten } from "../Daten";
 
-export default class LinienEditor extends Tool {
+export class LinienEditor extends Tool {
     private select: SelectInteraction;
     private sidebar: HTMLDivElement;
     selectBox: HTMLFormElement;

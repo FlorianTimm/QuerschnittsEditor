@@ -9,7 +9,7 @@ import { Extent } from 'ol/extent';
  * @version 2019.06.06
  * @license GPL-3.0-or-later
 */
-export default class AbschnittWFS {
+export class AbschnittWFS {
 
     static getById(id: string): Promise<XMLDocument> {
         let param = '?ABSCHNITTID=' + id;

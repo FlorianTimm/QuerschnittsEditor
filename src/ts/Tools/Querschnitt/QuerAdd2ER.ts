@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import Abschnitt from '../../Objekte/Abschnitt';
-import Querschnittsdaten from '../../Objekte/Querschnittsdaten';
-import Map from "../../openLayers/Map";
-import PublicWFS from '../../PublicWFS';
-import Add2ER from '../prototypes/Add2ER';
+import { Abschnitt } from '../../Objekte/Abschnitt';
+import { Querschnitt } from '../../Objekte/Querschnittsdaten';
+import { Map } from "../../openLayers/Map";
+import { PublicWFS } from '../../PublicWFS';
+import { Add2ER } from '../prototypes/Add2ER';
 
 /**
  * Querschnittsflächen zu Ereignisraum hinzufügen
@@ -12,14 +12,14 @@ import Add2ER from '../prototypes/Add2ER';
  * @version 2019.11.04
  * @license GPL-3.0-or-later
 */
-export default class QuerAdd2ER extends Add2ER {
+export class QuerAdd2ER extends Add2ER {
 
     constructor(map: Map) {
         super(map, "Querschnitt");
     }
 
     loadAbschnitt(abschnitt: Abschnitt) {
-        Querschnittsdaten.loadAbschnittER(abschnitt)
+        Querschnitt.loadAbschnittER(abschnitt)
             .then(() => { PublicWFS.showMessage("Erfolgreich in ER kopiert") })
             .catch(() => { PublicWFS.showMessage("Fehler", true) });;
     }

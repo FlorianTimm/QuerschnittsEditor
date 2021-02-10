@@ -3,13 +3,13 @@
 import { Select as SelectInteraction } from 'ol/interaction';
 import VectorLayer from 'ol/layer/Vector';
 import { unByKey } from 'ol/Observable';
-import Daten from '../Daten';
-import HTML from '../HTML';
-import PunktObjekt from '../Objekte/prototypes/PunktObjekt';
-import Map from "../openLayers/Map";
-import PublicWFS from '../PublicWFS';
+import { Daten } from '../Daten';
+import { HTML } from '../HTML';
+import { PunktObjekt } from '../Objekte/prototypes/PunktObjekt';
+import { Map } from "../openLayers/Map";
+import { PublicWFS } from '../PublicWFS';
 import { InfoToolSelectable } from './InfoTool';
-import Tool from './prototypes/Tool';
+import { Tool } from './prototypes/Tool';
 
 /**
  * Prototyp des Werkzeuges zum Löschen von Punktobjekten
@@ -17,7 +17,7 @@ import Tool from './prototypes/Tool';
  * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
-export default class DeleteTool extends Tool {
+export class DeleteTool extends Tool {
     protected layer: VectorLayer;
     protected sidebar: HTMLElement;
     protected delField: HTMLFormElement;

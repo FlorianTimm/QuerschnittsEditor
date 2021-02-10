@@ -1,0 +1,284 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>querschnitts_editor</title>
+	<meta name="description" content="Documentation for querschnitts_editor">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/main.css">
+	<script async src="assets/js/search.js" id="search-script"></script>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="assets/js/search.json" data-base=".">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="index.html" class="title">querschnitts_editor</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<h1>querschnitts_editor</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<div class="tsd-panel tsd-typography">
+				<a href="#querschnittseditor" id="querschnittseditor" style="color: inherit; text-decoration: none;">
+					<h1>QuerschnittsEditor</h1>
+				</a>
+				<p>Ermöglicht das Editieren von Querschnitte im WebEditor. Als Datenquelle
+					wird hierfür der PublicWFS der TTSIB5 von NOVASIB verwendet. Der
+				Editor ist nur in Zusammenhang mit dieser Software einsetzbar. </p>
+				<a href="#kompilierien" id="kompilierien" style="color: inherit; text-decoration: none;">
+					<h2>Kompilierien</h2>
+				</a>
+				<p>Benötigt wird eine node.js und parcel.js Entwicklungs-Umgebung:
+				<a href="https://bitbucket.org/geowerkstatt-hamburg/masterportal/src/stable/doc/devdoc.md">https://bitbucket.org/geowerkstatt-hamburg/masterportal/src/stable/doc/devdoc.md</a></p>
+				<p>Mit <code>npm install</code> und <code>npm run build</code> kann dann das Programm im Ordner <code>dist</code> erzeugt werden. Außerdem muss der Ordner <code>jsp</code> aus dem <code>src</code>-Ordner in den <code>dist</code>-Ordner kopiert werden.</p>
+				<a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
+					<h2>Installation</h2>
+				</a>
+				<p>Das Verzeichnis <code>dist</code> wird in das Docroot des Glassfish
+					oder TomCat (Java EE) kopiert.
+					Danach muss in die <code>jsp/login.jsp</code>, <code>jsp/proxy.jsp</code> und <code>jsp/proxy_er.jsp</code> der Pfad zum
+					publicWFS und zum publicWFS EBFF angegeben werden. Dieses Skript
+				fungiert als Proxy für den WFS. Außerdem müssen in der <code>jsp/abschnittWFS.jsp</code> Zugangsdaten für einen lesenden Zugriff auf die TTSIB eingerichtet werden.</p>
+				<p>Alternativ kann der fertig konfigurierte <code>dist</code>-Ordner auch als war-Datei gespeichert werden, die dann im Glassfish-Admin hochgeladen oder im TomCat webapp-Verzeichnis abgelegt werden kann. Hierzu wird das Progamm jar aus einer Java-Installation benötigt:</p>
+				<pre><code><span style="color: #001080">cd</span><span style="color: #000000"> .\</span><span style="color: #001080">dist</span>
+<span style="color: #001080">jar</span><span style="color: #000000">.</span><span style="color: #001080">exe</span><span style="color: #000000"> -</span><span style="color: #001080">cvf</span><span style="color: #000000"> ..\</span><span style="color: #001080">querschnitt</span><span style="color: #000000">.</span><span style="color: #001080">war</span><span style="color: #000000"> *</span>
+</code></pre>
+				<a href="#nutzung" id="nutzung" style="color: inherit; text-decoration: none;">
+					<h2>Nutzung</h2>
+				</a>
+				<p>Eine ausführliche Anleitung für Nutzer findet sich unter <a href="./etc/manual/QuerschnittsEditor.pdf">./etc/manual/QuerschnittsEditor.pdf</a>.</p>
+			</div>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class=" ">
+						<a href="modules.html">Exports</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/abschnittwfs.html">AbschnittWFS</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/daten.html">Daten</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/html.html">HTML</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/klassen_aufstelltoolbox.html">Klassen/<wbr>Aufstell<wbr>Tool<wbr>Box</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/klassen_ausstpkttoolbox.html">Klassen/<wbr>Ausst<wbr>Pkt<wbr>Tool<wbr>Box</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/klassen_linientoolbox.html">Klassen/<wbr>Linien<wbr>Tool<wbr>Box</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/klassen_querschnitttoolbox.html">Klassen/<wbr>Querschnitt<wbr>Tool<wbr>Box</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/klassen_sonstigestoolbox.html">Klassen/<wbr>Sonstiges<wbr>Tool<wbr>Box</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/klassen_toolbox.html">Klassen/<wbr>Tool<wbr>Box</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/layerswitch.html">Layer<wbr>Switch</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/objekte_abschnitt.html">Objekte/<wbr>Abschnitt</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/objekte_aufbaudaten.html">Objekte/<wbr>Aufbaudaten</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/objekte_aufstellvorrichtung.html">Objekte/<wbr>Aufstellvorrichtung</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/objekte_dokument.html">Objekte/<wbr>Dokument</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/objekte_klartext.html">Objekte/<wbr>Klartext</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/objekte_querstation.html">Objekte/<wbr>Quer<wbr>Station</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/objekte_querschnittsdaten.html">Objekte/<wbr>Querschnittsdaten</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/objekte_strassenauspunkt.html">Objekte/<wbr>Strassen<wbr>Aus<wbr>Punkt</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/objekte_zeichen.html">Objekte/<wbr>Zeichen</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/objekte_prototypes_objekt.html">Objekte/prototypes/<wbr>Objekt</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/objekte_prototypes_pobjektmitdateien.html">Objekte/prototypes/PObjekt<wbr>Mit<wbr>Dateien</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/objekte_prototypes_primaerobjekt.html">Objekte/prototypes/<wbr>Primaer<wbr>Objekt</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/objekte_prototypes_punktobjekt.html">Objekte/prototypes/<wbr>Punkt<wbr>Objekt</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/objekte_prototypes_sekundaerobjekt.html">Objekte/prototypes/<wbr>Sekundaer<wbr>Objekt</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/publicwfs.html">PublicWFS</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/toolbox.html">Toolbox</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/tools_aufstellvorrichtung_avadd.html">Tools/<wbr>Aufstellvorrichtung/<wbr>AvAdd</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/tools_aufstellvorrichtung_avadd2er.html">Tools/<wbr>Aufstellvorrichtung/<wbr>AvAdd2ER</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/tools_aufstellvorrichtung_avvzadd.html">Tools/<wbr>Aufstellvorrichtung/<wbr>AvVz<wbr>Add</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/tools_deletetool.html">Tools/<wbr>Delete<wbr>Tool</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/tools_infotool.html">Tools/<wbr>Info<wbr>Tool</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/tools_linienedit.html">Tools/<wbr>Linien<wbr>Edit</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/tools_measure.html">Tools/<wbr>Measure</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/tools_movetool.html">Tools/<wbr>Move<wbr>Tool</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/tools_querschnitt_queradd2er.html">Tools/<wbr>Querschnitt/<wbr>Quer<wbr>Add2ER</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/tools_querschnitt_queraddtool.html">Tools/<wbr>Querschnitt/<wbr>Quer<wbr>Add<wbr>Tool</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/tools_querschnitt_querdeltool.html">Tools/<wbr>Querschnitt/<wbr>Quer<wbr>Del<wbr>Tool</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/tools_querschnitt_querinfotool.html">Tools/<wbr>Querschnitt/<wbr>Quer<wbr>Info<wbr>Tool</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/tools_querschnitt_quermodifytool.html">Tools/<wbr>Querschnitt/<wbr>Quer<wbr>Modify<wbr>Tool</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/tools_querschnitt_querparttool.html">Tools/<wbr>Querschnitt/<wbr>Quer<wbr>Part<wbr>Tool</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/tools_strassenauspunkt_sapadd.html">Tools/<wbr>Strassen<wbr>Aus<wbr>Punkt/SAPAdd</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/tools_strassenauspunkt_sapadd2er.html">Tools/<wbr>Strassen<wbr>Aus<wbr>Punkt/SAPAdd2ER</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/tools_prototypes_add2er.html">Tools/prototypes/<wbr>Add2ER</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/tools_prototypes_addtool.html">Tools/prototypes/<wbr>Add<wbr>Tool</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/tools_prototypes_tool.html">Tools/prototypes/<wbr>Tool</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/vektor.html">Vektor</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/waitblocker.html">Wait<wbr>Blocker</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/edit.html">edit</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/ereignisraum.html">ereignisraum</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/index.html">index</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/openlayers_interaction.html">open<wbr>Layers/<wbr>Interaction</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/openlayers_layer.html">open<wbr>Layers/<wbr>Layer</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/openlayers_map.html">open<wbr>Layers/<wbr>Map</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

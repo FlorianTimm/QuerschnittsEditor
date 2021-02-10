@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import Abschnitt from '../Objekte/Abschnitt';
-import Querschnitt from '../Objekte/Querschnittsdaten';
-import QuerStation from '../Objekte/QuerStation';
-import Map from '../openLayers/Map';
-import QuerAdd2ER from '../Tools/Querschnitt/QuerAdd2ER';
-import QuerAddTool from '../Tools/Querschnitt/QuerAddTool';
-import QuerDelTool from '../Tools/Querschnitt/QuerDelTool';
-import QuerInfoTool from '../Tools/Querschnitt/QuerInfoTool';
-import QuerModifyTool from '../Tools/Querschnitt/QuerModifyTool';
-import QuerPartTool from '../Tools/Querschnitt/QuerPartTool';
-import ToolBox from './ToolBox';
+import { Abschnitt } from '../Objekte/Abschnitt';
+import { Querschnitt } from '../Objekte/Querschnittsdaten';
+import { QuerStation } from '../Objekte/QuerStation';
+import { Map } from '../openLayers/Map';
+import { QuerAdd2ER } from '../Tools/Querschnitt/QuerAdd2ER';
+import { QuerAddTool } from '../Tools/Querschnitt/QuerAddTool';
+import { QuerDelTool } from '../Tools/Querschnitt/QuerDelTool';
+import { QuerInfoTool } from '../Tools/Querschnitt/QuerInfoTool';
+import { QuerModifyTool } from '../Tools/Querschnitt/QuerModifyTool';
+import { QuerPartTool } from '../Tools/Querschnitt/QuerPartTool';
+import { ToolBox } from './ToolBox';
 
 /**
  * QuerschnittsToolBox
@@ -18,7 +18,7 @@ import ToolBox from './ToolBox';
  * @version 2020.04.22
  * @license GPL-3.0-or-later
 */
-export default class QuerschnittToolBox extends ToolBox {
+export class QuerschnittToolBox extends ToolBox {
     private infoTool: QuerInfoTool;
     private modifyTool: QuerModifyTool;
     private delTool: QuerDelTool;

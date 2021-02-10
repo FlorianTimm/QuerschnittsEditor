@@ -11,17 +11,17 @@ import { Select as SelectInteraction } from 'ol/interaction';
 import { unByKey } from 'ol/Observable';
 import VectorSource from 'ol/source/Vector';
 import { Stroke, Style } from 'ol/style';
-import Daten from '../../Daten';
-import HTML from '../../HTML';
-import Abschnitt from '../../Objekte/Abschnitt';
-import Klartext from '../../Objekte/Klartext';
-import Querschnitt from '../../Objekte/Querschnittsdaten';
-import QuerStation from '../../Objekte/QuerStation';
+import { Daten } from '../../Daten';
+import { HTML } from '../../HTML';
+import { Abschnitt } from '../../Objekte/Abschnitt';
+import { Klartext } from '../../Objekte/Klartext';
+import { Querschnitt } from '../../Objekte/Querschnittsdaten';
+import { QuerStation } from '../../Objekte/QuerStation';
 import { VectorLayer } from '../../openLayers/Layer';
-import Map from "../../openLayers/Map";
-import PublicWFS from '../../PublicWFS';
-import Tool from '../prototypes/Tool';
-import QuerInfoTool from './QuerInfoTool';
+import { Map } from "../../openLayers/Map";
+import { PublicWFS } from '../../PublicWFS';
+import { Tool } from '../prototypes/Tool';
+import { QuerInfoTool } from './QuerInfoTool';
 
 /**
  * Funktion zum Hinzufügen von Querschnittsflächen
@@ -29,7 +29,7 @@ import QuerInfoTool from './QuerInfoTool';
  * @version 2020.04.22
  * @license GPL-3.0-or-later
 */
-class QuerAddTool extends Tool {
+export class QuerAddTool extends Tool {
     private _info: QuerInfoTool;
     private selectFehlende: SelectInteraction;
     private form: HTMLFormElement = null;
@@ -351,5 +351,3 @@ class QuerAddTool extends Tool {
         this.querschnittSelected()
     }
 }
-
-export default QuerAddTool;
