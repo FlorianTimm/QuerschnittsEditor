@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import Daten from "../Daten";
+import Abschnitt from "../Objekte/Abschnitt";
 import { VectorLayer } from "../openLayers/Layer";
 import { Map } from "../openLayers/Map";
 import { Tool } from "../Tools/prototypes/Tool";
@@ -22,8 +24,9 @@ export abstract class ToolBox {
     protected radioButtons: { tool: Tool, radio: HTMLInputElement }[] = []
     protected formid: string;
     protected layer: VectorLayer[] = [];
-    static liste: { [formid: string]: ToolBox } = {};
+    static liste: { [objektKlasse: string]: ToolBox } = {};
     stopped: boolean;
+    private static selectBox: HTMLSelectElement;
 
     /**
      * Erzeugt das Menu zur Auswahl des Werkzeuges
@@ -33,14 +36,53 @@ export abstract class ToolBox {
     /**
     * @param map Karte
     * @param sidebar DIV-Element, in den die Tools geladen werden sollen
-    * @param formid ID des Form-Elementes, in den die Toolbox geladen werden soll
+    * @param formid ID des Form-Elementes, in den die Toolbox geladen werden soll (bei Objektklassen, die WFS Bezeichnung)
+    * @param beschriftung
+    * @param color Hintergrundfarbe für Option und Box
     */
-    constructor(map: Map, sidebar: HTMLDivElement, formid: string) {
+    constructor(map: Map, sidebar: HTMLDivElement, formid: string, beschriftung?: string, color?: string) {
         this.map = map;
         this.sidebar = sidebar;
         this.formid = formid;
-        this.form = document.getElementById(this.formid) as HTMLInputElement;
-        ToolBox.liste[this.formid] = this;
+
+        if (!ToolBox.selectBox) {
+            ToolBox.selectBox = document.createElement("select");
+            document.getElementById("toolboxen").appendChild(ToolBox.selectBox)
+
+            $(ToolBox.selectBox).selectmenu({
+                width: 210,
+                change: () => {
+                    $(ToolBox.getByFormId(Daten.getInstanz().modus).form).hide();
+                    ToolBox.getByFormId(Daten.getInstanz().modus).stop()
+                    $(ToolBox.getByFormId(ToolBox.selectBox.value).form).show();
+                    ToolBox.getByFormId(ToolBox.selectBox.value).start()
+                    Daten.getInstanz().modus = ToolBox.selectBox.value;
+                    Abschnitt.getLayer().changed();
+                }
+            });
+        }
+
+        this.form = document.createElement('div') as HTMLInputElement;
+        if (color) this.form.style.backgroundColor = color;
+        document.getElementById("toolboxen").appendChild(this.form);
+
+        if (beschriftung) {
+            let opt = document.createElement("option")
+            opt.innerHTML = beschriftung;
+            opt.value = formid;
+            if (color) opt.style.backgroundColor = color;
+            ToolBox.selectBox.appendChild(opt);
+            $(ToolBox.selectBox).selectmenu("refresh");
+
+            if (Daten.getInstanz().modus != formid) {
+                this.form.style.display = "none";
+            } else {
+                opt.selected = true;
+            }
+        }
+
+        this.form.id = formid;
+        ToolBox.liste[formid] = this;
     }
 
     public getId() {

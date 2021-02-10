@@ -31,7 +31,7 @@ export class QuerschnittToolBox extends ToolBox {
      * @param sidebar DIV-Element, in den die Tools geladen werden sollen
      */
     constructor(map: Map, sidebar: HTMLDivElement) {
-        super(map, sidebar, "tab_Querschnitt");
+        super(map, sidebar, "Querschnitt", "Querschnitte", "rgba(255, 243, 188, 0.8)");
 
         let layerAchse = Abschnitt.getLayer();
 
