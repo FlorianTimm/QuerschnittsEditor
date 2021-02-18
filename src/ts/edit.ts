@@ -20,9 +20,9 @@ import proj4 from 'proj4';
 import { Daten } from './Daten';
 import { AufstellToolBox } from './Klassen/AufstellToolBox';
 import { AusstPktToolBox } from './Klassen/AusstPktToolBox';
+import { LinienToolBox } from './Klassen/LinienToolBox';
 import { QuerschnittToolBox } from './Klassen/QuerschnittToolBox';
 import { SonstigesToolBox } from './Klassen/SonstigesToolBox';
-import { ToolBox } from './Klassen/ToolBox';
 import { LayerSwitch } from './LayerSwitch';
 import { Abschnitt } from './Objekte/Abschnitt';
 import { TileLayer } from './openLayers/Layer';
@@ -61,7 +61,8 @@ window.addEventListener('load', function () {
     new QuerschnittToolBox(map, sidebar);
     let atb = new AufstellToolBox(map, sidebar);
     new AusstPktToolBox(map, sidebar);
-    new SonstigesToolBox(map, sidebar)
+    new LinienToolBox(map, sidebar);
+    new SonstigesToolBox(map, sidebar);
     atb.start()
     Abschnitt.getLayer(map);
 
@@ -359,12 +360,4 @@ function createMap() {
     });
 }
 
-$("div#tabs").tabs({
-    activate: function (event, ui) {
-        Daten.getInstanz().modus = (event.currentTarget as HTMLElement).dataset.ok;
-        Abschnitt.getLayer().changed();
-        ToolBox.getByFormId(ui.oldPanel.prop("id")).stop();
-        ToolBox.getByFormId(ui.newPanel.prop("id")).start();
-    },
-    active: 1
-})
+

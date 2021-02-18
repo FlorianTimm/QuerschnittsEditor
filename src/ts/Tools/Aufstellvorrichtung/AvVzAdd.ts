@@ -178,7 +178,7 @@ export class AvVzAdd extends Tool {
         img.style.height = "50px";
         Klartext.load("Itvzstvoznr")
             .then(() => {
-                img.src = "http://gv-srv-w00118:8080/schilder/" + eintrag.getStvoznr().getKt() + ".svg";
+                img.src = CONFIG['SCHILDERPFAD'] + eintrag.getStvoznr().getKt() + ".svg";
                 img.title = eintrag.getStvoznr().getBeschreib() + (eintrag.getVztext() != null) ? ("\n" + eintrag.getVztext()) : ('');
             });
         div.appendChild(img);
@@ -194,7 +194,7 @@ export class AvVzAdd extends Tool {
         tasks.push(stvoznr.promise)
         $(stvoznr.select).on("change", function () {
             let schild = Klartext.get("Itvzstvoznr", stvoznr.select.value)
-            img.src = "http://gv-srv-w00118:8080/schilder/" + schild.getKt() + ".svg";
+            img.src = CONFIG['SCHILDERPFAD'] + schild.getKt() + ".svg";
             img.title = schild['beschreib'];
         });
 

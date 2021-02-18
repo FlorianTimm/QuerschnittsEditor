@@ -11,7 +11,11 @@ var CONFIG = require('./config.json');
  * @version 2019.10.29
  * @license GPL-3.0-or-later
 */
+
 export class PublicWFS {
+    static capabilities: null | Promise<Document> = null;
+    static describeFeature: {};
+
     private static doSoapRequestWFS(xml: string): Promise<Document> {
         return PublicWFS.doSoapRequest(CONFIG.PUBLIC_WFS_URL, xml);
     }
@@ -157,8 +161,11 @@ export class PublicWFS {
             })
     }
 
-    public static doQuery(klasse: string, filter: string, blocking: boolean = true): Promise<Document> {
+    public static doQuery(klasse: string, filter: string, blocking: boolean = true, maxCount?: number): Promise<Document> {
         let url_param = "Request=GetFeature&TYPENAME=" + klasse + "&MPP=0&filter=" + encodeURIComponent(filter);
+        if (maxCount) {
+            url_param += '&MAXFEATURES=' + maxCount;
+        }
         return PublicWFS.doGetRequest(url_param, blocking);
     }
 
@@ -250,5 +257,18 @@ export class PublicWFS {
             window.setTimeout(ausblenden, 5000);
         }
         m.style.display = 'block';
+    }
+
+    public static async getCapabilities(): Promise<Document> {
+        if (this.capabilities == null)
+            this.capabilities = PublicWFS.doGetRequest("SERVICE=WFS&REQUEST=GetCapabilities");
+        return this.capabilities;
+    }
+
+    public static async describeFeatureType(featureType: string): Promise<Document> {
+        if (!this.describeFeature) this.describeFeature = {};
+        if (!(featureType in this.describeFeature))
+            this.describeFeature[featureType] = PublicWFS.doGetRequest("SERVICE=WFS&REQUEST=DescribeFeatureType&TYPENAME=" + featureType);
+        return this.describeFeature[featureType];
     }
 }
