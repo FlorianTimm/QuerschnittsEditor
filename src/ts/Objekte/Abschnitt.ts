@@ -23,8 +23,8 @@ var CONFIG: { [index: string]: string } = require('../config.json');
  * @license GPL-3.0-or-later
 */
 export class Abschnitt extends Feature<LineString> {
-    private static abschnitte: { [absid: number]: Abschnitt } = {}
-    private static waitForAbschnitt: { [absid: number]: Promise<Abschnitt> } = {}
+    private static abschnitte: { [absid: string]: Abschnitt } = {}
+    private static waitForAbschnitt: { [absid: string]: Promise<Abschnitt> } = {}
 
     private fid: string = null;
     private abschnittid: string = null;

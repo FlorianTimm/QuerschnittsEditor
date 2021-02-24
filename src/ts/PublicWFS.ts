@@ -14,7 +14,7 @@ var CONFIG = require('./config.json');
 
 export class PublicWFS {
     static capabilities: null | Promise<Document> = null;
-    static describeFeature: {};
+    static describeFeature: { [featureType: string]: Promise<Document> };
 
     private static doSoapRequestWFS(xml: string): Promise<Document> {
         return PublicWFS.doSoapRequest(CONFIG.PUBLIC_WFS_URL, xml);

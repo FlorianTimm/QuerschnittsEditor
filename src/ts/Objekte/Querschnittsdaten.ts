@@ -445,7 +445,7 @@ export class Querschnitt extends PrimaerObjekt implements InfoToolEditable {
             querschnitteNeu.push(...querschnitt.checkAndEditBreitenEdit(breite ?? querschnitt.getBreite(), bisBreite ?? querschnitt.getBisBreite()));
         }
         console.log(querschnitteNeu)
-        let dupRem = {}
+        let dupRem: { [objektid: string]: boolean } = {}
         let querNeuUnique = []
         for (let querschnitt of querschnitteNeu) {
             if (!(querschnitt.getObjektId() in dupRem)) {
