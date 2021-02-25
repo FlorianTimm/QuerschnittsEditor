@@ -4,7 +4,7 @@ const {
   CleanWebpackPlugin
 } = require('clean-webpack-plugin');
 //const CopyWebpackPlugin = require('copy-webpack-plugin');
-//const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
   mode: 'development',
@@ -24,12 +24,19 @@ module.exports = {
     //jquery: ['jquery', 'jquery-ui'],
     //openlayers: 'ol'
   },
-  /*optimization: {
-      splitChunks: {
-        chunks: 'all',
-      },
-  },*/
-
+  optimization: {
+    minimize: true,
+    minimizer: [
+      `...`,
+      new MiniCssExtractPlugin(),
+    ],
+    splitChunks: {
+      chunks: 'all',
+    },
+  },
+  externals: {
+    "config": path.resolve(__dirname, "./src/ts/config.json")
+  },
   module: {
     rules: [{
         test: /\.tsx?$/,
@@ -38,7 +45,8 @@ module.exports = {
       },
       {
         test: /\.(css)$/,
-        use: ['style-loader', 'css-loader'],
+        use: [MiniCssExtractPlugin.loader, 'css-loader'],
+        //use: ['style-loader', 'css-loader'],
       },
       {
         test: /\.(png|jpe?g|gif)$/i,
@@ -59,6 +67,7 @@ module.exports = {
     new CleanWebpackPlugin({
       cleanOnceBeforeBuildPatterns: ['dist/*.*']
     }),
+    new MiniCssExtractPlugin(),
     new HtmlWebpackPlugin({
       filename: 'index.html',
       template: 'src/index.html',
@@ -82,6 +91,21 @@ module.exports = {
   ],
   output: {
     filename: '[name].[contenthash].js',
+    publicPath: '',
     path: path.resolve(__dirname, 'dist')
+  },
+  devServer: {
+    contentBase: path.join(__dirname, 'dist'),
+    compress: true,
+    port: 9000,
+    proxy: {
+      '/jsp': 'http://10.200.160.164:8080/querOO',
+      '/querOO': {
+        target: 'http://localhost:9000',
+        pathRewrite: {
+          '^/querOO': ''
+        },
+      },
+    },
   }
 }

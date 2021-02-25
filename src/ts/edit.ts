@@ -10,7 +10,6 @@
 import '../../node_modules/ol/ol.css'
 import '../css/edit.css';
 
-import 'babel-polyfill';
 import { View } from 'ol';
 import { defaults as defaultControls, ScaleLine, ZoomSlider } from 'ol/control';
 import { defaults as defaultInteractions } from 'ol/interaction';
