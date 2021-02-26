@@ -19,7 +19,7 @@ import { Dokument } from "./Dokument";
 import { Klartext } from './Klartext';
 import { PunktObjekt } from './prototypes/PunktObjekt';
 import { Zeichen } from './Zeichen';
-var CONFIG = require('../config.json');
+import { CONFIG } from '../../config/config'
 
 /**
  * Aufstellvorrichtung

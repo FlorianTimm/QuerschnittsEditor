@@ -14,7 +14,7 @@ import { PublicWFS } from '../PublicWFS';
 import { Vektor } from '../Vektor';
 import { QuerStation } from './QuerStation';
 
-var CONFIG: { [index: string]: string } = require('../config.json');
+import { CONFIG } from '../../config/config'
 
 /**
  * Straßenabschnitt

@@ -31,8 +31,7 @@ import { TileLayer } from './openLayers/Layer';
 import { Map } from './openLayers/Map';
 import { PublicWFS } from './PublicWFS';
 import { Measure } from './Tools/Measure';
-
-var CONFIG: { [name: string]: string } = require('./config.json');
+import { CONFIG } from '../config/config.js';
 
 let urlParamER: RegExpExecArray = new RegExp('[\?&]er=([^&#]*)').exec(window.location.href);
 let urlParamERNR: RegExpExecArray = new RegExp('[\?&]ernr=([^&#]*)').exec(window.location.href);

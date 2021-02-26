@@ -19,7 +19,7 @@ import { Zeichen } from '../../Objekte/Zeichen';
 import { Map } from "../../openLayers/Map";
 import { PublicWFS } from '../../PublicWFS';
 import { Tool } from '../prototypes/Tool';
-var CONFIG = require('../../config.json');
+import { CONFIG } from '../../../config/config'
 
 /**
  * Funktion zum Hinzufügen von Verkehrsschildern

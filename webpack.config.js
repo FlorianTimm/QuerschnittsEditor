@@ -35,7 +35,8 @@ module.exports = {
     },
   },
   externals: {
-    "config": path.resolve(__dirname, "./src/ts/config.json")
+    "config": path.resolve(__dirname, "./src/config/config.js"),
+    "config_wfs": path.resolve(__dirname, "./src/config/config_wfs.js")
   },
   module: {
     rules: [{

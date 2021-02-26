@@ -3,7 +3,7 @@
 import { Abschnitt } from './Objekte/Abschnitt';
 import { PrimaerObjekt } from './Objekte/prototypes/PrimaerObjekt';
 import { WaitBlocker } from './WaitBlocker';
-var CONFIG = require('./config.json');
+import { CONFIG } from '../config/config'
 
 /**
  * Schnittstelle zum PublicWFS
