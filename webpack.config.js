@@ -65,9 +65,7 @@ module.exports = {
     contentBase: './dist'
   },
   plugins: [
-    new CleanWebpackPlugin({
-      cleanOnceBeforeBuildPatterns: ['dist/*.*']
-    }),
+    new CleanWebpackPlugin(),
     new MiniCssExtractPlugin(),
     new HtmlWebpackPlugin({
       filename: 'index.html',
@@ -91,7 +89,7 @@ module.exports = {
     )*/
   ],
   output: {
-    filename: '[name].[contenthash].js',
+    filename: 'js/[name].[contenthash].js',
     publicPath: '',
     path: path.resolve(__dirname, 'dist')
   },
