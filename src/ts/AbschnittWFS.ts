@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-var CONFIG = require('./config.json');
+import { CONFIG } from '../config/config.js'
 import { Extent } from 'ol/extent';
 
 /**

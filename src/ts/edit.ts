@@ -7,7 +7,9 @@
  * @license GPL-3.0-or-later
  */
 
-import 'babel-polyfill';
+import '../../node_modules/ol/ol.css'
+import '../css/edit.css';
+
 import { View } from 'ol';
 import { defaults as defaultControls, ScaleLine, ZoomSlider } from 'ol/control';
 import { defaults as defaultInteractions } from 'ol/interaction';
@@ -29,8 +31,7 @@ import { TileLayer } from './openLayers/Layer';
 import { Map } from './openLayers/Map';
 import { PublicWFS } from './PublicWFS';
 import { Measure } from './Tools/Measure';
-
-var CONFIG: { [name: string]: string } = require('./config.json');
+import { CONFIG } from '../config/config.js';
 
 let urlParamER: RegExpExecArray = new RegExp('[\?&]er=([^&#]*)').exec(window.location.href);
 let urlParamERNR: RegExpExecArray = new RegExp('[\?&]ernr=([^&#]*)').exec(window.location.href);
@@ -42,9 +43,10 @@ var er = decodeURI(urlParamER[1])
 var ernr = decodeURI(urlParamERNR[1])
 console.log("Ereignisraum: " + ernr);
 
-let daten: Daten, measure: Measure;
+window.addEventListener('load', function () { load() });
 
-window.addEventListener('load', function () {
+let daten: Daten, measure: Measure;
+function load() {
     proj4.defs("EPSG:31467", "+proj=tmerc +lat_0=0 +lon_0=9 +k=1 +x_0=3500000 +y_0=0 +ellps=bessel +towgs84=598.1,73.7,418.2,0.202,0.045,-2.455,6.7 +units=m +no_defs");
     proj4.defs("EPSG:25832", "+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
     register(proj4);
@@ -122,7 +124,7 @@ window.addEventListener('load', function () {
         let win = window.open(url, 'zweitkarte');
         win.focus();
     })
-});
+};
 
 
 function checkHash(map: Map) {

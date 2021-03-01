@@ -11,7 +11,7 @@ import { StrassenAusPunkt } from './Objekte/StrassenAusPunkt';
 import { PublicWFS } from './PublicWFS';
 import { WaitBlocker } from './WaitBlocker';
 
-var CONFIG: { [name: string]: string } = require('./config.json');
+import { CONFIG } from '../config/config'
 
 /**
  * Daten
@@ -78,7 +78,7 @@ export class Daten {
     public async loadExtent() {
         WaitBlocker.warteAdd()
         let extent = this.map.getView().calculateExtent();
-        if ("ABSCHNITT_WFS_URL" in CONFIG) {
+        if ("ABSCHNITT_WFS_URL" in CONFIG && CONFIG.ABSCHNITT_WFS_URL != "") {
             const xml = await AbschnittWFS.getByExtent(extent);
             return this.loadExtent_Callback(xml);
         } else {

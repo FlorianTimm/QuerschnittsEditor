@@ -2,6 +2,7 @@ node_modules/
 .cache
 ts_out/
 dist/
+build/
 .nyc_output
 coverage
 docs/manual/*.toc
