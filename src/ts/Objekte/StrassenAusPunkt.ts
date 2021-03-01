@@ -164,11 +164,19 @@ export class StrassenAusPunkt extends PunktObjekt {
         this.setQuelle($(form).find("#quelle").children("option:selected").val() as string);
         this.objektnr = $(form).find("#extid").val() as string;
 
-        let update = {
+        let update: {
+            'art/@xlink:href': Klartext,
+            'rlageVst/@xlink:href': Klartext,
+            'quelle/@xlink:href': Klartext,
+            'objektnr': string,
+            'labstbaVst'?: number,
+            'vabstVst'?: number,
+            'vabstBst'?: number
+        } = {
             'art/@xlink:href': this.art,
             'rlageVst/@xlink:href': this.rlageVst,
             'quelle/@xlink:href': this.getQuelle(),
-            'objektnr': this.getObjektnr(),
+            'objektnr': this.getObjektnr()
         };
 
         let vorher = this.labstbaVst != null && this.rabstbaVst != this.labstbaVst

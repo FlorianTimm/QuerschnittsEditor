@@ -19,7 +19,7 @@ import { Dokument } from "./Dokument";
 import { Klartext } from './Klartext';
 import { PunktObjekt } from './prototypes/PunktObjekt';
 import { Zeichen } from './Zeichen';
-var CONFIG = require('../config.json');
+import { CONFIG } from '../../config/config'
 
 /**
  * Aufstellvorrichtung
@@ -293,7 +293,15 @@ export class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay 
         this.setQuelle($(form).find("#quelle").children("option:selected").val() as string);
         this.setObjektnr($(form).find("#extid").val() as string);
 
-        let update = {
+        let update: {
+            'art/@xlink:href': Klartext,
+            'rlageVst/@xlink:href': Klartext,
+            'quelle/@xlink:href': Klartext,
+            'objektnr': string,
+            'labstbaVst'?: number,
+            'vabstVst'?: number,
+            'vabstBst'?: number
+        } = {
             'art/@xlink:href': this.getArt(),
             'rlageVst/@xlink:href': this.getRlageVst(),
             'quelle/@xlink:href': this.getQuelle(),
@@ -371,7 +379,7 @@ export class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay 
         })
 
         let max = 0;
-        let zeichenL: { [richtung: number]: Zeichen[] } = {}
+        let zeichenL: { [richtung: string]: Zeichen[] } = {}
         for (let z of zeichenListe) {
             let r = z.getLesbarkeit() ? z.getLesbarkeit().getKt() : '03';
             if (r == '05') r = '03';
@@ -392,7 +400,7 @@ export class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay 
         ctx.rotate(winkel)
 
         ctx.save();
-        let faktoren = { '01': 0, '02': 2, '03': 1, '04': 3 };
+        let faktoren: { [klartext: string]: number } = { '01': 0, '02': 2, '03': 1, '04': 3 };
         if (this.getVabstVst() < 0) faktoren = { '01': 0, '02': 2, '03': 3, '04': 1 }
         let position: number[];
 

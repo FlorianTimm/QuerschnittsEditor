@@ -7,7 +7,7 @@ import { PunktObjekt } from '../../Objekte/prototypes/PunktObjekt';
 import { Map } from "../../openLayers/Map";
 import { PublicWFS } from '../../PublicWFS';
 import { AddTool } from '../prototypes/AddTool';
-var CONFIG = require('../../config.json');
+import { CONFIG } from '../../../config/config'
 
 /**
  * Funktion zum Hinzufügen von Aufstellvorrichtungen
