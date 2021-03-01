@@ -3,7 +3,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const {
   CleanWebpackPlugin
 } = require('clean-webpack-plugin');
-//const CopyWebpackPlugin = require('copy-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
@@ -65,7 +65,10 @@ module.exports = {
     contentBase: './dist'
   },
   plugins: [
-    new CleanWebpackPlugin(),
+    new CleanWebpackPlugin({
+      exclude: ['jsp', 'config'],
+      verbose: true
+    }),
     new MiniCssExtractPlugin(),
     new HtmlWebpackPlugin({
       filename: 'index.html',
@@ -81,15 +84,16 @@ module.exports = {
       filename: 'edit.html',
       template: 'src/edit.html',
       chunks: ['edit']
-    })
-    /*new CopyWebpackPlugin(
-      [
-        // copies go here
-      ]
-    )*/
+    }),
+    new CopyPlugin({
+      patterns: [{
+        from: "src/img",
+        to: "img"
+      }, ],
+    }),
   ],
   output: {
-    filename: 'js/[name].[contenthash].js',
+    filename: '[name].[contenthash].js',
     publicPath: '',
     path: path.resolve(__dirname, 'dist')
   },

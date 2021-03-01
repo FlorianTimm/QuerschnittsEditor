@@ -121,7 +121,7 @@ export class Projekt {
             '	</wfs:Property>\n' +
             '	<ogc:Filter>\n' +
             '			<ogc:PropertyIsEqualTo>\n' +
-            '				<ogc:PropertyName>objektId</ogc:PropertyName>\n' +
+            '				<ogc:PropertyName>projekt</ogc:PropertyName>\n' +
             '				<ogc:Literal>' + this.nr + '</ogc:Literal>\n' +
             '			</ogc:PropertyIsEqualTo>\n' +
             '	</ogc:Filter>\n' +

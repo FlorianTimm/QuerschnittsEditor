@@ -17,7 +17,7 @@ import '../css/html_forms.css';
 import '../css/index.css';
 import { HTML } from './HTML';
 import { PublicWFS } from './PublicWFS';
-import { Projekt } from "./Klassen/Projekt.js";
+import { Projekt } from "./Klassen/Projekt";
 
 class ERauswahl {
     private er: Projekt[] = []
@@ -26,10 +26,10 @@ class ERauswahl {
     private jSelect: JQuery<HTMLElement>;
 
     constructor() {
-        let select: HTMLSelectElement = document.getElementById("er_select") as HTMLSelectElement;
-        select.addEventListener("change", this.chosenElementSelected.bind(this));
-        this.jSelect = $(select).chosen({ placeholder_text_single: "Ereignisräume werden geladen..." });
-        this.jSelect.on("change", this.chosenElementSelected);
+        this.select = document.getElementById("er_select") as HTMLSelectElement;
+        this.select.addEventListener("change", this.chosenElementSelected.bind(this));
+        this.jSelect = $(this.select).chosen({ placeholder_text_single: "Ereignisräume werden geladen..." });
+        this.jSelect.on("change", this.chosenElementSelected.bind(this));
 
         document.getElementById("pruefen").addEventListener("click", this.pruefeER.bind(this));
         document.getElementById("anlegen").addEventListener("click", this.legeERan.bind(this));
@@ -61,10 +61,10 @@ class ERauswahl {
         this.jSelect.trigger("chosen:updated")
     }
 
-    private chosenCreateAuswahlPunkt(projekt: Projekt, projektnr: number) {
+    private chosenCreateAuswahlPunkt(projekt: Projekt, auswahl_projektnr: number) {
         let o = document.createElement('option');
         let v = document.createAttribute("value");
-        if (projekt.nr == projektnr)
+        if (projekt.nr == auswahl_projektnr)
             o.selected = true;
         v.value = projekt.fid;
         o.setAttributeNode(v);
@@ -133,7 +133,7 @@ class ERauswahl {
         let langBez = HTML.createTextInput(dialog, "Langbezeichnung", "langbez")
         this.anlegenDialog = $(dialog).dialog({
             resizable: true,
-            height: "250",
+            height: "300",
             width: '250',
             title: "Ereignisraum anlegen",
             modal: true,
@@ -141,10 +141,10 @@ class ERauswahl {
                 "Anlegen": () => {
                     Projekt.create(kurzBez.value, langBez.value, sibnutzer.value)
                         .then((projekt) => {
-                            this.loadER(projekt.nr)
                             this.chosenCreateAuswahlPunkt(projekt, projekt.nr)
                             this.jSelect.trigger("chosen:updated")
-                            this.anlegenDialog.dialog("close")
+                            this.anlegenDialog.dialog("close");
+                            this.chosenElementSelected();
                         });
                 },
                 "Abbrechen": () => {
