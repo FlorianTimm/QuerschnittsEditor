@@ -65,10 +65,10 @@ module.exports = {
     contentBase: './dist'
   },
   plugins: [
-    new CleanWebpackPlugin({
-      exclude: ['jsp', 'config'],
-      verbose: true
-    }),
+    // new CleanWebpackPlugin({
+    //   exclude: ['jsp', 'config'],
+    //   verbose: true
+    // }),
     new MiniCssExtractPlugin(),
     new HtmlWebpackPlugin({
       filename: 'index.html',

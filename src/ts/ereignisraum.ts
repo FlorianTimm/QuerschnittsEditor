@@ -142,6 +142,7 @@ class ERauswahl {
                     Projekt.create(kurzBez.value, langBez.value, sibnutzer.value)
                         .then((projekt) => {
                             this.chosenCreateAuswahlPunkt(projekt, projekt.nr)
+                            this.er.push(projekt);
                             this.jSelect.trigger("chosen:updated")
                             this.anlegenDialog.dialog("close");
                             this.chosenElementSelected();

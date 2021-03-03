@@ -71,7 +71,7 @@ export class Projekt {
     static async create(kurzBez: string, langBez: string, bearbeiter?: string): Promise<Projekt> {
         const xml = await PublicWFS.anlegenER(kurzBez, langBez, false);
         let projektnr = Number.parseInt(xml.getElementsByTagNameNS('http://interfaceTypes.ttsib5.novasib.de/', 'ProjektNr').item(0).innerHTML);
-        const projekt = await Projekt.loadER(projektnr);
+        let projekt = await Projekt.loadER(projektnr);
         if (bearbeiter)
             projekt.setBearbeiter(bearbeiter);
         return projekt;
