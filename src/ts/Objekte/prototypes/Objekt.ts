@@ -189,4 +189,8 @@ export abstract class Objekt extends Feature<Polygon | Point | LineString> {
 	public setObjektnr(objektnr: string) {
 		this.objektnr = objektnr;
 	}
+
+	public setADatum(adatum?: string) {
+		this.ADatum = adatum ?? new Date(Date.now()).toISOString().split('T')[0];
+	}
 }

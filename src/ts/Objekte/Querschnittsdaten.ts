@@ -326,18 +326,22 @@ export class Querschnitt extends PrimaerObjekt implements InfoToolEditable {
 
     public updateArtEinzeln(art: string): Promise<Document> {
         this.setArt(art);
+        this.setADatum();
         Querschnitt.getLayerFlaechen().getSource().changed();
 
         return PublicWFS.doTransaction(this.createUpdateXML({
             art: this.art,
+            ADatum: this.ADatum
         }));
     }
 
     public updateOberEinzeln(artober: string): Promise<Document> {
         this.setArtober(artober);
+        this.setADatum();
         Querschnitt.getLayerFlaechen().getSource().changed();
         return PublicWFS.doTransaction(this.createUpdateXML({
-            artober: this.artober
+            artober: this.artober,
+            ADatum: this.ADatum
         }));
     }
 
@@ -353,6 +357,8 @@ export class Querschnitt extends PrimaerObjekt implements InfoToolEditable {
             this.setArtober(oberXlink as string)
             changes["artober"] = oberXlink;
         }
+        this.setADatum();
+        changes["ADatum"] = this.ADatum;
         return Promise.all([
             PublicWFS.doTransaction(this.createUpdateXML(changes)),
             this.updateInfoBreite(form)

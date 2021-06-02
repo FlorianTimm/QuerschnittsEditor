@@ -57,7 +57,7 @@ export class InfoTool extends Tool {
         // Overlays
         this.removeOverlays()
         if (!changeable && "showOverlay" in feat) {
-            this.lastFeature = feat as InfoToolOverlay
+            this.lastFeature = feat as unknown as InfoToolOverlay
             this.lastFeature.showOverlay(this.map)
         }
 

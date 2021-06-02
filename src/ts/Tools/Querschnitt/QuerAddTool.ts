@@ -309,6 +309,7 @@ export class QuerAddTool extends Tool {
             let ober = querschnitt.getArtober()
             if (!ober) ober = Klartext.getByKlartext('Itquerober', '00')
             querschnittNeu.setArtober(ober);
+            querschnittNeu.setADatum();
 
             querschnittNeu.setStation(querschnitt.getStation());
             querschnittNeu.setVst(querschnitt.getVst());
