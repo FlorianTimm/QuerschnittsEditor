@@ -5,7 +5,7 @@ import { LineString, Point, Polygon } from "ol/geom";
 import { Abschnitt } from "../Abschnitt";
 import { Klartext } from "../Klartext";
 
-var CONFIG_WFS: { [index: string]: { [index: string]: { kt?: string, art: number } } } = require('../../config_wfs.json');
+import { CONFIG_WFS } from '../../../config/config_wfs'
 
 /**
  * Interface für SIB-Objekte
@@ -188,5 +188,9 @@ export abstract class Objekt extends Feature<Polygon | Point | LineString> {
 
 	public setObjektnr(objektnr: string) {
 		this.objektnr = objektnr;
+	}
+
+	public setADatum(adatum?: string) {
+		this.ADatum = adatum ?? new Date(Date.now()).toISOString().split('T')[0];
 	}
 }

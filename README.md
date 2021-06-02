@@ -25,3 +25,42 @@ jar.exe -cvf ..\querschnitt.war *
 
 ## Nutzung 
 Eine ausführliche Anleitung für Nutzer findet sich unter [./etc/manual/QuerschnittsEditor.pdf](./etc/manual/QuerschnittsEditor.pdf).
+
+### Nutzerrechte
+Für die Verwendung benötigen die PublicWFS-Nutzer mindestens die folgenden Rechte:
+
+#### Lesend/Schreibend:
+* Projekt
+* Otaufstvor
+* Otvzeichlp
+* Otstrauspkt
+* Otschicht
+* Otnabeschild
+* Otdokument
+Für die Linienfunktion muss natürlich die entsprechende Objektklasse und deren Klartexte freigeschaltet werden.
+
+#### Lesend:
+* VI_Strassennetz
+* Otwegenummer
+
+#### Lesend (Klartexte):
+* Itallglage
+* Itvzstvoznr
+* Itvzlagefb
+* Itvzlesbarkeit
+* Itvzbeleucht
+* Itvzart
+* Itvzgroesse
+* Itbesstrbezug
+* Iterfart
+* Itquelle
+* Itquerart
+* Itquerober
+* Itobjdetailgrad
+* Itstrauspktart
+* Itaufstvorart
+* Itdokart
+
+#### Module:
+* TT-SIB WFS Ereignisraumverwaltung
+* Öffentlicher WFS

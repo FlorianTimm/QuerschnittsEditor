@@ -1,4 +1,6 @@
-html, body, #background {
+html,
+body,
+#background {
     z-index: -20;
     height: 100%;
     width: 100%;
@@ -22,7 +24,9 @@ form {
     font-family: sans-serif;
 }
 
-form input[type=text], form input[type=password] {
+form input:not([type]),
+form input[type=text],
+form input[type=password] {
     margin-bottom: 15px;
     margin-left: 10px;
     padding: 3px;
@@ -68,7 +72,8 @@ h1 {
     color: rgba(255, 255, 255, 0.6);
 }
 
-input[type=submit], input[type=button] {
+input[type=submit],
+input[type=button] {
     background-color: #4CAF50;
     /* Green */
     border: none;
@@ -80,11 +85,13 @@ input[type=submit], input[type=button] {
     font-size: 16px;
 }
 
-input[type=submit]:hover, input[type=button]:hover {
+input[type=submit]:hover,
+input[type=button]:hover {
     background-color: rgb(50, 122, 52);
 }
 
-input[type=submit]:disabled, input[type=button]:disabled {
+input[type=submit]:disabled,
+input[type=button]:disabled {
     background-color: rgb(153, 153, 153);
 }
 
@@ -95,7 +102,7 @@ input[type=submit]:disabled, input[type=button]:disabled {
 }
 
 #fehlerliste .fehler {
-   color: #a00;
+    color: #a00;
 }
 
 

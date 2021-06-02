@@ -15,7 +15,7 @@ import { getLength } from 'ol/sphere';
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import { Map } from "../openLayers/Map";
 import { Tool } from './prototypes/Tool';
-var CONFIG = require('../config.json');
+import { CONFIG } from '../../config/config'
 
 /**
  * Messfunktion

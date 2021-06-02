@@ -11,7 +11,7 @@ import { StrassenAusPunkt } from './Objekte/StrassenAusPunkt';
 import { PublicWFS } from './PublicWFS';
 import { WaitBlocker } from './WaitBlocker';
 
-var CONFIG: { [name: string]: string } = require('./config.json');
+import { CONFIG } from '../config/config'
 
 /**
  * Daten
@@ -78,20 +78,19 @@ export class Daten {
     public async loadExtent() {
         WaitBlocker.warteAdd()
         let extent = this.map.getView().calculateExtent();
-        if ("ABSCHNITT_WFS_URL" in CONFIG) {
+        if ("ABSCHNITT_WFS_URL" in CONFIG && CONFIG.ABSCHNITT_WFS_URL != "") {
             const xml = await AbschnittWFS.getByExtent(extent);
             return this.loadExtent_Callback(xml);
         } else {
-            let filter = '<Filter>\n' +
-                '	<BBOX>\n' +
-                '	<PropertyName>GEOMETRY</PropertyName>\n' +
-                '	<gml:Box srsName="' + CONFIG.EPSG_CODE + '">\n' +
-                '		<gml:coordinates>' + extent[0] + ',' + extent[1] + ' ' + extent[2] + ',' + extent[3] + ' ' + '</gml:coordinates>\n' +
-                '	</gml:Box>\n' +
-                '	</BBOX>\n' +
-                '</Filter>\n' +
-                '<maxFeatures>100</maxFeatures>\n';
-            const xml = await PublicWFS.doQuery('VI_STRASSENNETZ', filter);
+            let filter = '<Filter>' +
+                '<BBOX>' +
+                '<PropertyName>GEOMETRY</PropertyName>' +
+                '<Box srsName="' + CONFIG.EPSG_CODE + '">' +
+                '<coordinates>' + extent[0] + ',' + extent[1] + ' ' + extent[2] + ',' + extent[3] + ' ' + '</coordinates>' +
+                '</Box>' +
+                '</BBOX>' +
+                '</Filter>';
+            const xml = await PublicWFS.doQuery('VI_STRASSENNETZ', filter, undefined, 100);
             return this.loadExtent_Callback(xml);
         }
     }
@@ -114,7 +113,7 @@ export class Daten {
             WaitBlocker.warteAdd();
 
             const vnknnk = /(\d{7,9}[A-Z]?)[\s\-]+(\d{7,9}[A-Z]?)/gm;
-            let found1 = vnknnk.exec(wert)
+            let found1 = vnknnk.exec(wert.toUpperCase())
             if (found1 != null) {
                 console.log(found1)
                 let vnk = found1[1];
@@ -124,8 +123,8 @@ export class Daten {
                 return;
             }
 
-            const wnr = /([ABGKLabgkl])\s?(\d{1,4})\s?([A-Za-z]?)/gm;
-            let found2 = wnr.exec(wert)
+            const wnr = /([ABGKL])\s?(\d{1,4})\s?([A-Z]?)/gm;
+            let found2 = wnr.exec(wert.toUpperCase())
             if (found2 != null) {
                 console.log(found2)
                 let klasse = found2[1];
@@ -138,6 +137,39 @@ export class Daten {
             AbschnittWFS.getByStrName(wert)
                 .then((xml: Document) => { this.loadSearch_Callback(xml) });
         } else {
+            const vnknnk = /(\d{7,9}[A-Z]?)[\s\-]+(\d{7,9}[A-Z]?)/gm;
+            let found1 = vnknnk.exec(wert.toUpperCase())
+            if (found1 != null) {
+                console.log(found1)
+                let vnk = found1[1];
+                let nnk = found1[2];
+                let filter = '<Filter><And>' +
+                    '<PropertyIsEqualTo><PropertyName>VNK</PropertyName><Literal>' + vnk + '</Literal></PropertyIsEqualTo>' +
+                    '<PropertyIsEqualTo><PropertyName>NNK</PropertyName><Literal>' + nnk + '</Literal></PropertyIsEqualTo>' +
+                    '</And></Filter>';
+                PublicWFS.doQuery('VI_STRASSENNETZ', filter, undefined, 100).
+                    then((xml: Document) => this.loadSearch_Callback(xml));
+                return;
+            }
+
+            const wnr = /([ABGKL])\s?(\d{1,4})\s?([A-Z]?)/gm;
+            let found2 = wnr.exec(wert.toUpperCase())
+            if (found2 != null) {
+                console.log(found2)
+                let klasse = found2[1];
+                let nummer = found2[2];
+                let buchstabe = (found2.length > 2) ? found2[3] : null;
+                let filter = '<Filter><And>' +
+                    '<PropertyIsEqualTo><PropertyName>KLASSE</PropertyName><Literal>' + klasse + '</Literal></PropertyIsEqualTo>' +
+                    '<PropertyIsEqualTo><PropertyName>NUMMER</PropertyName><Literal>' + nummer + '</Literal></PropertyIsEqualTo>';
+                if (buchstabe)
+                    filter += '<PropertyIsEqualTo><PropertyName>BUCHSTABE</PropertyName><Literal>' + buchstabe + '</Literal></PropertyIsEqualTo>';
+                filter += '</And></Filter>';
+                PublicWFS.doQuery('VI_STRASSENNETZ', filter, undefined, 100).
+                    then((xml: Document) => this.loadSearch_Callback(xml));
+                return;
+            }
+
             PublicWFS.showMessage("Straßennamen-Suche ist nur über den AbschnittWFS möglich");
             /*let filter = '<Filter><Like><PropertyName><PropertyName><Literal><Literal></Like></Filter>'
             PublicWFS.doQuery('VI_STRASSENNETZ', filter, this._loadSearch_Callback, undefined, this);*/
