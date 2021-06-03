@@ -31,7 +31,7 @@ export const layer = [{
         attribution: lgv
     },
     {
-        name: 'LGV DOP 2018',
+        name: 'LGV DOP 2020',
         visible: true,
         opacity: 1.00,
         url: 'https://geodienste.hamburg.de/HH_WMS_DOP_hochaufloesend',
@@ -40,7 +40,7 @@ export const layer = [{
         attribution: lgv
     },
     {
-        name: 'LGV TrueDOP 2018',
+        name: 'LGV TrueDOP 2020',
         visible: false,
         opacity: 1.0,
         url: 'https://geodienste.hamburg.de/HH_WMS_TrueDOP',
