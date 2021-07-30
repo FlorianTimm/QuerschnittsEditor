@@ -25,7 +25,7 @@ import { CONFIG } from '../../config/config'
 */
 export class Measure extends Tool {
     private source: VectorSource<any>;
-    private vector: VectorLayer;
+    private vector: VectorLayer<VectorSource<any>>;
     private draw: Draw;
     private measureTooltip: Overlay;
 
@@ -100,7 +100,7 @@ export class Measure extends Tool {
                 measureTooltipElement.className = 'tooltip tooltip-measure';
 
                 listener = evt.feature.getGeometry().on('change', (evt: Event) => {
-                    var geom = evt.target;
+                    var geom = <LineString>evt.target;
                     var output = formatLength(geom);
                     tooltipCoord = geom.getLastCoordinate();
                     measureTooltipElement.innerHTML = output;

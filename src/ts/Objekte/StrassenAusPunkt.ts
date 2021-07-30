@@ -13,6 +13,8 @@ import { PublicWFS } from '../PublicWFS';
 import { Abschnitt } from './Abschnitt';
 import { Klartext } from './Klartext';
 import { PunktObjekt } from './prototypes/PunktObjekt';
+import VectorSource from "ol/source/Vector";
+import { LineString, Point } from "ol/geom";
 
 /**
  * Strassenausstrattung (punktuell)
@@ -35,7 +37,7 @@ export class StrassenAusPunkt extends PunktObjekt {
         return 'black';
     }
 
-    static getLayer(map?: Map): VectorLayer {
+    static getLayer(map?: Map): VectorLayer<VectorSource<Point | LineString>> {
         if (!StrassenAusPunkt.layer) {
             StrassenAusPunkt.layer = StrassenAusPunkt.createLayer(map);
         }

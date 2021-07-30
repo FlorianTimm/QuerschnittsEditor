@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import { LineString, Point, Polygon } from 'ol/geom';
 import { PublicWFS } from '../../PublicWFS';
 import { Dokument } from '../Dokument';
 import { PrimaerObjekt } from './PrimaerObjekt';
@@ -10,7 +11,7 @@ import { PrimaerObjekt } from './PrimaerObjekt';
  * @version 2020.01.28
  * @license GPL-3.0-or-later
 */
-export abstract class PObjektMitDokument extends PrimaerObjekt {
+export abstract class PObjektMitDokument<GeometryType extends Polygon | Point | LineString> extends PrimaerObjekt<GeometryType> {
     protected dateien: Dokument[] = [];
     protected dateienLoaded: Promise<Dokument[]>;
 

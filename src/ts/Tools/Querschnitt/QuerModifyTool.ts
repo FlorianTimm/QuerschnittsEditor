@@ -6,14 +6,13 @@ import 'chosen-js/chosen.css';
 import 'jquery-ui-bundle';
 import 'jquery-ui-bundle/jquery-ui.css';
 import { Feature, MapBrowserEvent } from 'ol';
-import { EventsKey } from 'ol/events';
-import { click, never, platformModifierKeyOnly } from 'ol/events/condition';
+import { never, platformModifierKeyOnly } from 'ol/events/condition';
 import { FeatureLike } from 'ol/Feature';
-import { LineString, MultiLineString, Point } from 'ol/geom';
+import { Geometry, LineString, MultiLineString, Point } from 'ol/geom';
 import { Snap } from 'ol/interaction';
 import { ModifyEvent } from 'ol/interaction/Modify';
 import VectorLayer from 'ol/layer/Vector';
-import { unByKey } from 'ol/Observable';
+import { OnReturn, unByKey } from 'ol/Observable';
 import VectorSource from 'ol/source/Vector';
 import { Circle, Fill, Stroke, Style } from 'ol/style';
 import { HTML } from '../../HTML';
@@ -47,13 +46,13 @@ export class QuerModifyTool extends Tool {
     private multiArtSelect: HTMLSelectElement;
     private multiOberSelect: HTMLSelectElement;
     private moveTypeForm: HTMLFormElement;
-    private modifyLayer: VectorLayer;
-    private modifyOverlayLayer: VectorLayer;
+    private modifyLayer: VectorLayer<VectorSource<Geometry>>;
+    private modifyOverlayLayer: VectorLayer<VectorSource<Geometry>>;
     private sidebar: HTMLDivElement;
-    private pointermove: EventsKey;
-    private selectEventsKey: EventsKey;
+    private pointermove: OnReturn;
+    private selectEventsKey: OnReturn;
 
-    constructor(map: Map, info: QuerInfoTool, sidebar: HTMLDivElement, layerTrenn: VectorLayer, layerStation: VectorLayer) {
+    constructor(map: Map, info: QuerInfoTool, sidebar: HTMLDivElement, layerTrenn: VectorLayer<VectorSource<MultiLineString>>, layerStation: VectorLayer<VectorSource<MultiLineString | Point>>) {
         super(map);
         this.info = info;
         this.sidebar = sidebar;
@@ -151,7 +150,7 @@ export class QuerModifyTool extends Tool {
         this.map.addLayer(this.modifyOverlayLayer)
     }
 
-    private mouseMove(_: MapBrowserEvent) {
+    private mouseMove(_: MapBrowserEvent<PointerEvent>) {
         this.modifyOverlayLayer.getSource().clear();
 
         let abs = this.calcAbstand()
@@ -341,7 +340,7 @@ export class QuerModifyTool extends Tool {
         this.modify.setActive(status);
     }
 
-    private createSnap(layerTrenn: VectorLayer, layerStation: VectorLayer) {
+    private createSnap(layerTrenn: VectorLayer<VectorSource<MultiLineString>>, layerStation: VectorLayer<VectorSource<MultiLineString | Point>>) {
         this.snapTrenn = new Snap({
             source: layerTrenn.getSource(),
             edge: false

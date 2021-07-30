@@ -3,7 +3,7 @@
 import { Feature, Map } from 'ol';
 import { Condition, never, singleClick } from 'ol/events/condition';
 import { FeatureLike } from 'ol/Feature';
-import { MultiLineString, Polygon } from 'ol/geom';
+import { LineString, MultiLineString, Polygon } from 'ol/geom';
 import VectorSource from 'ol/source/Vector';
 import { Fill, Stroke, Style, Text } from 'ol/style';
 import { Daten } from '../Daten';
@@ -25,7 +25,7 @@ import { QuerStation } from './QuerStation';
  * @version 2020.04.22
  * @license GPL-3.0-or-later
 */
-export class Querschnitt extends PrimaerObjekt implements InfoToolEditable {
+export class Querschnitt extends PrimaerObjekt<Polygon> implements InfoToolEditable {
     private _aufbaudaten: Aufbau[] = null;
     public trenn: Feature<MultiLineString>;
 
@@ -47,8 +47,8 @@ export class Querschnitt extends PrimaerObjekt implements InfoToolEditable {
     private streifennr: number = null;
     private hasSekObj: number = null;
     private static loadErControlCounter: number = 0;
-    private static layerTrenn: VectorLayer;
-    private static layerQuer: VectorLayer;
+    private static layerTrenn: VectorLayer<VectorSource<MultiLineString>>;
+    private static layerQuer: VectorLayer<VectorSource<Polygon>>;
     private static selectFlaechen: SelectInteraction;
     private static selectLinien: SelectInteraction;
     private static selectLinienCondition: Condition = singleClick;

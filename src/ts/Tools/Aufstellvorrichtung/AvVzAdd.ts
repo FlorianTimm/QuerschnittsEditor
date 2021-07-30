@@ -5,11 +5,10 @@ import 'chosen-js';
 import 'chosen-js/chosen.css';
 import 'jquery-ui-bundle';
 import 'jquery-ui-bundle/jquery-ui.css';
-import { EventsKey } from 'ol/events';
 import { never, pointerMove } from 'ol/events/condition';
 import { Select as SelectInteraction } from 'ol/interaction';
 import { SelectEvent } from 'ol/interaction/Select';
-import { unByKey } from 'ol/Observable';
+import { OnReturn, unByKey } from 'ol/Observable';
 import '../../../css/vzadd.css';
 import { Daten } from '../../Daten';
 import { HTML } from '../../HTML';
@@ -36,7 +35,7 @@ export class AvVzAdd extends Tool {
     private mouseOver: SelectInteraction;
     private lastOverlay: Aufstellvorrichtung;
     private buttonSpeichern: HTMLButtonElement;
-    private selectKey: EventsKey;
+    private selectKey: OnReturn;
 
     /**
      * Erzeugt eine Instanz des Verkehrszeichen-Hinzufügen-Tools

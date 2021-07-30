@@ -19,7 +19,7 @@ import { PObjektMitDokument } from "./PObjektMitDateien";
  * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
-export abstract class PunktObjekt extends PObjektMitDokument implements InfoToolEditable {
+export abstract class PunktObjekt extends PObjektMitDokument<Point | LineString> implements InfoToolEditable {
     protected vabstVst: number;
     protected vabstBst: number;
     protected rlageVst: Klartext;
@@ -85,9 +85,9 @@ export abstract class PunktObjekt extends PObjektMitDokument implements InfoTool
     }
 
 
-    protected static createLayer(map?: Map): VectorLayer {
-        let layer = new VectorLayer({
-            source: new VectorSource(),
+    protected static createLayer(map?: Map): VectorLayer<VectorSource<Point | LineString>> {
+        let layer = new VectorLayer<VectorSource<Point | LineString>>({
+            source: new VectorSource<Point | LineString>(),
             opacity: 0.7,
         });
         layer.setStyle((feat: FeatureLike, resolution: number) => {

@@ -4,6 +4,7 @@ import { Abschnitt } from './Objekte/Abschnitt';
 import { PrimaerObjekt } from './Objekte/prototypes/PrimaerObjekt';
 import { WaitBlocker } from './WaitBlocker';
 import { CONFIG } from '../config/config'
+import { LineString, Point, Polygon } from 'ol/geom';
 
 /**
  * Schnittstelle zum PublicWFS
@@ -103,7 +104,7 @@ export class PublicWFS {
         });
     }
 
-    static async addSekInER(objektPrim: PrimaerObjekt, objektTypePrim: string, objektSek: string, ereignisraum_nr: string): Promise<Document> {
+    static async addSekInER(objektPrim: PrimaerObjekt<Point | LineString | Polygon>, objektTypePrim: string, objektSek: string, ereignisraum_nr: string): Promise<Document> {
         return new Promise(function (resolve, reject) {
             let xml = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
                 'xmlns:pub="http://ttsib.novasib.de/PublicServices" xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">\n' +

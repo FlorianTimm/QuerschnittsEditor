@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import { Point } from "ol/geom";
 import { Klartext } from "./Klartext";
 import { SekundaerObjekt } from "./prototypes/SekundaerObjekt";
 
@@ -9,7 +10,7 @@ import { SekundaerObjekt } from "./prototypes/SekundaerObjekt";
  * @version 2019.10.29
  * @license GPL-3.0-or-later
 */
-export class Aufbau extends SekundaerObjekt {
+export class Aufbau extends SekundaerObjekt<null> {
 	public getObjektKlassenName(): string {
 		return "Otschicht";
 	}
@@ -55,6 +56,26 @@ export class Aufbau extends SekundaerObjekt {
 		return this.schichtnr;
 	}
 
+	getArtNeu() {
+		return this.artneu;
+	}
+
+	getMaterial1() {
+		return this.material1;
+	}
+
+	getMaterial2() {
+		return this.material2;
+	}
+
+	getMaterial3() {
+		return this.material3;
+	}
+
+	isDeckschicht(): boolean {
+		return this.decksch == '1'
+	}
+
 	// Setter
 
 	public getVst() {
@@ -71,5 +92,9 @@ export class Aufbau extends SekundaerObjekt {
 
 	public setBst(bst: number) {
 		this.bst = bst;
+	}
+
+	public setDeckschicht(decksch: boolean) {
+		this.decksch = decksch ? '1' : '0';
 	}
 }
