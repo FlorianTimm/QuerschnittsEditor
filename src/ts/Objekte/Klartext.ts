@@ -174,7 +174,7 @@ export class Klartext {
         let arten = Klartext.getAllSorted(klartext);
         for (let a of arten) {
             let isSelected = (value && value.getXlink() == a.getXlink());
-            HTML.createSelectNode(selectInput, a.getKt() + ' - ' + a.getBeschreib(), a.getXlink(), isSelected);
+            HTML.createSelectNode(selectInput, a.getKt().match('[^~]+$')[0] + ' - ' + a.getBeschreib(), a.getXlink(), isSelected);
         }
         if (value == null && platzhalter != undefined)
             selectInput.value = null;

@@ -150,6 +150,22 @@ export class Querschnitt extends PrimaerObjekt implements InfoToolEditable {
         if (querschnitt && querschnitt.getStation().hasAufbau()) {
             div.innerHTML = "Aufbaudaten vorhanden";
             div.style.color = "red";
+            querschnitt.getStation().getAufbauDaten()
+                //.then(() => { return Klartext.load('Itschiartneu') })
+                .then(() => { return querschnitt.getDeckschicht() })
+                .then((aufbau) => {
+                    //div.innerHTML += '<br />' + aufbau.getArtNeu().getBeschreib()
+                    let aufbauArt = Klartext.createKlartextSelectForm('Itschiartneu', div, 'Art', '', aufbau.getArtNeu())
+                    $(aufbauArt.select).prop('disabled', true).trigger("chosen:updated");
+                    let aufbauMat1 = Klartext.createKlartextSelectForm('Itschimat1', div, 'Material 1', '', aufbau.getMaterial1())
+                    $(aufbauMat1.select).prop('disabled', true).trigger("chosen:updated");
+                    let aufbauMat2 = Klartext.createKlartextSelectForm('Itschimat2', div, 'Material 2', '', aufbau.getMaterial2())
+                    $(aufbauMat2.select).prop('disabled', true).trigger("chosen:updated");
+                    let aufbauMat3 = Klartext.createKlartextSelectForm('Itschimat3', div, 'Material 3', '', aufbau.getMaterial3())
+                    $(aufbauMat3.select).prop('disabled', true).trigger("chosen:updated");
+                })
+                .catch(() => { div.innerHTML += '<br />...aber wohl nicht hier' });
+
         } else if (querschnitt) {
             div.innerHTML = "(Vllt.) keine Aufbaudaten";
             div.style.color = "green";
@@ -166,33 +182,33 @@ export class Querschnitt extends PrimaerObjekt implements InfoToolEditable {
         $(lage.select).prop('disabled', !changeable).trigger("chosen:updated");
 
         // Breite
-        let breite = HTML.createNumberInput(form, "Von Breite", "breite", querschnitt != undefined ? querschnitt.breite.toString() : undefined);
+        let breite = HTML.createNumberInput(form, "Von Breite", "breite", querschnitt != undefined ? querschnitt.breite.toString() : undefined, '95px');
         breite.step = '1';
         breite.max = '5000';
         breite.min = '0'
         breite.disabled = !changeable;
 
         // BisBreite
-        let bisbreite = HTML.createNumberInput(form, "Bis Breite", "bisbreite", querschnitt != undefined ? querschnitt.bisBreite.toString() : undefined);
+        let bisbreite = HTML.createNumberInput(form, "Bis Breite", "bisbreite", querschnitt != undefined ? querschnitt.bisBreite.toString() : undefined, '95px');
         bisbreite.step = '1';
         bisbreite.max = '5000';
         bisbreite.min = '0'
         bisbreite.disabled = !changeable;
 
         // VNK
-        let vnk = HTML.createTextInput(form, "VNK", "vnk", querschnitt != undefined ? querschnitt.getAbschnitt().getVnk() : undefined);
+        let vnk = HTML.createTextInput(form, "VNK", "vnk", querschnitt != undefined ? querschnitt.getAbschnitt().getVnk() : undefined, '95px');
         vnk.disabled = true;
 
         // NNK
-        let nnk = HTML.createTextInput(form, "NNK", "nnk", querschnitt != undefined ? querschnitt.getAbschnitt().getNnk() : undefined);
+        let nnk = HTML.createTextInput(form, "NNK", "nnk", querschnitt != undefined ? querschnitt.getAbschnitt().getNnk() : undefined, '95px');
         nnk.disabled = true;
 
         // Station
-        let station = HTML.createTextInput(form, "Station", "station", querschnitt != undefined ? querschnitt.vst + ' - ' + querschnitt.bst : undefined);
+        let station = HTML.createTextInput(form, "Station", "station", querschnitt != undefined ? querschnitt.vst + ' - ' + querschnitt.bst : undefined, '95px');
         station.disabled = true;
 
         // Streifen
-        let streifen = HTML.createTextInput(form, "Streifen", "streifen", querschnitt != undefined ? querschnitt.streifen + ' ' + querschnitt.streifennr : undefined);
+        let streifen = HTML.createTextInput(form, "Streifen", "streifen", querschnitt != undefined ? querschnitt.streifen + ' ' + querschnitt.streifennr : undefined, '95px');
         streifen.disabled = true;
 
         return Promise.all([art.promise, lage.promise])
@@ -790,6 +806,15 @@ export class Querschnitt extends PrimaerObjekt implements InfoToolEditable {
 
     public getHasSekObj(): number {
         return this.hasSekObj;
+    }
+
+    public async getDeckschicht(): Promise<Aufbau> {
+        await this.station.getAufbauDaten();
+        for (let a of this._aufbaudaten) {
+            if (a.isDeckschicht())
+                return a;
+        }
+        return Promise.reject();
     }
 
 
