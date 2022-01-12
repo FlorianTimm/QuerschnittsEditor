@@ -20,6 +20,7 @@ import { Klartext } from './Klartext';
 import { PunktObjekt } from './prototypes/PunktObjekt';
 import { Zeichen } from './Zeichen';
 import { CONFIG } from '../../config/config'
+import VectorSource from "ol/source/Vector";
 
 /**
  * Aufstellvorrichtung
@@ -29,7 +30,7 @@ import { CONFIG } from '../../config/config'
 */
 export class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay {
     static loadErControlCounter: number = 0;
-    static layer: VectorLayer;
+    static layer: VectorLayer<VectorSource<Point | LineString>>;
     static select: SelectInteraction;
 
     private overlay: Overlay;
@@ -55,7 +56,7 @@ export class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay 
         return 'black';
     }
 
-    static getLayer(map?: Map): VectorLayer {
+    static getLayer(map?: Map): VectorLayer<VectorSource<Point | LineString>> {
         if (!Aufstellvorrichtung.layer) {
             Aufstellvorrichtung.layer = Aufstellvorrichtung.createLayer(map);
         }
@@ -486,7 +487,7 @@ export class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay 
             stopEvent: false
         });
 
-        this.overlay.on("click", () => {
+        this.overlay.getElement().addEventListener("click", () => {
             this.hideOverlay(map);
             return false;
         });

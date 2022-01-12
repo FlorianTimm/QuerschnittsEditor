@@ -8,6 +8,8 @@ import { Map } from "../../openLayers/Map";
 import { PublicWFS } from '../../PublicWFS';
 import { AddTool } from '../prototypes/AddTool';
 import { CONFIG } from '../../../config/config'
+import VectorSource from 'ol/source/Vector';
+import { LineString } from 'ol/geom';
 
 /**
  * Funktion zum Hinzufügen von Aufstellvorrichtungen
@@ -16,7 +18,7 @@ import { CONFIG } from '../../../config/config'
  * @license GPL-3.0-or-later
 */
 export class AvAdd extends AddTool {
-    constructor(map: Map, sidebar: HTMLDivElement, layerAchse: VectorLayer) {
+    constructor(map: Map, sidebar: HTMLDivElement, layerAchse: VectorLayer<VectorSource<LineString>>) {
         super(map, sidebar, layerAchse);
     }
 

@@ -93,13 +93,20 @@ export const layer = [{
         layers: 'b_altona_mr_feinkartierung_flaechen,b_harburg_mr_feinkartierung_flaechen,b_mitte_mr_feinkartierung_flaechen,b_eims_mr_feinkartierung_flaechen,b_wands_mr_feinkartierung_flaechen',
         format: 'image/png',
         attribution: lgv
-    },
-    {
-        name: "Raster-Ordner",
+    }, {
+        name: "QGIS-Server: Planung",
         visible: false,
         opacity: 0.8,
-        url: 'http://gv-srv-w00175:20031/deegree/services/RasterFolder?',
-        layers: 'RasterFolder',
+        layers: 'Planung',
+        url: 'http://gv-srv-w00175:81/cgi-bin/qgis_mapserv.fcgi.exe?',
+        format: 'image/png',
+        attribution: lgv
+    }, {
+        name: "QGIS-Server: DOP",
+        visible: false,
+        opacity: 0.8,
+        layers: 'DOP',
+        url: 'http://gv-srv-w00175:81/cgi-bin/qgis_mapserv.fcgi.exe?',
         format: 'image/png',
         attribution: lgv
     },

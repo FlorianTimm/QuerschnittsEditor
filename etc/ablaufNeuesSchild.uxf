@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.3.0">
+  <zoom_level>9</zoom_level>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>99</x>
+      <y>117</y>
+      <w>1386</w>
+      <h>801</h>
+    </coordinates>
+    <panel_attributes>title=Bestehende Schilder anzeigen\nNeues hinzufügen
+autoTick=true
+obj=User~u ACTOR EXECUTION
+obj=QuerschnittsEditor\n&lt;&lt;Webanwendung&gt;&gt;~qe
+obj=Webserver\nProxy~p
+obj=WFS-T~wfs
+obj=Oracle-DB~db
+on=qe
+u-&gt;&gt;&gt;qe: wählt Straße
+qe-&gt;&gt;&gt;wfs: fragt Aufstellvorrichtung der Straße ab; on=wfs
+wfs-&gt;&gt;&gt;db;on=db
+db.&gt;wfs: Aufstellvorrichtungen;off=db
+wfs.&gt;qe: Aufstellvorrichtungen;off=wfs
+qe-&gt;qe + :Visualisierung
+tick=
+u-&gt;&gt;&gt;qe: wählt Aufstellvorrichtung
+qe-&gt;&gt;&gt;wfs:Abfrage Schilder der Aufstellvorrichtung;on=wfs
+wfs-&gt;&gt;&gt;db;on=db
+db.&gt;wfs;off=db
+wfs.&gt;qe: Schilder;off=wfs
+qe-&gt;qe+:Visualisierung
+tick=
+u-&gt;&gt;&gt;qe: setzt neues Schild
+qe-&gt;&gt;&gt;wfs: Daten des neuen Schildes; on=wfs
+wfs-&gt;&gt;&gt;db;on=db;
+db.&gt;wfs;off=db
+wfs.&gt;qe: ID des neuen Schildes;off=wfs
+qe-&gt;qe+:Visualisierung
+tick=
+
+
+
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>

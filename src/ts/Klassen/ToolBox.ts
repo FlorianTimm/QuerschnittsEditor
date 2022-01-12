@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import { LineString, MultiLineString, Point, Polygon } from "ol/geom";
+import VectorSource from "ol/source/Vector";
 import { Daten } from "../Daten";
 import { Abschnitt } from "../Objekte/Abschnitt";
 import { VectorLayer } from "../openLayers/Layer";
@@ -23,7 +25,7 @@ export abstract class ToolBox {
     /** Liste aller Radiobuttons */
     protected radioButtons: { tool: Tool, radio: HTMLInputElement }[] = []
     protected formid: string;
-    protected layer: VectorLayer[] = [];
+    protected layer: VectorLayer<VectorSource<Point | Polygon | MultiLineString | LineString>>[] = [];
     static liste: { [objektKlasse: string]: ToolBox } = {};
     stopped: boolean;
     private static selectBox: HTMLSelectElement;

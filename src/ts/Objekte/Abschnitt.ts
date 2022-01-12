@@ -44,7 +44,7 @@ export class Abschnitt extends Feature<LineString> {
 
     private _feature: any;
     private punkte: LinienPunkt[];
-    static layer: VectorLayer;
+    static layer: VectorLayer<VectorSource<LineString>>;
 
     private constructor() {
         super();
@@ -66,7 +66,7 @@ export class Abschnitt extends Feature<LineString> {
         }
     }
 
-    public static getLayer(map?: Map): VectorLayer {
+    public static getLayer(map?: Map): VectorLayer<VectorSource<LineString>> {
         if (!Abschnitt.layer) {
             let achsen_style = function (feature: FeatureLike, resolution: number): Style[] {
                 let abschnitt = feature as Abschnitt;

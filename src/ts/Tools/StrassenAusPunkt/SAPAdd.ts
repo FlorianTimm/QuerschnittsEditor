@@ -9,6 +9,8 @@ import { PublicWFS } from '../../PublicWFS';
 import { AddTool } from '../prototypes/AddTool';
 
 import { CONFIG } from '../../../config/config'
+import { LineString } from 'ol/geom';
+import VectorSource from 'ol/source/Vector';
 
 /**
  * Funktion zum Hinzufügen von Straßenausstattung (punktuell)
@@ -17,7 +19,7 @@ import { CONFIG } from '../../../config/config'
  * @license GPL-3.0-or-later
 */
 export class SAPAdd extends AddTool {
-    constructor(map: Map, sidebar: HTMLDivElement, layerAchse: VectorLayer) {
+    constructor(map: Map, sidebar: HTMLDivElement, layerAchse: VectorLayer<VectorSource<LineString>>) {
         super(map, sidebar, layerAchse);
     }
 

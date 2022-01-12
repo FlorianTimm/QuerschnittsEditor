@@ -2,7 +2,6 @@
 
 import { Collection, MapBrowserEvent } from 'ol';
 import { Coordinate } from 'ol/coordinate';
-import { EventsKey } from 'ol/events';
 import { never as neverCondition } from 'ol/events/condition';
 import Feature from 'ol/Feature';
 import { Geometry, LineString, Point } from 'ol/geom';
@@ -10,7 +9,7 @@ import GeometryType from 'ol/geom/GeometryType';
 import { Select as SelectInteraction } from 'ol/interaction';
 import { ModifyEvent } from 'ol/interaction/Modify';
 import { Vector as VectorLayer } from 'ol/layer';
-import { unByKey } from 'ol/Observable';
+import { OnReturn, unByKey } from 'ol/Observable';
 import { Vector as VectorSource } from 'ol/source';
 import { Circle, Fill, Stroke, Style } from 'ol/style';
 import { Abschnitt, StationObj } from '../Objekte/Abschnitt';
@@ -30,15 +29,15 @@ export class MoveTool extends Tool {
     private infoTool: InfoTool;
     private select: SelectInteraction;
     private v_overlay: VectorSource<Geometry>;
-    private l_overlay: VectorLayer;
+    private l_overlay: VectorLayer<VectorSource<Geometry>>;
     private feat_station_line: Feature<LineString>;
     private modifyPoint: ModifyInteraction;
     private lineRechts: Feature<Point>;
     private lineLinks: Feature<Point>;
     private modifyLine: ModifyInteraction;
     private linePreview: Feature<LineString>;
-    private pointermove: EventsKey;
-    private selectEventKey: EventsKey;
+    private pointermove: OnReturn;
+    private selectEventKey: OnReturn;
 
     constructor(map: Map, avInfoTool: InfoTool, selectInteraction: SelectInteraction) {
         super(map);
@@ -253,7 +252,7 @@ export class MoveTool extends Tool {
         return { achse: achse, pos: achse.getStationierung(coordinates) };
     }
 
-    private move(event: MapBrowserEvent) {
+    private move(event: MapBrowserEvent<any>) {
         let daten = this.getStation(event.coordinate);
 
         if (daten == null || daten['pos'] == null) return;

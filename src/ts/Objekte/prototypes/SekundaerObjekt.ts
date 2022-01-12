@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import { LineString, Point, Polygon } from "ol/geom";
 import { Klartext } from "../Klartext";
 import { Objekt } from "./Objekt";
 
@@ -9,7 +10,7 @@ import { Objekt } from "./Objekt";
  * @version 2020.01.28
  * @license GPL-3.0-or-later
 */
-export abstract class SekundaerObjekt extends Objekt {
+export abstract class SekundaerObjekt<GeometryType extends Polygon | LineString | Point> extends Objekt<GeometryType> {
 	protected parent: Klartext = null;
 
 	getParent(): Klartext {
