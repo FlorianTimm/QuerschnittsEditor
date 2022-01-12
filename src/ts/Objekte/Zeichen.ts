@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import { Point } from "ol/geom";
 import { Klartext } from "./Klartext";
 import { SekundaerObjekt } from "./prototypes/SekundaerObjekt";
 
@@ -9,7 +10,7 @@ import { SekundaerObjekt } from "./prototypes/SekundaerObjekt";
  * @version 2019.10.29
  * @license GPL-3.0-or-later
 */
-export class Zeichen extends SekundaerObjekt {
+export class Zeichen extends SekundaerObjekt<null> {
     private hasSekObj: string = null;
     private stvoznr: Klartext = null;
     private sort: number = null;

@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import { EventsKey } from 'ol/events';
 import Feature, { FeatureLike } from 'ol/Feature';
 import { LineString } from 'ol/geom';
 import { Select as SelectInteraction } from 'ol/interaction';
 import { Vector as VectorLayer } from 'ol/layer';
-import { unByKey } from 'ol/Observable';
+import { OnReturn, unByKey } from 'ol/Observable';
 import VectorSource from 'ol/source/Vector';
 import { Stroke, Style } from 'ol/style';
 import { HTML } from '../../HTML';
@@ -26,7 +25,7 @@ import MapBrowserEvent from 'ol/MapBrowserEvent';
 export class QuerPartTool extends Tool {
     private info: QuerInfoTool;
     private select: SelectInteraction;
-    private l_overlay: VectorLayer;
+    private l_overlay: VectorLayer<VectorSource<LineString>>;
     private feat_teilung: Feature<LineString>;
     private feat_station_line: Feature<LineString>;
     private abschnitt: Abschnitt | undefined;
@@ -38,11 +37,11 @@ export class QuerPartTool extends Tool {
     private form_nnk: HTMLInputElement;
     private form_station: HTMLInputElement;
     private form_button: HTMLInputElement;
-    private layerAchse: VectorLayer;
-    private singleclick: EventsKey;
-    private pointermove: EventsKey;
+    private layerAchse: VectorLayer<VectorSource<LineString>>;
+    private singleclick: OnReturn;
+    private pointermove: OnReturn;
 
-    constructor(map: Map, info: QuerInfoTool, sidebar: HTMLDivElement, layerAchse: VectorLayer) {
+    constructor(map: Map, info: QuerInfoTool, sidebar: HTMLDivElement, layerAchse: VectorLayer<VectorSource<LineString>>) {
         super(map);
         this.info = info;
         this.sidebar = sidebar;
@@ -75,8 +74,8 @@ export class QuerPartTool extends Tool {
     }
 
     private createOverlayVectorLayer() {
-        let v_overlay = new VectorSource();
-        this.l_overlay = new VectorLayer({
+        let v_overlay = new VectorSource<LineString>();
+        this.l_overlay = new VectorLayer<VectorSource<LineString>>({
             source: v_overlay,
             style: function (feat: FeatureLike) {
                 return new Style({

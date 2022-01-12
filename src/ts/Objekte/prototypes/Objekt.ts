@@ -13,7 +13,7 @@ import { CONFIG_WFS } from '../../../config/config_wfs'
  * @version 2020.04.03
  * @license GPL-3.0-or-later
 */
-export abstract class Objekt extends Feature<Polygon | Point | LineString> {
+export abstract class Objekt<GeometryType extends Polygon | Point | LineString> extends Feature<GeometryType> {
 	protected kherk: Klartext = null;
 	protected baujahrGew: string = null;
 	protected abnahmeGew: string = null;

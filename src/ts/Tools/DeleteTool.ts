@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import { Select as SelectInteraction } from 'ol/interaction';
-import VectorLayer from 'ol/layer/Vector';
+import { Vector as VectorLayer } from 'ol/layer';
+import { Vector as VectorSource } from 'ol/source'
 import { unByKey } from 'ol/Observable';
 import { Daten } from '../Daten';
 import { HTML } from '../HTML';
@@ -10,6 +11,7 @@ import { Map } from "../openLayers/Map";
 import { PublicWFS } from '../PublicWFS';
 import { InfoToolSelectable } from './InfoTool';
 import { Tool } from './prototypes/Tool';
+import { Geometry } from 'ol/geom';
 
 /**
  * Prototyp des Werkzeuges zum Löschen von Punktobjekten
@@ -18,7 +20,7 @@ import { Tool } from './prototypes/Tool';
  * @license GPL-3.0-or-later
 */
 export class DeleteTool extends Tool {
-    protected layer: VectorLayer;
+    protected layer: VectorLayer<VectorSource<Geometry>>;
     protected sidebar: HTMLElement;
     protected delField: HTMLFormElement;
     protected infoField: HTMLDivElement;
@@ -26,7 +28,7 @@ export class DeleteTool extends Tool {
     private objekt: string;
     private selectEventsKey: any;
 
-    constructor(map: Map, layer: VectorLayer, sidebar: HTMLDivElement, objekt: string, selectInteraction: SelectInteraction) {
+    constructor(map: Map, layer: VectorLayer<VectorSource<Geometry>>, sidebar: HTMLDivElement, objekt: string, selectInteraction: SelectInteraction) {
         super(map);
         this.layer = layer;
         this.sidebar = sidebar;

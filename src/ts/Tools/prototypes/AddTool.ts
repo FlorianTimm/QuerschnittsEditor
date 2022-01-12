@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import { MapBrowserEvent } from 'ol';
-import { EventsKey } from 'ol/events';
 import Feature from 'ol/Feature';
-import { Geometry, LineString, Point } from 'ol/geom';
+import { LineString, Point } from 'ol/geom';
 import { Select as SelectInteraction } from 'ol/interaction';
 import { Vector as VectorLayer } from 'ol/layer';
-import { unByKey } from 'ol/Observable';
+import { OnReturn, unByKey } from 'ol/Observable';
 import VectorSource from 'ol/source/Vector';
 import { Circle, Fill, Stroke, Style } from 'ol/style';
 import { Abschnitt, StationObj } from '../../Objekte/Abschnitt';
@@ -28,21 +27,21 @@ export abstract class AddTool extends Tool {
     protected abstand: number = null;
     protected seite: string = null;
     protected select: SelectInteraction;
-    protected v_overlay: VectorSource<Geometry>;
-    protected l_overlay: VectorLayer;
+    protected v_overlay: VectorSource<LineString | Point>;
+    protected l_overlay: VectorLayer<VectorSource<LineString | Point>>;
     protected feat_station: Feature<Point>;
     protected feat_neu: Feature<Point>;
     protected feat_station_line: Feature<LineString>;
     protected form: HTMLFormElement = null;
     protected sidebar: HTMLDivElement;
-    private layerAchse: VectorLayer;
+    private layerAchse: VectorLayer<VectorSource<LineString>>;
     private promise: Promise<void[]>;
-    private singleclick: EventsKey;
-    private pointermove: EventsKey;
+    private singleclick: OnReturn;
+    private pointermove: OnReturn;
 
     protected abstract createForm(): Promise<void[]>;
 
-    constructor(map: Map, sidebar: HTMLDivElement, layerAchse: VectorLayer) {
+    constructor(map: Map, sidebar: HTMLDivElement, layerAchse: VectorLayer<VectorSource<LineString>>) {
         super(map);
         this.sidebar = sidebar;
         this.layerAchse = layerAchse;
@@ -51,7 +50,7 @@ export abstract class AddTool extends Tool {
         this.createOverlayGeometry();
     }
 
-    calcStation(event: MapBrowserEvent) {
+    calcStation(event: MapBrowserEvent<PointerEvent>) {
         this.feat_neu.set('isset', true);
         let daten = this.part_get_station(event);
         if (daten['pos'] == null) return null;
@@ -132,7 +131,7 @@ export abstract class AddTool extends Tool {
         });
     }
 
-    part_get_station(event: MapBrowserEvent): { achse: Abschnitt, pos: StationObj } {
+    part_get_station(event: MapBrowserEvent<PointerEvent>): { achse: Abschnitt, pos: StationObj } {
         let achse: Abschnitt = null;
         if (this.select.getFeatures().getArray().length > 0) {
             achse = this.select.getFeatures().item(0) as Abschnitt;
@@ -149,7 +148,7 @@ export abstract class AddTool extends Tool {
         return { achse: achse, pos: achse.getStationierung(event.coordinate) };
     }
 
-    protected part_click(event: MapBrowserEvent) {
+    protected part_click(event: MapBrowserEvent<PointerEvent>) {
         let daten = this.calcStation(event);
         if (daten == null) return
         this.refreshStationierung(daten);
@@ -166,7 +165,7 @@ export abstract class AddTool extends Tool {
         $(this.form).find("#abstand").val(daten.pos.seite + ' ' + daten.pos.abstand);
     }
 
-    protected part_move(event: MapBrowserEvent) {
+    protected part_move(event: MapBrowserEvent<PointerEvent>) {
         let daten = this.part_get_station(event);
 
         if (daten == null || daten.pos == null) return;

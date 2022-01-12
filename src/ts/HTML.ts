@@ -78,21 +78,21 @@ export class HTML {
         return option;
     }
 
-    static createTextInput(form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string) {
-        return HTML.createInputField("text", form, beschriftung, id, inhalt);
+    static createTextInput(form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string, breiteCSS?: string) {
+        return HTML.createInputField("text", form, beschriftung, id, inhalt, breiteCSS);
     }
 
-    static createCheckboxTextInput(form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string) {
-        return HTML.createInputField("text", form, beschriftung, id, inhalt, true);
+    static createCheckboxTextInput(form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string, breiteCSS?: string) {
+        return HTML.createInputField("text", form, beschriftung, id, inhalt, breiteCSS, true);
     }
 
-    static createNumberInput(form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string) {
-        let input = HTML.createInputField("number", form, beschriftung, id, inhalt);
+    static createNumberInput(form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string, breiteCSS?: string) {
+        let input = HTML.createInputField("number", form, beschriftung, id, inhalt, breiteCSS);
         return input;
     }
 
-    static createDateInput(form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string) {
-        let aufstellField = HTML.createInputField("text", form, beschriftung, id, inhalt);
+    static createDateInput(form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string, breiteCSS?: string) {
+        let aufstellField = HTML.createInputField("text", form, beschriftung, id, inhalt, breiteCSS);
 
         aufstellField.autocomplete = "off";
         $.datepicker.regional['de'] = {
@@ -123,10 +123,13 @@ export class HTML {
     }
 
 
-    private static createInputField(type: "number" | "text" | "button", form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt: string, checkbox: true): { checkbox: HTMLInputElement, input: HTMLInputElement }
-    private static createInputField(type: "number" | "text" | "button", form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string): HTMLInputElement
-    private static createInputField(type: "number" | "text" | "button", form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string, checkbox?: boolean): HTMLInputElement | { checkbox: HTMLInputElement, input: HTMLInputElement } {
+    private static createInputField(type: "number" | "text" | "button", form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt: string, breiteCSS: string, checkbox: true): { checkbox: HTMLInputElement, input: HTMLInputElement }
+    private static createInputField(type: "number" | "text" | "button", form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string, breiteCSS?: string): HTMLInputElement
+    private static createInputField(type: "number" | "text" | "button", form: HTMLFormElement | HTMLDivElement, beschriftung: string, id: string, inhalt?: string, breiteCSS?: string, checkbox?: boolean): HTMLInputElement | { checkbox: HTMLInputElement, input: HTMLInputElement } {
         let formGroup = HTML.createFormGroup(form, 'group_' + id);
+        if (breiteCSS) {
+            formGroup.style.width = breiteCSS;
+        }
         let label = HTML.createLabel(beschriftung, id, formGroup, 'label_' + id);
         label.className = "label_" + type;
         HTML.createBreak(formGroup);

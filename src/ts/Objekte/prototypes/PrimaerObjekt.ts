@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import { LineString, Point, Polygon } from "ol/geom";
 import { InfoToolSelectable } from "../../Tools/InfoTool";
 import { Objekt } from "./Objekt";
 
@@ -9,7 +10,7 @@ import { Objekt } from "./Objekt";
  * @version 2020.01.28
  * @license GPL-3.0-or-later
 */
-export abstract class PrimaerObjekt extends Objekt implements InfoToolSelectable {
+export abstract class PrimaerObjekt<GeometryType extends Polygon | Point | LineString> extends Objekt<GeometryType> implements InfoToolSelectable {
 	protected abschnittOderAst: string = null;
 	protected vst: number = null;
 	protected bst: number = null;

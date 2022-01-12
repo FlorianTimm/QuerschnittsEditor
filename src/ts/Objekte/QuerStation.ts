@@ -2,7 +2,7 @@
 
 import { Map } from 'ol';
 import Feature from 'ol/Feature';
-import { Point } from 'ol/geom';
+import { LineString, Point } from 'ol/geom';
 import MultiLineString from 'ol/geom/MultiLineString';
 import VectorSource from 'ol/source/Vector';
 import { Stroke, Style } from 'ol/style';
@@ -30,7 +30,7 @@ export class QuerStation {
     private _querschnitte: { [streifen: string]: { [streifennr: number]: Querschnitt } } = {};
     private linienPunkte: LinienPunkt[];
     public aufbaudatenLoaded: Promise<{ [fid: string]: Aufbau[] }>;
-    private static layerStation: VectorLayer;
+    private static layerStation: VectorLayer<VectorSource<MultiLineString | Point>>;
 
     constructor(abschnitt: Abschnitt, vst: number, bst: number) {
         this.daten = Daten.getInstanz();
@@ -120,17 +120,17 @@ export class QuerStation {
         let letzter = this.linienPunkte[this.linienPunkte.length - 1];
         let statTrenn = [];
         statTrenn.push([Vektor.sum(letzter.getCoordinates(), Vektor.multi(letzter.seitlicherVektorAmPunkt, 30)), Vektor.sum(letzter.getCoordinates(), Vektor.multi(letzter.seitlicherVektorAmPunkt, -30))]);
-        QuerStation.layerStation.getSource().addFeature(new Feature({ geom: new Point(letzter.getCoordinates()) }));
+        QuerStation.layerStation.getSource().addFeature(new Feature<Point>({ geom: new Point(letzter.getCoordinates()) }));
         if (this.vst == 0) {
             statTrenn.push([Vektor.sum(erster.getCoordinates(), Vektor.multi(erster.seitlicherVektorAmPunkt, 30)), Vektor.sum(erster.getCoordinates(), Vektor.multi(erster.seitlicherVektorAmPunkt, -30))]);
-            QuerStation.layerStation.getSource().addFeature(new Feature({ geom: new Point(erster.getCoordinates()) }));
+            QuerStation.layerStation.getSource().addFeature(new Feature<Point>({ geom: new Point(erster.getCoordinates()) }));
         }
 
         if (this.linie) {
             this.linie.setCoordinates(statTrenn)
         } else {
             this.linie = new MultiLineString(statTrenn);
-            let feat = new Feature({
+            let feat = new Feature<MultiLineString>({
                 geometry: this.linie,
                 objekt: this,
             });
