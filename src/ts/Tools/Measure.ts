@@ -4,7 +4,6 @@ import { EventsKey } from 'ol/events';
 import Event from 'ol/events/Event';
 import { LineString } from 'ol/geom';
 import Geometry from 'ol/geom/Geometry';
-import GeometryType from 'ol/geom/GeometryType';
 import Draw, { DrawEvent } from 'ol/interaction/Draw';
 import { Vector as VectorLayer } from 'ol/layer';
 import { unByKey } from 'ol/Observable';
@@ -47,7 +46,7 @@ export class Measure extends Tool {
         // Interaktion erzeugen
         this.draw = new Draw({
             source: this.source,
-            type: GeometryType.LINE_STRING,
+            type: 'LineString',
             style: new Style({
                 stroke: new Stroke({
                     color: 'rgba(0, 0, 0, 0.5)',
@@ -74,7 +73,7 @@ export class Measure extends Tool {
         this.measureTooltip = new Overlay({
             element: measureTooltipElement,
             offset: [0, -15],
-            positioning: OverlayPositioning.BOTTOM_CENTER
+            positioning: 'bottom-center'
         });
 
         var formatLength = function (line: Geometry) {

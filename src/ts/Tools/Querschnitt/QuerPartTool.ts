@@ -4,7 +4,7 @@ import Feature, { FeatureLike } from 'ol/Feature';
 import { LineString } from 'ol/geom';
 import { Select as SelectInteraction } from 'ol/interaction';
 import { Vector as VectorLayer } from 'ol/layer';
-import { OnReturn, unByKey } from 'ol/Observable';
+import { unByKey } from 'ol/Observable';
 import VectorSource from 'ol/source/Vector';
 import { Stroke, Style } from 'ol/style';
 import { HTML } from '../../HTML';
@@ -15,6 +15,7 @@ import { Vektor } from '../../Vektor';
 import { Tool } from '../prototypes/Tool';
 import { QuerInfoTool } from './QuerInfoTool';
 import MapBrowserEvent from 'ol/MapBrowserEvent';
+import { EventsKey } from 'ol/events';
 
 /**
  * Funktion zum Teilen von Querschnittsflächen
@@ -38,8 +39,8 @@ export class QuerPartTool extends Tool {
     private form_station: HTMLInputElement;
     private form_button: HTMLInputElement;
     private layerAchse: VectorLayer<VectorSource<LineString>>;
-    private singleclick: OnReturn;
-    private pointermove: OnReturn;
+    private singleclick: EventsKey;
+    private pointermove: EventsKey;
 
     constructor(map: Map, info: QuerInfoTool, sidebar: HTMLDivElement, layerAchse: VectorLayer<VectorSource<LineString>>) {
         super(map);

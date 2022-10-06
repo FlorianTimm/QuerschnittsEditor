@@ -12,7 +12,7 @@ import { Geometry, LineString, MultiLineString, Point } from 'ol/geom';
 import { Snap } from 'ol/interaction';
 import { ModifyEvent } from 'ol/interaction/Modify';
 import VectorLayer from 'ol/layer/Vector';
-import { OnReturn, unByKey } from 'ol/Observable';
+import { unByKey } from 'ol/Observable';
 import VectorSource from 'ol/source/Vector';
 import { Circle, Fill, Stroke, Style } from 'ol/style';
 import { HTML } from '../../HTML';
@@ -24,6 +24,7 @@ import { PublicWFS } from '../../PublicWFS';
 import { Vektor } from '../../Vektor';
 import { Tool } from '../prototypes/Tool';
 import { QuerInfoTool } from './QuerInfoTool';
+import { EventsKey } from "ol/events.js";
 
 /**
  * Funktion zum Verändern von Querschnittsflächen
@@ -49,8 +50,8 @@ export class QuerModifyTool extends Tool {
     private modifyLayer: VectorLayer<VectorSource<Geometry>>;
     private modifyOverlayLayer: VectorLayer<VectorSource<Geometry>>;
     private sidebar: HTMLDivElement;
-    private pointermove: OnReturn;
-    private selectEventsKey: OnReturn;
+    private pointermove: EventsKey;
+    private selectEventsKey: EventsKey;
 
     constructor(map: Map, info: QuerInfoTool, sidebar: HTMLDivElement, layerTrenn: VectorLayer<VectorSource<MultiLineString>>, layerStation: VectorLayer<VectorSource<MultiLineString | Point>>) {
         super(map);

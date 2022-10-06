@@ -6,9 +6,9 @@ import 'jquery-ui-bundle/jquery-ui.css';
 import { Feature } from 'ol';
 import { EventsKey } from 'ol/events';
 import { platformModifierKeyOnly } from 'ol/events/condition';
-import { LineString, Polygon } from 'ol/geom';
+import { LineString } from 'ol/geom';
 import { Select as SelectInteraction } from 'ol/interaction';
-import { OnReturn, unByKey } from 'ol/Observable';
+import { unByKey } from 'ol/Observable';
 import VectorSource from 'ol/source/Vector';
 import { Stroke, Style } from 'ol/style';
 import { Daten } from '../../Daten';
@@ -36,7 +36,7 @@ export class QuerAddTool extends Tool {
     private button: HTMLInputElement;
     private fehlendeQuerschnitte: VectorLayer<VectorSource<LineString>>;
     private selectQuerschnitte: SelectInteraction;
-    private selectQuerschnitteEventsKey: OnReturn;
+    private selectQuerschnitteEventsKey: EventsKey;
 
     constructor(map: Map, info: QuerInfoTool) {
         super(map);

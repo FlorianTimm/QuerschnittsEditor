@@ -4,7 +4,6 @@ import "../import_jquery.js";
 import { Feature } from 'ol';
 import { FeatureLike } from 'ol/Feature';
 import { Geometry } from 'ol/geom';
-import GeometryType from 'ol/geom/GeometryType';
 import { Select as SelectInteraction } from 'ol/interaction';
 import { SelectEvent } from 'ol/interaction/Select';
 import { unByKey } from 'ol/Observable';
@@ -14,6 +13,7 @@ import { HTML } from '../HTML';
 import { Map } from '../openLayers/Map';
 import { PublicWFS } from '../PublicWFS';
 import { Tool } from './prototypes/Tool';
+import { Type } from "ol/geom/Geometry.js";
 
 /**
  * Funktion zum Anzeigen von Informationen zu Aufstellvorrichtungen und Schildern
@@ -106,15 +106,15 @@ export class InfoTool extends Tool {
     }
 
     public static selectStyle(feat: FeatureLike, __: number): Style {
-        let typ = feat.getGeometry().getType();
-        if (typ == GeometryType.LINE_STRING || typ == GeometryType.MULTI_LINE_STRING) {
+        let typ: Type = feat.getGeometry().getType();
+        if (typ == 'LineString' || typ == "MultiLineString") {
             return new Style({
                 stroke: new Stroke({
                     color: 'rgba(255, 0, 0, 0.5)',
                     width: 3
                 })
             })
-        } else if (typ == GeometryType.POLYGON) {
+        } else if (typ == 'Polygon') {
             return new Style({
                 fill: new Fill({
                     color: 'rgba(255, 0, 0, 0.3)'

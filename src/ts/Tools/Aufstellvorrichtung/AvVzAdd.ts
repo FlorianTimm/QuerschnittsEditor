@@ -8,7 +8,7 @@ import 'jquery-ui-bundle/jquery-ui.css';
 import { never, pointerMove } from 'ol/events/condition';
 import { Select as SelectInteraction } from 'ol/interaction';
 import { SelectEvent } from 'ol/interaction/Select';
-import { OnReturn, unByKey } from 'ol/Observable';
+import { unByKey } from 'ol/Observable';
 import '../../../css/vzadd.css';
 import { Daten } from '../../Daten';
 import { HTML } from '../../HTML';
@@ -19,6 +19,7 @@ import { Map } from "../../openLayers/Map";
 import { PublicWFS } from '../../PublicWFS';
 import { Tool } from '../prototypes/Tool';
 import { CONFIG } from '../../../config/config'
+import { EventsKey } from "ol/events.js";
 
 /**
  * Funktion zum Hinzufügen von Verkehrsschildern
@@ -35,12 +36,11 @@ export class AvVzAdd extends Tool {
     private mouseOver: SelectInteraction;
     private lastOverlay: Aufstellvorrichtung;
     private buttonSpeichern: HTMLButtonElement;
-    private selectKey: OnReturn;
+    private selectKey: EventsKey;
 
     /**
      * Erzeugt eine Instanz des Verkehrszeichen-Hinzufügen-Tools
      * @param map Karten-Objekt
-     * @param daten Daten-Objekt
      */
     constructor(map: Map) {
         super(map);
