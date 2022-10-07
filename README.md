@@ -6,7 +6,7 @@ Editor ist nur in Zusammenhang mit dieser Software einsetzbar.
 
 ## Kompilierien
 Benötigt wird eine node.js und parcel.js Entwicklungs-Umgebung:
-https://bitbucket.org/geowerkstatt-hamburg/masterportal/src/stable/doc/devdoc.md
+https://bitbucket.org/geowerkstatt-hamburg/masterportal/src/dev/doc/setupDev.md
 
 Mit `npm install` und `npm run build` kann dann das Programm im Ordner `dist` erzeugt werden. Außerdem muss der Ordner `jsp` aus dem `src`-Ordner in den `dist`-Ordner kopiert werden.
 
