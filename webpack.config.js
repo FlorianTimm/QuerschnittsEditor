@@ -40,30 +40,27 @@ module.exports = {
   },
   module: {
     rules: [{
-        test: /\.tsx?$/,
-        use: 'ts-loader',
-        exclude: /node_modules/
-      },
-      {
-        test: /\.(css)$/,
-        use: [MiniCssExtractPlugin.loader, 'css-loader'],
-        //use: ['style-loader', 'css-loader'],
-      },
-      {
-        test: /\.(png|jpe?g|gif)$/i,
-        use: [{
-          loader: "file-loader"
-        }]
-      }
+      test: /\.tsx?$/,
+      use: 'ts-loader',
+      exclude: /node_modules/
+    },
+    {
+      test: /\.(css)$/,
+      use: [MiniCssExtractPlugin.loader, 'css-loader'],
+      //use: ['style-loader', 'css-loader'],
+    },
+    {
+      test: /\.(png|jpe?g|gif)$/i,
+      use: [{
+        loader: "file-loader"
+      }]
+    }
     ]
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js']
   },
   devtool: 'inline-source-map',
-  devServer: {
-    contentBase: './dist'
-  },
   plugins: [
     // new CleanWebpackPlugin({
     //   exclude: ['jsp', 'config'],
@@ -89,7 +86,7 @@ module.exports = {
       patterns: [{
         from: "src/img",
         to: "img"
-      }, ],
+      },],
     }),
   ],
   output: {
@@ -98,11 +95,11 @@ module.exports = {
     path: path.resolve(__dirname, 'dist')
   },
   devServer: {
-    contentBase: path.join(__dirname, 'dist'),
+    static: path.join(__dirname, 'dist'),
     compress: true,
     port: 9000,
     proxy: {
-      '/jsp': 'http://10.200.160.164:8080/querOO',
+      '/jsp': 'http://10.200.160.199:8080/querOO',
       '/querOO': {
         target: 'http://localhost:9000',
         pathRewrite: {
