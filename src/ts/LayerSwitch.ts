@@ -53,19 +53,19 @@ export class LayerSwitch extends Control {
 					div_layer.appendChild(div_zusatz)
 
 					if (layer.getVisible()) {
-						bt_layer.style.backgroundColor = "green";
+						bt_layer.style.backgroundColor = "lightgreen";
 						div_zusatz.style.display = 'block';
 					} else {
-						bt_layer.style.backgroundColor = "grey";
+						bt_layer.style.backgroundColor = "var(--ol-background-color)";
 						div_zusatz.style.display = 'none';
 					}
 					bt_layer.addEventListener('click', function () {
 						layer.setVisible(!layer.getVisible());
 						if (layer.getVisible()) {
-							bt_layer.style.backgroundColor = "green";
+							bt_layer.style.backgroundColor = "lightgreen";
 							div_zusatz.style.display = 'block';
 						} else {
-							bt_layer.style.backgroundColor = "grey";
+							bt_layer.style.backgroundColor = "var(--ol-background-color)";
 							div_zusatz.style.display = 'none';
 						}
 					});

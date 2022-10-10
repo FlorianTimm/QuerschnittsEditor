@@ -1,8 +1,7 @@
 #layerswitch {
-    color: #fff;
+    color: var(--ol-foreground-color);
     width: 150px;
-    background-color: rgb(0, 60, 136);
-    background-color: rgba(0, 60, 136, .5);
+    background-color: var(--ol-background-color);
     top: 70px;
     left: 50px;
     border: 3px solid #999;
@@ -24,6 +23,7 @@
     max-height: 90%;
     overflow: auto;
     z-index: 999;
+    background-color: var(--ol-partial-background-color);
 }
 
 .layerswitch button {

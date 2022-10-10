@@ -99,11 +99,22 @@ module.exports = {
     compress: true,
     port: 9000,
     proxy: {
-      '/jsp': 'http://10.200.160.199:8080/querOO',
-      '/querOO': {
+      '/jsp': {
+        target: 'http://10.200.160.199:8080/querBeta/jsp',
+        pathRewrite: {
+          '^/jsp': ''
+        },
+      },
+      '/querBeta/jsp': {
+        target: 'http://10.200.160.199:8080/querBeta/jsp',
+        pathRewrite: {
+          '^/querBeta/jsp': ''
+        },
+      },
+      '/querBeta': {
         target: 'http://localhost:9000',
         pathRewrite: {
-          '^/querOO': ''
+          '^/querBeta': ''
         },
       },
     },
