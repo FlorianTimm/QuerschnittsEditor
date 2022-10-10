@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import { Collection } from "ol";
+import { EventsKey } from "ol/events";
 import { never, platformModifierKeyOnly } from 'ol/events/condition';
-import { OnReturn, unByKey } from "ol/Observable";
+import { unByKey } from "ol/Observable";
 import { Querschnitt } from "../../Objekte/Querschnittsdaten";
 import { QuerStation } from "../../Objekte/QuerStation";
 import { SelectInteraction } from '../../openLayers/Interaction';
@@ -23,7 +24,7 @@ export class QuerDelTool extends Tool {
     private selectLinien: SelectInteraction;
     private selectFlaechen: SelectInteraction;
     private button: HTMLButtonElement;
-    selectEventsKey: OnReturn;
+    selectEventsKey: EventsKey;
 
     constructor(map: Map, info: QuerInfoTool) {
         super(map);

@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import { MapBrowserEvent } from 'ol';
+import { EventsKey } from 'ol/events';
 import Feature from 'ol/Feature';
 import { LineString, Point } from 'ol/geom';
 import { Select as SelectInteraction } from 'ol/interaction';
 import { Vector as VectorLayer } from 'ol/layer';
-import { OnReturn, unByKey } from 'ol/Observable';
+import { unByKey } from 'ol/Observable';
 import VectorSource from 'ol/source/Vector';
 import { Circle, Fill, Stroke, Style } from 'ol/style';
 import { Abschnitt, StationObj } from '../../Objekte/Abschnitt';
@@ -36,8 +37,8 @@ export abstract class AddTool extends Tool {
     protected sidebar: HTMLDivElement;
     private layerAchse: VectorLayer<VectorSource<LineString>>;
     private promise: Promise<void[]>;
-    private singleclick: OnReturn;
-    private pointermove: OnReturn;
+    private singleclick: EventsKey;
+    private pointermove: EventsKey;
 
     protected abstract createForm(): Promise<void[]>;
 

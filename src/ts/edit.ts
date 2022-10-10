@@ -228,7 +228,7 @@ class Edit {
     }
 
     private createLayer() {
-        let layer = [new TileLayer({
+        let layer: TileLayer<OSM | TileWMS>[] = [new TileLayer({
             name: 'OpenStreetMap',
             visible: false,
             switchable: true,

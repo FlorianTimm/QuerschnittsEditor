@@ -2,14 +2,14 @@
 
 import { Collection, MapBrowserEvent } from 'ol';
 import { Coordinate } from 'ol/coordinate';
+import { EventsKey } from 'ol/events';
 import { never as neverCondition } from 'ol/events/condition';
 import Feature from 'ol/Feature';
 import { Geometry, LineString, Point } from 'ol/geom';
-import GeometryType from 'ol/geom/GeometryType';
 import { Select as SelectInteraction } from 'ol/interaction';
 import { ModifyEvent } from 'ol/interaction/Modify';
 import { Vector as VectorLayer } from 'ol/layer';
-import { OnReturn, unByKey } from 'ol/Observable';
+import { unByKey } from 'ol/Observable';
 import { Vector as VectorSource } from 'ol/source';
 import { Circle, Fill, Stroke, Style } from 'ol/style';
 import { Abschnitt, StationObj } from '../Objekte/Abschnitt';
@@ -36,8 +36,8 @@ export class MoveTool extends Tool {
     private lineLinks: Feature<Point>;
     private modifyLine: ModifyInteraction;
     private linePreview: Feature<LineString>;
-    private pointermove: OnReturn;
-    private selectEventKey: OnReturn;
+    private pointermove: EventsKey;
+    private selectEventKey: EventsKey;
 
     constructor(map: Map, avInfoTool: InfoTool, selectInteraction: SelectInteraction) {
         super(map);
@@ -155,7 +155,7 @@ export class MoveTool extends Tool {
     private featureSelected() {
         if (this.select.getFeatures().getLength() > 0) {
             console.log(this.select.getFeatures().item(0))
-            if (this.select.getFeatures().item(0).getGeometry().getType() == GeometryType.LINE_STRING) {
+            if (this.select.getFeatures().item(0).getGeometry().getType() == 'LineString') {
                 this.modifyPoint.setActive(false);
                 this.changeLine(this.select.getFeatures().item(0) as Feature<LineString>);
             } else {
