@@ -6,7 +6,7 @@ body,
     width: 100%;
     margin: 0;
     padding: 0;
-    background-image: url('~../img/background_blur.jpg');
+    background-image: url('../img/background_blur.jpg');
     background-repeat: no-repeat;
     background-size: cover;
     background-attachment: fixed;

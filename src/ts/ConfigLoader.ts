@@ -48,7 +48,7 @@ export class ConfigLoader {
 
     public getConfig(): Promise<ConfigJSON> {
         if (!this.config)
-            this.config = fetch("/config/config.json").then((daten) => {
+            this.config = fetch("config/config.json").then((daten) => {
                 return daten.json()
             })
         return this.config;
@@ -56,7 +56,7 @@ export class ConfigLoader {
 
     public getLayer(): Promise<LayerJSON[]> {
         if (!this.layer)
-            this.layer = fetch("/config/config_wms.json").then((daten) => {
+            this.layer = fetch("config/config_wms.json").then((daten) => {
                 return daten.json()
             })
         return this.layer;
@@ -64,7 +64,7 @@ export class ConfigLoader {
 
     getWfsConfig() {
         if (!this.wfs)
-            this.wfs = fetch("/config/config_wfs.json").then((daten) => {
+            this.wfs = fetch("config/config_wfs.json").then((daten) => {
                 return daten.json()
             })
         return this.wfs;
