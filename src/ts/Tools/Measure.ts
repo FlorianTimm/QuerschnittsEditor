@@ -11,9 +11,9 @@ import Overlay from 'ol/Overlay';
 import { Vector as VectorSource } from 'ol/source';
 import { getLength } from 'ol/sphere';
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
+import { ConfigLoader } from '../ConfigLoader';
 import { Map } from "../openLayers/Map";
 import { Tool } from './prototypes/Tool';
-import { CONFIG } from '../../config/config'
 
 /**
  * Messfunktion
@@ -75,8 +75,9 @@ export class Measure extends Tool {
             positioning: 'bottom-center'
         });
 
-        var formatLength = function (line: Geometry) {
-            var length = getLength(line, { projection: CONFIG.EPSG_CODE });
+        var formatLength = async function (line: Geometry) {
+            let config = await ConfigLoader.get().getConfig();
+            var length = getLength(line, { projection: config.EPSG_CODE });
             var output;
             if (length > 100) {
                 output = (Math.round(length / 1000 * 100) / 100) +
@@ -97,9 +98,9 @@ export class Measure extends Tool {
                 let tooltipCoord = (evt.feature.getGeometry() as LineString).getFirstCoordinate();
                 measureTooltipElement.className = 'tooltip tooltip-measure';
 
-                listener = evt.feature.getGeometry().on('change', (evt: Event) => {
+                listener = evt.feature.getGeometry().on('change', async (evt: Event) => {
                     var geom = <LineString>evt.target;
-                    var output = formatLength(geom);
+                    var output = await formatLength(geom);
                     tooltipCoord = geom.getLastCoordinate();
                     measureTooltipElement.innerHTML = output;
                     this.measureTooltip.setPosition(tooltipCoord);

@@ -2,10 +2,9 @@
 
 import { Feature } from "ol";
 import { LineString, Point, Polygon } from "ol/geom";
+import { ConfigLoader } from "../../ConfigLoader";
 import { Abschnitt } from "../Abschnitt";
 import { Klartext } from "../Klartext";
-
-import { CONFIG_WFS } from '../../../config/config_wfs'
 
 /**
  * Interface für SIB-Objekte
@@ -37,17 +36,18 @@ export abstract class Objekt<GeometryType extends Polygon | Point | LineString> 
 
 	abstract getObjektKlassenName(): string;
 
-	public setDataFromXML(xml: Element) {
+	public async setDataFromXML(xml: Element): Promise<any> {
 		this.fid = xml.getAttribute('fid');
-		for (var tag in CONFIG_WFS[this.getObjektKlassenName()]) {
+		const configWfs = await ConfigLoader.get().getWfsConfig();
+		for (let tag in configWfs[this.getObjektKlassenName()]) {
 			if (xml.getElementsByTagName(tag).length <= 0) continue;
-			if (CONFIG_WFS[this.getObjektKlassenName()][tag].art == 0) {
+			if (configWfs[this.getObjektKlassenName()][tag].art == 0) {
 				// Kein Klartext
 				this[tag] = xml.getElementsByTagName(tag)[0].firstChild.textContent;
-			} else if (CONFIG_WFS[this.getObjektKlassenName()][tag].art == 1) {
+			} else if (configWfs[this.getObjektKlassenName()][tag].art == 1) {
 				// Kein Klartext
 				this[tag] = Number(xml.getElementsByTagName(tag)[0].firstChild.textContent);
-			} else if (CONFIG_WFS[this.getObjektKlassenName()][tag].art == 2) {
+			} else if (configWfs[this.getObjektKlassenName()][tag].art == 2) {
 				// Klartext, xlink wird gespeichert
 				let eintrag = xml.getElementsByTagName(tag)[0]
 				this[tag] = Klartext.get(
@@ -93,29 +93,29 @@ export abstract class Objekt<GeometryType extends Polygon | Point | LineString> 
 		return r;
 	}
 
-	public createXML(changes?: { [tag: string]: number | string }, removeIds?: boolean) {
+	public async createXML(changes?: { [tag: string]: number | string }, removeIds?: boolean) {
 		let r = '<' + this.getObjektKlassenName() + '>\n';
-
+		const configWfs = await ConfigLoader.get().getWfsConfig();
 		for (let change in changes) {
-			if (CONFIG_WFS[this.getObjektKlassenName()][change].art == 0 || CONFIG_WFS[this.getObjektKlassenName()][change].art == 1) {
+			if (configWfs[this.getObjektKlassenName()][change].art == 0 || configWfs[this.getObjektKlassenName()][change].art == 1) {
 				// Kein Klartext
 				r += '<' + change + '>' + changes[change] + '</' + change + '>\n';
-			} else if (CONFIG_WFS[this.getObjektKlassenName()][change].art == 2) {
+			} else if (configWfs[this.getObjektKlassenName()][change].art == 2) {
 				// Klartext
-				r += '<' + change + ' xlink:href="' + changes[change] + '" typeName="' + CONFIG_WFS[this.getObjektKlassenName()][change].kt + '" />\n';
+				r += '<' + change + ' xlink:href="' + changes[change] + '" typeName="' + configWfs[this.getObjektKlassenName()][change].kt + '" />\n';
 			}
 		}
 
-		for (let tag in CONFIG_WFS[this.getObjektKlassenName()]) {
+		for (let tag in configWfs[this.getObjektKlassenName()]) {
 			if (changes != undefined && tag in changes) continue;
 			else if (removeIds == true && (tag == "objektId" || tag == "fid")) continue;
 			else if (this[tag] === null || this[tag] === undefined) continue;
-			else if (CONFIG_WFS[this.getObjektKlassenName()][tag].art == 0 || CONFIG_WFS[this.getObjektKlassenName()][tag].art == 1) {
+			else if (configWfs[this.getObjektKlassenName()][tag].art == 0 || configWfs[this.getObjektKlassenName()][tag].art == 1) {
 				// Kein Klartext
 				r += '<' + tag + '>' + this[tag] + '</' + tag + '>\n';
-			} else if (CONFIG_WFS[this.getObjektKlassenName()][tag].art == 2) {
+			} else if (configWfs[this.getObjektKlassenName()][tag].art == 2) {
 				// Klartext
-				r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + CONFIG_WFS[this.getObjektKlassenName()][tag].kt + '" />\n';
+				r += '<' + tag + ' xlink:href="' + this[tag] + '" typeName="' + configWfs[this.getObjektKlassenName()][tag].kt + '" />\n';
 			}
 		}
 

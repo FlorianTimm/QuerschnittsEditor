@@ -95,7 +95,7 @@ module.exports = {
     path: path.resolve(__dirname, 'dist')
   },
   devServer: {
-    static: path.join(__dirname, 'dist'),
+    static: path.join(__dirname, 'static'),
     compress: true,
     port: 9000,
     proxy: {
@@ -106,16 +106,16 @@ module.exports = {
         },
       },
       '/querBeta/jsp': {
-        target: 'http://10.200.160.199:8080/querBeta/jsp',
-        pathRewrite: {
-          '^/querBeta/jsp': ''
-        },
+        target: 'http://10.200.160.199:8080',
       },
       '/querBeta': {
         target: 'http://localhost:9000',
         pathRewrite: {
           '^/querBeta': ''
         },
+      },
+      '/schilder': {
+        target: 'http://10.200.160.199:8080',
       },
     },
   }

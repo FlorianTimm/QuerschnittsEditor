@@ -415,12 +415,12 @@ export class QuerStation {
         return this.aufbaudatenLoaded;
     }
 
-    private parseAufbaudaten(xml: Document): { [fid: string]: Aufbau[] } | null {
+    private async parseAufbaudaten(xml: Document): Promise<{ [fid: string]: Aufbau[] }> | null {
         let aufbau = xml.getElementsByTagName('Otschicht');
         let aufbaudaten: { [fid: string]: Aufbau[] } = {};
 
         for (let i = 0; i < aufbau.length; i++) {
-            let a = Aufbau.fromXML(aufbau[i]);
+            let a = await Aufbau.fromXML(aufbau[i]);
             if (a.getParent() == null) {
                 console.log("Es konnten nicht alle Aufbaudaten den Querschnitten zugeordnet werden, Abbruch!");
                 return null;

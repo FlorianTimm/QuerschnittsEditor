@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import { CONFIG } from '../config/config.js'
 import { Extent } from 'ol/extent';
+import { ConfigLoader } from './ConfigLoader';
 
 /**
  * Schnittstelle zur eigenen Geometrie-Schnittstelle
@@ -40,10 +40,11 @@ export class AbschnittWFS {
         return AbschnittWFS._makeRequest(param)
     }
 
-    static _makeRequest(param: string): Promise<XMLDocument> {
+    static async _makeRequest(param: string): Promise<XMLDocument> {
 
         var xmlhttp = new XMLHttpRequest();
-        xmlhttp.open('POST', CONFIG.ABSCHNITT_WFS_URL + param, true);
+        let config = await ConfigLoader.get().getConfig();
+        xmlhttp.open('POST', config.ABSCHNITT_WFS_URL + param, true);
         return new Promise((resolve, reject) => {
             xmlhttp.onreadystatechange = function () {
                 if (xmlhttp.readyState != 4) return;

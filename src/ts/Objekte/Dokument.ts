@@ -24,9 +24,9 @@ export class Dokument extends SekundaerObjekt<null> {
         return "Otdokument"
     }
 
-    static fromXML(xml: Element) {
+    static async fromXML(xml: Element) {
         let r = new Dokument();
-        r.setDataFromXML(xml)
+        await r.setDataFromXML(xml)
         return r;
     }
 

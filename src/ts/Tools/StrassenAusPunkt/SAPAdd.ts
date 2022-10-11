@@ -8,9 +8,9 @@ import { Map } from "../../openLayers/Map";
 import { PublicWFS } from '../../PublicWFS';
 import { AddTool } from '../prototypes/AddTool';
 
-import { CONFIG } from '../../../config/config'
 import { LineString } from 'ol/geom';
 import VectorSource from 'ol/source/Vector';
+import { ConfigLoader } from '../../ConfigLoader';
 
 /**
  * Funktion zum Hinzufügen von Straßenausstattung (punktuell)
@@ -48,6 +48,7 @@ export class SAPAdd extends AddTool {
     }
 
     private async wfsAddStrausPkt(): Promise<StrassenAusPunkt[]> {
+        const config = await ConfigLoader.get().getConfig();
         let soap = '<wfs:Insert>\n' +
             '<Otstrauspkt>\n' +
             '<projekt xlink:href="#' + Daten.getInstanz().ereignisraum + '" typeName="Projekt" />\n' +
@@ -58,8 +59,8 @@ export class SAPAdd extends AddTool {
             '<vabstVst>' + this.abstand + '</vabstVst>\n' +
             '<vabstBst>' + this.abstand + '</vabstBst>\n' +
             '<bemerkung>mit QuerschnittsEditor erfasst</bemerkung>\n' +
-            '<detailgrad xlink:href="' + CONFIG.DETAIL_HOCH + '" typeName="Itobjdetailgrad" />\n' +
-            '<erfart xlink:href="' + CONFIG.ERFASSUNG + '" typeName="Iterfart" />\n' +
+            '<detailgrad xlink:href="' + config.DETAIL_HOCH + '" typeName="Itobjdetailgrad" />\n' +
+            '<erfart xlink:href="' + config.ERFASSUNG + '" typeName="Iterfart" />\n' +
             '<ADatum>' + (new Date()).toISOString().substring(0, 10) + '</ADatum>\n' +
             '<rlageVst xlink:href="#S' + $(this.form).find('#lage').val() + '" typeName="Itallglage" />\n' +
             '<art xlink:href="#S' + $(this.form).find('#art').val() + '" typeName="Itstrauspktart" />\n' +

@@ -43,10 +43,10 @@ export class Aufbau extends SekundaerObjekt<null> {
 	private detaild: Klartext = null;
 	private umweltr: string = null;
 
-	public static fromXML(xml: Element): Aufbau {
+	public static async fromXML(xml: Element): Promise<Aufbau> {
 		//console.log(xml);
 		let r = new Aufbau();
-		r.setDataFromXML(xml)
+		await r.setDataFromXML(xml)
 		return r;
 	}
 

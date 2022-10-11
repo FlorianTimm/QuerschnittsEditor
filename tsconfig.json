@@ -73,6 +73,8 @@
   "exclude": [
     "node_modules",
     "dist",
+    "build",
+    "docs",
     "webpack.config.js",
     "src/ts/import_jquery.js",
   ]

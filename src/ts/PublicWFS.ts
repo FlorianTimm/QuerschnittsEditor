@@ -3,8 +3,8 @@
 import { Abschnitt } from './Objekte/Abschnitt';
 import { PrimaerObjekt } from './Objekte/prototypes/PrimaerObjekt';
 import { WaitBlocker } from './WaitBlocker';
-import { CONFIG } from '../config/config'
 import { LineString, Point, Polygon } from 'ol/geom';
+import { ConfigLoader } from './ConfigLoader';
 
 /**
  * Schnittstelle zum PublicWFS
@@ -17,12 +17,14 @@ export class PublicWFS {
     static capabilities: null | Promise<Document> = null;
     static describeFeature: { [featureType: string]: Promise<Document> };
 
-    private static doSoapRequestWFS(xml: string): Promise<Document> {
-        return PublicWFS.doSoapRequest(CONFIG.PUBLIC_WFS_URL, xml);
+    private static async doSoapRequestWFS(xml: string): Promise<Document> {
+        const config = await ConfigLoader.get().getConfig();
+        return PublicWFS.doSoapRequest(config.PUBLIC_WFS_URL, xml);
     }
 
-    private static doSoapRequestERWFS(xml: string): Promise<Document> {
-        return PublicWFS.doSoapRequest(CONFIG.ER_WFS_URL, xml);
+    private static async doSoapRequestERWFS(xml: string): Promise<Document> {
+        const config = await ConfigLoader.get().getConfig();
+        return PublicWFS.doSoapRequest(config.ER_WFS_URL, xml);
     }
 
     private static doSoapRequest(url: string, xml: string): Promise<Document> {
@@ -46,10 +48,11 @@ export class PublicWFS {
     }
 
     private static doGetRequest(url_param: string, blocking: boolean = true): Promise<Document> {
-        return new Promise(function (resolve, reject) {
+        return new Promise(async function (resolve, reject) {
             if (blocking) WaitBlocker.warteAdd()
             var xmlhttp = new XMLHttpRequest();
-            xmlhttp.open('GET', CONFIG.PUBLIC_WFS_URL + '?' + url_param, true);
+            const config = await ConfigLoader.get().getConfig();
+            xmlhttp.open('GET', config.PUBLIC_WFS_URL + '?' + url_param, true);
 
             xmlhttp.onreadystatechange = function () {
                 if (xmlhttp.readyState != 4) return;

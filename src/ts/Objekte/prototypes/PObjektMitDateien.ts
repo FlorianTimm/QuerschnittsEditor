@@ -35,11 +35,11 @@ export abstract class PObjektMitDokument<GeometryType extends Polygon | Point | 
         return this.dateienLoaded;
     }
 
-    public getDokumenteCallback(xml: XMLDocument): Dokument[] {
+    public async getDokumenteCallback(xml: XMLDocument): Promise<Dokument[]> {
         let re: Dokument[] = []
         let dokumente = xml.getElementsByTagName("Otdokument");
         for (let i = 0; i < dokumente.length; i++) {
-            re.push(Dokument.fromXML(dokumente.item(i)));
+            re.push(await Dokument.fromXML(dokumente.item(i)));
         }
         this.dateien = re;
         return re;
