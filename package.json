@@ -43,7 +43,7 @@
     "proj4": "^2.8.0",
     "src": "^1.0.0",
     "ts-loader": "^9.4.1",
-    "webpack": "^5.74.0"
+    "webpack": "^5.76.0"
   },
   "devDependencies": {
     "@types/chai": "^4.3.3",
