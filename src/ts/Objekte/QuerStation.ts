@@ -177,7 +177,7 @@ export class QuerStation {
                 let breite = Math.round(st.getBreite() + (st.getBisBreite() - st.getBreite()) * faktor);
                 let XL = Math.round((st.getXVstL() + (st.getXBstL() - st.getXVstL()) * faktor) * 100) / 100;
                 let XR = Math.round((st.getXVstR() + (st.getXBstR() - st.getXVstR()) * faktor) * 100) / 100;
-                xml += st.createInsertXML({
+                xml += await st.createInsertXML({
                     vst: this.vst,
                     bst: station,
                     breite: st.getBreite(),
@@ -187,7 +187,7 @@ export class QuerStation {
                     XBstL: XL,
                     XBstR: XR
                 }, true);
-                xml += st.createInsertXML({
+                xml += await st.createInsertXML({
                     vst: station,
                     bst: this.bst,
                     breite: breite,
@@ -264,7 +264,7 @@ export class QuerStation {
             '</wfs:Delete>\n';
         for (let qs of this.getAllQuerschnitte()) {
             //console.log(qs);
-            soap += qs.createInsertXML();
+            soap += await qs.createInsertXML();
         }
         const xml = await PublicWFS.doTransaction(soap);
         return this.getInsertedQuerschnitte(xml);

@@ -86,9 +86,9 @@ export abstract class Objekt<GeometryType extends Polygon | Point | LineString> 
 		return xml;
 	}
 
-	public createInsertXML(changes?: { [tag: string]: number | string }, removeIds?: boolean) {
+	public async createInsertXML(changes?: { [tag: string]: number | string }, removeIds?: boolean) {
 		let r = '<wfs:Insert>\n';
-		r += this.createXML(changes, removeIds);
+		r += await this.createXML(changes, removeIds);
 		r += '</wfs:Insert>\n';
 		return r;
 	}
