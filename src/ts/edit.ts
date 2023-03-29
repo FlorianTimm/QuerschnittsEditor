@@ -59,7 +59,7 @@ class Edit {
 
     private async init(er: string, ernr: string) {
         var map = await this.createMap();
-        let foundHash = this.checkHash(map);
+        let foundHash = await this.checkHash(map);
 
         this.daten = new Daten(map, er, ernr);
 

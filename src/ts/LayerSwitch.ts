@@ -40,6 +40,7 @@ export class LayerSwitch extends Control {
 					let label = document.createElement('label');
 					label.setAttribute('for', 'trans_' + id);
 					label.innerHTML = "Transparenz:";
+					label.style.marginLeft = "5px"
 					div_zusatz.appendChild(label);
 					let trans = document.createElement('input');
 					trans.setAttribute('type', 'range');

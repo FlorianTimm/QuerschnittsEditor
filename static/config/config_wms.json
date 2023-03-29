@@ -35,6 +35,15 @@
         "attribution": "Freie und Hansestadt Hamburg, LGV 2021"
     },
     {
+        "name": "Elektroladesäulen",
+        "visible": false,
+        "opacity": 0.5,
+        "url": "https://geodienste.hamburg.de/HH_WMS_EMobility",
+        "layers": "stromnetz_emobility",
+        "format": "image/png",
+        "attribution": "Freie und Hansestadt Hamburg, BVM 2023"
+    },
+    {
         "name": "CAD-Daten",
         "visible": false,
         "opacity": 0.85,
