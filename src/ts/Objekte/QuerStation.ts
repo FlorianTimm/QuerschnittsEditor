@@ -177,7 +177,7 @@ export class QuerStation {
                 let breite = Math.round(st.getBreite() + (st.getBisBreite() - st.getBreite()) * faktor);
                 let XL = Math.round((st.getXVstL() + (st.getXBstL() - st.getXVstL()) * faktor) * 100) / 100;
                 let XR = Math.round((st.getXVstR() + (st.getXBstR() - st.getXVstR()) * faktor) * 100) / 100;
-                xml += st.createInsertXML({
+                xml += await st.createInsertXML({
                     vst: this.vst,
                     bst: station,
                     breite: st.getBreite(),
@@ -187,7 +187,7 @@ export class QuerStation {
                     XBstL: XL,
                     XBstR: XR
                 }, true);
-                xml += st.createInsertXML({
+                xml += await st.createInsertXML({
                     vst: station,
                     bst: this.bst,
                     breite: breite,
@@ -264,7 +264,7 @@ export class QuerStation {
             '</wfs:Delete>\n';
         for (let qs of this.getAllQuerschnitte()) {
             //console.log(qs);
-            soap += qs.createInsertXML();
+            soap += await qs.createInsertXML();
         }
         const xml = await PublicWFS.doTransaction(soap);
         return this.getInsertedQuerschnitte(xml);
@@ -315,7 +315,7 @@ export class QuerStation {
         for (let schichtnr in aufbau) {
             let schicht = aufbau[schichtnr];
             if (schicht.getBst() <= neuQuer.getVst() || schicht.getVst() >= neuQuer.getBst()) continue;
-            insert += schicht.createXML({
+            insert += await schicht.createXML({
                 vst: schicht.getVst() < neuQuer.getVst() ? neuQuer.getVst() : schicht.getVst(),
                 bst: schicht.getBst() > neuQuer.getBst() ? neuQuer.getBst() : schicht.getBst(),
                 parent: neuQuer.getFid().substr(-32)
@@ -415,12 +415,12 @@ export class QuerStation {
         return this.aufbaudatenLoaded;
     }
 
-    private parseAufbaudaten(xml: Document): { [fid: string]: Aufbau[] } | null {
+    private async parseAufbaudaten(xml: Document): Promise<{ [fid: string]: Aufbau[] }> | null {
         let aufbau = xml.getElementsByTagName('Otschicht');
         let aufbaudaten: { [fid: string]: Aufbau[] } = {};
 
         for (let i = 0; i < aufbau.length; i++) {
-            let a = Aufbau.fromXML(aufbau[i]);
+            let a = await Aufbau.fromXML(aufbau[i]);
             if (a.getParent() == null) {
                 console.log("Es konnten nicht alle Aufbaudaten den Querschnitten zugeordnet werden, Abbruch!");
                 return null;

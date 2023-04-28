@@ -220,7 +220,7 @@ export class Querschnitt extends PrimaerObjekt<Polygon> implements InfoToolEdita
 
     static async fromXML(xml: Element, doNotAdd: boolean = false): Promise<Querschnitt> {
         let r = new Querschnitt();
-        r.setDataFromXML(xml)
+        await r.setDataFromXML(xml)
 
         if (doNotAdd) return Promise.resolve(r);  // Abbruch, falls nur die Daten geparst werden sollen
 

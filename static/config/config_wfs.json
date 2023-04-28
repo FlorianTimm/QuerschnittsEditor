@@ -1,4 +1,4 @@
-export const CONFIG_WFS = {
+{
     "Otschicht": {
         "projekt": {
             "art": 2,

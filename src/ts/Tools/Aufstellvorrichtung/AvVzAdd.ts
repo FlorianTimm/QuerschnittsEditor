@@ -18,8 +18,8 @@ import { Zeichen } from '../../Objekte/Zeichen';
 import { Map } from "../../openLayers/Map";
 import { PublicWFS } from '../../PublicWFS';
 import { Tool } from '../prototypes/Tool';
-import { CONFIG } from '../../../config/config'
 import { EventsKey } from "ol/events.js";
+import { ConfigLoader } from "../../ConfigLoader";
 
 /**
  * Funktion zum Hinzufügen von Verkehrsschildern
@@ -175,9 +175,10 @@ export class AvVzAdd extends Tool {
         let img = document.createElement("img");
         img.classList.add('schildBild');
         img.style.height = "50px";
+        const config = await ConfigLoader.get().getConfig();
         Klartext.load("Itvzstvoznr")
             .then(() => {
-                img.src = CONFIG['SCHILDERPFAD'] + eintrag.getStvoznr().getKt() + ".svg";
+                img.src = config['SCHILDERPFAD'] + eintrag.getStvoznr().getKt() + ".svg";
                 img.title = eintrag.getStvoznr().getBeschreib() + (eintrag.getVztext() != null) ? ("\n" + eintrag.getVztext()) : ('');
             });
         div.appendChild(img);
@@ -193,7 +194,7 @@ export class AvVzAdd extends Tool {
         tasks.push(stvoznr.promise)
         $(stvoznr.select).on("change", function () {
             let schild = Klartext.get("Itvzstvoznr", stvoznr.select.value)
-            img.src = CONFIG['SCHILDERPFAD'] + schild.getKt() + ".svg";
+            img.src = config['SCHILDERPFAD'] + schild.getKt() + ".svg";
             img.title = schild['beschreib'];
         });
 
@@ -201,27 +202,27 @@ export class AvVzAdd extends Tool {
         HTML.createTextInput(text, "Text", "vztext", ((eintrag.getVztext() !== null) ? (eintrag.getVztext()) : ('')))
 
         // Lage FB
-        if (eintrag.getLageFb() == undefined) eintrag.setLageFb(CONFIG.LAGEFB);
+        if (eintrag.getLageFb() == undefined) eintrag.setLageFb(config.LAGEFB);
         tasks.push(Klartext.createKlartextSelectForm('Itvzlagefb', text, 'Lage', 'lageFb', eintrag.getLageFb()).promise)
 
         // Lesbarkeit
-        if (eintrag.getLesbarkeit() == undefined) eintrag.setLesbarkeit(CONFIG.LESBARKEIT);
+        if (eintrag.getLesbarkeit() == undefined) eintrag.setLesbarkeit(config.LESBARKEIT);
         tasks.push(Klartext.createKlartextSelectForm('Itvzlesbarkeit', text, 'Lesbarkeit', 'lesbarkeit', eintrag.getLesbarkeit()).promise)
 
         // Beleuchtet
-        if (eintrag.getBeleucht() == undefined) eintrag.setBeleucht(CONFIG.BELEUCHTET);
+        if (eintrag.getBeleucht() == undefined) eintrag.setBeleucht(config.BELEUCHTET);
         tasks.push(Klartext.createKlartextSelectForm('Itvzbeleucht', text, 'Beleuchtung', 'beleucht', eintrag.getBeleucht()).promise)
 
         //Einzelschild
-        if (eintrag.getArt() == undefined) eintrag.setArt(CONFIG.EINZELSCHILD);
+        if (eintrag.getArt() == undefined) eintrag.setArt(config.EINZELSCHILD);
         tasks.push(Klartext.createKlartextSelectForm('Itvzart', text, 'Art', 'art', eintrag.getArt()).promise)
 
         // Größe des Schilder
-        if (eintrag.getGroesse() == undefined) eintrag.setGroesse(CONFIG.GROESSE);
+        if (eintrag.getGroesse() == undefined) eintrag.setGroesse(config.GROESSE);
         tasks.push(Klartext.createKlartextSelectForm('Itvzgroesse', text, 'Größe', 'groesse', eintrag.getGroesse()).promise)
 
         // Straßenbezug
-        if (eintrag.getStrbezug() == undefined) eintrag.setStrbezug(CONFIG.STRASSENBEZUG);
+        if (eintrag.getStrbezug() == undefined) eintrag.setStrbezug(config.STRASSENBEZUG);
         tasks.push(Klartext.createKlartextSelectForm('Itbesstrbezug', text, 'Straßenbezug', 'strbezug', eintrag.getStrbezug()).promise)
 
         // Aufstelldatum
@@ -232,11 +233,11 @@ export class AvVzAdd extends Tool {
         HTML.createTextInput(text, 'Externe Objektnummer', "objektnr", ((eintrag.getObjektnr() != null) ? (eintrag.getObjektnr()) : ('')));
 
         // Erfassungsart
-        if (eintrag.getErfart() == undefined) eintrag.setErfart(CONFIG.ERFASSUNG);
+        if (eintrag.getErfart() == undefined) eintrag.setErfart(config.ERFASSUNG);
         tasks.push(Klartext.createKlartextSelectForm('Iterfart', text, 'Erfassung', 'erfart', eintrag.getErfart()).promise)
 
         // Quelle
-        if (eintrag.getQuelle() == undefined) eintrag.setQuelle(CONFIG.QUELLE);
+        if (eintrag.getQuelle() == undefined) eintrag.setQuelle(config.QUELLE);
         tasks.push(Klartext.createKlartextSelectForm('Itquelle', text, 'Quelle', 'quelle', eintrag.getQuelle()).promise)
 
         // Löschen

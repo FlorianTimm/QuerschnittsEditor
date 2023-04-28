@@ -7,9 +7,9 @@ import { PunktObjekt } from '../../Objekte/prototypes/PunktObjekt';
 import { Map } from "../../openLayers/Map";
 import { PublicWFS } from '../../PublicWFS';
 import { AddTool } from '../prototypes/AddTool';
-import { CONFIG } from '../../../config/config'
 import VectorSource from 'ol/source/Vector';
 import { LineString } from 'ol/geom';
+import { ConfigLoader } from '../../ConfigLoader';
 
 /**
  * Funktion zum Hinzufügen von Aufstellvorrichtungen
@@ -53,6 +53,7 @@ export class AvAdd extends AddTool {
     }
 
     private async wfsAddAufstell() {
+        const config = await ConfigLoader.get().getConfig();
         let soap = '<wfs:Insert>\n' +
             '<Otaufstvor>\n' +
             '<projekt xlink:href="#' + Daten.getInstanz().ereignisraum + '" typeName="Projekt" />\n' +
@@ -64,8 +65,8 @@ export class AvAdd extends AddTool {
             '<vabstBst>' + this.abstand + '</vabstBst>\n' +
             '<objektnr>' + $(this.form).find("#extid").val() + '</objektnr>\n' +
             '<bemerkung>mit QuerschnittsEditor erfasst</bemerkung>\n' +
-            '<detailgrad xlink:href="' + CONFIG.DETAIL_HOCH + '" typeName="Itobjdetailgrad" />\n' +
-            '<erfart xlink:href="' + CONFIG.ERFASSUNG + '" typeName="Iterfart" />\n' +
+            '<detailgrad xlink:href="' + config.DETAIL_HOCH + '" typeName="Itobjdetailgrad" />\n' +
+            '<erfart xlink:href="' + config.ERFASSUNG + '" typeName="Iterfart" />\n' +
             '<ADatum>' + (new Date()).toISOString().substring(0, 10) + '</ADatum>\n' +
             '<rlageVst xlink:href="#S' + $(this.form).find("#lage").val() + '" typeName="Itallglage" />\n' +
             '<art xlink:href="#S' + $(this.form).find("#art").val() + '" typeName="Itaufstvorart" />\n' +

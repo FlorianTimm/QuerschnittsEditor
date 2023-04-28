@@ -65,6 +65,7 @@ export class InfoTool extends Tool {
 
     public getInfoFieldForFeature(feature: Feature<Geometry>, changeable: boolean = false) {
         this.infoField.innerHTML = "";
+        console.log(feature)
         let promise = (feature as InfoToolSelectable).getInfoForm(this.infoField, changeable);
         if (changeable) {
             // Button

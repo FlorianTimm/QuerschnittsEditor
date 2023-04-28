@@ -8,13 +8,12 @@ import VectorSource from 'ol/source/Vector';
 import { Fill, Icon, Stroke, Style, Text } from 'ol/style';
 import CircleStyle from 'ol/style/Circle';
 import { AbschnittWFS } from '../AbschnittWFS';
+import { ConfigLoader } from '../ConfigLoader';
 import { Daten } from '../Daten';
 import { VectorLayer } from '../openLayers/Layer';
 import { PublicWFS } from '../PublicWFS';
 import { Vektor } from '../Vektor';
 import { QuerStation } from './QuerStation';
-
-import { CONFIG } from '../../config/config'
 
 /**
  * Straßenabschnitt
@@ -166,8 +165,9 @@ export class Abschnitt extends Feature<LineString> {
         return this._faktor;
     }
 
-    private static load(abschnittid: string): Promise<Abschnitt> {
-        if ("ABSCHNITT_WFS_URL" in CONFIG) {
+    private static async load(abschnittid: string): Promise<Abschnitt> {
+        const config = await ConfigLoader.get().getConfig();
+        if ("ABSCHNITT_WFS_URL" in config) {
             return Abschnitt.loadFromAbschnittWFS(abschnittid);
         } else {
             return Abschnitt.loadFromPublicWFS(abschnittid);

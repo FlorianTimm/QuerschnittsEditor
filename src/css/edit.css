@@ -243,12 +243,11 @@ button#loadExtent {
 div#othermaps {
     left: 0.5em;
     bottom: 0.5em;
-    width: 16em;
 }
 
 div#othermaps button {
     float: left;
-    width: 32%;
+    width: 5.3em;
     font-weight: inherit;
     padding: 3px;
     border-radius: 0px;

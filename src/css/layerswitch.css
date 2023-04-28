@@ -23,6 +23,7 @@
     max-height: 90%;
     overflow: auto;
     z-index: 999;
+    background-color: var(--ol-partial-background-color);
 }
 
 .layerswitch button {

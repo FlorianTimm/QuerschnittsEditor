@@ -30,15 +30,12 @@ import { Abschnitt } from './Objekte/Abschnitt';
 import { TileLayer } from './openLayers/Layer';
 import { Map } from './openLayers/Map';
 import { PublicWFS } from './PublicWFS';
-import { Measure } from './Tools/Measure';
-import { CONFIG } from '../config/config.js';
-import { layer as wms_layer } from '../config/config_wms.js';
+import { ConfigLoader, LayerJSON } from './ConfigLoader';
 
 window.addEventListener('load', () => { new Edit() });
 
 class Edit {
     private daten: Daten
-    private measure: Measure;
 
     constructor() {
         let urlParamER: RegExpExecArray = new RegExp('[\?&]er=([^&#]*)').exec(window.location.href);
@@ -56,38 +53,44 @@ class Edit {
         register(proj4);
 
 
-        var map = this.createMap();
-        let foundHash = this.checkHash(map);
+        this.init(er, ernr);
+    };
+
+
+    private async init(er: string, ernr: string) {
+        var map = await this.createMap();
+        let foundHash = await this.checkHash(map);
 
         this.daten = new Daten(map, er, ernr);
 
         let sidebar = document.getElementById("tools") as HTMLDivElement | null;
-        if (!sidebar) throw new Error("HTML Sidebar nicht gefunden")
+        if (!sidebar)
+            throw new Error("HTML Sidebar nicht gefunden");
 
         new QuerschnittToolBox(map, sidebar);
         let atb = new AufstellToolBox(map, sidebar);
         new AusstPktToolBox(map, sidebar);
         new LinienToolBox(map, sidebar);
         new SonstigesToolBox(map, sidebar);
-        atb.start()
+        atb.start();
         Abschnitt.getLayer(map);
 
 
         this.daten.loadER(!foundHash);
 
-        document.getElementById("zoomToExtent").addEventListener('click', Daten.getInstanz().zoomToExtent.bind(this.daten))
+        document.getElementById("zoomToExtent").addEventListener('click', Daten.getInstanz().zoomToExtent.bind(this.daten));
         document.getElementById("loadExtent").addEventListener('click', () => {
             this.daten.loadExtent();
-        })
+        });
 
         document.getElementById("sucheButton").addEventListener('click', () => {
             this.daten.searchForStreet();
-        })
+        });
 
         document.forms.namedItem("suche").addEventListener('submit', (event: { preventDefault: () => void; }) => {
             event.preventDefault();
             this.daten.searchForStreet();
-        })
+        });
 
 
         let other_div = document.createElement("div");
@@ -98,40 +101,40 @@ class Edit {
         let mapillary = document.createElement("button");
         mapillary.innerHTML = "Mappillary";
         other_div.appendChild(mapillary);
+        let config = await ConfigLoader.get().getConfig();
         mapillary.addEventListener("click", () => {
             let view = map.getView();
-            let middle = toLonLat(view.getCenter(), CONFIG["EPSG_CODE"])
+            let middle = toLonLat(view.getCenter(), config["EPSG_CODE"]);
             let url = "https://www.mapillary.com/app/?lat=" + middle[1] + "&lng=" + middle[0] + "&z=" + (view.getZoom() - 2);
             let win = window.open(url, 'zweitkarte');
             win.focus();
-        })
+        });
 
         let google = document.createElement("button");
         google.innerHTML = "Google";
         other_div.appendChild(google);
         google.addEventListener("click", () => {
             let view = map.getView();
-            let middle = toLonLat(view.getCenter(), CONFIG["EPSG_CODE"])
+            let middle = toLonLat(view.getCenter(), config["EPSG_CODE"]);
             let url = "https://www.google.com/maps/@" + middle[1] + "," + middle[0] + "," + (view.getZoom() - 1) + "z";
             let win = window.open(url, 'zweitkarte');
             win.focus();
-        })
+        });
 
         let geoportal = document.createElement("button");
         geoportal.innerHTML = "Geoportal";
         other_div.appendChild(geoportal);
         geoportal.addEventListener("click", () => {
             let view = map.getView();
-            let middle = transform(view.getCenter(), CONFIG["EPSG_CODE"], "EPSG:25832")
-            let zoom = Math.round(((view.getZoom() - 10) > 9) ? 9 : (view.getZoom() - 11))
+            let middle = transform(view.getCenter(), config["EPSG_CODE"], "EPSG:25832");
+            let zoom = Math.round(((view.getZoom() - 10) > 9) ? 9 : (view.getZoom() - 11));
             let url = "https://geofos.fhhnet.stadt.hamburg.de/FHH-Atlas/?center=" + middle[0] + "," + middle[1] + "&zoomlevel=" + zoom;
             let win = window.open(url, 'zweitkarte');
             win.focus();
-        })
-    };
+        });
+    }
 
-
-    private checkHash(map: Map) {
+    private async checkHash(map: Map) {
         let foundHash = false;
         if (document.location.hash != "") {
             let hash = document.location.hash.replace("#", "").split('&');
@@ -208,17 +211,18 @@ class Edit {
         }
     }
 
-    private createMap() {
+    private async createMap() {
+        let config = await ConfigLoader.get().getConfig();
         return new Map({
-            layers: this.createLayer(),
+            layers: await this.createLayer(),
             target: 'map',
             interactions: defaultInteractions({
                 pinchRotate: false
             }),
             controls: defaultControls().extend([new LayerSwitch(), new ScaleLine(), new ZoomSlider()]),
             view: new View({
-                projection: CONFIG["EPSG_CODE"],
-                center: fromLonLat([10.0045, 53.4975], CONFIG["EPSG_CODE"]),
+                projection: config["EPSG_CODE"],
+                center: fromLonLat([10.0045, 53.4975], config["EPSG_CODE"]),
                 zoom: 17,
                 minZoom: 11,
                 maxZoom: 24,
@@ -227,7 +231,7 @@ class Edit {
         });
     }
 
-    private createLayer() {
+    private async createLayer() {
         let layer: TileLayer<OSM | TileWMS>[] = [new TileLayer({
             name: 'OpenStreetMap',
             visible: false,
@@ -235,7 +239,9 @@ class Edit {
             source: new OSM()
         })];
 
-        for (let x of <{ name: string, url: string, layers: string, format: string, attribution: string, visible?: boolean, opacity?: number, style?: string }[]>wms_layer)
+        let wms_layer = await ConfigLoader.get().getLayer();
+
+        for (let x of <LayerJSON[]>wms_layer)
             layer.push(
                 new TileLayer({
                     name: x.name,

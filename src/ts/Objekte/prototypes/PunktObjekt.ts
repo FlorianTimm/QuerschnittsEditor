@@ -58,7 +58,7 @@ export abstract class PunktObjekt extends PObjektMitDokument<Point | LineString>
     }
 
     public async setDataFromXML(xml: Element): Promise<PunktObjekt> {
-        super.setDataFromXML(xml);
+        await super.setDataFromXML(xml);
         const abschnitt = await Abschnitt.getAbschnitt(this.abschnittId);
         this.abschnitt = abschnitt;
         abschnitt.addOKinER(this.getObjektKlassenName());

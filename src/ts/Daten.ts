@@ -4,14 +4,13 @@ import { Map } from 'ol';
 import Event from 'ol/events/Event';
 import { Extent } from 'ol/extent';
 import { AbschnittWFS } from './AbschnittWFS';
+import { ConfigLoader } from './ConfigLoader';
 import { Abschnitt } from './Objekte/Abschnitt';
 import { Aufstellvorrichtung } from './Objekte/Aufstellvorrichtung';
 import { Querschnitt } from './Objekte/Querschnittsdaten';
 import { StrassenAusPunkt } from './Objekte/StrassenAusPunkt';
 import { PublicWFS } from './PublicWFS';
 import { WaitBlocker } from './WaitBlocker';
-
-import { CONFIG } from '../config/config'
 
 /**
  * Daten
@@ -78,14 +77,15 @@ export class Daten {
     public async loadExtent() {
         WaitBlocker.warteAdd()
         let extent = this.map.getView().calculateExtent();
-        if ("ABSCHNITT_WFS_URL" in CONFIG && CONFIG.ABSCHNITT_WFS_URL != "") {
+        let config = await ConfigLoader.get().getConfig();
+        if ("ABSCHNITT_WFS_URL" in config && config.ABSCHNITT_WFS_URL != "") {
             const xml = await AbschnittWFS.getByExtent(extent);
             return this.loadExtent_Callback(xml);
         } else {
             let filter = '<Filter>' +
                 '<BBOX>' +
                 '<PropertyName>GEOMETRY</PropertyName>' +
-                '<Box srsName="' + CONFIG.EPSG_CODE + '">' +
+                '<Box srsName="' + config.EPSG_CODE + '">' +
                 '<coordinates>' + extent[0] + ',' + extent[1] + ' ' + extent[2] + ',' + extent[3] + ' ' + '</coordinates>' +
                 '</Box>' +
                 '</BBOX>' +
@@ -105,11 +105,12 @@ export class Daten {
 
     }
 
-    public searchForStreet(__?: Event) {
+    public async searchForStreet(__?: Event) {
         console.log(document.forms.namedItem("suche").suche.value);
         let wert = document.forms.namedItem("suche").suche.value;
         if (wert == "") return;
-        if ("ABSCHNITT_WFS_URL" in CONFIG) {
+        let config = await ConfigLoader.get().getConfig();
+        if ("ABSCHNITT_WFS_URL" in config) {
             WaitBlocker.warteAdd();
 
             const vnknnk = /(\d{7,9}[A-Z]?)[\s\-]+(\d{7,9}[A-Z]?)/gm;

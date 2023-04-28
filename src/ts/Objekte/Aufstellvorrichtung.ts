@@ -19,8 +19,8 @@ import { Dokument } from "./Dokument";
 import { Klartext } from './Klartext';
 import { PunktObjekt } from './prototypes/PunktObjekt';
 import { Zeichen } from './Zeichen';
-import { CONFIG } from '../../config/config'
 import VectorSource from "ol/source/Vector";
+import { ConfigLoader } from "../ConfigLoader";
 
 /**
  * Aufstellvorrichtung
@@ -79,10 +79,11 @@ export class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay 
         ziel.innerHTML = "";
         let div = document.createElement('div');
         div.style.marginTop = '5px';
+        const config = await ConfigLoader.get().getConfig();
         for (let eintrag of zeichen) {
             let img = document.createElement("img");
             img.style.height = "30px";
-            img.src = CONFIG['SCHILDERPFAD'] + eintrag.getStvoznr().getKt() + ".svg";
+            img.src = config['SCHILDERPFAD'] + eintrag.getStvoznr().getKt() + ".svg";
             img.title = eintrag.getStvoznr().getBeschreib() + (eintrag.getVztext() ?? '');
             div.appendChild(img);
         }
@@ -153,14 +154,14 @@ export class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay 
         return this.loadingZeichen;
     }
 
-    private parseZeichen(xml: XMLDocument): Zeichen[] {
+    private async parseZeichen(xml: XMLDocument): Promise<Zeichen[]> {
         let zeichen: Zeichen[] = [];
         let zeichenXML = xml.getElementsByTagName('Otvzeichlp');
 
         for (let i = 0; i < zeichenXML.length; i++) {
             let eintrag = zeichenXML.item(i);
             if (!(eintrag.getElementsByTagName("enr").length > 0)) {
-                zeichen.push(Zeichen.fromXML(eintrag));
+                zeichen.push(await Zeichen.fromXML(eintrag));
             }
         }
         this.zeichen = zeichen;

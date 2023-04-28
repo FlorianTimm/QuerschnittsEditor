@@ -39,10 +39,10 @@ export class Zeichen extends SekundaerObjekt<null> {
         return "Otvzeichlp";
     }
 
-    static fromXML(xml: Element) {
+    static async fromXML(xml: Element) {
         //console.log(xml);
         let r = new Zeichen();
-        r.setDataFromXML(xml)
+        await r.setDataFromXML(xml)
         return r;
     }
 
