@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import { Point } from "ol/geom";
 import { Klartext } from "./Klartext";
 import { SekundaerObjekt } from "./prototypes/SekundaerObjekt";
 

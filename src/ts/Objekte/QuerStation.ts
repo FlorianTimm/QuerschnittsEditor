@@ -315,7 +315,7 @@ export class QuerStation {
         for (let schichtnr in aufbau) {
             let schicht = aufbau[schichtnr];
             if (schicht.getBst() <= neuQuer.getVst() || schicht.getVst() >= neuQuer.getBst()) continue;
-            insert += schicht.createXML({
+            insert += await schicht.createXML({
                 vst: schicht.getVst() < neuQuer.getVst() ? neuQuer.getVst() : schicht.getVst(),
                 bst: schicht.getBst() > neuQuer.getBst() ? neuQuer.getBst() : schicht.getBst(),
                 parent: neuQuer.getFid().substr(-32)
