@@ -26,7 +26,7 @@ import { EventsKey } from 'ol/events';
 export class QuerPartTool extends Tool {
     private info: QuerInfoTool;
     private select: SelectInteraction;
-    private l_overlay: VectorLayer<VectorSource<LineString>>;
+    private l_overlay: VectorLayer<VectorSource<Feature<LineString>>>;
     private feat_teilung: Feature<LineString>;
     private feat_station_line: Feature<LineString>;
     private abschnitt: Abschnitt | undefined;
@@ -38,11 +38,11 @@ export class QuerPartTool extends Tool {
     private form_nnk: HTMLInputElement;
     private form_station: HTMLInputElement;
     private form_button: HTMLInputElement;
-    private layerAchse: VectorLayer<VectorSource<LineString>>;
+    private layerAchse: VectorLayer<VectorSource<Feature<LineString>>>;
     private singleclick: EventsKey;
     private pointermove: EventsKey;
 
-    constructor(map: Map, info: QuerInfoTool, sidebar: HTMLDivElement, layerAchse: VectorLayer<VectorSource<LineString>>) {
+    constructor(map: Map, info: QuerInfoTool, sidebar: HTMLDivElement, layerAchse: VectorLayer<VectorSource<Feature<LineString>>>) {
         super(map);
         this.info = info;
         this.sidebar = sidebar;
@@ -75,8 +75,8 @@ export class QuerPartTool extends Tool {
     }
 
     private createOverlayVectorLayer() {
-        let v_overlay = new VectorSource<LineString>();
-        this.l_overlay = new VectorLayer<VectorSource<LineString>>({
+        let v_overlay = new VectorSource<Feature<LineString>>();
+        this.l_overlay = new VectorLayer<VectorSource<Feature<LineString>>>({
             source: v_overlay,
             style: function (feat: FeatureLike) {
                 return new Style({

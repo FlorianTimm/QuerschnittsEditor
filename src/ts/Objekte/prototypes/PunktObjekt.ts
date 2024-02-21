@@ -2,7 +2,7 @@
 
 import { Map } from 'ol';
 import { ColorLike } from "ol/colorlike";
-import { FeatureLike } from 'ol/Feature';
+import Feature, { FeatureLike } from 'ol/Feature';
 import { LineString, Point } from "ol/geom";
 import VectorSource from 'ol/source/Vector';
 import { Circle, Fill, RegularShape, Stroke, Style, Text } from 'ol/style';
@@ -85,9 +85,9 @@ export abstract class PunktObjekt extends PObjektMitDokument<Point | LineString>
     }
 
 
-    protected static createLayer(map?: Map): VectorLayer<VectorSource<Point | LineString>> {
-        let layer = new VectorLayer<VectorSource<Point | LineString>>({
-            source: new VectorSource<Point | LineString>(),
+    protected static createLayer(map?: Map): VectorLayer<VectorSource<Feature<Point | LineString>>> {
+        let layer = new VectorLayer<VectorSource<Feature<Point | LineString>>>({
+            source: new VectorSource<Feature<Point | LineString>>(),
             opacity: 0.7,
         });
         layer.setStyle((feat: FeatureLike, resolution: number) => {

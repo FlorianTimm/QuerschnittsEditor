@@ -28,21 +28,21 @@ export abstract class AddTool extends Tool {
     protected abstand: number = null;
     protected seite: string = null;
     protected select: SelectInteraction;
-    protected v_overlay: VectorSource<LineString | Point>;
-    protected l_overlay: VectorLayer<VectorSource<LineString | Point>>;
+    protected v_overlay: VectorSource<Feature<LineString | Point>>;
+    protected l_overlay: VectorLayer<VectorSource<Feature<LineString | Point>>>;
     protected feat_station: Feature<Point>;
     protected feat_neu: Feature<Point>;
     protected feat_station_line: Feature<LineString>;
     protected form: HTMLFormElement = null;
     protected sidebar: HTMLDivElement;
-    private layerAchse: VectorLayer<VectorSource<LineString>>;
+    private layerAchse: VectorLayer<VectorSource<Feature<LineString>>>;
     private promise: Promise<void[]>;
     private singleclick: EventsKey;
     private pointermove: EventsKey;
 
     protected abstract createForm(): Promise<void[]>;
 
-    constructor(map: Map, sidebar: HTMLDivElement, layerAchse: VectorLayer<VectorSource<LineString>>) {
+    constructor(map: Map, sidebar: HTMLDivElement, layerAchse: VectorLayer<VectorSource<Feature<LineString>>>) {
         super(map);
         this.sidebar = sidebar;
         this.layerAchse = layerAchse;

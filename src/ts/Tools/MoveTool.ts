@@ -28,8 +28,8 @@ import { Tool } from './prototypes/Tool';
 export class MoveTool extends Tool {
     private infoTool: InfoTool;
     private select: SelectInteraction;
-    private v_overlay: VectorSource<Geometry>;
-    private l_overlay: VectorLayer<VectorSource<Geometry>>;
+    private v_overlay: VectorSource<Feature<Geometry>>;
+    private l_overlay: VectorLayer<VectorSource<Feature<Geometry>>>;
     private feat_station_line: Feature<LineString>;
     private modifyPoint: ModifyInteraction;
     private lineRechts: Feature<Point>;

@@ -3,7 +3,7 @@
 import "../import_jquery.js";
 import 'chosen-js';
 import 'chosen-js/chosen.css';
-import { Map } from 'ol';
+import { Feature, Map } from 'ol';
 import { never } from 'ol/events/condition';
 import { Daten } from "../Daten";
 import { HTML } from '../HTML';
@@ -37,7 +37,7 @@ export class StrassenAusPunkt extends PunktObjekt {
         return 'black';
     }
 
-    static getLayer(map?: Map): VectorLayer<VectorSource<Point | LineString>> {
+    static getLayer(map?: Map): VectorLayer<VectorSource<Feature<Point | LineString>>> {
         if (!StrassenAusPunkt.layer) {
             StrassenAusPunkt.layer = StrassenAusPunkt.createLayer(map);
         }

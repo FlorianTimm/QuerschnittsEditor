@@ -10,6 +10,7 @@ import { AddTool } from '../prototypes/AddTool';
 import VectorSource from 'ol/source/Vector';
 import { LineString } from 'ol/geom';
 import { ConfigLoader } from '../../ConfigLoader';
+import { Feature } from 'ol';
 
 /**
  * Funktion zum Hinzufügen von Aufstellvorrichtungen
@@ -18,7 +19,7 @@ import { ConfigLoader } from '../../ConfigLoader';
  * @license GPL-3.0-or-later
 */
 export class AvAdd extends AddTool {
-    constructor(map: Map, sidebar: HTMLDivElement, layerAchse: VectorLayer<VectorSource<LineString>>) {
+    constructor(map: Map, sidebar: HTMLDivElement, layerAchse: VectorLayer<VectorSource<Feature<LineString>>>) {
         super(map, sidebar, layerAchse);
     }
 

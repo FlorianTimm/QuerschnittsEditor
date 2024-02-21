@@ -3,7 +3,7 @@
 import "../import_jquery.js";
 import 'chosen-js';
 import 'chosen-js/chosen.css';
-import { Map, Overlay } from "ol";
+import { Feature, Map, Overlay } from "ol";
 import { ColorLike } from "ol/colorlike";
 import { never } from "ol/events/condition";
 import { LineString, Point } from "ol/geom";
@@ -30,7 +30,7 @@ import { ConfigLoader } from "../ConfigLoader";
 */
 export class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay {
     static loadErControlCounter: number = 0;
-    static layer: VectorLayer<VectorSource<Point | LineString>>;
+    static layer: VectorLayer<VectorSource<Feature<Point | LineString>>>;
     static select: SelectInteraction;
 
     private overlay: Overlay;
@@ -56,7 +56,7 @@ export class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay 
         return 'black';
     }
 
-    static getLayer(map?: Map): VectorLayer<VectorSource<Point | LineString>> {
+    static getLayer(map?: Map): VectorLayer<VectorSource<Feature<Point | LineString>>> {
         if (!Aufstellvorrichtung.layer) {
             Aufstellvorrichtung.layer = Aufstellvorrichtung.createLayer(map);
         }

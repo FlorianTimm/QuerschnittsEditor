@@ -47,13 +47,13 @@ export class QuerModifyTool extends Tool {
     private multiArtSelect: HTMLSelectElement;
     private multiOberSelect: HTMLSelectElement;
     private moveTypeForm: HTMLFormElement;
-    private modifyLayer: VectorLayer<VectorSource<Geometry>>;
-    private modifyOverlayLayer: VectorLayer<VectorSource<Geometry>>;
+    private modifyLayer: VectorLayer<VectorSource<Feature<Geometry>>>;
+    private modifyOverlayLayer: VectorLayer<VectorSource<Feature<Geometry>>>;
     private sidebar: HTMLDivElement;
     private pointermove: EventsKey;
     private selectEventsKey: EventsKey;
 
-    constructor(map: Map, info: QuerInfoTool, sidebar: HTMLDivElement, layerTrenn: VectorLayer<VectorSource<MultiLineString>>, layerStation: VectorLayer<VectorSource<MultiLineString | Point>>) {
+    constructor(map: Map, info: QuerInfoTool, sidebar: HTMLDivElement, layerTrenn: VectorLayer<VectorSource<Feature<MultiLineString>>>, layerStation: VectorLayer<VectorSource<Feature<MultiLineString | Point>>>) {
         super(map);
         this.info = info;
         this.sidebar = sidebar;
@@ -341,7 +341,7 @@ export class QuerModifyTool extends Tool {
         this.modify.setActive(status);
     }
 
-    private createSnap(layerTrenn: VectorLayer<VectorSource<MultiLineString>>, layerStation: VectorLayer<VectorSource<MultiLineString | Point>>) {
+    private createSnap(layerTrenn: VectorLayer<VectorSource<Feature<MultiLineString>>>, layerStation: VectorLayer<VectorSource<Feature<MultiLineString | Point>>>) {
         this.snapTrenn = new Snap({
             source: layerTrenn.getSource(),
             edge: false

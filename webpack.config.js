@@ -97,25 +97,27 @@ module.exports = {
     static: path.join(__dirname, 'static'),
     compress: true,
     port: 9000,
-    proxy: {
-      '/jsp': {
-        target: 'http://10.200.160.199:8080/querBeta/jsp',
+    proxy: [
+      {
+        context: '/jsp',
+        target: 'http://10.200.160.199/querschnitt/jsp',
         pathRewrite: {
           '^/jsp': ''
         },
       },
-      '/querBeta/jsp': {
-        target: 'http://10.200.160.199:8080',
-      },
-      '/querBeta': {
+      {
+        context: '/querschnitt/jsp',
+        target: 'http://10.200.160.199',
+      }, {
+        context: '/querschnitt',
         target: 'http://localhost:9000',
         pathRewrite: {
-          '^/querBeta': ''
+          '^/querschnitt': ''
         },
-      },
-      '/schilder': {
+      }, {
+        context: '/schilder',
         target: 'http://10.200.160.199:8080',
       },
-    },
+    ],
   }
 }

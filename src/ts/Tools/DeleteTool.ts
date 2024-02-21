@@ -12,6 +12,7 @@ import { PublicWFS } from '../PublicWFS';
 import { InfoToolSelectable } from './InfoTool';
 import { Tool } from './prototypes/Tool';
 import { Geometry } from 'ol/geom';
+import { Feature } from 'ol';
 
 /**
  * Prototyp des Werkzeuges zum Löschen von Punktobjekten
@@ -20,7 +21,7 @@ import { Geometry } from 'ol/geom';
  * @license GPL-3.0-or-later
 */
 export class DeleteTool extends Tool {
-    protected layer: VectorLayer<VectorSource<Geometry>>;
+    protected layer: VectorLayer<VectorSource<Feature<Geometry>>>;
     protected sidebar: HTMLElement;
     protected delField: HTMLFormElement;
     protected infoField: HTMLDivElement;
@@ -28,7 +29,7 @@ export class DeleteTool extends Tool {
     private objekt: string;
     private selectEventsKey: any;
 
-    constructor(map: Map, layer: VectorLayer<VectorSource<Geometry>>, sidebar: HTMLDivElement, objekt: string, selectInteraction: SelectInteraction) {
+    constructor(map: Map, layer: VectorLayer<VectorSource<Feature<Geometry>>>, sidebar: HTMLDivElement, objekt: string, selectInteraction: SelectInteraction) {
         super(map);
         this.layer = layer;
         this.sidebar = sidebar;

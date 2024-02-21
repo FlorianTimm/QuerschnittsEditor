@@ -12,7 +12,7 @@
         "visible": true,
         "opacity": 1.00,
         "url": "https://geodienste.hamburg.de/HH_WMS_DOP_hochaufloesend",
-        "layers": "dop_hochaufloesend_highres,dop_hochaufloesend_downscale",
+        "layers": "dop_hochaufloesend",
         "format": "image/png",
         "attribution": "Freie und Hansestadt Hamburg, LGV 2021"
     },

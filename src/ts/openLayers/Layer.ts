@@ -8,6 +8,7 @@ import { Options as VectorOptions } from "ol/layer/BaseVector";
 import TileSource from "ol/source/Tile";
 import { Geometry } from "ol/geom";
 import { Options as VectorTileOptions } from "ol/layer/VectorTile";
+import { Feature } from "ol";
 
 /**
  * OpenLayers: Interface TileOptions
@@ -75,7 +76,7 @@ export class ImageLayer<ImageSourceType extends ImageSource> extends Image<Image
  * @version 2022-09-27
  * @copyright MIT
  */
-export class VectorLayer<VectorSourceType extends VectorSource<Geometry>> extends Vector<VectorSourceType> implements LayerSwitcherLayer {
+export class VectorLayer<VectorSourceType extends VectorSource<Feature<Geometry>>> extends Vector<VectorSourceType> implements LayerSwitcherLayer {
     backgroundLayer: boolean = false;
     name: string = "";
     switchable: boolean = false;

@@ -7,6 +7,7 @@ import { Abschnitt } from "../Objekte/Abschnitt";
 import { VectorLayer } from "../openLayers/Layer";
 import { Map } from "../openLayers/Map";
 import { Tool } from "../Tools/prototypes/Tool";
+import { Feature } from "ol";
 
 /**
  * Klasse zum Erzeugen von Werkzeugkästen zur Auswahl des Bearbeitungswerkzeuges
@@ -25,7 +26,7 @@ export abstract class ToolBox {
     /** Liste aller Radiobuttons */
     protected radioButtons: { tool: Tool, radio: HTMLInputElement }[] = []
     protected formid: string;
-    protected layer: VectorLayer<VectorSource<Point | Polygon | MultiLineString | LineString>>[] = [];
+    protected layer: VectorLayer<VectorSource<Feature<Point | Polygon | MultiLineString | LineString>>>[] = [];
     static liste: { [objektKlasse: string]: ToolBox } = {};
     stopped: boolean;
     private static selectBox: HTMLSelectElement;
