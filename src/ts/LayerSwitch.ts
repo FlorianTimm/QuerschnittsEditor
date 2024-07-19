@@ -12,14 +12,14 @@ import '../css/layerswitch.css';
 */
 export class LayerSwitch extends Control {
 	constructor(opt_options?: ControlOptions) {
-		var options = opt_options || {};
-		var element = document.createElement('div');
+		const options = opt_options || {};
+		const element = document.createElement('div');
 		super({
 			element: element,
 			target: options.target
 		});
 
-		var button = document.createElement('button');
+		const button = document.createElement('button');
 		button.innerHTML = 'Layer';
 
 
@@ -30,7 +30,7 @@ export class LayerSwitch extends Control {
 			//layerswi.style.height = "20em";
 			//layerswi.style.overflow = "auto";
 			let layers = (this as LayerSwitch).getMap().getLayers();
-			layers.forEach(function (layer: BaseLayer, id: number) {
+			layers.forEach((layer: BaseLayer, id: number) => {
 				if (layer.get('switchable') == true) {
 					let div_layer = document.createElement('div');
 					let bt_layer = document.createElement('button');
@@ -48,7 +48,7 @@ export class LayerSwitch extends Control {
 					trans.setAttribute('id', 'trans_' + id);
 					trans.dataset.layer = String(id);
 					div_zusatz.appendChild(trans);
-					trans.addEventListener('change', function (__) {
+					trans.addEventListener('change', () => {
 						layer.setOpacity(parseInt(trans.value) / 100);
 					});
 					div_layer.appendChild(div_zusatz)
@@ -60,7 +60,7 @@ export class LayerSwitch extends Control {
 						bt_layer.style.backgroundColor = "var(--ol-background-color)";
 						div_zusatz.style.display = 'none';
 					}
-					bt_layer.addEventListener('click', function () {
+					bt_layer.addEventListener('click', () => {
 						layer.setVisible(!layer.getVisible());
 						if (layer.getVisible()) {
 							bt_layer.style.backgroundColor = "lightgreen";
