@@ -26,7 +26,7 @@ export abstract class ToolBox {
     /** Liste aller Radiobuttons */
     protected radioButtons: { tool: Tool, radio: HTMLInputElement }[] = []
     protected formid: string;
-    protected layer: VectorLayer<VectorSource<Feature<Point | Polygon | MultiLineString | LineString>>>[] = [];
+    protected layer: VectorLayer<VectorSource<Feature<Point | Polygon | MultiLineString | LineString>>, Feature<Point | Polygon | MultiLineString | LineString>>[] = [];
     static liste: { [objektKlasse: string]: ToolBox } = {};
     stopped: boolean;
     private static selectBox: HTMLSelectElement;

@@ -37,7 +37,7 @@ export class StrassenAusPunkt extends PunktObjekt {
         return 'black';
     }
 
-    static getLayer(map?: Map): VectorLayer<VectorSource<Feature<Point | LineString>>> {
+    static getLayer(map?: Map): VectorLayer<VectorSource<Feature<Point | LineString>>, Feature<Point | LineString>> {
         if (!StrassenAusPunkt.layer) {
             StrassenAusPunkt.layer = StrassenAusPunkt.createLayer(map);
         }

@@ -47,8 +47,8 @@ export class Querschnitt extends PrimaerObjekt<Polygon> implements InfoToolEdita
     private streifennr: number = null;
     private hasSekObj: number = null;
     private static loadErControlCounter: number = 0;
-    private static layerTrenn: VectorLayer<VectorSource<Feature<MultiLineString>>>;
-    private static layerQuer: VectorLayer<VectorSource<Feature<Polygon>>>;
+    private static layerTrenn: VectorLayer<VectorSource<Feature<MultiLineString>>, Feature<MultiLineString>>;
+    private static layerQuer: VectorLayer<VectorSource<Feature<Polygon>>, Feature<Polygon>>;
     private static selectFlaechen: SelectInteraction;
     private static selectLinien: SelectInteraction;
     private static selectLinienCondition: Condition = singleClick;

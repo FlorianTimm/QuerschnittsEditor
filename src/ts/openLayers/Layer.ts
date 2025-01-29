@@ -76,11 +76,11 @@ export class ImageLayer<ImageSourceType extends ImageSource> extends Image<Image
  * @version 2022-09-27
  * @copyright MIT
  */
-export class VectorLayer<VectorSourceType extends VectorSource<Feature<Geometry>>> extends Vector<VectorSourceType> implements LayerSwitcherLayer {
+export class VectorLayer<VectorSourceType extends VectorSource<FeatureType>, FeatureType extends Feature<Geometry>> extends Vector implements LayerSwitcherLayer {
     backgroundLayer: boolean = false;
     name: string = "";
     switchable: boolean = false;
-    constructor(option: VectorOptions<VectorSourceType> & LayerSwitcherLayerOptions) {
+    constructor(option: VectorOptions<FeatureType, VectorSourceType> & LayerSwitcherLayerOptions) {
         super(option);
         if (option.name != undefined)
             this.name = option.name;

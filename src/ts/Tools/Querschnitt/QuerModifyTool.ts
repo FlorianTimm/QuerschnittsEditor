@@ -343,11 +343,13 @@ export class QuerModifyTool extends Tool {
 
     private createSnap(layerTrenn: VectorLayer<VectorSource<Feature<MultiLineString>>>, layerStation: VectorLayer<VectorSource<Feature<MultiLineString | Point>>>) {
         this.snapTrenn = new Snap({
-            source: layerTrenn.getSource(),
+            //TODO: Typen korrekt setzen
+            source: layerTrenn.getSource() as unknown as VectorSource<Feature<Geometry>>,
             edge: false
         });
         this.snapStation = new Snap({
-            source: layerStation.getSource(),
+            //TODO: Typen korrekt setzen
+            source: layerStation.getSource() as unknown as VectorSource<Feature<Geometry>>,
             pixelTolerance: 100,
             vertex: false
         });

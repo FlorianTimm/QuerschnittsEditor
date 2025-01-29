@@ -30,7 +30,7 @@ export class QuerStation {
     private _querschnitte: { [streifen: string]: { [streifennr: number]: Querschnitt } } = {};
     private linienPunkte: LinienPunkt[];
     public aufbaudatenLoaded: Promise<{ [fid: string]: Aufbau[] }>;
-    private static layerStation: VectorLayer<VectorSource<Feature<MultiLineString | Point>>>;
+    private static layerStation: VectorLayer<VectorSource<Feature<MultiLineString | Point>>, Feature<MultiLineString | Point>>;
 
     constructor(abschnitt: Abschnitt, vst: number, bst: number) {
         this.daten = Daten.getInstanz();

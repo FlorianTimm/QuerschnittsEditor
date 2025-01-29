@@ -85,8 +85,8 @@ export abstract class PunktObjekt extends PObjektMitDokument<Point | LineString>
     }
 
 
-    protected static createLayer(map?: Map): VectorLayer<VectorSource<Feature<Point | LineString>>> {
-        let layer = new VectorLayer<VectorSource<Feature<Point | LineString>>>({
+    protected static createLayer(map?: Map): VectorLayer<VectorSource<Feature<Point | LineString>>, Feature<Point | LineString>> {
+        let layer = new VectorLayer<VectorSource<Feature<Point | LineString>>, Feature<Point | LineString>>({
             source: new VectorSource<Feature<Point | LineString>>(),
             opacity: 0.7,
         });

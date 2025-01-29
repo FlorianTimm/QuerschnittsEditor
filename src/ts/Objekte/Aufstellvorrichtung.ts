@@ -30,7 +30,7 @@ import { ConfigLoader } from "../ConfigLoader";
 */
 export class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay {
     static loadErControlCounter: number = 0;
-    static layer: VectorLayer<VectorSource<Feature<Point | LineString>>>;
+    static layer: VectorLayer<VectorSource<Feature<Point | LineString>>, Feature<Point | LineString>>;
     static select: SelectInteraction;
 
     private overlay: Overlay;
@@ -56,7 +56,7 @@ export class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay 
         return 'black';
     }
 
-    static getLayer(map?: Map): VectorLayer<VectorSource<Feature<Point | LineString>>> {
+    static getLayer(map?: Map): VectorLayer<VectorSource<Feature<Point | LineString>>, Feature<Point | LineString>> {
         if (!Aufstellvorrichtung.layer) {
             Aufstellvorrichtung.layer = Aufstellvorrichtung.createLayer(map);
         }

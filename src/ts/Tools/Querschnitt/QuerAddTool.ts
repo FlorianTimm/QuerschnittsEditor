@@ -34,7 +34,7 @@ export class QuerAddTool extends Tool {
     private selectFehlende: SelectInteraction;
     private form: HTMLFormElement = null;
     private button: HTMLInputElement;
-    private fehlendeQuerschnitte: VectorLayer<VectorSource<Feature<LineString>>>;
+    private fehlendeQuerschnitte: VectorLayer<VectorSource<Feature<LineString>>, Feature<LineString>>;
     private selectQuerschnitte: SelectInteraction;
     private selectQuerschnitteEventsKey: EventsKey;
 
