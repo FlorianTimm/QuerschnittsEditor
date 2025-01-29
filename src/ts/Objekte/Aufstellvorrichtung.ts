@@ -276,7 +276,7 @@ export class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay 
                                 /* "Speichern": () => {
                                      jqueryDialog.dialog("close");
                                  },*/
-                                "Schließen": function () {
+                                "Schließen": () => {
                                     jqueryDialog.dialog("close");
                                 }
                             }
@@ -374,9 +374,9 @@ export class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay 
         let abschnitt = this.getAbschnitt()
         let winkel = abschnitt.getWinkel(this.getVst());
 
-        let zeichenListe = alleZeichen.sort(function (a: Zeichen, b: Zeichen) {
+        let zeichenListe = alleZeichen.sort((a: Zeichen, b: Zeichen) => {
             if (a.getSort() > b.getSort()) return 1;
-            if (a.getSort() < b.getSort()) return -1
+            if (a.getSort() < b.getSort()) return -1;
             return 0;
         })
 
@@ -430,17 +430,17 @@ export class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay 
                         ctx.fillRect(-25, -20 - 40 * (liste.length - j), 50, 40);
                     }
                     img.src = '../schilder/' + zeichen.getStvoznr().getKt() + '.svg';
-                    img.addEventListener("load", function () {
+                    img.addEventListener("load", () => {
                         ctx.restore();
-                        ctx.save()
-                        ctx.rotate(faktoren[r] * 0.5 * Math.PI)
+                        ctx.save();
+                        ctx.rotate(faktoren[r] * 0.5 * Math.PI);
                         let hoehe = 40;
-                        let breite = 40 * img.width / img.height
+                        let breite = 40 * img.width / img.height;
                         if (breite > 40) {
                             breite = 40;
-                            hoehe = 40 * img.height / img.width
+                            hoehe = 40 * img.height / img.width;
                         }
-                        ctx.drawImage(img, - breite / 2, (40 - hoehe) / 2 - 20 - 40 * (liste.length - j), breite, hoehe);
+                        ctx.drawImage(img, -breite / 2, (40 - hoehe) / 2 - 20 - 40 * (liste.length - j), breite, hoehe);
                     });
                 }
             }
@@ -462,17 +462,17 @@ export class Aufstellvorrichtung extends PunktObjekt implements InfoToolOverlay 
                         ctx.fillRect(- 20 * liste.length + 40 * j, -55, 40, 50);
                     }
                     img.src = '../schilder/' + zeichen.getStvoznr().getKt() + '.svg';
-                    img.addEventListener("load", function () {
+                    img.addEventListener("load", () => {
                         ctx.restore();
-                        ctx.save()
-                        ctx.rotate(faktoren[r] * 0.5 * Math.PI)
+                        ctx.save();
+                        ctx.rotate(faktoren[r] * 0.5 * Math.PI);
                         let hoehe = 40;
-                        let breite = 40 * img.width / img.height
+                        let breite = 40 * img.width / img.height;
                         if (breite > 40) {
                             breite = 40;
-                            hoehe = 40 * img.height / img.width
+                            hoehe = 40 * img.height / img.width;
                         }
-                        ctx.drawImage(img, (40 - breite) / 2 - 20 * liste.length + 40 * j, - hoehe / 2 - 30, breite, hoehe);
+                        ctx.drawImage(img, (40 - breite) / 2 - 20 * liste.length + 40 * j, -hoehe / 2 - 30, breite, hoehe);
                     });
                 }
             }

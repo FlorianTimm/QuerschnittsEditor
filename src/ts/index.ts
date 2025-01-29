@@ -10,7 +10,7 @@ import '../css/index.css';
  * @license GPL-3.0-or-later
 */
 
-$(function () {
+$(() => {
     let hash = window.location.href.split('#');
     if (hash.length > 1 && hash[1] == "failed") {
         document.getElementById("login_fehler").innerText = "Login-Daten falsch";

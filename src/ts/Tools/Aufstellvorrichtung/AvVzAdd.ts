@@ -147,7 +147,7 @@ export class AvVzAdd extends Tool {
     }
 
     private _zeichenGeladen(zeichen: Zeichen[]): Promise<void[][]> {
-        zeichen.sort(function (a: Zeichen, b: Zeichen) {
+        zeichen.sort((a: Zeichen, b: Zeichen) => {
             if (a.getSort() == null && b.getSort() == null) return 0;
             if (a.getSort() == null) return -1;
             if (b.getSort() == null) return 1;
@@ -192,8 +192,8 @@ export class AvVzAdd extends Tool {
         // StVOZNR
         let stvoznr = Klartext.createKlartextSelectForm('Itvzstvoznr', text, 'Verkehrszeichen', 'stvoznr', eintrag.getStvoznr())
         tasks.push(stvoznr.promise)
-        $(stvoznr.select).on("change", function () {
-            let schild = Klartext.get("Itvzstvoznr", stvoznr.select.value)
+        $(stvoznr.select).on("change", () => {
+            let schild = Klartext.get("Itvzstvoznr", stvoznr.select.value);
             img.src = config['SCHILDERPFAD'] + schild.getKt() + ".svg";
             img.title = schild['beschreib'];
         });
@@ -244,7 +244,7 @@ export class AvVzAdd extends Tool {
         let del_group = document.createElement("div");
         del_group.className = "form_group";
         let buttonLoeschen = document.createElement('button');
-        buttonLoeschen.addEventListener("click", function (event) {
+        buttonLoeschen.addEventListener("click", (event) => {
             event.preventDefault();
             $("#dialog-confirm")[0].title = "Schild wirklich löschen?";
             $("#dialog-confirm #text")[0].innerHTML = "M&ouml;chten Sie dieses Schild wirklich löschen?";
@@ -254,13 +254,11 @@ export class AvVzAdd extends Tool {
                 width: 400,
                 modal: true,
                 buttons: {
-                    "Schild löschen": function () {
+                    "Schild löschen": () => {
                         $((event.target as HTMLUnknownElement).parentElement.parentElement.parentElement).remove();
                         $(this).dialog("close");
                     },
-                    "Schließen": function () {
-                        $(this).dialog("close");
-                    }
+                    "Schließen": () => $(this).dialog("close")
                 }
             });
 
@@ -463,9 +461,8 @@ export class AvVzAdd extends Tool {
                                     .catch()
                                     .finally(() => { dialog.dialog("close") });
                             },
-                            "Abbrechen": function () {
-                                dialog.dialog("close");
-                            }
+                            "Abbrechen": () => dialog.dialog("close")
+
                         }
                     });
                 } else {

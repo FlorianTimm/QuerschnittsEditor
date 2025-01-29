@@ -67,7 +67,7 @@ export class Abschnitt extends Feature<LineString> {
 
     public static getLayer(map?: Map): VectorLayer<VectorSource<Feature<LineString>>, Feature<LineString>> {
         if (!Abschnitt.layer) {
-            let achsen_style = function (feature: FeatureLike, resolution: number): Style[] {
+            let achsen_style = (feature: FeatureLike, resolution: number): Style[] => {
                 let abschnitt = feature as Abschnitt;
                 let styles = [];
                 // Linienfarbe - rot, wenn in ER
@@ -98,7 +98,7 @@ export class Abschnitt extends Feature<LineString> {
                     // Pfeile
                     var geometry = abschnitt.getGeometry() as LineString;
                     let first = true;
-                    geometry.forEachSegment(function (start, end) {
+                    geometry.forEachSegment((start, end) => {
                         if (first) {
                             first = false;
                         } else {

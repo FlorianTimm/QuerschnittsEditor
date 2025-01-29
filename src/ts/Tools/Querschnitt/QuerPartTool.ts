@@ -78,7 +78,7 @@ export class QuerPartTool extends Tool {
         let v_overlay = new VectorSource<Feature<LineString>>();
         this.l_overlay = new VectorLayer<VectorSource<Feature<LineString>>>({
             source: v_overlay,
-            style: function (feat: FeatureLike) {
+            style: (feat: FeatureLike) => {
                 return new Style({
                     stroke: new Stroke({
                         color: feat.get("color") ?? "#ccc",

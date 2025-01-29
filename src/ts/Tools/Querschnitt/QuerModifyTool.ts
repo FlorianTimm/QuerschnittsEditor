@@ -109,7 +109,7 @@ export class QuerModifyTool extends Tool {
     private createModify() {
         this.modifyLayer = new VectorLayer({
             source: new VectorSource(),
-            style: function (feat: FeatureLike) {
+            style: (feat: FeatureLike) => {
                 let color = 'green';
                 if (feat.get("st") && feat.get("st") == "Bst")
                     color = 'red';

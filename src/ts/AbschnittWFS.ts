@@ -46,7 +46,7 @@ export class AbschnittWFS {
         let config = await ConfigLoader.get().getConfig();
         xmlhttp.open('POST', config.ABSCHNITT_WFS_URL + param, true);
         return new Promise((resolve, reject) => {
-            xmlhttp.onreadystatechange = function () {
+            xmlhttp.onreadystatechange = () => {
                 if (xmlhttp.readyState != 4) return;
                 if (xmlhttp.status == 200) {
                     resolve(xmlhttp.responseXML)

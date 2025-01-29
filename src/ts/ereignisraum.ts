@@ -116,9 +116,7 @@ class ERauswahl {
             title: "Prüfprotokoll " + (document.getElementById("ernr") as HTMLInputElement).value,
             modal: true,
             buttons: {
-                "Schließen": function () {
-                    jqueryDialog.dialog("close");
-                }
+                "Schließen": () => jqueryDialog.dialog("close")
             }
         });
     }

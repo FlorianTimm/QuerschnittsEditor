@@ -105,9 +105,7 @@ export class Projekt {
         if (projektnr) {
             return er.length >= 1 ? er[0] : null
         } else {
-            er.sort(function (a, b) {
-                return Number(a.nr) - Number(b.nr);
-            });
+            er.sort((a, b) => Number(a.nr) - Number(b.nr));
             return er;
         }
 

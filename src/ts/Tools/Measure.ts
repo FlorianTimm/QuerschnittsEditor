@@ -75,7 +75,7 @@ export class Measure extends Tool {
             positioning: 'bottom-center'
         });
 
-        var formatLength = async function (line: Geometry) {
+        var formatLength = async (line: Geometry) => {
             let config = await ConfigLoader.get().getConfig();
             var length = getLength(line, { projection: config.EPSG_CODE });
             var output;

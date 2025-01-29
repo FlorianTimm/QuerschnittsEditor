@@ -98,8 +98,8 @@ export class Querschnitt extends PrimaerObjekt<Polygon> implements InfoToolEdita
     }
 
     static checkQuerschnitte(liste: Querschnitt[]) {
-        liste.forEach(function (querschnitt: Querschnitt) {
-            querschnitt.check()
+        liste.forEach((querschnitt: Querschnitt) => {
+            querschnitt.check();
         })
     }
 
@@ -631,17 +631,17 @@ export class Querschnitt extends PrimaerObjekt<Polygon> implements InfoToolEdita
 
     public static getLayerFlaechen(map?: Map) {
         if (!Querschnitt.layerQuer) {
-            let createStyle = function (feature: FeatureLike, resolution: number): Style {
-                let kt_art = (feature as Querschnitt).getArt()
-                let kt_ober = (feature as Querschnitt).getArtober()
+            let createStyle = (feature: FeatureLike, resolution: number): Style => {
+                let kt_art = (feature as Querschnitt).getArt();
+                let kt_ober = (feature as Querschnitt).getArtober();
 
                 // leere Arten filtern
-                let art = 0
+                let art = 0;
                 if (kt_art)
                     art = Number(kt_art.getKt());
 
                 // leere Oberflächen filtern
-                let ober = 0
+                let ober = 0;
                 if (kt_ober)
                     ober = Number(kt_ober.getKt());
 
@@ -649,46 +649,46 @@ export class Querschnitt extends PrimaerObjekt<Polygon> implements InfoToolEdita
                 let color = [255, 255, 255];
 
                 if ((art >= 100 && art <= 110) || (art >= 113 && art <= 119) || (art >= 122 && art <= 161) || (art >= 163 && art <= 179) || art == 312)
-                    color = [33, 33, 33];	// Fahrstreifen
+                    color = [33, 33, 33]; // Fahrstreifen
                 else if (art == 111)
                     color = [66, 66, 66]; // 1. Überholfahrstreifen
                 else if (art == 112)
                     color = [100, 100, 100]; // 2. Überholfahrstreifen
                 else if (art >= 180 && art <= 183)
-                    color = [50, 50, 100];	// Parkstreifen
+                    color = [50, 50, 100]; // Parkstreifen
                 else if (art >= 940 && art <= 942)
                     color = [0xF9, 0x14, 0xB8]; // Busanlagen
-                else if (art == 210) color = [0x22, 0x22, 0xff];	// Gehweg
+                else if (art == 210) color = [0x22, 0x22, 0xff]; // Gehweg
                 else if ((art >= 240 && art <= 243) || art == 162)
-                    color = [0x33, 0x33, 0x66];	// Radweg
+                    color = [0x33, 0x33, 0x66]; // Radweg
                 else if (art == 250 || art == 251)
-                    color = [0xcc, 0x22, 0xcc];	// Fuß-Rad-Weg
+                    color = [0xcc, 0x22, 0xcc]; // Fuß-Rad-Weg
                 else if (art == 220)
-                    color = [0xff, 0xdd, 0x00];	// paralleler Wirtschaftsweg
+                    color = [0xff, 0xdd, 0x00]; // paralleler Wirtschaftsweg
                 else if (art == 420 || art == 430 || art == 900)
-                    color = [0xff, 0xff, 0xff];	// Markierungen
+                    color = [0xff, 0xff, 0xff]; // Markierungen
                 else if (art == 310 || art == 311 || art == 313 || art == 320 || art == 330 || (art >= 910 && art <= 916))
-                    color = [0xee, 0xee, 0xee];	// Trenn-, Schutzstreifen und Schwellen
+                    color = [0xee, 0xee, 0xee]; // Trenn-, Schutzstreifen und Schwellen
                 else if (art == 120 || art == 121)
-                    color = [0x1F, 0x22, 0x97];	// Rinne
+                    color = [0x1F, 0x22, 0x97]; // Rinne
                 else if (art == 301)
-                    color = [0x75, 0x9F, 0x1E];	// Banket
+                    color = [0x75, 0x9F, 0x1E]; // Banket
                 else if (art == 510 || art == 511 || art == 520)
-                    color = [0x12, 0x0a, 0x8f];	// Gräben und Mulden
+                    color = [0x12, 0x0a, 0x8f]; // Gräben und Mulden
                 else if (art == 700 || art == 710)
-                    color = [0x00, 0x44, 0x00];	// Böschungen
+                    color = [0x00, 0x44, 0x00]; // Böschungen
                 else if (art == 314 || art == 315)
-                    color = [0x8A, 0x60, 0xD8];	// Inseln
+                    color = [0x8A, 0x60, 0xD8]; // Inseln
                 else if (art == 400 || art == 410 || art == 715)
-                    color = [0x8A, 0x60, 0xD8];	// Randstreifen und Sichtflächen
+                    color = [0x8A, 0x60, 0xD8]; // Randstreifen und Sichtflächen
                 else if (art == 600 || art == 610 || art == 620 || art == 630 || art == 640)
-                    color = [0xC1, 0xBA, 0xC8];	// Borde und Kantsteine
+                    color = [0xC1, 0xBA, 0xC8]; // Borde und Kantsteine
                 else if (art == 340)
-                    color = [0, 0, 0];	// Gleiskörper
+                    color = [0, 0, 0]; // Gleiskörper
                 else if (art == 999)
-                    color = [0x88, 0x88, 0x88];	// Bestandsachse
+                    color = [0x88, 0x88, 0x88]; // Bestandsachse
                 else if (art == 990 || art == 720)
-                    color = [0xFC, 0x8A, 0x57];	// sonstige Streifenart
+                    color = [0xFC, 0x8A, 0x57]; // sonstige Streifenart
 
                 color.push(0.4);
 
@@ -704,7 +704,7 @@ export class Querschnitt extends PrimaerObjekt<Polygon> implements InfoToolEdita
                         }),
                         text: ((resolution < 0.05) ? (art + " - " + ober) : '')
                     })
-                })
+                });
             }
 
             Querschnitt.layerQuer = new VectorLayer({

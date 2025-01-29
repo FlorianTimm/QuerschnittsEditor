@@ -166,9 +166,7 @@ export class QuerAddTool extends Tool {
                     this.querschnittErzeugen(querschnittListe, "R");
                     jqueryDialog.dialog("close");
                 },
-                "Abbrechen": function () {
-                    jqueryDialog.dialog("close");
-                }
+                "Abbrechen": () => jqueryDialog.dialog("close")
             }
         });
     }

@@ -28,11 +28,11 @@ export class PublicWFS {
     }
 
     private static doSoapRequest(url: string, xml: string): Promise<Document> {
-        return new Promise(function (resolve, reject) {
+        return new Promise((resolve, reject) => {
             WaitBlocker.warteAdd();
             var xmlhttp = new XMLHttpRequest();
             xmlhttp.open('POST', url, true);
-            xmlhttp.onreadystatechange = function () {
+            xmlhttp.onreadystatechange = () => {
                 if (xmlhttp.readyState != 4) return;
                 WaitBlocker.warteSub();
                 if (xmlhttp.status == 200) {
@@ -48,13 +48,13 @@ export class PublicWFS {
     }
 
     private static doGetRequest(url_param: string, blocking: boolean = true): Promise<Document> {
-        return new Promise(async function (resolve, reject) {
+        return new Promise(async (resolve, reject) => {
             if (blocking) WaitBlocker.warteAdd()
             var xmlhttp = new XMLHttpRequest();
             const config = await ConfigLoader.get().getConfig();
             xmlhttp.open('GET', config.PUBLIC_WFS_URL + '?' + url_param, true);
 
-            xmlhttp.onreadystatechange = function () {
+            xmlhttp.onreadystatechange = () => {
                 if (xmlhttp.readyState != 4) return;
                 if (xmlhttp.status == 200) {
                     if (blocking) WaitBlocker.warteSub()
@@ -64,7 +64,7 @@ export class PublicWFS {
                     reject(xmlhttp.responseXML)
                 }
             }
-            xmlhttp.onerror = function () {
+            xmlhttp.onerror = () => {
                 PublicWFS.showMessage("Fehler bei der Kommunikation mit WFS", true)
                 if (blocking) WaitBlocker.warteSub()
                 reject(Error("Network Error"));
@@ -74,7 +74,7 @@ export class PublicWFS {
     }
 
     static addInER(abschnitt: Abschnitt, objekt: string, ereignisraum_nr: string) {
-        return new Promise(function (resolve, reject) {
+        return new Promise((resolve, reject) => {
             let xml = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
                 'xmlns:pub="http://ttsib.novasib.de/PublicServices" xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">\n' +
                 '<soapenv:Header/>\n' +
@@ -108,7 +108,7 @@ export class PublicWFS {
     }
 
     static async addSekInER(objektPrim: PrimaerObjekt<Point | LineString | Polygon>, objektTypePrim: string, objektSek: string, ereignisraum_nr: string): Promise<Document> {
-        return new Promise(function (resolve, reject) {
+        return new Promise((resolve, reject) => {
             let xml = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \n' +
                 'xmlns:pub="http://ttsib.novasib.de/PublicServices" xmlns:int="http://interfaceTypes.ttsib5.novasib.de/">\n' +
                 '<soapenv:Header/>\n' +
@@ -126,12 +126,12 @@ export class PublicWFS {
                 '            </objektKlassen>\n' +
                 '     </pub:expandProjektPrimObj>\n' +
                 '</soapenv:Body>\n' +
-                '</soapenv:Envelope>'
+                '</soapenv:Envelope>';
             PublicWFS.doSoapRequestERWFS(xml).then((xml: Document) => {
                 objektPrim.addSekOKinER(objektSek);
-                resolve(xml)
+                resolve(xml);
             }).catch((xml: Document) => {
-                PublicWFS.showMessage("Fehler bei der Kommunikation mit WFS", true)
+                PublicWFS.showMessage("Fehler bei der Kommunikation mit WFS", true);
                 reject(xml);
             });
         });
@@ -248,7 +248,7 @@ export class PublicWFS {
         m.innerHTML = text;
         document.body.appendChild(m);
 
-        let ausblenden = function () {
+        let ausblenden = () => {
             m.style.display = 'none';
             document.body.removeChild(m);
         }
