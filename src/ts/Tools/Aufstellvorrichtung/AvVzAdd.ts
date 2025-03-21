@@ -133,17 +133,20 @@ export class AvVzAdd extends Tool {
     private newSchild(event: JQueryEventObject) {
         let schild = new Zeichen();
         schild.setStvoznr((event.target as HTMLInputElement).value);
+        this.duplNewSchildForm(schild);
+    }
+
+    private duplNewSchildForm(schild: Zeichen, insertAfter?: HTMLFormElement) {
         let vorherDisabled = false;
         if (!this.buttonSpeichern.disabled) {
             this.buttonSpeichern.disabled = true;
             vorherDisabled = true;
         }
-        this.createSchildForm(schild)
+        this.createSchildForm(schild, insertAfter)
             .then(() => {
                 if (vorherDisabled)
                     this.buttonSpeichern.disabled = false;
             });
-
     }
 
     private _zeichenGeladen(zeichen: Zeichen[]): Promise<void[][]> {
@@ -164,9 +167,13 @@ export class AvVzAdd extends Tool {
      * Erzeugt pro Schild ein Änderungsformular
      * @param {Zeichen} eintrag Schild, für welches das Formular erzeugt werden soll
      */
-    private async createSchildForm(eintrag: Zeichen): Promise<void[]> {
+    private async createSchildForm(eintrag: Zeichen, insertAfter?: HTMLFormElement): Promise<void[]> {
         let div = document.createElement("form");
-        this.liste.appendChild(div);
+        if (insertAfter)
+            this.liste.insertBefore(div, insertAfter.nextSibling);
+        else
+            this.liste.appendChild(div)
+
         div.dataset.oid = eintrag.getObjektId();
         div.classList.add('ui-state-default');
         div.classList.add('schild');
@@ -241,14 +248,14 @@ export class AvVzAdd extends Tool {
         tasks.push(Klartext.createKlartextSelectForm('Itquelle', text, 'Quelle', 'quelle', eintrag.getQuelle()).promise)
 
         // Löschen
-        let del_group = document.createElement("div");
-        del_group.className = "form_group";
+        let buttonGroup = document.createElement("div");
+        buttonGroup.className = "form_group";
         let buttonLoeschen = document.createElement('button');
         buttonLoeschen.addEventListener("click", (event) => {
             event.preventDefault();
             $("#dialog-confirm")[0].title = "Schild wirklich löschen?";
             $("#dialog-confirm #text")[0].innerHTML = "M&ouml;chten Sie dieses Schild wirklich löschen?";
-            $("#dialog-confirm").dialog({
+            let dialog_del = $("#dialog-confirm").dialog({
                 resizable: false,
                 height: "auto",
                 width: 400,
@@ -256,9 +263,9 @@ export class AvVzAdd extends Tool {
                 buttons: {
                     "Schild löschen": () => {
                         $((event.target as HTMLUnknownElement).parentElement.parentElement.parentElement).remove();
-                        $(this).dialog("close");
+                        dialog_del.dialog("close");
                     },
-                    "Schließen": () => $(this).dialog("close")
+                    "Schließen": () => dialog_del.dialog("close")
                 }
             });
 
@@ -266,8 +273,59 @@ export class AvVzAdd extends Tool {
         buttonLoeschen.innerHTML = "Löschen";
         buttonLoeschen.style.backgroundColor = "#f99";
         $(buttonLoeschen).button();
-        del_group.appendChild(buttonLoeschen);
-        text.appendChild(del_group);
+        buttonGroup.appendChild(buttonLoeschen);
+
+        let buttonCopy = document.createElement('button');
+        buttonCopy.addEventListener("click", (event) => {
+            event.preventDefault();
+            let e = (event.target as HTMLUnknownElement).parentElement.parentElement.parentElement as HTMLFormElement;
+            let jqec = $(e).children().children();
+
+            let schild = new Zeichen();
+            let stvonr = (jqec.children("select#stvoznr")[0] as HTMLInputElement).value
+            if (stvonr) schild.setStvoznr(stvonr);
+
+            let vztext = (jqec.children("input#vztext")[0] as HTMLInputElement).value
+            if (vztext && vztext != "") schild.setVztext(vztext);
+
+            let lageFb = (jqec.children("select#lageFb")[0] as HTMLInputElement).value
+            if (lageFb) schild.setLageFb(lageFb);
+
+            let lesbarkeit = (jqec.children("select#lesbarkeit")[0] as HTMLInputElement).value
+            if (lesbarkeit) schild.setLesbarkeit(lesbarkeit);
+
+            let beleucht = (jqec.children("select#beleucht")[0] as HTMLInputElement).value
+            if (beleucht) schild.setBeleucht(beleucht);
+
+            let art = (jqec.children("select#art")[0] as HTMLInputElement).value
+            if (art) schild.setArt(art);
+
+            let groesse = (jqec.children("select#groesse")[0] as HTMLInputElement).value
+            if (groesse) schild.setGroesse(groesse);
+
+            let strbezug = (jqec.children("select#strbezug")[0] as HTMLInputElement).value
+            if (strbezug) schild.setStrbezug(strbezug);
+
+            let aufstelldat = (jqec.children("input.aufstelldat")[0] as HTMLInputElement).value
+            if (aufstelldat) schild.setAufstelldat(aufstelldat);
+
+            let erfart = (jqec.children("select#erfart")[0] as HTMLInputElement).value
+            if (erfart) schild.setErfart(erfart);
+
+            let quelle = (jqec.children("select#quelle")[0] as HTMLInputElement).value
+            if (quelle) schild.setQuelle(quelle);
+
+            let objektnr = (jqec.children("input#objektnr")[0] as HTMLInputElement).value
+            if (objektnr && objektnr != "") schild.setObjektnr(objektnr);
+
+            this.duplNewSchildForm(schild, e)
+        });
+        buttonCopy.innerHTML = "Duplizieren";
+        buttonCopy.style.backgroundColor = "#ff9";
+        $(buttonCopy).button();
+        buttonGroup.appendChild(buttonCopy);
+
+        text.appendChild(buttonGroup);
         return Promise.all(tasks);
     }
 
